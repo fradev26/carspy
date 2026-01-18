@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
-import autospyLogo from '@/assets/autospy-logo.png';
+import autospyLogo from '@/assets/autospy-logo-minimal.png';
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState('');
