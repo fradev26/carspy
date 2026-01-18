@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Mail, Phone, MapPin } from 'lucide-react';
-import autospyLogo from '@/assets/autospy-logo.png';
+import autospyLogo from '@/assets/autospy-logo-minimal.png';
 
 export function Footer() {
   return (
