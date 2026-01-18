@@ -1,9 +1,21 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Shield, Zap, Users } from 'lucide-react';
+import { ArrowRight, Shield, Zap, Users, Car, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SearchBar } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
-import { mockListings, popularBrands } from '@/data/mockListings';
+import { mockListings } from '@/data/mockListings';
+import { BODY_TYPES } from '@/types/listing';
+
+const bodyTypeIcons: Record<string, React.ReactNode> = {
+  sedan: <Car className="h-8 w-8" />,
+  hatchback: <Car className="h-8 w-8" />,
+  stationwagon: <Car className="h-8 w-8" />,
+  suv: <Truck className="h-8 w-8" />,
+  cabrio: <Car className="h-8 w-8" />,
+  coupe: <Car className="h-8 w-8" />,
+  mpv: <Car className="h-8 w-8" />,
+  bestelwagen: <Truck className="h-8 w-8" />,
+};
 
 const Index = () => {
   const latestListings = mockListings.slice(0, 6);
@@ -27,19 +39,21 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Popular Brands */}
+      {/* Body Types */}
       <section className="py-12 md:py-16">
         <div className="container">
-          <h2 className="text-2xl font-semibold">Populaire merken</h2>
-          <div className="mt-6 grid grid-cols-4 gap-4 md:grid-cols-8">
-            {popularBrands.map((brand) => (
+          <h2 className="text-2xl font-semibold">Zoek op carrosserie</h2>
+          <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-8">
+            {BODY_TYPES.map((bodyType) => (
               <Link
-                key={brand.name}
-                to={`/zoeken?brand=${encodeURIComponent(brand.name)}`}
-                className="flex flex-col items-center gap-2 rounded-lg border bg-card p-4 transition-all hover:shadow-card-hover hover:border-primary/20"
+                key={bodyType.value}
+                to={`/zoeken?bodyType=${encodeURIComponent(bodyType.value)}`}
+                className="flex flex-col items-center gap-3 rounded-xl border bg-card p-4 transition-all hover:shadow-card-hover hover:border-primary/20 group"
               >
-                <span className="text-2xl">{brand.logo}</span>
-                <span className="text-sm font-medium">{brand.name}</span>
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                  {bodyTypeIcons[bodyType.value] || <Car className="h-8 w-8" />}
+                </div>
+                <span className="text-sm font-medium text-center">{bodyType.label}</span>
               </Link>
             ))}
           </div>
