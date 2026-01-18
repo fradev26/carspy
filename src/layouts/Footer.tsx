@@ -3,7 +3,7 @@ import { Car, Mail, Phone, MapPin } from 'lucide-react';
 
 export function Footer() {
   return (
-    <footer className="border-t bg-card">
+    <footer className="hidden border-t bg-card md:block">
       <div className="container py-12">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
