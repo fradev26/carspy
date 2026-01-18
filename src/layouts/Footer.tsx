@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Mail, Phone, MapPin } from 'lucide-react';
-import autospyLogo from '@/assets/autospy-logo-minimal.png';
+import { Search, Mail, Phone, MapPin } from 'lucide-react';
 
 export function Footer() {
   return (
@@ -9,8 +8,11 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
           <div className="space-y-4">
-            <Link to="/" className="flex items-center">
-              <img src={autospyLogo} alt="AutoSpy" className="h-12 w-auto" />
+            <Link to="/" className="flex items-center gap-2">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
+                <Search className="h-6 w-6 text-primary-foreground" />
+              </div>
+              <span className="text-2xl font-bold">AutoSpy</span>
             </Link>
             <p className="text-sm text-muted-foreground">
               De slimste manier om je volgende auto te vinden of je huidige auto te verkopen.
