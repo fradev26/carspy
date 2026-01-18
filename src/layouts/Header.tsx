@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
-import autospyLogo from '@/assets/autospy-logo-minimal.png';
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -28,8 +27,11 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
       {/* Mobile Header */}
       <div className="container flex h-14 items-center justify-between gap-4 md:hidden">
-        <Link to="/" className="flex items-center">
-          <img src={autospyLogo} alt="AutoSpy" className="h-10 w-auto" />
+        <Link to="/" className="flex items-center gap-2">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+            <Search className="h-5 w-5 text-primary-foreground" />
+          </div>
+          <span className="text-xl font-bold text-foreground">AutoSpy</span>
         </Link>
         
         <Button variant="ghost" size="icon" asChild>
@@ -42,8 +44,11 @@ export function Header() {
       {/* Desktop Header */}
       <div className="container hidden h-16 items-center justify-between gap-4 md:flex">
         {/* Logo */}
-        <Link to="/" className="flex items-center">
-          <img src={autospyLogo} alt="AutoSpy" className="h-12 w-auto" />
+        <Link to="/" className="flex items-center gap-2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
+            <Search className="h-6 w-6 text-primary-foreground" />
+          </div>
+          <span className="text-2xl font-bold text-foreground">AutoSpy</span>
         </Link>
 
         {/* Desktop Search */}
