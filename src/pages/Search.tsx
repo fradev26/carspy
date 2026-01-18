@@ -1,13 +1,14 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Grid, List, SlidersHorizontal } from 'lucide-react';
+import { Grid, List, SlidersHorizontal, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { FilterPanel, FilterChips } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
 import { mockListings } from '@/data/mockListings';
-import { SearchFilters, SORT_OPTIONS, Listing } from '@/types/listing';
+import { SearchFilters, SORT_OPTIONS, BodyType } from '@/types/listing';
 
 export default function Search() {
   const [searchParams] = useSearchParams();
@@ -15,9 +16,22 @@ export default function Search() {
     brand: searchParams.get('brand') || undefined,
     model: searchParams.get('model') || undefined,
     maxPrice: searchParams.get('maxPrice') ? parseInt(searchParams.get('maxPrice')!) : undefined,
+    bodyTypes: searchParams.get('bodyType') ? [searchParams.get('bodyType') as BodyType] : undefined,
   }));
   const [sortBy, setSortBy] = useState('newest');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  // Update filters when URL params change
+  useEffect(() => {
+    const bodyType = searchParams.get('bodyType');
+    if (bodyType) {
+      setFilters(prev => ({
+        ...prev,
+        bodyTypes: [bodyType as BodyType],
+      }));
+    }
+  }, [searchParams]);
 
   const filteredListings = useMemo(() => {
     let results = [...mockListings];
@@ -85,6 +99,15 @@ export default function Search() {
     }
   };
 
+  // Count active advanced filters
+  const advancedFilterCount = [
+    filters.minYear || filters.maxYear,
+    filters.maxMileage,
+    filters.fuelTypes?.length,
+    filters.transmissions?.length,
+    filters.bodyTypes?.length,
+  ].filter(Boolean).length;
+
   return (
     <div className="container py-6">
       <div className="flex gap-8">
@@ -121,12 +144,28 @@ export default function Search() {
                 </SheetContent>
               </Sheet>
 
+              {/* Advanced Filters Toggle (Desktop) */}
+              <Button 
+                variant="outline" 
+                className="hidden lg:flex gap-2"
+                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                Meer filters
+                {advancedFilterCount > 0 && (
+                  <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+                    {advancedFilterCount}
+                  </span>
+                )}
+                {showAdvancedFilters ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </Button>
+
               {/* Sort */}
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="w-48">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-card">
                   {SORT_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
@@ -156,6 +195,21 @@ export default function Search() {
               </div>
             </div>
           </div>
+
+          {/* Advanced Filters Panel (Desktop - collapsible) */}
+          <Collapsible open={showAdvancedFilters} className="hidden lg:block mb-6">
+            <CollapsibleContent>
+              <div className="rounded-lg border bg-card p-4">
+                <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                  <FilterPanel 
+                    filters={filters} 
+                    onFiltersChange={setFilters} 
+                    className="contents [&>*]:col-span-1 [&>h2]:hidden [&>button]:hidden"
+                  />
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
 
           {/* Active Filters */}
           <FilterChips
