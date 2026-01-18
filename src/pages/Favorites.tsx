@@ -1,18 +1,101 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Heart } from 'lucide-react';
 import { ListingGrid } from '@/modules/listings';
-import { mockListings } from '@/data/mockListings';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { Listing } from '@/types/listing';
 
 export default function Favorites() {
-  const [favorites] = useState(() => mockListings.slice(0, 4).map(l => l.id));
-  const favoriteListings = mockListings.filter(l => favorites.includes(l.id));
+  const { user } = useAuth();
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      fetchFavorites();
+    }
+  }, [user]);
+
+  const fetchFavorites = async () => {
+    // Get favorite listing IDs
+    const { data: favData } = await supabase
+      .from('favorites')
+      .select('listing_id')
+      .eq('user_id', user?.id);
+
+    if (favData && favData.length > 0) {
+      const listingIds = favData.map(f => f.listing_id);
+      setFavorites(listingIds);
+
+      // Get listing details
+      const { data: listingsData } = await supabase
+        .from('listings')
+        .select('*')
+        .in('id', listingIds);
+
+      if (listingsData) {
+        // Transform DB format to UI format
+        const transformed = listingsData.map(l => ({
+          id: l.id,
+          title: l.title,
+          brand: l.brand,
+          model: l.model,
+          year: l.year,
+          price: l.price,
+          mileage: l.mileage,
+          fuelType: l.fuel_type as Listing['fuelType'],
+          transmission: l.transmission as Listing['transmission'],
+          bodyType: l.body_type as Listing['bodyType'],
+          color: l.color || '',
+          power: l.power || 0,
+          engineSize: l.engine_size || 0,
+          doors: l.doors || 5,
+          seats: l.seats || 5,
+          images: l.images || [],
+          description: l.description || '',
+          features: l.features || [],
+          location: { city: l.city || '', province: l.province || '' },
+          seller: { id: l.user_id, name: 'Verkoper', type: 'private' as const, memberSince: '' },
+          createdAt: l.created_at,
+          updatedAt: l.updated_at,
+          views: l.views,
+          status: l.status as Listing['status'],
+        }));
+        setListings(transformed);
+      }
+    }
+    setLoading(false);
+  };
+
+  const handleFavoriteToggle = async (listingId: string, isFavorite: boolean) => {
+    if (!isFavorite) {
+      // Remove from favorites
+      await supabase
+        .from('favorites')
+        .delete()
+        .eq('user_id', user?.id)
+        .eq('listing_id', listingId);
+      
+      setFavorites(favorites.filter(id => id !== listingId));
+      setListings(listings.filter(l => l.id !== listingId));
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="container py-8 flex justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-8">
       <h1 className="text-2xl font-bold">Mijn favorieten</h1>
-      <p className="mt-1 text-muted-foreground">{favoriteListings.length} opgeslagen auto's</p>
+      <p className="mt-1 text-muted-foreground">{listings.length} opgeslagen auto's</p>
 
-      {favoriteListings.length === 0 ? (
+      {listings.length === 0 ? (
         <div className="mt-12 text-center">
           <Heart className="mx-auto h-16 w-16 text-muted-foreground/50" />
           <h2 className="mt-4 text-lg font-semibold">Nog geen favorieten</h2>
@@ -20,7 +103,12 @@ export default function Favorites() {
         </div>
       ) : (
         <div className="mt-8">
-          <ListingGrid listings={favoriteListings} columns={3} favorites={favorites} />
+          <ListingGrid 
+            listings={listings} 
+            columns={3} 
+            favorites={favorites} 
+            onFavoriteToggle={handleFavoriteToggle}
+          />
         </div>
       )}
     </div>

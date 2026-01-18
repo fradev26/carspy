@@ -1,20 +1,28 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Menu, X, Car, Heart, User, Plus } from 'lucide-react';
+import { Search, Menu, X, Car, Heart, User, Plus, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/zoeken?q=${encodeURIComponent(searchQuery)}`);
     }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
   };
 
   return (
@@ -47,24 +55,58 @@ export function Header() {
           <Button variant="ghost" asChild>
             <Link to="/zoeken">Zoeken</Link>
           </Button>
-          <Button variant="ghost" asChild className="gap-2">
-            <Link to="/favorieten">
-              <Heart className="h-4 w-4" />
-              Favorieten
-            </Link>
-          </Button>
-          <Button variant="ghost" asChild className="gap-2">
-            <Link to="/dashboard">
-              <User className="h-4 w-4" />
-              Dashboard
-            </Link>
-          </Button>
-          <Button asChild className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
-            <Link to="/verkopen">
-              <Plus className="h-4 w-4" />
-              Auto verkopen
-            </Link>
-          </Button>
+          
+          {user ? (
+            <>
+              <Button variant="ghost" asChild className="gap-2">
+                <Link to="/favorieten">
+                  <Heart className="h-4 w-4" />
+                  Favorieten
+                </Link>
+              </Button>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="gap-2">
+                    <User className="h-4 w-4" />
+                    Account
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <Link to="/dashboard">Mijn advertenties</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/favorieten">Favorieten</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Uitloggen
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
+              <Button asChild className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
+                <Link to="/verkopen">
+                  <Plus className="h-4 w-4" />
+                  Auto verkopen
+                </Link>
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" asChild>
+                <Link to="/auth">Inloggen</Link>
+              </Button>
+              <Button asChild className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
+                <Link to="/auth">
+                  <Plus className="h-4 w-4" />
+                  Auto verkopen
+                </Link>
+              </Button>
+            </>
+          )}
         </nav>
 
         {/* Mobile Menu Button */}
@@ -109,24 +151,48 @@ export function Header() {
                 Zoeken
               </Link>
             </Button>
-            <Button variant="ghost" asChild className="justify-start" onClick={() => setIsMenuOpen(false)}>
-              <Link to="/favorieten">
-                <Heart className="mr-2 h-4 w-4" />
-                Favorieten
-              </Link>
-            </Button>
-            <Button variant="ghost" asChild className="justify-start" onClick={() => setIsMenuOpen(false)}>
-              <Link to="/dashboard">
-                <User className="mr-2 h-4 w-4" />
-                Dashboard
-              </Link>
-            </Button>
-            <Button asChild className="justify-start gap-2 bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => setIsMenuOpen(false)}>
-              <Link to="/verkopen">
-                <Plus className="mr-2 h-4 w-4" />
-                Auto verkopen
-              </Link>
-            </Button>
+            
+            {user ? (
+              <>
+                <Button variant="ghost" asChild className="justify-start" onClick={() => setIsMenuOpen(false)}>
+                  <Link to="/favorieten">
+                    <Heart className="mr-2 h-4 w-4" />
+                    Favorieten
+                  </Link>
+                </Button>
+                <Button variant="ghost" asChild className="justify-start" onClick={() => setIsMenuOpen(false)}>
+                  <Link to="/dashboard">
+                    <User className="mr-2 h-4 w-4" />
+                    Dashboard
+                  </Link>
+                </Button>
+                <Button asChild className="justify-start gap-2 bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => setIsMenuOpen(false)}>
+                  <Link to="/verkopen">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Auto verkopen
+                  </Link>
+                </Button>
+                <Button variant="ghost" className="justify-start text-destructive" onClick={() => { handleSignOut(); setIsMenuOpen(false); }}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Uitloggen
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" asChild className="justify-start" onClick={() => setIsMenuOpen(false)}>
+                  <Link to="/auth">
+                    <User className="mr-2 h-4 w-4" />
+                    Inloggen
+                  </Link>
+                </Button>
+                <Button asChild className="justify-start gap-2 bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => setIsMenuOpen(false)}>
+                  <Link to="/auth">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Auto verkopen
+                  </Link>
+                </Button>
+              </>
+            )}
           </nav>
         </div>
       </div>
