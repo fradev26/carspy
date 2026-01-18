@@ -39,8 +39,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Body Types */}
-      <section className="py-12 md:py-16">
+      {/* Body Types - Hidden on mobile */}
+      <section className="hidden py-12 md:block md:py-16">
         <div className="container">
           <h2 className="text-2xl font-semibold">Zoek op carrosserie</h2>
           <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-8">
