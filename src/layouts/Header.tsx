@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
+import detectiveIcon from '@/assets/detective-icon.png';
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -28,9 +29,7 @@ export function Header() {
       {/* Mobile Header */}
       <div className="container flex h-14 items-center justify-between gap-4 md:hidden">
         <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            <Search className="h-5 w-5 text-primary-foreground" />
-          </div>
+          <img src={detectiveIcon} alt="AutoSpy" className="h-9 w-9 object-contain" />
           <span className="text-xl font-bold text-foreground">AutoSpy</span>
         </Link>
         
@@ -45,9 +44,7 @@ export function Header() {
       <div className="container hidden h-16 items-center justify-between gap-4 md:flex">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-            <Search className="h-6 w-6 text-primary-foreground" />
-          </div>
+          <img src={detectiveIcon} alt="AutoSpy" className="h-11 w-11 object-contain" />
           <span className="text-2xl font-bold text-foreground">AutoSpy</span>
         </Link>
 
