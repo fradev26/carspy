@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { Search, Mail, Phone, MapPin } from 'lucide-react';
+import { Mail, Phone, MapPin } from 'lucide-react';
+import detectiveIcon from '@/assets/detective-icon.png';
 
 export function Footer() {
   return (
@@ -9,9 +10,7 @@ export function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-                <Search className="h-6 w-6 text-primary-foreground" />
-              </div>
+              <img src={detectiveIcon} alt="AutoSpy" className="h-11 w-11 object-contain" />
               <span className="text-2xl font-bold">AutoSpy</span>
             </Link>
             <p className="text-sm text-muted-foreground">
