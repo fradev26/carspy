@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Check, ChevronRight, ChevronLeft, Upload } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Check, ChevronRight, ChevronLeft, Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,19 +8,118 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { CAR_BRANDS, FUEL_TYPES, TRANSMISSION_TYPES, BODY_TYPES } from '@/types/listing';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 const steps = ['Basisgegevens', 'Details', "Foto's", 'Prijs & Beschrijving', 'Overzicht'];
 
 export default function Sell() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  
   const [formData, setFormData] = useState({
-    brand: '', model: '', year: '', mileage: '', fuelType: '', transmission: '', bodyType: '', color: '', price: '', description: '',
+    brand: '', model: '', year: '', mileage: '', fuelType: '', transmission: '', 
+    bodyType: '', color: '', power: '', price: '', description: '', city: '', province: '',
   });
 
   const updateForm = (key: string, value: string) => setFormData(prev => ({ ...prev, [key]: value }));
   const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
   const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 0));
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length + imageFiles.length > 10) {
+      toast({ title: 'Maximaal 10 foto\'s', variant: 'destructive' });
+      return;
+    }
+    
+    setImageFiles(prev => [...prev, ...files]);
+    
+    // Create previews
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreviews(prev => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeImage = (index: number) => {
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const uploadImages = async (): Promise<string[]> => {
+    const urls: string[] = [];
+    
+    for (const file of imageFiles) {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user?.id}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+      
+      const { error } = await supabase.storage
+        .from('listing-images')
+        .upload(fileName, file);
+      
+      if (!error) {
+        const { data: { publicUrl } } = supabase.storage
+          .from('listing-images')
+          .getPublicUrl(fileName);
+        urls.push(publicUrl);
+      }
+    }
+    
+    return urls;
+  };
+
+  const handleSubmit = async () => {
+    if (!user) return;
+    
+    setIsSubmitting(true);
+    
+    try {
+      // Upload images first
+      const imageUrls = await uploadImages();
+      
+      // Create listing
+      const { error } = await supabase.from('listings').insert({
+        user_id: user.id,
+        title: `${formData.brand} ${formData.model}`,
+        brand: formData.brand,
+        model: formData.model,
+        year: parseInt(formData.year),
+        mileage: parseInt(formData.mileage),
+        price: parseInt(formData.price),
+        fuel_type: formData.fuelType,
+        transmission: formData.transmission,
+        body_type: formData.bodyType,
+        color: formData.color,
+        power: formData.power ? parseInt(formData.power) : null,
+        description: formData.description,
+        images: imageUrls,
+        city: formData.city,
+        province: formData.province,
+        status: 'active',
+      });
+
+      if (error) throw error;
+
+      toast({ title: 'Advertentie geplaatst!' });
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error creating listing:', error);
+      toast({ title: 'Er ging iets mis', variant: 'destructive' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="container max-w-3xl py-8">
@@ -62,43 +162,67 @@ export default function Sell() {
           {currentStep === 1 && (
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Brandstof</Label>
+                <Label>Brandstof *</Label>
                 <Select value={formData.fuelType} onValueChange={(v) => updateForm('fuelType', v)}>
                   <SelectTrigger><SelectValue placeholder="Selecteer" /></SelectTrigger>
                   <SelectContent>{FUEL_TYPES.map(f => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Transmissie</Label>
+                <Label>Transmissie *</Label>
                 <Select value={formData.transmission} onValueChange={(v) => updateForm('transmission', v)}>
                   <SelectTrigger><SelectValue placeholder="Selecteer" /></SelectTrigger>
                   <SelectContent>{TRANSMISSION_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Carrosserie</Label>
+                <Label>Carrosserie *</Label>
                 <Select value={formData.bodyType} onValueChange={(v) => updateForm('bodyType', v)}>
                   <SelectTrigger><SelectValue placeholder="Selecteer" /></SelectTrigger>
                   <SelectContent>{BODY_TYPES.map(b => <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-2"><Label>Kleur</Label><Input value={formData.color} onChange={(e) => updateForm('color', e.target.value)} placeholder="Zwart metallic" /></div>
+              <div className="space-y-2"><Label>Vermogen (pk)</Label><Input type="number" value={formData.power} onChange={(e) => updateForm('power', e.target.value)} placeholder="150" /></div>
             </div>
           )}
 
           {currentStep === 2 && (
-            <div className="text-center py-8">
-              <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-muted">
-                <Upload className="h-10 w-10 text-muted-foreground" />
+            <div className="space-y-4">
+              <div className="text-center">
+                <label className="cursor-pointer">
+                  <input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" />
+                  <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-muted hover:bg-muted/80 transition-colors">
+                    <Upload className="h-10 w-10 text-muted-foreground" />
+                  </div>
+                  <p className="mt-2 text-sm text-muted-foreground">Klik om foto's te uploaden (max 10)</p>
+                </label>
               </div>
-              <p className="mt-4 text-muted-foreground">Foto upload wordt beschikbaar met backend integratie</p>
-              <Button variant="outline" className="mt-4">Selecteer foto's</Button>
+              
+              {imagePreviews.length > 0 && (
+                <div className="grid grid-cols-3 gap-2 mt-4">
+                  {imagePreviews.map((preview, index) => (
+                    <div key={index} className="relative aspect-video">
+                      <img src={preview} alt={`Preview ${index + 1}`} className="h-full w-full object-cover rounded-lg" />
+                      <button
+                        onClick={() => removeImage(index)}
+                        className="absolute -right-2 -top-2 rounded-full bg-destructive p-1 text-destructive-foreground"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
           {currentStep === 3 && (
             <div className="space-y-4">
-              <div className="space-y-2"><Label>Vraagprijs *</Label><Input type="number" value={formData.price} onChange={(e) => updateForm('price', e.target.value)} placeholder="25000" /></div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2"><Label>Vraagprijs *</Label><Input type="number" value={formData.price} onChange={(e) => updateForm('price', e.target.value)} placeholder="25000" /></div>
+                <div className="space-y-2"><Label>Stad</Label><Input value={formData.city} onChange={(e) => updateForm('city', e.target.value)} placeholder="Amsterdam" /></div>
+              </div>
               <div className="space-y-2"><Label>Beschrijving</Label><Textarea value={formData.description} onChange={(e) => updateForm('description', e.target.value)} placeholder="Beschrijf je auto..." rows={6} /></div>
             </div>
           )}
@@ -110,6 +234,9 @@ export default function Sell() {
                 <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Auto</span><span className="font-medium">{formData.brand} {formData.model}</span></div>
                 <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Bouwjaar</span><span className="font-medium">{formData.year}</span></div>
                 <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Km-stand</span><span className="font-medium">{formData.mileage} km</span></div>
+                <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Brandstof</span><span className="font-medium">{formData.fuelType}</span></div>
+                <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Transmissie</span><span className="font-medium">{formData.transmission}</span></div>
+                <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Foto's</span><span className="font-medium">{imagePreviews.length} foto's</span></div>
                 <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Vraagprijs</span><span className="font-medium text-accent">€ {formData.price}</span></div>
               </div>
             </div>
@@ -121,7 +248,13 @@ export default function Sell() {
       <div className="mt-6 flex justify-between">
         <Button variant="outline" onClick={prevStep} disabled={currentStep === 0}><ChevronLeft className="mr-2 h-4 w-4" />Vorige</Button>
         {currentStep === steps.length - 1 ? (
-          <Button className="bg-accent text-accent-foreground hover:bg-accent/90">Advertentie plaatsen</Button>
+          <Button 
+            onClick={handleSubmit} 
+            disabled={isSubmitting}
+            className="bg-accent text-accent-foreground hover:bg-accent/90"
+          >
+            {isSubmitting ? 'Bezig...' : 'Advertentie plaatsen'}
+          </Button>
         ) : (
           <Button onClick={nextStep}>Volgende<ChevronRight className="ml-2 h-4 w-4" /></Button>
         )}
