@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Car, Heart, User, Plus, LogOut } from 'lucide-react';
+import { Search, Heart, User, Plus, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
+import autospyLogo from '@/assets/autospy-logo.png';
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,11 +28,8 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
       {/* Mobile Header */}
       <div className="container flex h-14 items-center justify-between gap-4 md:hidden">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <Car className="h-4 w-4 text-primary-foreground" />
-          </div>
-          <span className="text-lg font-bold text-foreground">AutoSpy</span>
+        <Link to="/" className="flex items-center">
+          <img src={autospyLogo} alt="AutoSpy" className="h-10 w-auto" />
         </Link>
         
         <Button variant="ghost" size="icon" asChild>
@@ -44,11 +42,8 @@ export function Header() {
       {/* Desktop Header */}
       <div className="container hidden h-16 items-center justify-between gap-4 md:flex">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            <Car className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <span className="text-xl font-bold text-foreground">AutoSpy</span>
+        <Link to="/" className="flex items-center">
+          <img src={autospyLogo} alt="AutoSpy" className="h-12 w-auto" />
         </Link>
 
         {/* Desktop Search */}
