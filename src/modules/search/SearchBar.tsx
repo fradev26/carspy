@@ -5,11 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { CAR_BRANDS, CAR_MODELS, FUEL_TYPES, SearchFilters } from '@/types/listing';
 import { cn } from '@/lib/utils';
 import { FilterPanel } from './FilterPanel';
 import { FilterChips } from './FilterChips';
+import { RecentSearches } from '@/components/RecentSearches';
+import { useRecentSearches } from '@/hooks/useRecentSearches';
 
 interface SearchBarProps {
   variant?: 'hero' | 'compact';
@@ -30,6 +32,9 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
   // Advanced filters state
   const [filters, setFilters] = useState<SearchFilters>({});
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  
+  // Recent searches
+  const { recentSearches, saveSearch, removeSearch, clearAllSearches } = useRecentSearches();
 
   // Sync basic form fields to filters
   useEffect(() => {
@@ -99,6 +104,9 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
     if (filters.hasMaintenanceHistory) params.set('hasMaintenanceHistory', 'true');
     if (filters.isNonSmoker) params.set('isNonSmoker', 'true');
     if (filters.features?.length) params.set('features', filters.features.join(','));
+    
+    // Save to recent searches
+    saveSearch(filters);
     
     navigate(`/zoeken?${params.toString()}`);
   };
@@ -312,6 +320,17 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
                   filters={filters}
                   onRemoveFilter={handleRemoveFilter}
                   onClearAll={clearAllFilters}
+                />
+              </div>
+            )}
+
+            {/* Recent Searches */}
+            {!showAdvancedFilters && recentSearches.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-border/40">
+                <RecentSearches
+                  searches={recentSearches}
+                  onRemove={removeSearch}
+                  onClearAll={clearAllSearches}
                 />
               </div>
             )}
