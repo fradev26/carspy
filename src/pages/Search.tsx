@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useTransition } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Grid, List, SlidersHorizontal, ChevronDown, ChevronUp, Car } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { FilterPanel, FilterChips } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
 import { mockListings } from '@/data/mockListings';
 import { SearchFilters, SORT_OPTIONS, BodyType } from '@/types/listing';
+import { SkeletonCard } from '@/components/ui/skeleton-card';
 
 export default function Search() {
   const [searchParams] = useSearchParams();
@@ -21,6 +22,26 @@ export default function Search() {
   const [sortBy, setSortBy] = useState('newest');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
+  // Simulate loading when filters change
+  const handleFiltersChange = (newFilters: SearchFilters) => {
+    setIsLoading(true);
+    startTransition(() => {
+      setFilters(newFilters);
+      // Simulate network delay for UX polish
+      setTimeout(() => setIsLoading(false), 300);
+    });
+  };
+
+  const handleSortChange = (value: string) => {
+    setIsLoading(true);
+    startTransition(() => {
+      setSortBy(value);
+      setTimeout(() => setIsLoading(false), 200);
+    });
+  };
 
   // Update filters when URL params change
   useEffect(() => {
@@ -121,7 +142,7 @@ export default function Search() {
           <aside className="hidden w-72 flex-shrink-0 lg:block">
             <div className="sticky top-20">
               <div className="rounded-xl border border-border/60 bg-card p-5 shadow-card">
-                <FilterPanel filters={filters} onFiltersChange={setFilters} />
+                <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} />
               </div>
             </div>
           </aside>
@@ -157,7 +178,7 @@ export default function Search() {
                         <SheetTitle>Filters</SheetTitle>
                       </SheetHeader>
                       <div className="mt-6">
-                        <FilterPanel filters={filters} onFiltersChange={setFilters} />
+                        <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} />
                       </div>
                     </SheetContent>
                   </Sheet>
@@ -179,7 +200,7 @@ export default function Search() {
                   </Button>
 
                   {/* Sort */}
-                  <Select value={sortBy} onValueChange={setSortBy}>
+                  <Select value={sortBy} onValueChange={handleSortChange}>
                     <SelectTrigger className="w-44 border-border/60">
                       <SelectValue />
                     </SelectTrigger>
@@ -222,7 +243,7 @@ export default function Search() {
                   <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
                     <FilterPanel 
                       filters={filters} 
-                      onFiltersChange={setFilters} 
+                      onFiltersChange={handleFiltersChange}
                       className="contents [&>*]:col-span-1 [&>h2]:hidden [&>button]:hidden"
                     />
                   </div>
@@ -234,12 +255,27 @@ export default function Search() {
             <FilterChips
               filters={filters}
               onRemoveFilter={handleRemoveFilter}
-              onClearAll={() => setFilters({})}
+              onClearAll={() => handleFiltersChange({})}
             />
 
             {/* Results */}
             <div className="mt-6">
-              {filteredListings.length > 0 ? (
+              {isLoading || isPending ? (
+                // Skeleton loading state
+                <div className={viewMode === 'grid' 
+                  ? "grid gap-6 sm:grid-cols-2 lg:grid-cols-3" 
+                  : "flex flex-col gap-4"
+                }>
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <SkeletonCard 
+                      key={i} 
+                      variant={viewMode === 'list' ? 'horizontal' : 'default'}
+                      className="animate-fade-in"
+                      style={{ animationDelay: `${i * 50}ms` } as React.CSSProperties}
+                    />
+                  ))}
+                </div>
+              ) : filteredListings.length > 0 ? (
                 <ListingGrid listings={filteredListings} variant={viewMode} columns={3} />
               ) : (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -253,7 +289,7 @@ export default function Search() {
                   <Button 
                     variant="outline" 
                     className="mt-6"
-                    onClick={() => setFilters({})}
+                    onClick={() => handleFiltersChange({})}
                   >
                     Wis alle filters
                   </Button>
