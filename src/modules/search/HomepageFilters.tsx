@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ChevronDown, ChevronUp, Sparkles, Zap, Car, MapPin, Shield, Settings } from 'lucide-react';
+import { ChevronDown, ChevronUp, Sparkles, Zap, Car, MapPin, Shield, Settings, Truck, CarFront, CircleDot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -31,6 +31,72 @@ interface HomepageFiltersProps {
 }
 
 const POPULAR_FEATURES = FEATURE_OPTIONS.slice(0, 12);
+
+// Body type icon component
+function BodyTypeIcon({ type, className }: { type: string; className?: string }) {
+  switch (type) {
+    case 'sedan':
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 17h14M3 12l2-5h14l2 5M7 17v2H5v-2m14 0v2h-2v-2" />
+          <circle cx="7" cy="14" r="2" />
+          <circle cx="17" cy="14" r="2" />
+        </svg>
+      );
+    case 'hatchback':
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 17h14M3 12l2-5h10l4 5M7 17v2H5v-2m14 0v2h-2v-2" />
+          <circle cx="7" cy="14" r="2" />
+          <circle cx="17" cy="14" r="2" />
+        </svg>
+      );
+    case 'stationwagon':
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 17h14M3 12l2-5h14v5M7 17v2H5v-2m14 0v2h-2v-2" />
+          <circle cx="7" cy="14" r="2" />
+          <circle cx="17" cy="14" r="2" />
+        </svg>
+      );
+    case 'suv':
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 16h14M3 11l2-4h14l2 4M7 16v2.5H5V16m14 0v2.5h-2V16" />
+          <circle cx="7" cy="13" r="2.5" />
+          <circle cx="17" cy="13" r="2.5" />
+        </svg>
+      );
+    case 'cabrio':
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 17h14M3 12l2-4h10M7 17v2H5v-2m14 0v2h-2v-2" />
+          <circle cx="7" cy="14" r="2" />
+          <circle cx="17" cy="14" r="2" />
+        </svg>
+      );
+    case 'coupe':
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 17h14M3 12l2-5h11l3 5M7 17v2H5v-2m14 0v2h-2v-2" />
+          <circle cx="7" cy="14" r="2" />
+          <circle cx="17" cy="14" r="2" />
+        </svg>
+      );
+    case 'mpv':
+      return (
+        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 16h14M3 11l1-4h16v5M7 16v2.5H5V16m14 0v2.5h-2V16" />
+          <circle cx="7" cy="13" r="2" />
+          <circle cx="17" cy="13" r="2" />
+        </svg>
+      );
+    case 'bestelwagen':
+      return <Truck className={className} />;
+    default:
+      return <Car className={className} />;
+  }
+}
 
 export function HomepageFilters({ filters, onFiltersChange, className }: HomepageFiltersProps) {
   const [showAllFeatures, setShowAllFeatures] = useState(false);
@@ -214,26 +280,31 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
 
             {/* Right Column */}
             <div className="space-y-4">
-              {/* Body Type */}
+              {/* Body Type - Visual Cards */}
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Carrosserie</Label>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {BODY_TYPES.map((body) => (
-                    <div key={body.value} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`hp-body-${body.value}`}
-                        checked={filters.bodyTypes?.includes(body.value) || false}
-                        onCheckedChange={() => toggleArrayFilter('bodyTypes', body.value)}
-                        className="border-border h-4 w-4"
-                      />
-                      <Label 
-                        htmlFor={`hp-body-${body.value}`} 
-                        className="text-sm font-normal cursor-pointer text-foreground/80 hover:text-foreground transition-colors"
+                <div className="grid grid-cols-4 gap-2">
+                  {BODY_TYPES.map((body) => {
+                    const isSelected = filters.bodyTypes?.includes(body.value) || false;
+                    return (
+                      <button
+                        key={body.value}
+                        type="button"
+                        onClick={() => toggleArrayFilter('bodyTypes', body.value)}
+                        className={cn(
+                          "flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border-2 transition-all duration-200",
+                          isSelected
+                            ? "bg-primary/10 border-primary text-primary shadow-sm"
+                            : "bg-muted/30 border-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:border-border/60"
+                        )}
                       >
-                        {body.label}
-                      </Label>
-                    </div>
-                  ))}
+                        <BodyTypeIcon type={body.value} className={cn("h-6 w-6", isSelected && "text-primary")} />
+                        <span className={cn("text-xs font-medium truncate w-full text-center", isSelected && "text-primary")}>
+                          {body.label}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
