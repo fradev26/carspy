@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { CAR_BRANDS, CAR_MODELS, FUEL_TYPES, SearchFilters } from '@/types/listing';
 import { cn } from '@/lib/utils';
-import { FilterPanel } from './FilterPanel';
+import { HomepageFilters } from './HomepageFilters';
 import { FilterChips } from './FilterChips';
 import { RecentSearches } from '@/components/RecentSearches';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
@@ -337,7 +337,7 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
           </div>
         </form>
 
-        {/* Expanded Advanced Filters - Inline below the search bar */}
+        {/* Expanded Advanced Filters - Using optimized HomepageFilters */}
         <Collapsible open={showAdvancedFilters}>
           <CollapsibleContent>
             <div className="mt-4 glass rounded-2xl p-6 shadow-floating animate-fade-in">
@@ -359,15 +359,11 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
                 </div>
               </div>
               
-              {/* Two-column layout for advanced filters */}
-              <div className="grid md:grid-cols-2 gap-6">
-                <FilterPanel 
-                  filters={filters} 
-                  onFiltersChange={handleFiltersChange}
-                  showPresets={true}
-                  className="[&>div:first-child]:hidden" // Hide the header as we have our own
-                />
-              </div>
+              {/* Optimized tabbed filter layout */}
+              <HomepageFilters 
+                filters={filters} 
+                onFiltersChange={handleFiltersChange}
+              />
 
               {/* Search button at bottom of expanded filters */}
               <div className="mt-6 pt-4 border-t border-border/40 flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center">
