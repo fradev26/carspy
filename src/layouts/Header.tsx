@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Heart, User, Plus, LogOut } from 'lucide-react';
+import { Search, Car, Heart, User, Plus, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
-import detectiveIcon from '@/assets/detective-icon.png';
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,8 +28,10 @@ export function Header() {
       {/* Mobile Header */}
       <div className="container flex h-14 items-center justify-between gap-4 md:hidden">
         <Link to="/" className="flex items-center gap-2">
-          <img src={detectiveIcon} alt="AutoSpy" className="h-9 w-9 object-contain" />
-          <span className="text-xl font-bold text-foreground">AutoSpy</span>
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+            <Car className="h-4 w-4 text-primary-foreground" />
+          </div>
+          <span className="text-lg font-bold text-foreground">AutoSpy</span>
         </Link>
         
         <Button variant="ghost" size="icon" asChild>
@@ -44,8 +45,10 @@ export function Header() {
       <div className="container hidden h-16 items-center justify-between gap-4 md:flex">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
-          <img src={detectiveIcon} alt="AutoSpy" className="h-11 w-11 object-contain" />
-          <span className="text-2xl font-bold text-foreground">AutoSpy</span>
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+            <Car className="h-5 w-5 text-primary-foreground" />
+          </div>
+          <span className="text-xl font-bold text-foreground">AutoSpy</span>
         </Link>
 
         {/* Desktop Search */}
