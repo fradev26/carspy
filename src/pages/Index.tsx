@@ -1,21 +1,9 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Shield, Zap, Users, Car, Truck, ChevronRight } from 'lucide-react';
+import { ArrowRight, Shield, Zap, Users, Car } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SearchBar } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
 import { mockListings } from '@/data/mockListings';
-import { BODY_TYPES } from '@/types/listing';
-
-const bodyTypeIcons: Record<string, React.ReactNode> = {
-  sedan: <Car className="h-6 w-6" />,
-  hatchback: <Car className="h-6 w-6" />,
-  stationwagon: <Car className="h-6 w-6" />,
-  suv: <Truck className="h-6 w-6" />,
-  cabrio: <Car className="h-6 w-6" />,
-  coupe: <Car className="h-6 w-6" />,
-  mpv: <Car className="h-6 w-6" />,
-  bestelwagen: <Truck className="h-6 w-6" />,
-};
 
 const Index = () => {
   const latestListings = mockListings.slice(0, 6);
@@ -65,35 +53,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Body Types - Hidden on mobile */}
-      <section className="hidden py-12 md:block md:py-16">
-        <div className="container">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-semibold">Zoek op carrosserie</h2>
-            <Button variant="ghost" asChild className="gap-1 text-muted-foreground hover:text-foreground">
-              <Link to="/zoeken">
-                Alle auto's <ChevronRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
-            {BODY_TYPES.map((bodyType) => (
-              <Link
-                key={bodyType.value}
-                to={`/zoeken?bodyType=${encodeURIComponent(bodyType.value)}`}
-                className="group flex flex-col items-center gap-3 rounded-xl border border-border/60 bg-card p-4 transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1 hover:border-primary/30"
-              >
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-all duration-300">
-                  {bodyTypeIcons[bodyType.value] || <Car className="h-6 w-6" />}
-                </div>
-                <span className="text-sm font-medium text-center text-foreground/80 group-hover:text-foreground transition-colors">
-                  {bodyType.label}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Latest Listings */}
       <section className="bg-muted/30 py-12 md:py-16">
