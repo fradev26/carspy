@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { CAR_BRANDS, CAR_MODELS, FUEL_TYPES, SearchFilters } from '@/types/listing';
 import { cn } from '@/lib/utils';
 import { FilterPanel } from './FilterPanel';
@@ -31,8 +29,7 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
   
   // Advanced filters state
   const [filters, setFilters] = useState<SearchFilters>({});
-  const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
-  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   // Sync basic form fields to filters
   useEffect(() => {
@@ -86,19 +83,30 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
     if (filters.driveTypes?.length) params.set('driveTypes', filters.driveTypes.join(','));
     if (filters.minPower) params.set('minPower', filters.minPower.toString());
     if (filters.maxPower) params.set('maxPower', filters.maxPower.toString());
+    if (filters.paintTypes?.length) params.set('paintTypes', filters.paintTypes.join(','));
+    if (filters.colors?.length) params.set('colors', filters.colors.join(','));
+    if (filters.interiorMaterials?.length) params.set('interiorMaterials', filters.interiorMaterials.join(','));
+    if (filters.minDoors) params.set('minDoors', filters.minDoors.toString());
+    if (filters.minSeats) params.set('minSeats', filters.minSeats.toString());
     if (filters.province) params.set('province', filters.province);
+    if (filters.radius) params.set('radius', filters.radius.toString());
+    if (filters.onlineSince) params.set('onlineSince', filters.onlineSince);
     if (filters.sellerType) params.set('sellerType', filters.sellerType);
+    if (filters.maxPreviousOwners) params.set('maxPreviousOwners', filters.maxPreviousOwners.toString());
+    if (filters.minWarranty) params.set('minWarranty', filters.minWarranty);
     if (filters.noDamageHistory) params.set('noDamageHistory', 'true');
     if (filters.vatDeductible) params.set('vatDeductible', 'true');
+    if (filters.hasMaintenanceHistory) params.set('hasMaintenanceHistory', 'true');
+    if (filters.isNonSmoker) params.set('isNonSmoker', 'true');
     if (filters.features?.length) params.set('features', filters.features.join(','));
     
-    setIsFilterDialogOpen(false);
-    setIsFilterSheetOpen(false);
     navigate(`/zoeken?${params.toString()}`);
   };
 
   const handleRemoveFilter = (key: keyof SearchFilters, value?: string) => {
-    if (value && (key === 'fuelTypes' || key === 'transmissions' || key === 'bodyTypes' || key === 'driveTypes' || key === 'features')) {
+    const arrayKeys = ['fuelTypes', 'transmissions', 'bodyTypes', 'driveTypes', 'paintTypes', 'colors', 'interiorMaterials', 'features'];
+    
+    if (value && arrayKeys.includes(key)) {
       const currentValues = filters[key] as string[] | undefined;
       handleFiltersChange({
         ...filters,
@@ -113,6 +121,15 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
       if (key === 'minPower') delete newFilters.maxPower;
       handleFiltersChange(newFilters);
     }
+  };
+
+  const clearAllFilters = () => {
+    setBrand('');
+    setModel('');
+    setMaxPrice('');
+    setMinYear('');
+    setFuelType('');
+    handleFiltersChange({});
   };
 
   // Count active advanced filters (beyond basic form fields)
@@ -139,246 +156,230 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
     filters.features?.length,
   ].filter(Boolean).length;
 
+  // Total filter count
+  const totalFilterCount = [
+    filters.brand,
+    filters.model,
+    filters.minPrice || filters.maxPrice,
+    filters.minYear || filters.maxYear,
+    filters.fuelTypes?.length,
+  ].filter(Boolean).length + advancedFilterCount;
+
   // Get available models based on selected brand
   const availableModels = brand && brand !== 'all' ? CAR_MODELS[brand] || [] : [];
 
-  // Filter content component
-  const FilterContent = () => (
-    <ScrollArea className="h-[70vh] pr-4">
-      <FilterPanel 
-        filters={filters} 
-        onFiltersChange={handleFiltersChange}
-        showPresets={true}
-      />
-    </ScrollArea>
-  );
-
   if (variant === 'hero') {
     return (
-      <form onSubmit={handleSearch} className={cn('w-full', className)}>
-        <div className="glass rounded-2xl p-6 shadow-floating">
-          <div className="grid gap-4 md:grid-cols-5 md:gap-3">
-            {/* Brand */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Merk</label>
-              <Select value={brand} onValueChange={(v) => { setBrand(v); setModel(''); }}>
-                <SelectTrigger className="h-12 bg-background border-border/60">
-                  <SelectValue placeholder="Alle merken" />
-                </SelectTrigger>
-                <SelectContent className="bg-card max-h-72">
-                  <SelectItem value="all">Alle merken</SelectItem>
-                  {CAR_BRANDS.map((b) => (
-                    <SelectItem key={b} value={b}>{b}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Model - Dynamic based on brand */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Model</label>
-              {brand && brand !== 'all' && availableModels.length > 0 ? (
-                <Select value={model} onValueChange={setModel}>
+      <div className={cn('w-full', className)}>
+        <form onSubmit={handleSearch}>
+          <div className="glass rounded-2xl p-6 shadow-floating">
+            <div className="grid gap-4 md:grid-cols-5 md:gap-3">
+              {/* Brand */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Merk</label>
+                <Select value={brand} onValueChange={(v) => { setBrand(v); setModel(''); }}>
                   <SelectTrigger className="h-12 bg-background border-border/60">
-                    <SelectValue placeholder="Alle modellen" />
+                    <SelectValue placeholder="Alle merken" />
                   </SelectTrigger>
                   <SelectContent className="bg-card max-h-72">
-                    <SelectItem value="">Alle modellen</SelectItem>
-                    {availableModels.map((m) => (
-                      <SelectItem key={m} value={m}>{m}</SelectItem>
+                    <SelectItem value="all">Alle merken</SelectItem>
+                    {CAR_BRANDS.map((b) => (
+                      <SelectItem key={b} value={b}>{b}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-              ) : (
-                <Input
-                  type="text"
-                  placeholder="Bijv. Golf, 3-serie..."
-                  value={model}
-                  onChange={(e) => setModel(e.target.value)}
-                  className="h-12 bg-background border-border/60"
-                />
-              )}
-            </div>
+              </div>
 
-            {/* Year */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Bouwjaar vanaf</label>
-              <Select value={minYear} onValueChange={setMinYear}>
-                <SelectTrigger className="h-12 bg-background border-border/60">
-                  <SelectValue placeholder="Alle jaren" />
-                </SelectTrigger>
-                <SelectContent className="bg-card max-h-64">
-                  <SelectItem value="none">Alle jaren</SelectItem>
-                  {years.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+              {/* Model - Dynamic based on brand */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Model</label>
+                {brand && brand !== 'all' && availableModels.length > 0 ? (
+                  <Select value={model} onValueChange={setModel}>
+                    <SelectTrigger className="h-12 bg-background border-border/60">
+                      <SelectValue placeholder="Alle modellen" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card max-h-72">
+                      <SelectItem value="">Alle modellen</SelectItem>
+                      {availableModels.map((m) => (
+                        <SelectItem key={m} value={m}>{m}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    type="text"
+                    placeholder="Bijv. Golf, 3-serie..."
+                    value={model}
+                    onChange={(e) => setModel(e.target.value)}
+                    className="h-12 bg-background border-border/60"
+                  />
+                )}
+              </div>
 
-            {/* Max Price */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Max. prijs</label>
-              <Select value={maxPrice} onValueChange={setMaxPrice}>
-                <SelectTrigger className="h-12 bg-background border-border/60">
-                  <SelectValue placeholder="Geen maximum" />
-                </SelectTrigger>
-                <SelectContent className="bg-card">
-                  <SelectItem value="none">Geen maximum</SelectItem>
-                  <SelectItem value="10000">€ 10.000</SelectItem>
-                  <SelectItem value="15000">€ 15.000</SelectItem>
-                  <SelectItem value="20000">€ 20.000</SelectItem>
-                  <SelectItem value="25000">€ 25.000</SelectItem>
-                  <SelectItem value="30000">€ 30.000</SelectItem>
-                  <SelectItem value="40000">€ 40.000</SelectItem>
-                  <SelectItem value="50000">€ 50.000</SelectItem>
-                  <SelectItem value="75000">€ 75.000</SelectItem>
-                  <SelectItem value="100000">€ 100.000</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              {/* Year */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Bouwjaar vanaf</label>
+                <Select value={minYear} onValueChange={setMinYear}>
+                  <SelectTrigger className="h-12 bg-background border-border/60">
+                    <SelectValue placeholder="Alle jaren" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card max-h-64">
+                    <SelectItem value="none">Alle jaren</SelectItem>
+                    {years.map((year) => (
+                      <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            {/* Search Button */}
-            <div className="flex items-end">
+              {/* Max Price */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Max. prijs</label>
+                <Select value={maxPrice} onValueChange={setMaxPrice}>
+                  <SelectTrigger className="h-12 bg-background border-border/60">
+                    <SelectValue placeholder="Geen maximum" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card">
+                    <SelectItem value="none">Geen maximum</SelectItem>
+                    <SelectItem value="10000">€ 10.000</SelectItem>
+                    <SelectItem value="15000">€ 15.000</SelectItem>
+                    <SelectItem value="20000">€ 20.000</SelectItem>
+                    <SelectItem value="25000">€ 25.000</SelectItem>
+                    <SelectItem value="30000">€ 30.000</SelectItem>
+                    <SelectItem value="40000">€ 40.000</SelectItem>
+                    <SelectItem value="50000">€ 50.000</SelectItem>
+                    <SelectItem value="75000">€ 75.000</SelectItem>
+                    <SelectItem value="100000">€ 100.000</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Search Button */}
+              <div className="flex items-end">
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  className="h-12 w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90 shadow-glow-accent font-semibold"
+                >
+                  <Search className="h-5 w-5" />
+                  <span className="hidden sm:inline">Zoeken</span>
+                </Button>
+              </div>
+            </div>
+            
+            {/* Bottom row: Fuel type filters + More filters toggle */}
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+              {/* Quick fuel type filters */}
+              <div className="flex flex-wrap gap-2">
+                {FUEL_TYPES.slice(0, 4).map((fuel) => (
+                  <button
+                    key={fuel.value}
+                    type="button"
+                    onClick={() => setFuelType(fuelType === fuel.value ? '' : fuel.value)}
+                    className={cn(
+                      "px-3 py-1.5 text-sm rounded-full border transition-all duration-200",
+                      fuelType === fuel.value 
+                        ? "bg-primary text-primary-foreground border-primary" 
+                        : "bg-background/50 text-foreground/70 border-border/60 hover:border-primary/50 hover:text-foreground"
+                    )}
+                  >
+                    {fuel.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* More Filters Toggle */}
               <Button 
-                type="submit" 
-                size="lg" 
-                className="h-12 w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90 shadow-glow-accent font-semibold"
+                type="button"
+                variant="outline" 
+                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                className="gap-2 bg-background/50 border-border/60 hover:bg-background hover:border-primary/50"
               >
-                <Search className="h-5 w-5" />
-                <span className="hidden sm:inline">Zoeken</span>
+                Meer filters
+                {advancedFilterCount > 0 && (
+                  <Badge variant="secondary" className="ml-1 h-5 min-w-5 px-1.5 bg-accent text-accent-foreground">
+                    {advancedFilterCount}
+                  </Badge>
+                )}
+                {showAdvancedFilters ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </Button>
             </div>
-          </div>
-          
-          {/* Bottom row: Fuel type filters + More filters button */}
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-            {/* Quick fuel type filters */}
-            <div className="flex flex-wrap gap-2">
-              {FUEL_TYPES.slice(0, 4).map((fuel) => (
-                <button
-                  key={fuel.value}
-                  type="button"
-                  onClick={() => setFuelType(fuelType === fuel.value ? '' : fuel.value)}
-                  className={cn(
-                    "px-3 py-1.5 text-sm rounded-full border transition-all duration-200",
-                    fuelType === fuel.value 
-                      ? "bg-primary text-primary-foreground border-primary" 
-                      : "bg-background/50 text-foreground/70 border-border/60 hover:border-primary/50 hover:text-foreground"
-                  )}
-                >
-                  {fuel.label}
-                </button>
-              ))}
-            </div>
 
-            {/* More Filters Button - Desktop (Dialog) */}
-            <Dialog open={isFilterDialogOpen} onOpenChange={setIsFilterDialogOpen}>
-              <DialogTrigger asChild>
-                <Button 
-                  type="button"
-                  variant="outline" 
-                  className="hidden md:flex gap-2 bg-background/50 border-border/60 hover:bg-background hover:border-primary/50"
-                >
-                  <SlidersHorizontal className="h-4 w-4" />
-                  Meer filters
-                  {advancedFilterCount > 0 && (
-                    <Badge variant="secondary" className="ml-1 h-5 min-w-5 px-1.5 bg-accent text-accent-foreground">
-                      {advancedFilterCount}
-                    </Badge>
+            {/* Active filter chips (when filters are collapsed) */}
+            {!showAdvancedFilters && advancedFilterCount > 0 && (
+              <div className="mt-4 pt-4 border-t border-border/40">
+                <FilterChips
+                  filters={filters}
+                  onRemoveFilter={handleRemoveFilter}
+                  onClearAll={clearAllFilters}
+                />
+              </div>
+            )}
+          </div>
+        </form>
+
+        {/* Expanded Advanced Filters - Inline below the search bar */}
+        <Collapsible open={showAdvancedFilters}>
+          <CollapsibleContent>
+            <div className="mt-4 glass rounded-2xl p-6 shadow-floating animate-fade-in">
+              <div className="flex items-center justify-between mb-4 pb-4 border-b border-border/40">
+                <h3 className="text-lg font-semibold text-foreground">Geavanceerde filters</h3>
+                <div className="flex items-center gap-2">
+                  {totalFilterCount > 0 && (
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={clearAllFilters}
+                      className="text-muted-foreground hover:text-foreground gap-1"
+                    >
+                      <RotateCcw className="h-3.5 w-3.5" />
+                      Reset alles
+                    </Button>
                   )}
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[90vh] p-0">
-                <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/60">
-                  <DialogTitle className="text-xl">Geavanceerde filters</DialogTitle>
-                </DialogHeader>
-                <div className="px-6 py-4">
-                  <FilterContent />
                 </div>
-                <div className="px-6 py-4 border-t border-border/60 flex justify-between items-center bg-muted/30">
+              </div>
+              
+              {/* Two-column layout for advanced filters */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <FilterPanel 
+                  filters={filters} 
+                  onFiltersChange={handleFiltersChange}
+                  showPresets={true}
+                  className="[&>div:first-child]:hidden" // Hide the header as we have our own
+                />
+              </div>
+
+              {/* Search button at bottom of expanded filters */}
+              <div className="mt-6 pt-4 border-t border-border/40 flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center">
+                <div className="text-sm text-muted-foreground">
+                  {totalFilterCount > 0 && (
+                    <span>{totalFilterCount} filter{totalFilterCount !== 1 ? 's' : ''} actief</span>
+                  )}
+                </div>
+                <div className="flex gap-3">
                   <Button 
-                    type="button" 
-                    variant="ghost" 
-                    onClick={() => handleFiltersChange({})}
-                    className="text-muted-foreground"
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowAdvancedFilters(false)}
+                    className="flex-1 sm:flex-none"
                   >
-                    Wis alle filters
+                    Sluiten
                   </Button>
                   <Button 
                     type="button"
                     onClick={() => handleSearch()}
-                    className="bg-accent text-accent-foreground hover:bg-accent/90 gap-2"
+                    className="flex-1 sm:flex-none bg-accent text-accent-foreground hover:bg-accent/90 gap-2"
                   >
                     <Search className="h-4 w-4" />
                     Toon resultaten
                   </Button>
                 </div>
-              </DialogContent>
-            </Dialog>
-
-            {/* More Filters Button - Mobile (Sheet) */}
-            <Sheet open={isFilterSheetOpen} onOpenChange={setIsFilterSheetOpen}>
-              <SheetTrigger asChild>
-                <Button 
-                  type="button"
-                  variant="outline" 
-                  className="md:hidden gap-2 bg-background/50 border-border/60"
-                >
-                  <SlidersHorizontal className="h-4 w-4" />
-                  Filters
-                  {advancedFilterCount > 0 && (
-                    <Badge variant="secondary" className="ml-1 h-5 min-w-5 px-1.5 bg-accent text-accent-foreground">
-                      {advancedFilterCount}
-                    </Badge>
-                  )}
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl">
-                <SheetHeader className="pb-4 border-b border-border/60">
-                  <SheetTitle>Filters</SheetTitle>
-                </SheetHeader>
-                <div className="py-4 overflow-y-auto h-[calc(85vh-140px)]">
-                  <FilterPanel 
-                    filters={filters} 
-                    onFiltersChange={handleFiltersChange}
-                    showPresets={true}
-                  />
-                </div>
-                <div className="py-4 border-t border-border/60 flex gap-3">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => handleFiltersChange({})}
-                    className="flex-1"
-                  >
-                    Wis alles
-                  </Button>
-                  <Button 
-                    type="button"
-                    onClick={() => handleSearch()}
-                    className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 gap-2"
-                  >
-                    <Search className="h-4 w-4" />
-                    Zoeken
-                  </Button>
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-
-          {/* Active filter chips */}
-          {advancedFilterCount > 0 && (
-            <div className="mt-4 pt-4 border-t border-border/40">
-              <FilterChips
-                filters={filters}
-                onRemoveFilter={handleRemoveFilter}
-                onClearAll={() => handleFiltersChange({})}
-              />
+              </div>
             </div>
-          )}
-        </div>
-      </form>
+          </CollapsibleContent>
+        </Collapsible>
+      </div>
     );
   }
 

@@ -1,36 +1,159 @@
 import { useState, useMemo, useEffect, useTransition } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Grid, List, SlidersHorizontal, ChevronDown, ChevronUp, Car } from 'lucide-react';
+import { Grid, List, SlidersHorizontal, Car } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
+import { Badge } from '@/components/ui/badge';
 import { FilterPanel, FilterChips } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
 import { mockListings } from '@/data/mockListings';
-import { SearchFilters, SORT_OPTIONS, BodyType } from '@/types/listing';
+import { 
+  SearchFilters, 
+  SORT_OPTIONS, 
+  BodyType, 
+  FuelType, 
+  TransmissionType, 
+  DriveType,
+  PaintType,
+  InteriorMaterial,
+  OnlineSince,
+  WarrantyOption,
+} from '@/types/listing';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
+
+// Helper to parse URL params into SearchFilters
+function parseFiltersFromURL(searchParams: URLSearchParams): SearchFilters {
+  const filters: SearchFilters = {};
+
+  // Basic filters
+  const brand = searchParams.get('brand');
+  if (brand) filters.brand = brand;
+
+  const model = searchParams.get('model');
+  if (model) filters.model = model;
+
+  const minPrice = searchParams.get('minPrice');
+  if (minPrice) filters.minPrice = parseInt(minPrice);
+
+  const maxPrice = searchParams.get('maxPrice');
+  if (maxPrice) filters.maxPrice = parseInt(maxPrice);
+
+  const minYear = searchParams.get('minYear');
+  if (minYear) filters.minYear = parseInt(minYear);
+
+  const maxYear = searchParams.get('maxYear');
+  if (maxYear) filters.maxYear = parseInt(maxYear);
+
+  const minMileage = searchParams.get('minMileage');
+  if (minMileage) filters.minMileage = parseInt(minMileage);
+
+  const maxMileage = searchParams.get('maxMileage');
+  if (maxMileage) filters.maxMileage = parseInt(maxMileage);
+
+  // Array filters
+  const fuelTypes = searchParams.get('fuelTypes');
+  if (fuelTypes) filters.fuelTypes = fuelTypes.split(',') as FuelType[];
+  
+  // Legacy single fuelType support
+  const fuelType = searchParams.get('fuelType');
+  if (fuelType && !fuelTypes) filters.fuelTypes = [fuelType as FuelType];
+
+  const bodyTypes = searchParams.get('bodyTypes');
+  if (bodyTypes) filters.bodyTypes = bodyTypes.split(',') as BodyType[];
+  
+  // Legacy single bodyType support
+  const bodyType = searchParams.get('bodyType');
+  if (bodyType && !bodyTypes) filters.bodyTypes = [bodyType as BodyType];
+
+  const transmissions = searchParams.get('transmissions');
+  if (transmissions) filters.transmissions = transmissions.split(',') as TransmissionType[];
+
+  const driveTypes = searchParams.get('driveTypes');
+  if (driveTypes) filters.driveTypes = driveTypes.split(',') as DriveType[];
+
+  // Performance filters
+  const minPower = searchParams.get('minPower');
+  if (minPower) filters.minPower = parseInt(minPower);
+
+  const maxPower = searchParams.get('maxPower');
+  if (maxPower) filters.maxPower = parseInt(maxPower);
+
+  // Appearance filters
+  const paintTypes = searchParams.get('paintTypes');
+  if (paintTypes) filters.paintTypes = paintTypes.split(',') as PaintType[];
+
+  const colors = searchParams.get('colors');
+  if (colors) filters.colors = colors.split(',');
+
+  const interiorMaterials = searchParams.get('interiorMaterials');
+  if (interiorMaterials) filters.interiorMaterials = interiorMaterials.split(',') as InteriorMaterial[];
+
+  // Practical filters
+  const minDoors = searchParams.get('minDoors');
+  if (minDoors) filters.minDoors = parseInt(minDoors);
+
+  const minSeats = searchParams.get('minSeats');
+  if (minSeats) filters.minSeats = parseInt(minSeats);
+
+  // Location filters
+  const province = searchParams.get('province');
+  if (province) filters.province = province;
+
+  const radius = searchParams.get('radius');
+  if (radius) filters.radius = parseInt(radius);
+
+  const onlineSince = searchParams.get('onlineSince');
+  if (onlineSince) filters.onlineSince = onlineSince as OnlineSince;
+
+  // History filters
+  const sellerType = searchParams.get('sellerType');
+  if (sellerType) filters.sellerType = sellerType as 'private' | 'dealer';
+
+  const maxPreviousOwners = searchParams.get('maxPreviousOwners');
+  if (maxPreviousOwners) filters.maxPreviousOwners = parseInt(maxPreviousOwners);
+
+  const minWarranty = searchParams.get('minWarranty');
+  if (minWarranty) filters.minWarranty = minWarranty as WarrantyOption;
+
+  const noDamageHistory = searchParams.get('noDamageHistory');
+  if (noDamageHistory === 'true') filters.noDamageHistory = true;
+
+  const vatDeductible = searchParams.get('vatDeductible');
+  if (vatDeductible === 'true') filters.vatDeductible = true;
+
+  const hasMaintenanceHistory = searchParams.get('hasMaintenanceHistory');
+  if (hasMaintenanceHistory === 'true') filters.hasMaintenanceHistory = true;
+
+  const isNonSmoker = searchParams.get('isNonSmoker');
+  if (isNonSmoker === 'true') filters.isNonSmoker = true;
+
+  // Feature filters
+  const features = searchParams.get('features');
+  if (features) filters.features = features.split(',');
+
+  return filters;
+}
 
 export default function Search() {
   const [searchParams] = useSearchParams();
-  const [filters, setFilters] = useState<SearchFilters>(() => ({
-    brand: searchParams.get('brand') || undefined,
-    model: searchParams.get('model') || undefined,
-    maxPrice: searchParams.get('maxPrice') ? parseInt(searchParams.get('maxPrice')!) : undefined,
-    bodyTypes: searchParams.get('bodyType') ? [searchParams.get('bodyType') as BodyType] : undefined,
-  }));
+  const [filters, setFilters] = useState<SearchFilters>(() => parseFiltersFromURL(searchParams));
   const [sortBy, setSortBy] = useState('newest');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  // Update filters when URL params change
+  useEffect(() => {
+    const newFilters = parseFiltersFromURL(searchParams);
+    setFilters(newFilters);
+  }, [searchParams]);
 
   // Simulate loading when filters change
   const handleFiltersChange = (newFilters: SearchFilters) => {
     setIsLoading(true);
     startTransition(() => {
       setFilters(newFilters);
-      // Simulate network delay for UX polish
       setTimeout(() => setIsLoading(false), 300);
     });
   };
@@ -42,17 +165,6 @@ export default function Search() {
       setTimeout(() => setIsLoading(false), 200);
     });
   };
-
-  // Update filters when URL params change
-  useEffect(() => {
-    const bodyType = searchParams.get('bodyType');
-    if (bodyType) {
-      setFilters(prev => ({
-        ...prev,
-        bodyTypes: [bodyType as BodyType],
-      }));
-    }
-  }, [searchParams]);
 
   const filteredListings = useMemo(() => {
     let results = [...mockListings];
@@ -174,7 +286,9 @@ export default function Search() {
   }, [filters, sortBy]);
 
   const handleRemoveFilter = (key: keyof SearchFilters, value?: string) => {
-    if (value && (key === 'fuelTypes' || key === 'transmissions' || key === 'bodyTypes')) {
+    const arrayKeys = ['fuelTypes', 'transmissions', 'bodyTypes', 'driveTypes', 'paintTypes', 'colors', 'interiorMaterials', 'features'];
+    
+    if (value && arrayKeys.includes(key)) {
       const currentValues = filters[key] as string[] | undefined;
       setFilters({
         ...filters,
@@ -183,25 +297,20 @@ export default function Search() {
     } else {
       const newFilters = { ...filters };
       delete newFilters[key];
+      // Clear paired filters
       if (key === 'minPrice') delete newFilters.maxPrice;
       if (key === 'minYear') delete newFilters.maxYear;
+      if (key === 'minMileage') delete newFilters.maxMileage;
+      if (key === 'minPower') delete newFilters.maxPower;
       setFilters(newFilters);
     }
   };
 
-  // Count active advanced filters
-  const advancedFilterCount = [
-    filters.minYear || filters.maxYear,
-    filters.maxMileage,
-    filters.fuelTypes?.length,
-    filters.transmissions?.length,
-    filters.bodyTypes?.length,
-  ].filter(Boolean).length;
-
-  const hasActiveFilters = Object.keys(filters).some(key => {
+  // Count total active filters
+  const activeFilterCount = Object.keys(filters).filter(key => {
     const value = filters[key as keyof SearchFilters];
     return value !== undefined && value !== '' && (!Array.isArray(value) || value.length > 0);
-  });
+  }).length;
 
   return (
     <div className="min-h-screen bg-background">
@@ -210,7 +319,7 @@ export default function Search() {
           {/* Desktop Filters - Sticky Sidebar */}
           <aside className="hidden w-72 flex-shrink-0 lg:block">
             <div className="sticky top-20">
-              <div className="rounded-xl border border-border/60 bg-card p-5 shadow-card">
+              <div className="rounded-xl border border-border/60 bg-card p-5 shadow-card max-h-[calc(100vh-6rem)] overflow-y-auto">
                 <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} />
               </div>
             </div>
@@ -235,10 +344,10 @@ export default function Search() {
                       <Button variant="outline" className="lg:hidden gap-2 border-border/60">
                         <SlidersHorizontal className="h-4 w-4" />
                         Filters
-                        {hasActiveFilters && (
-                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs text-accent-foreground">
-                            !
-                          </span>
+                        {activeFilterCount > 0 && (
+                          <Badge variant="secondary" className="ml-1 h-5 min-w-5 px-1.5 bg-accent text-accent-foreground">
+                            {activeFilterCount}
+                          </Badge>
                         )}
                       </Button>
                     </SheetTrigger>
@@ -251,22 +360,6 @@ export default function Search() {
                       </div>
                     </SheetContent>
                   </Sheet>
-
-                  {/* Advanced Filters Toggle (Desktop) */}
-                  <Button 
-                    variant="outline" 
-                    className="hidden lg:flex gap-2 border-border/60"
-                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                  >
-                    <SlidersHorizontal className="h-4 w-4" />
-                    Meer filters
-                    {advancedFilterCount > 0 && (
-                      <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs text-accent-foreground">
-                        {advancedFilterCount}
-                      </span>
-                    )}
-                    {showAdvancedFilters ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                  </Button>
 
                   {/* Sort */}
                   <Select value={sortBy} onValueChange={handleSortChange}>
@@ -305,21 +398,6 @@ export default function Search() {
               </div>
             </div>
 
-            {/* Advanced Filters Panel (Desktop - collapsible) */}
-            <Collapsible open={showAdvancedFilters} className="hidden lg:block mb-6">
-              <CollapsibleContent>
-                <div className="rounded-xl border border-border/60 bg-card p-5 shadow-card">
-                  <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-                    <FilterPanel 
-                      filters={filters} 
-                      onFiltersChange={handleFiltersChange}
-                      className="contents [&>*]:col-span-1 [&>h2]:hidden [&>button]:hidden"
-                    />
-                  </div>
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-
             {/* Active Filters */}
             <FilterChips
               filters={filters}
@@ -330,7 +408,6 @@ export default function Search() {
             {/* Results */}
             <div className="mt-6">
               {isLoading || isPending ? (
-                // Skeleton loading state
                 <div className={viewMode === 'grid' 
                   ? "grid gap-6 sm:grid-cols-2 lg:grid-cols-3" 
                   : "flex flex-col gap-4"
