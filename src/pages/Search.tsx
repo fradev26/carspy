@@ -57,8 +57,12 @@ export default function Search() {
   const filteredListings = useMemo(() => {
     let results = [...mockListings];
 
+    // Basic filters
     if (filters.brand && filters.brand !== 'all') {
       results = results.filter(l => l.brand === filters.brand);
+    }
+    if (filters.model) {
+      results = results.filter(l => l.model === filters.model);
     }
     if (filters.minPrice) {
       results = results.filter(l => l.price >= filters.minPrice!);
@@ -72,17 +76,82 @@ export default function Search() {
     if (filters.maxYear) {
       results = results.filter(l => l.year <= filters.maxYear!);
     }
+    if (filters.minMileage) {
+      results = results.filter(l => l.mileage >= filters.minMileage!);
+    }
     if (filters.maxMileage) {
       results = results.filter(l => l.mileage <= filters.maxMileage!);
     }
     if (filters.fuelTypes?.length) {
       results = results.filter(l => filters.fuelTypes!.includes(l.fuelType));
     }
+    if (filters.bodyTypes?.length) {
+      results = results.filter(l => filters.bodyTypes!.includes(l.bodyType));
+    }
+
+    // Performance filters
     if (filters.transmissions?.length) {
       results = results.filter(l => filters.transmissions!.includes(l.transmission));
     }
-    if (filters.bodyTypes?.length) {
-      results = results.filter(l => filters.bodyTypes!.includes(l.bodyType));
+    if (filters.driveTypes?.length) {
+      results = results.filter(l => l.driveType && filters.driveTypes!.includes(l.driveType));
+    }
+    if (filters.minPower) {
+      results = results.filter(l => l.power >= filters.minPower!);
+    }
+    if (filters.maxPower) {
+      results = results.filter(l => l.power <= filters.maxPower!);
+    }
+
+    // Appearance filters
+    if (filters.paintTypes?.length) {
+      results = results.filter(l => l.paintType && filters.paintTypes!.includes(l.paintType));
+    }
+    if (filters.colors?.length) {
+      results = results.filter(l => filters.colors!.includes(l.color));
+    }
+    if (filters.interiorMaterials?.length) {
+      results = results.filter(l => l.interiorMaterial && filters.interiorMaterials!.includes(l.interiorMaterial));
+    }
+
+    // Practical filters
+    if (filters.minDoors) {
+      results = results.filter(l => l.doors >= filters.minDoors!);
+    }
+    if (filters.minSeats) {
+      results = results.filter(l => l.seats >= filters.minSeats!);
+    }
+
+    // Location filters
+    if (filters.province) {
+      results = results.filter(l => l.location.province === filters.province);
+    }
+
+    // History filters
+    if (filters.sellerType) {
+      results = results.filter(l => l.seller.type === filters.sellerType);
+    }
+    if (filters.maxPreviousOwners) {
+      results = results.filter(l => l.previousOwners !== undefined && l.previousOwners <= filters.maxPreviousOwners!);
+    }
+    if (filters.noDamageHistory) {
+      results = results.filter(l => l.hasDamageHistory === false);
+    }
+    if (filters.vatDeductible) {
+      results = results.filter(l => l.vatDeductible === true);
+    }
+    if (filters.hasMaintenanceHistory) {
+      results = results.filter(l => l.hasMaintenanceHistory === true);
+    }
+    if (filters.isNonSmoker) {
+      results = results.filter(l => l.isNonSmoker === true);
+    }
+
+    // Feature filters
+    if (filters.features?.length) {
+      results = results.filter(l => 
+        filters.features!.every(f => l.features.includes(f))
+      );
     }
 
     // Sort
