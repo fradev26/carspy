@@ -2,116 +2,106 @@
 @tailwind components;
 @tailwind utilities;
 
-/* AutoSpy Design System - Premium & Minimalistisch */
+/* ===== AutoSpy Premium Design System ===== */
 
 @layer base {
   :root {
-    /* Background & Foreground - Barely there */
-    --background: 0 0% 99%;
-    --foreground: 220 10% 30%;
-
-    /* Card - Almost invisible */
+    /* Background & Surface */
+    --background: 210 20% 98%;
+    --foreground: 215 25% 15%;
+    
+    /* Card & Popover */
     --card: 0 0% 100%;
-    --card-foreground: 220 10% 30%;
-
-    /* Popover */
+    --card-foreground: 215 25% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 10% 30%;
-
-    /* Primary - Soft, muted blue */
-    --primary: 220 20% 35%;
+    --popover-foreground: 215 25% 15%;
+    
+    /* Primary - Deep Blue */
+    --primary: 213 45% 25%;
     --primary-foreground: 0 0% 100%;
-
-    /* Secondary - Whisper light */
-    --secondary: 220 10% 97%;
-    --secondary-foreground: 220 10% 30%;
-
-    /* Muted - Ultra subtle */
-    --muted: 220 10% 97%;
-    --muted-foreground: 220 8% 55%;
-
-    /* Accent - Soft warm tone */
-    --accent: 25 60% 55%;
+    
+    /* Secondary */
+    --secondary: 210 15% 95%;
+    --secondary-foreground: 215 25% 25%;
+    
+    /* Muted */
+    --muted: 210 15% 96%;
+    --muted-foreground: 215 15% 45%;
+    
+    /* Accent - Electric Orange */
+    --accent: 18 100% 60%;
     --accent-foreground: 0 0% 100%;
-
+    
     /* Destructive */
-    --destructive: 0 50% 55%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-
-    /* Border & Input - Nearly invisible */
-    --border: 220 10% 92%;
-    --input: 220 10% 92%;
-    --ring: 220 20% 35%;
-
-    /* Radius - Softer */
-    --radius: 0.5rem;
-
-    /* Success */
-    --success: 150 40% 45%;
+    
+    /* Border & Input */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 213 45% 25%;
+    
+    /* Success & Warning */
+    --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
-
-    /* Warning */
-    --warning: 40 60% 50%;
+    --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
-
+    
+    /* Radius */
+    --radius: 0.625rem;
+    
     /* Sidebar */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 220 10% 30%;
-    --sidebar-primary: 220 20% 35%;
+    --sidebar-foreground: 215 25% 15%;
+    --sidebar-primary: 213 45% 25%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 10% 97%;
-    --sidebar-accent-foreground: 220 10% 30%;
-    --sidebar-border: 220 10% 92%;
-    --sidebar-ring: 220 20% 35%;
+    --sidebar-accent: 210 15% 96%;
+    --sidebar-accent-foreground: 215 25% 25%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 213 45% 25%;
   }
 
   .dark {
-    /* Background & Foreground - Barely there dark */
-    --background: 220 15% 8%;
-    --foreground: 220 10% 85%;
-
-    /* Card */
-    --card: 220 15% 10%;
-    --card-foreground: 220 10% 85%;
-
-    /* Popover */
-    --popover: 220 15% 10%;
-    --popover-foreground: 220 10% 85%;
-
-    /* Primary - Soft blue */
-    --primary: 220 30% 55%;
-    --primary-foreground: 220 15% 8%;
-
-    /* Secondary */
-    --secondary: 220 15% 12%;
-    --secondary-foreground: 220 10% 85%;
-
-    /* Muted */
-    --muted: 220 15% 12%;
-    --muted-foreground: 220 8% 50%;
-
-    /* Accent - Soft warm */
-    --accent: 25 50% 50%;
+    --background: 215 28% 9%;
+    --foreground: 210 20% 98%;
+    
+    --card: 215 25% 12%;
+    --card-foreground: 210 20% 98%;
+    --popover: 215 25% 12%;
+    --popover-foreground: 210 20% 98%;
+    
+    --primary: 210 60% 55%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 215 20% 18%;
+    --secondary-foreground: 210 20% 90%;
+    
+    --muted: 215 20% 16%;
+    --muted-foreground: 215 15% 60%;
+    
+    --accent: 18 100% 55%;
     --accent-foreground: 0 0% 100%;
-
-    /* Destructive */
-    --destructive: 0 40% 40%;
-    --destructive-foreground: 220 10% 85%;
-
-    /* Border & Input - Subtle */
-    --border: 220 12% 15%;
-    --input: 220 12% 15%;
-    --ring: 220 30% 55%;
-
-    /* Sidebar */
-    --sidebar-background: 220 15% 8%;
-    --sidebar-foreground: 220 10% 85%;
-    --sidebar-primary: 220 30% 55%;
-    --sidebar-primary-foreground: 220 15% 8%;
-    --sidebar-accent: 220 15% 12%;
-    --sidebar-accent-foreground: 220 10% 85%;
-    --sidebar-border: 220 12% 15%;
-    --sidebar-ring: 220 30% 55%;
+    
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 215 20% 20%;
+    --input: 215 20% 20%;
+    --ring: 210 60% 55%;
+    
+    --success: 142 70% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 0%;
+    
+    --sidebar-background: 215 25% 10%;
+    --sidebar-foreground: 210 20% 98%;
+    --sidebar-primary: 210 60% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 215 20% 16%;
+    --sidebar-accent-foreground: 210 20% 90%;
+    --sidebar-border: 215 20% 20%;
+    --sidebar-ring: 210 60% 55%;
   }
 }
 
@@ -119,14 +109,14 @@
   * {
     @apply border-border;
   }
-
+  
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
-
+  
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight;
+    @apply font-semibold tracking-tight text-foreground;
   }
 }
 
@@ -134,9 +124,45 @@
   .text-balance {
     text-wrap: balance;
   }
-
-  /* Safe area for devices with notch/home indicator */
+  
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);
   }
+  
+  /* Premium hover effects */
+  .hover-lift {
+    @apply transition-all duration-300;
+  }
+  
+  .hover-lift:hover {
+    @apply -translate-y-1;
+  }
+  
+  /* Glass morphism effect */
+  .glass {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50;
+  }
+  
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
+  }
+}
+
+/* Premium scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-border rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/30;
 }
