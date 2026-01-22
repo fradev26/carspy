@@ -1,21 +1,25 @@
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Phone, Mail, MapPin, Calendar, Gauge, Fuel, Settings, Star } from 'lucide-react';
+import { ArrowLeft, Phone, Mail, MapPin, Calendar, Gauge, Fuel, Settings, Star, Heart, Share2, Shield, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ImageGallery, ListingGrid } from '@/modules/listings';
 import { getListingById, getRelatedListings } from '@/data/mockListings';
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
 
 export default function ListingDetail() {
   const { id } = useParams<{ id: string }>();
   const listing = getListingById(id || '');
+  const [isFavorite, setIsFavorite] = useState(false);
 
   if (!listing) {
     return (
-      <div className="container py-16 text-center">
+      <div className="container py-20 text-center">
         <h1 className="text-2xl font-bold">Advertentie niet gevonden</h1>
-        <Button asChild className="mt-4">
+        <p className="mt-2 text-muted-foreground">Deze auto is mogelijk al verkocht of verwijderd.</p>
+        <Button asChild className="mt-6">
           <Link to="/zoeken">Terug naar zoeken</Link>
         </Button>
       </div>
@@ -26,108 +30,203 @@ export default function ListingDetail() {
   const formatPrice = (price: number) => new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(price);
   const formatMileage = (mileage: number) => new Intl.NumberFormat('nl-NL').format(mileage);
 
+  const specs = [
+    { icon: Calendar, label: 'Bouwjaar', value: listing.year.toString() },
+    { icon: Gauge, label: 'Km-stand', value: `${formatMileage(listing.mileage)} km` },
+    { icon: Fuel, label: 'Brandstof', value: listing.fuelType },
+    { icon: Settings, label: 'Transmissie', value: listing.transmission },
+  ];
+
   return (
-    <div className="container py-6">
-      <Button variant="ghost" asChild className="mb-4">
-        <Link to="/zoeken"><ArrowLeft className="mr-2 h-4 w-4" />Terug naar resultaten</Link>
-      </Button>
+    <div className="min-h-screen bg-background">
+      <div className="container py-6">
+        {/* Back button */}
+        <Button variant="ghost" asChild className="mb-4 -ml-2 text-muted-foreground hover:text-foreground">
+          <Link to="/zoeken">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Terug naar resultaten
+          </Link>
+        </Button>
 
-      <div className="grid gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
-          <ImageGallery images={listing.images} alt={listing.title} />
+        <div className="grid gap-8 lg:grid-cols-3">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Gallery */}
+            <ImageGallery images={listing.images} alt={listing.title} />
 
-          <div>
-            <h1 className="text-2xl font-bold md:text-3xl">{listing.title}</h1>
-            <p className="mt-2 text-3xl font-bold text-accent">{formatPrice(listing.price)}</p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <div className="flex items-center gap-2 rounded-lg bg-muted p-3">
-              <Calendar className="h-5 w-5 text-muted-foreground" />
-              <div><div className="text-xs text-muted-foreground">Bouwjaar</div><div className="font-semibold">{listing.year}</div></div>
-            </div>
-            <div className="flex items-center gap-2 rounded-lg bg-muted p-3">
-              <Gauge className="h-5 w-5 text-muted-foreground" />
-              <div><div className="text-xs text-muted-foreground">Km-stand</div><div className="font-semibold">{formatMileage(listing.mileage)} km</div></div>
-            </div>
-            <div className="flex items-center gap-2 rounded-lg bg-muted p-3">
-              <Fuel className="h-5 w-5 text-muted-foreground" />
-              <div><div className="text-xs text-muted-foreground">Brandstof</div><div className="font-semibold capitalize">{listing.fuelType}</div></div>
-            </div>
-            <div className="flex items-center gap-2 rounded-lg bg-muted p-3">
-              <Settings className="h-5 w-5 text-muted-foreground" />
-              <div><div className="text-xs text-muted-foreground">Transmissie</div><div className="font-semibold capitalize">{listing.transmission}</div></div>
-            </div>
-          </div>
-
-          <Card>
-            <CardContent className="p-6">
-              <h2 className="text-lg font-semibold">Beschrijving</h2>
-              <p className="mt-3 text-muted-foreground whitespace-pre-line">{listing.description}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <h2 className="text-lg font-semibold">Uitrusting</h2>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {listing.features.map((feature) => (
-                  <Badge key={feature} variant="secondary">{feature}</Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="space-y-6">
-          <Card className="sticky top-20">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-lg">
-                  {listing.seller.name.charAt(0)}
-                </div>
+            {/* Title & Price - Mobile */}
+            <div className="lg:hidden">
+              <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h3 className="font-semibold">{listing.seller.name}</h3>
-                  <Badge variant="outline">{listing.seller.type === 'dealer' ? 'Dealer' : 'Particulier'}</Badge>
+                  <h1 className="text-2xl font-bold">{listing.title}</h1>
+                  <p className="mt-1 text-3xl font-bold text-accent">{formatPrice(listing.price)}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    className={cn("border-border/60", isFavorite && "text-accent")}
+                    onClick={() => setIsFavorite(!isFavorite)}
+                  >
+                    <Heart className={cn("h-5 w-5", isFavorite && "fill-current")} />
+                  </Button>
+                  <Button variant="outline" size="icon" className="border-border/60">
+                    <Share2 className="h-5 w-5" />
+                  </Button>
                 </div>
               </div>
+            </div>
 
-              {listing.seller.rating && (
-                <div className="mt-4 flex items-center gap-2">
-                  <Star className="h-4 w-4 fill-warning text-warning" />
-                  <span className="font-medium">{listing.seller.rating}</span>
-                  <span className="text-sm text-muted-foreground">({listing.seller.reviewCount} reviews)</span>
+            {/* Key Specs */}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {specs.map((spec) => (
+                <div key={spec.label} className="flex items-center gap-3 rounded-xl bg-muted/50 p-4 border border-border/40">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-background">
+                    <spec.icon className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted-foreground">{spec.label}</div>
+                    <div className="font-semibold capitalize">{spec.value}</div>
+                  </div>
                 </div>
-              )}
+              ))}
+            </div>
 
-              <Separator className="my-4" />
+            {/* Description */}
+            <Card className="border-border/60 shadow-card">
+              <CardContent className="p-6">
+                <h2 className="text-lg font-semibold">Beschrijving</h2>
+                <p className="mt-4 text-muted-foreground whitespace-pre-line leading-relaxed">
+                  {listing.description}
+                </p>
+              </CardContent>
+            </Card>
 
-              <div className="space-y-3">
+            {/* Features */}
+            <Card className="border-border/60 shadow-card">
+              <CardContent className="p-6">
+                <h2 className="text-lg font-semibold">Uitrusting</h2>
+                <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {listing.features.map((feature) => (
+                    <div key={feature} className="flex items-center gap-2 text-sm">
+                      <Check className="h-4 w-4 text-success flex-shrink-0" />
+                      <span className="text-foreground/80">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Price Card - Desktop */}
+            <Card className="hidden lg:block sticky top-20 border-border/60 shadow-elevated">
+              <CardContent className="p-6 space-y-6">
+                {/* Title & Price */}
+                <div>
+                  <h1 className="text-xl font-bold">{listing.title}</h1>
+                  <p className="mt-2 text-3xl font-bold text-accent">{formatPrice(listing.price)}</p>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    className={cn("border-border/60 flex-shrink-0", isFavorite && "text-accent border-accent")}
+                    onClick={() => setIsFavorite(!isFavorite)}
+                  >
+                    <Heart className={cn("h-5 w-5", isFavorite && "fill-current")} />
+                  </Button>
+                  <Button variant="outline" size="icon" className="border-border/60 flex-shrink-0">
+                    <Share2 className="h-5 w-5" />
+                  </Button>
+                </div>
+
+                <Separator />
+
+                {/* Seller Info */}
+                <div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-lg">
+                      {listing.seller.name.charAt(0)}
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">{listing.seller.name}</h3>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="font-medium">
+                          {listing.seller.type === 'dealer' ? 'Dealer' : 'Particulier'}
+                        </Badge>
+                        {listing.seller.type === 'dealer' && (
+                          <div className="flex items-center gap-1 text-xs text-success">
+                            <Shield className="h-3 w-3" />
+                            Geverifieerd
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {listing.seller.rating && (
+                    <div className="mt-3 flex items-center gap-2">
+                      <Star className="h-4 w-4 fill-warning text-warning" />
+                      <span className="font-medium">{listing.seller.rating}</span>
+                      <span className="text-sm text-muted-foreground">({listing.seller.reviewCount} reviews)</span>
+                    </div>
+                  )}
+                </div>
+
+                <Separator />
+
+                {/* Contact Buttons */}
+                <div className="space-y-3">
+                  {listing.seller.phone && (
+                    <Button className="w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90 h-12 text-base shadow-sm">
+                      <Phone className="h-5 w-5" />
+                      {listing.seller.phone}
+                    </Button>
+                  )}
+                  <Button variant="outline" className="w-full gap-2 h-12 text-base border-border/60">
+                    <Mail className="h-5 w-5" />
+                    Stuur bericht
+                  </Button>
+                </div>
+
+                {/* Location */}
+                <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
+                  <MapPin className="h-4 w-4" />
+                  {listing.location.city}, {listing.location.province}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Mobile Contact Bar */}
+            <div className="lg:hidden fixed bottom-16 left-0 right-0 z-40 border-t bg-card/95 backdrop-blur-lg p-4 safe-bottom">
+              <div className="flex gap-3">
                 {listing.seller.phone && (
-                  <Button className="w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
-                    <Phone className="h-4 w-4" />{listing.seller.phone}
+                  <Button className="flex-1 gap-2 bg-accent text-accent-foreground hover:bg-accent/90 h-12 shadow-sm">
+                    <Phone className="h-5 w-5" />
+                    Bellen
                   </Button>
                 )}
-                <Button variant="outline" className="w-full gap-2">
-                  <Mail className="h-4 w-4" />Stuur bericht
+                <Button variant="outline" className="flex-1 gap-2 h-12 border-border/60">
+                  <Mail className="h-5 w-5" />
+                  Bericht
                 </Button>
               </div>
-
-              <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-                <MapPin className="h-4 w-4" />
-                {listing.location.city}, {listing.location.province}
-              </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {relatedListings.length > 0 && (
-        <section className="mt-12">
-          <h2 className="text-xl font-semibold mb-6">Vergelijkbare auto's</h2>
-          <ListingGrid listings={relatedListings} columns={3} />
-        </section>
-      )}
+        {/* Related Listings */}
+        {relatedListings.length > 0 && (
+          <section className="mt-16">
+            <h2 className="text-xl font-semibold mb-6">Vergelijkbare auto's</h2>
+            <ListingGrid listings={relatedListings} columns={3} />
+          </section>
+        )}
+      </div>
     </div>
   );
 }

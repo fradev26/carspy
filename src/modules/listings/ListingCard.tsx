@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MapPin, Fuel, Gauge, Calendar } from 'lucide-react';
+import { Heart, MapPin, Fuel, Gauge, Calendar, Eye } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ interface ListingCardProps {
 export function ListingCard({ listing, variant = 'default', onFavoriteToggle, isFavorite = false }: ListingCardProps) {
   const [favorite, setFavorite] = useState(isFavorite);
   const [imageError, setImageError] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -45,67 +46,80 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
 
   if (variant === 'horizontal') {
     return (
-      <Link to={`/auto/${listing.id}`}>
-        <Card className="group overflow-hidden transition-all hover:shadow-card-hover">
+      <Link to={`/auto/${listing.id}`} className="block">
+        <Card className="group overflow-hidden transition-all duration-300 hover:shadow-card-hover hover:-translate-y-0.5 border-border/60">
           <div className="flex flex-col sm:flex-row">
-            {/* Image */}
-            <div className="relative aspect-[16/10] sm:aspect-[4/3] sm:w-64 overflow-hidden">
+            {/* Image Container */}
+            <div className="relative aspect-[16/10] sm:aspect-[4/3] sm:w-72 overflow-hidden bg-muted">
+              {!imageLoaded && (
+                <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent bg-[length:200%_100%]" />
+              )}
               <img
                 src={imageUrl}
                 alt={listing.title}
-                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                className={cn(
+                  "h-full w-full object-cover transition-all duration-500 group-hover:scale-105",
+                  imageLoaded ? "opacity-100" : "opacity-0"
+                )}
+                onLoad={() => setImageLoaded(true)}
                 onError={() => setImageError(true)}
               />
+              
+              {/* Price Badge */}
+              <div className="absolute left-3 top-3 rounded-lg bg-card/95 px-3 py-1.5 shadow-elevated backdrop-blur-sm">
+                <span className="text-lg font-bold text-accent">{formatPrice(listing.price)}</span>
+              </div>
+              
+              {/* Favorite Button */}
               <Button
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  'absolute right-2 top-2 h-8 w-8 rounded-full bg-card/80 backdrop-blur-sm',
-                  favorite && 'text-accent'
+                  'absolute right-3 top-3 h-9 w-9 rounded-full bg-card/90 backdrop-blur-sm shadow-md transition-all hover:scale-110',
+                  favorite ? 'text-accent' : 'text-muted-foreground hover:text-accent'
                 )}
                 onClick={handleFavoriteClick}
               >
-                <Heart className={cn('h-4 w-4', favorite && 'fill-current')} />
+                <Heart className={cn('h-4 w-4 transition-transform', favorite && 'fill-current scale-110')} />
               </Button>
+              
+              {/* Status Badge */}
               {listing.status === 'reserved' && (
-                <Badge className="absolute left-2 top-2 bg-warning text-warning-foreground">Gereserveerd</Badge>
+                <Badge className="absolute left-3 bottom-3 bg-warning text-warning-foreground font-medium">
+                  Gereserveerd
+                </Badge>
               )}
             </div>
 
             {/* Content */}
-            <CardContent className="flex flex-1 flex-col justify-between p-4">
-              <div>
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
-                    {listing.title}
-                  </h3>
-                  <span className="text-lg font-bold text-accent whitespace-nowrap">
-                    {formatPrice(listing.price)}
-                  </span>
-                </div>
+            <CardContent className="flex flex-1 flex-col justify-between p-5">
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                  {listing.title}
+                </h3>
 
-                <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="h-3.5 w-3.5" />
+                <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="h-4 w-4" />
                     {listing.year}
                   </span>
-                  <span className="flex items-center gap-1">
-                    <Gauge className="h-3.5 w-3.5" />
+                  <span className="flex items-center gap-1.5">
+                    <Gauge className="h-4 w-4" />
                     {formatMileage(listing.mileage)} km
                   </span>
-                  <span className="flex items-center gap-1">
-                    <Fuel className="h-3.5 w-3.5" />
-                    {listing.fuelType}
+                  <span className="flex items-center gap-1.5">
+                    <Fuel className="h-4 w-4" />
+                    <span className="capitalize">{listing.fuelType}</span>
                   </span>
                 </div>
               </div>
 
-              <div className="mt-3 flex items-center justify-between">
-                <span className="flex items-center gap-1 text-sm text-muted-foreground">
-                  <MapPin className="h-3.5 w-3.5" />
+              <div className="mt-4 flex items-center justify-between">
+                <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <MapPin className="h-4 w-4" />
                   {listing.location.city}
                 </span>
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant="secondary" className="font-medium">
                   {listing.seller.type === 'dealer' ? 'Dealer' : 'Particulier'}
                 </Badge>
               </div>
@@ -117,70 +131,91 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
   }
 
   return (
-    <Link to={`/auto/${listing.id}`}>
-      <Card className="group overflow-hidden transition-all hover:shadow-card-hover">
-        {/* Image */}
-        <div className="relative aspect-[16/10] overflow-hidden">
+    <Link to={`/auto/${listing.id}`} className="block">
+      <Card className="group overflow-hidden transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1 border-border/60">
+        {/* Image Container */}
+        <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+          {!imageLoaded && (
+            <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent bg-[length:200%_100%]" />
+          )}
           <img
             src={imageUrl}
             alt={listing.title}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className={cn(
+              "h-full w-full object-cover transition-all duration-500 group-hover:scale-105",
+              imageLoaded ? "opacity-100" : "opacity-0"
+            )}
+            onLoad={() => setImageLoaded(true)}
             onError={() => setImageError(true)}
           />
+          
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          
+          {/* Price Badge */}
+          <div className="absolute left-3 top-3 rounded-lg bg-card/95 px-2.5 py-1 shadow-elevated backdrop-blur-sm">
+            <span className="text-base font-bold text-accent">{formatPrice(listing.price)}</span>
+          </div>
+          
+          {/* Favorite Button */}
           <Button
             variant="ghost"
             size="icon"
             className={cn(
-              'absolute right-2 top-2 h-8 w-8 rounded-full bg-card/80 backdrop-blur-sm',
-              favorite && 'text-accent'
+              'absolute right-3 top-3 h-9 w-9 rounded-full bg-card/90 backdrop-blur-sm shadow-md transition-all hover:scale-110',
+              favorite ? 'text-accent' : 'text-muted-foreground hover:text-accent'
             )}
             onClick={handleFavoriteClick}
           >
-            <Heart className={cn('h-4 w-4', favorite && 'fill-current')} />
+            <Heart className={cn('h-4 w-4 transition-transform', favorite && 'fill-current scale-110')} />
           </Button>
+          
+          {/* Status Badge */}
           {listing.status === 'reserved' && (
-            <Badge className="absolute left-2 top-2 bg-warning text-warning-foreground">Gereserveerd</Badge>
+            <Badge className="absolute left-3 bottom-3 bg-warning text-warning-foreground font-medium">
+              Gereserveerd
+            </Badge>
           )}
+          
+          {/* Hover CTA */}
+          <div className="absolute inset-x-3 bottom-3 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+            <div className="flex items-center justify-center gap-2 rounded-lg bg-primary/95 py-2 text-sm font-medium text-primary-foreground backdrop-blur-sm">
+              <Eye className="h-4 w-4" />
+              Bekijk details
+            </div>
+          </div>
         </div>
 
         {/* Content */}
         <CardContent className="p-4">
-          <div className="flex items-start justify-between gap-2">
-            <h3 className={cn(
-              'font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors',
-              variant === 'compact' ? 'text-sm' : 'text-base'
-            )}>
-              {listing.title}
-            </h3>
-          </div>
-
-          <span className="mt-1 block text-lg font-bold text-accent">
-            {formatPrice(listing.price)}
-          </span>
+          <h3 className={cn(
+            'font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors',
+            variant === 'compact' ? 'text-sm' : 'text-base'
+          )}>
+            {listing.title}
+          </h3>
 
           <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1 rounded-md bg-muted px-2 py-1">
               <Calendar className="h-3 w-3" />
               {listing.year}
             </span>
-            <span className="text-border">•</span>
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1 rounded-md bg-muted px-2 py-1">
               <Gauge className="h-3 w-3" />
               {formatMileage(listing.mileage)} km
             </span>
-            <span className="text-border">•</span>
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1 rounded-md bg-muted px-2 py-1">
               <Fuel className="h-3 w-3" />
-              {listing.fuelType}
+              <span className="capitalize">{listing.fuelType}</span>
             </span>
           </div>
 
-          <div className="mt-3 flex items-center justify-between">
+          <div className="mt-3 flex items-center justify-between pt-2 border-t border-border/50">
             <span className="flex items-center gap-1 text-xs text-muted-foreground">
               <MapPin className="h-3 w-3" />
               {listing.location.city}
             </span>
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant="secondary" className="text-xs font-medium">
               {listing.seller.type === 'dealer' ? 'Dealer' : 'Particulier'}
             </Badge>
           </div>

@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Grid, List, SlidersHorizontal, ChevronDown, ChevronUp } from 'lucide-react';
+import { Grid, List, SlidersHorizontal, ChevronDown, ChevronUp, Car } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -108,119 +108,158 @@ export default function Search() {
     filters.bodyTypes?.length,
   ].filter(Boolean).length;
 
+  const hasActiveFilters = Object.keys(filters).some(key => {
+    const value = filters[key as keyof SearchFilters];
+    return value !== undefined && value !== '' && (!Array.isArray(value) || value.length > 0);
+  });
+
   return (
-    <div className="container py-6">
-      <div className="flex gap-8">
-        {/* Desktop Filters */}
-        <aside className="hidden w-64 flex-shrink-0 lg:block">
-          <FilterPanel filters={filters} onFiltersChange={setFilters} />
-        </aside>
-
-        {/* Main Content */}
-        <div className="flex-1">
-          {/* Header */}
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold">Auto's zoeken</h1>
-              <p className="text-sm text-muted-foreground">{filteredListings.length} resultaten</p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {/* Mobile Filter Button */}
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="outline" className="lg:hidden">
-                    <SlidersHorizontal className="mr-2 h-4 w-4" />
-                    Filters
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="left" className="w-80 overflow-y-auto">
-                  <SheetHeader>
-                    <SheetTitle>Filters</SheetTitle>
-                  </SheetHeader>
-                  <div className="mt-6">
-                    <FilterPanel filters={filters} onFiltersChange={setFilters} />
-                  </div>
-                </SheetContent>
-              </Sheet>
-
-              {/* Advanced Filters Toggle (Desktop) */}
-              <Button 
-                variant="outline" 
-                className="hidden lg:flex gap-2"
-                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-              >
-                <SlidersHorizontal className="h-4 w-4" />
-                Meer filters
-                {advancedFilterCount > 0 && (
-                  <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                    {advancedFilterCount}
-                  </span>
-                )}
-                {showAdvancedFilters ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </Button>
-
-              {/* Sort */}
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-48">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-card">
-                  {SORT_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {/* View Mode */}
-              <div className="hidden items-center rounded-lg border p-1 sm:flex">
-                <Button
-                  variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setViewMode('grid')}
-                >
-                  <Grid className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setViewMode('list')}
-                >
-                  <List className="h-4 w-4" />
-                </Button>
+    <div className="min-h-screen bg-background">
+      <div className="container py-6">
+        <div className="flex gap-8">
+          {/* Desktop Filters - Sticky Sidebar */}
+          <aside className="hidden w-72 flex-shrink-0 lg:block">
+            <div className="sticky top-20">
+              <div className="rounded-xl border border-border/60 bg-card p-5 shadow-card">
+                <FilterPanel filters={filters} onFiltersChange={setFilters} />
               </div>
             </div>
-          </div>
+          </aside>
 
-          {/* Advanced Filters Panel (Desktop - collapsible) */}
-          <Collapsible open={showAdvancedFilters} className="hidden lg:block mb-6">
-            <CollapsibleContent>
-              <div className="rounded-lg border bg-card p-4">
-                <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-                  <FilterPanel 
-                    filters={filters} 
-                    onFiltersChange={setFilters} 
-                    className="contents [&>*]:col-span-1 [&>h2]:hidden [&>button]:hidden"
-                  />
+          {/* Main Content */}
+          <div className="flex-1">
+            {/* Header */}
+            <div className="mb-6">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl font-bold md:text-3xl">Auto's zoeken</h1>
+                  <p className="mt-1 text-muted-foreground">
+                    <span className="font-semibold text-foreground">{filteredListings.length}</span> resultaten gevonden
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {/* Mobile Filter Button */}
+                  <Sheet>
+                    <SheetTrigger asChild>
+                      <Button variant="outline" className="lg:hidden gap-2 border-border/60">
+                        <SlidersHorizontal className="h-4 w-4" />
+                        Filters
+                        {hasActiveFilters && (
+                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs text-accent-foreground">
+                            !
+                          </span>
+                        )}
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="w-80 overflow-y-auto">
+                      <SheetHeader>
+                        <SheetTitle>Filters</SheetTitle>
+                      </SheetHeader>
+                      <div className="mt-6">
+                        <FilterPanel filters={filters} onFiltersChange={setFilters} />
+                      </div>
+                    </SheetContent>
+                  </Sheet>
+
+                  {/* Advanced Filters Toggle (Desktop) */}
+                  <Button 
+                    variant="outline" 
+                    className="hidden lg:flex gap-2 border-border/60"
+                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  >
+                    <SlidersHorizontal className="h-4 w-4" />
+                    Meer filters
+                    {advancedFilterCount > 0 && (
+                      <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs text-accent-foreground">
+                        {advancedFilterCount}
+                      </span>
+                    )}
+                    {showAdvancedFilters ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </Button>
+
+                  {/* Sort */}
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="w-44 border-border/60">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card">
+                      {SORT_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  {/* View Mode */}
+                  <div className="hidden items-center rounded-lg border border-border/60 p-1 sm:flex bg-muted/30">
+                    <Button
+                      variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => setViewMode('grid')}
+                    >
+                      <Grid className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => setViewMode('list')}
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </CollapsibleContent>
-          </Collapsible>
+            </div>
 
-          {/* Active Filters */}
-          <FilterChips
-            filters={filters}
-            onRemoveFilter={handleRemoveFilter}
-            onClearAll={() => setFilters({})}
-          />
+            {/* Advanced Filters Panel (Desktop - collapsible) */}
+            <Collapsible open={showAdvancedFilters} className="hidden lg:block mb-6">
+              <CollapsibleContent>
+                <div className="rounded-xl border border-border/60 bg-card p-5 shadow-card">
+                  <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                    <FilterPanel 
+                      filters={filters} 
+                      onFiltersChange={setFilters} 
+                      className="contents [&>*]:col-span-1 [&>h2]:hidden [&>button]:hidden"
+                    />
+                  </div>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
 
-          {/* Results */}
-          <div className="mt-6">
-            <ListingGrid listings={filteredListings} variant={viewMode} columns={3} />
+            {/* Active Filters */}
+            <FilterChips
+              filters={filters}
+              onRemoveFilter={handleRemoveFilter}
+              onClearAll={() => setFilters({})}
+            />
+
+            {/* Results */}
+            <div className="mt-6">
+              {filteredListings.length > 0 ? (
+                <ListingGrid listings={filteredListings} variant={viewMode} columns={3} />
+              ) : (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted mb-4">
+                    <Car className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-lg font-semibold">Geen resultaten gevonden</h3>
+                  <p className="mt-2 text-muted-foreground max-w-sm">
+                    Probeer andere filters of pas je zoekcriteria aan om meer auto's te vinden
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    className="mt-6"
+                    onClick={() => setFilters({})}
+                  >
+                    Wis alle filters
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
