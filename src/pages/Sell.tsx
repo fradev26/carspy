@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { Sparkles, Loader2 } from 'lucide-react';
 
 const steps = ['Basisgegevens', 'Details', "Foto's", 'Prijs & Beschrijving', 'Overzicht'];
 
@@ -21,6 +22,7 @@ export default function Sell() {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   
@@ -32,6 +34,41 @@ export default function Sell() {
   const updateForm = (key: string, value: string) => setFormData(prev => ({ ...prev, [key]: value }));
   const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
   const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 0));
+
+  const generateDescription = async () => {
+    if (!formData.brand || !formData.model) {
+      toast({ title: 'Vul eerst merk en model in', variant: 'destructive' });
+      return;
+    }
+    setIsGenerating(true);
+    try {
+      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-listing`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          brand: formData.brand, model: formData.model, year: formData.year,
+          mileage: formData.mileage, fuelType: formData.fuelType,
+          transmission: formData.transmission, bodyType: formData.bodyType,
+          color: formData.color, power: formData.power,
+        }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json();
+        throw new Error(err.error || 'Genereren mislukt');
+      }
+      const { description } = await resp.json();
+      updateForm('description', description);
+      toast({ title: 'Beschrijving gegenereerd! ✨' });
+    } catch (e) {
+      console.error(e);
+      toast({ title: e instanceof Error ? e.message : 'Er ging iets mis', variant: 'destructive' });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -223,7 +260,23 @@ export default function Sell() {
                 <div className="space-y-2"><Label>Vraagprijs *</Label><Input type="number" value={formData.price} onChange={(e) => updateForm('price', e.target.value)} placeholder="25000" /></div>
                 <div className="space-y-2"><Label>Stad</Label><Input value={formData.city} onChange={(e) => updateForm('city', e.target.value)} placeholder="Amsterdam" /></div>
               </div>
-              <div className="space-y-2"><Label>Beschrijving</Label><Textarea value={formData.description} onChange={(e) => updateForm('description', e.target.value)} placeholder="Beschrijf je auto..." rows={6} /></div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>Beschrijving</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={generateDescription}
+                    disabled={isGenerating}
+                    className="gap-1.5"
+                  >
+                    {isGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                    {isGenerating ? 'Bezig...' : 'Genereer met AI'}
+                  </Button>
+                </div>
+                <Textarea value={formData.description} onChange={(e) => updateForm('description', e.target.value)} placeholder="Beschrijf je auto..." rows={6} />
+              </div>
             </div>
           )}
 
