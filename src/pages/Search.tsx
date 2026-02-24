@@ -290,6 +290,16 @@ export default function Search() {
         break;
     }
 
+    // Premium & boosted listings always on top
+    const now = new Date();
+    results.sort((a, b) => {
+      const aIsPremium = a.isPremium || (a.boostUntil && new Date(a.boostUntil) > now);
+      const bIsPremium = b.isPremium || (b.boostUntil && new Date(b.boostUntil) > now);
+      if (aIsPremium && !bIsPremium) return -1;
+      if (!aIsPremium && bIsPremium) return 1;
+      return 0;
+    });
+
     return results;
   }, [filters, sortBy]);
 
