@@ -3,6 +3,7 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import { BottomNav } from '@/components/BottomNav';
 import { CompareBar } from '@/components/CompareBar';
+import { ChatWidget } from '@/modules/chat/ChatWidget';
 
 export function AppLayout() {
   return (
@@ -14,6 +15,7 @@ export function AppLayout() {
       <Footer />
       <CompareBar />
       <BottomNav />
+      <ChatWidget />
     </div>
   );
 }
