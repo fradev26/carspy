@@ -11,6 +11,7 @@ import Search from "./pages/Search";
 import ListingDetail from "./pages/ListingDetail";
 import Sell from "./pages/Sell";
 import Dashboard from "./pages/Dashboard";
+import DealerDashboard from "./pages/DealerDashboard";
 import Favorites from "./pages/Favorites";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -41,6 +42,11 @@ const App = () => (
               <Route path="/dashboard" element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/dealer-analytics" element={
+                <ProtectedRoute>
+                  <DealerDashboard />
                 </ProtectedRoute>
               } />
               <Route path="/favorieten" element={

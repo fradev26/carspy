@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Car, Heart, User, Plus, LogOut, Menu, MessageCircle } from 'lucide-react';
+import { Search, Car, Heart, User, Plus, LogOut, Menu, MessageCircle, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -96,6 +96,12 @@ export function Header() {
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem asChild>
                     <Link to="/dashboard" className="cursor-pointer">Mijn advertenties</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/dealer-analytics" className="cursor-pointer flex items-center gap-2">
+                      <BarChart3 className="h-4 w-4" />
+                      Dealer Analytics
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to="/favorieten" className="cursor-pointer">Favorieten</Link>

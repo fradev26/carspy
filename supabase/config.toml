@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.price-analysis]
 verify_jwt = false
+
+[functions.dealer-analytics]
+verify_jwt = false
