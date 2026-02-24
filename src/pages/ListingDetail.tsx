@@ -1,15 +1,17 @@
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Phone, Mail, MapPin, Calendar, Gauge, Fuel, Settings, Star, Heart, Share2, Shield, Check } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Phone, Mail, MapPin, Calendar, Gauge, Fuel, Settings, Star, Heart, Share2, Shield, Check, GitCompareArrows } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ImageGallery, ListingGrid, PriceIndicator } from '@/modules/listings';
 import { useCompare } from '@/hooks/useCompare';
-import { GitCompareArrows } from 'lucide-react';
 import { getListingById, getRelatedListings } from '@/data/mockListings';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ListingDetail() {
   const { id } = useParams<{ id: string }>();
@@ -17,6 +19,21 @@ export default function ListingDetail() {
   const [isFavorite, setIsFavorite] = useState(false);
   const { add, has } = useCompare();
   const isComparing = has(listing?.id || '');
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleSendMessage = async () => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    if (!listing) return;
+    
+    // For mock listings, we can't create real conversations since seller IDs don't exist in auth
+    // This will work once listings come from the database
+    toast({ title: 'Berichten functie', description: 'Beschikbaar zodra er echte listings zijn.' });
+  };
 
   if (!listing) {
     return (
@@ -203,7 +220,7 @@ export default function ListingDetail() {
                       {listing.seller.phone}
                     </Button>
                   )}
-                  <Button variant="outline" className="w-full gap-2 h-12 text-base border-border/60">
+                  <Button variant="outline" className="w-full gap-2 h-12 text-base border-border/60" onClick={handleSendMessage}>
                     <Mail className="h-5 w-5" />
                     Stuur bericht
                   </Button>
@@ -226,7 +243,7 @@ export default function ListingDetail() {
                     Bellen
                   </Button>
                 )}
-                <Button variant="outline" className="flex-1 gap-2 h-12 border-border/60">
+                <Button variant="outline" className="flex-1 gap-2 h-12 border-border/60" onClick={handleSendMessage}>
                   <Mail className="h-5 w-5" />
                   Bericht
                 </Button>

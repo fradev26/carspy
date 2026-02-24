@@ -15,6 +15,7 @@ import Favorites from "./pages/Favorites";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Compare from "./pages/Compare";
+import Messages from "./pages/Messages";
 import { CompareProvider } from "./hooks/useCompare";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,11 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="/vergelijken" element={<Compare />} />
+              <Route path="/berichten" element={
+                <ProtectedRoute>
+                  <Messages />
+                </ProtectedRoute>
+              } />
             </Route>
             <Route path="/auth" element={<Auth />} />
             <Route path="*" element={<NotFound />} />

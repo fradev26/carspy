@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useTransition } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Grid, List, SlidersHorizontal, Car } from 'lucide-react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { Grid, List, SlidersHorizontal, Car, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -21,7 +21,11 @@ import {
   WarrantyOption,
 } from '@/types/listing';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
-
+import { useSavedSearches } from '@/hooks/useSavedSearches';
+import { useAuth } from '@/hooks/useAuth';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 // Helper to parse URL params into SearchFilters
 function parseFiltersFromURL(searchParams: URLSearchParams): SearchFilters {
   const filters: SearchFilters = {};
@@ -142,6 +146,10 @@ export default function Search() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isLoading, setIsLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const { user } = useAuth();
+  const { save } = useSavedSearches();
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [searchName, setSearchName] = useState('');
 
   // Update filters when URL params change
   useEffect(() => {
@@ -338,6 +346,45 @@ export default function Search() {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  {/* Save Search */}
+                  {user && activeFilterCount > 0 && (
+                    <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" className="gap-2 border-border/60">
+                          <Bell className="h-4 w-4" />
+                          <span className="hidden sm:inline">Bewaar zoekopdracht</span>
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Zoekopdracht opslaan</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4 pt-4">
+                          <div>
+                            <Label>Naam</Label>
+                            <Input
+                              value={searchName}
+                              onChange={(e) => setSearchName(e.target.value)}
+                              placeholder="Bijv. Zwarte BMW automaat"
+                              className="mt-1.5"
+                            />
+                          </div>
+                          <Button
+                            className="w-full"
+                            disabled={!searchName.trim()}
+                            onClick={async () => {
+                              await save(searchName.trim(), filters);
+                              setSearchName('');
+                              setSaveDialogOpen(false);
+                            }}
+                          >
+                            Opslaan
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  )}
+
                   {/* Mobile Filter Button */}
                   <Sheet>
                     <SheetTrigger asChild>
