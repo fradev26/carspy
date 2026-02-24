@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MapPin, Fuel, Gauge, Calendar, Eye } from 'lucide-react';
+import { Heart, MapPin, Fuel, Gauge, Calendar, Eye, GitCompareArrows } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Listing } from '@/types/listing';
 import { cn } from '@/lib/utils';
+import { useCompare } from '@/hooks/useCompare';
 
 interface ListingCardProps {
   listing: Listing;
@@ -18,6 +19,14 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
   const [favorite, setFavorite] = useState(isFavorite);
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const { add, has } = useCompare();
+  const isComparing = has(listing.id);
+
+  const handleCompareClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    add(listing);
+  };
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -168,6 +177,20 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
             onClick={handleFavoriteClick}
           >
             <Heart className={cn('h-4 w-4 transition-transform', favorite && 'fill-current scale-110')} />
+          </Button>
+
+          {/* Compare Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn(
+              'absolute right-3 top-14 h-9 w-9 rounded-full bg-card/90 backdrop-blur-sm shadow-md transition-all hover:scale-110',
+              isComparing ? 'text-primary' : 'text-muted-foreground hover:text-primary'
+            )}
+            onClick={handleCompareClick}
+            disabled={isComparing}
+          >
+            <GitCompareArrows className={cn('h-4 w-4', isComparing && 'scale-110')} />
           </Button>
           
           {/* Status Badge */}
