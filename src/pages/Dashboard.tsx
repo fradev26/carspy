@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Plus, Eye, Edit, Trash2 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Plus, Eye, Edit, Trash2, Bell, Search as SearchIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useSavedSearches } from '@/hooks/useSavedSearches';
 
 interface Listing {
   id: string;
@@ -22,8 +23,10 @@ interface Listing {
 export default function Dashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
+  const { savedSearches, remove: removeSavedSearch, loading: searchesLoading } = useSavedSearches();
 
   useEffect(() => {
     if (user) {
@@ -82,6 +85,10 @@ export default function Dashboard() {
       <Tabs defaultValue="listings" className="mt-8">
         <TabsList>
           <TabsTrigger value="listings">Mijn advertenties ({listings.length})</TabsTrigger>
+          <TabsTrigger value="searches">
+            <Bell className="h-4 w-4 mr-1" />
+            Zoekalerts ({savedSearches.length})
+          </TabsTrigger>
           <TabsTrigger value="messages">Berichten</TabsTrigger>
         </TabsList>
 
@@ -133,8 +140,61 @@ export default function Dashboard() {
           )}
         </TabsContent>
 
+        <TabsContent value="searches" className="mt-6 space-y-4">
+          {savedSearches.length === 0 ? (
+            <Card><CardContent className="py-12 text-center">
+              <p className="text-muted-foreground">Je hebt nog geen opgeslagen zoekopdrachten</p>
+              <Button asChild className="mt-4" variant="outline"><Link to="/zoeken">Ga zoeken</Link></Button>
+            </CardContent></Card>
+          ) : (
+            savedSearches.map(search => {
+              const filterSummary = Object.entries(search.filters)
+                .filter(([, v]) => v !== undefined && v !== '' && (!Array.isArray(v) || v.length > 0))
+                .map(([k, v]) => Array.isArray(v) ? `${k}: ${v.join(', ')}` : `${k}: ${v}`)
+                .join(' · ');
+
+              return (
+                <Card key={search.id}>
+                  <CardContent className="flex items-center justify-between gap-4 p-4">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold">{search.name}</h3>
+                      <p className="text-xs text-muted-foreground truncate mt-1">{filterSummary || 'Alle auto\'s'}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Opgeslagen op {new Date(search.created_at).toLocaleDateString('nl-NL')}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => {
+                          const params = new URLSearchParams();
+                          Object.entries(search.filters).forEach(([k, v]) => {
+                            if (v !== undefined && v !== '') {
+                              params.set(k, Array.isArray(v) ? v.join(',') : String(v));
+                            }
+                          });
+                          navigate(`/zoeken?${params.toString()}`);
+                        }}
+                      >
+                        <SearchIcon className="h-4 w-4" />Zoeken
+                      </Button>
+                      <Button variant="outline" size="sm" className="text-destructive" onClick={() => removeSavedSearch(search.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })
+          )}
+        </TabsContent>
+
         <TabsContent value="messages" className="mt-6">
-          <Card><CardContent className="py-12 text-center text-muted-foreground">Berichten functie komt binnenkort beschikbaar</CardContent></Card>
+          <Card><CardContent className="py-12 text-center text-muted-foreground">
+            <Button asChild><Link to="/berichten">Ga naar berichten</Link></Button>
+          </CardContent></Card>
         </TabsContent>
       </Tabs>
     </div>

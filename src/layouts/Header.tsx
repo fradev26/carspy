@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Car, Heart, User, Plus, LogOut, Menu } from 'lucide-react';
+import { Search, Car, Heart, User, Plus, LogOut, Menu, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -77,6 +77,12 @@ export function Header() {
                 <Link to="/favorieten">
                   <Heart className="h-4 w-4" />
                   Favorieten
+                </Link>
+              </Button>
+              <Button variant="ghost" asChild className="gap-2 text-muted-foreground hover:text-foreground">
+                <Link to="/berichten">
+                  <MessageCircle className="h-4 w-4" />
+                  Berichten
                 </Link>
               </Button>
               
