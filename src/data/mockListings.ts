@@ -52,6 +52,7 @@ export const mockListings: Listing[] = [
     isNonSmoker: true,
     hasMaintenanceHistory: true,
     lastMaintenance: '2024-01-10',
+    isPremium: true,
   },
   {
     id: '2',
@@ -146,6 +147,7 @@ export const mockListings: Listing[] = [
     vatDeductible: true,
     isNonSmoker: true,
     hasMaintenanceHistory: true,
+    boostUntil: '2026-03-15T00:00:00Z',
   },
   {
     id: '4',

@@ -47,6 +47,10 @@
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
     
+    /* Premium */
+    --premium: 45 93% 47%;
+    --premium-foreground: 0 0% 100%;
+    
     /* Radius */
     --radius: 0.625rem;
     
@@ -93,6 +97,9 @@
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 0%;
+    
+    --premium: 45 93% 50%;
+    --premium-foreground: 0 0% 0%;
     
     --sidebar-background: 215 25% 10%;
     --sidebar-foreground: 210 20% 98%;
