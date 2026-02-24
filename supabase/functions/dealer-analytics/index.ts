@@ -40,7 +40,7 @@ serve(async (req) => {
     // 1. Get user's listings
     const { data: listings, error: listingsError } = await adminClient
       .from("listings")
-      .select("id, title, price, status, views, images, created_at")
+      .select("id, title, price, status, views, images, created_at, is_premium, boost_until")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
@@ -107,6 +107,8 @@ serve(async (req) => {
       favorites: favMap[l.id] || 0,
       conversations: convMap[l.id] || 0,
       messages: msgMap[l.id] || 0,
+      isPremium: l.is_premium || false,
+      boostUntil: l.boost_until || null,
     }));
 
     const totalViews = listingAnalytics.reduce((s, l) => s + l.views, 0);

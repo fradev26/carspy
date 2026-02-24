@@ -63,6 +63,10 @@ export default {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
         },
+        premium: {
+          DEFAULT: "hsl(var(--premium))",
+          foreground: "hsl(var(--premium-foreground))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -89,6 +93,7 @@ export default {
         "inner-soft": "inset 0 2px 4px 0 rgb(0 0 0 / 0.02)",
         "glow": "0 0 30px -5px hsl(var(--primary) / 0.3)",
         "glow-accent": "0 0 30px -5px hsl(var(--accent) / 0.4)",
+        "glow-premium": "0 0 20px -5px hsl(var(--premium) / 0.4)",
       },
       keyframes: {
         "accordion-down": {

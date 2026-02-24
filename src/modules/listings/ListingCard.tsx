@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MapPin, Fuel, Gauge, Calendar, Eye, GitCompareArrows } from 'lucide-react';
+import { Heart, MapPin, Fuel, Gauge, Calendar, Eye, GitCompareArrows, Crown } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,7 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
   const [imageLoaded, setImageLoaded] = useState(false);
   const { add, has } = useCompare();
   const isComparing = has(listing.id);
+  const isPremium = listing.isPremium || (listing.boostUntil && new Date(listing.boostUntil) > new Date());
 
   const handleCompareClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -56,7 +57,10 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
   if (variant === 'horizontal') {
     return (
       <Link to={`/auto/${listing.id}`} className="block">
-        <Card className="group overflow-hidden transition-all duration-300 hover:shadow-card-hover hover:-translate-y-0.5 border-border/60">
+        <Card className={cn(
+          "group overflow-hidden transition-all duration-300 hover:shadow-card-hover hover:-translate-y-0.5 border-border/60",
+          isPremium && "border-premium/50 shadow-glow-premium ring-1 ring-premium/20"
+        )}>
           <div className="flex flex-col sm:flex-row">
             {/* Image Container */}
             <div className="relative aspect-[16/10] sm:aspect-[4/3] sm:w-72 overflow-hidden bg-muted">
@@ -92,9 +96,15 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
                 <Heart className={cn('h-4 w-4 transition-transform', favorite && 'fill-current scale-110')} />
               </Button>
               
-              {/* Status Badge */}
+              {/* Status / Premium Badges */}
+              {isPremium && (
+                <Badge className="absolute left-3 bottom-3 bg-premium text-premium-foreground font-semibold gap-1">
+                  <Crown className="h-3 w-3" />
+                  Top
+                </Badge>
+              )}
               {listing.status === 'reserved' && (
-                <Badge className="absolute left-3 bottom-3 bg-warning text-warning-foreground font-medium">
+                <Badge className={cn("absolute bottom-3 bg-warning text-warning-foreground font-medium", isPremium ? "left-20" : "left-3")}>
                   Gereserveerd
                 </Badge>
               )}
@@ -141,7 +151,10 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
 
   return (
     <Link to={`/auto/${listing.id}`} className="block">
-      <Card className="group overflow-hidden transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1 border-border/60">
+      <Card className={cn(
+        "group overflow-hidden transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1 border-border/60",
+        isPremium && "border-premium/50 shadow-glow-premium ring-1 ring-premium/20"
+      )}>
         {/* Image Container */}
         <div className="relative aspect-[16/10] overflow-hidden bg-muted">
           {!imageLoaded && (
@@ -193,9 +206,15 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
             <GitCompareArrows className={cn('h-4 w-4', isComparing && 'scale-110')} />
           </Button>
           
-          {/* Status Badge */}
+          {/* Status / Premium Badges */}
+          {isPremium && (
+            <Badge className="absolute left-3 bottom-3 bg-premium text-premium-foreground font-semibold gap-1">
+              <Crown className="h-3 w-3" />
+              Top
+            </Badge>
+          )}
           {listing.status === 'reserved' && (
-            <Badge className="absolute left-3 bottom-3 bg-warning text-warning-foreground font-medium">
+            <Badge className={cn("absolute bottom-3 bg-warning text-warning-foreground font-medium", isPremium ? "left-20" : "left-3")}>
               Gereserveerd
             </Badge>
           )}

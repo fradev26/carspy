@@ -88,6 +88,7 @@ export type Database = {
       listings: {
         Row: {
           body_type: string
+          boost_until: string | null
           brand: string
           city: string | null
           color: string | null
@@ -99,6 +100,7 @@ export type Database = {
           fuel_type: string
           id: string
           images: string[] | null
+          is_premium: boolean
           mileage: number
           model: string
           power: number | null
@@ -115,6 +117,7 @@ export type Database = {
         }
         Insert: {
           body_type: string
+          boost_until?: string | null
           brand: string
           city?: string | null
           color?: string | null
@@ -126,6 +129,7 @@ export type Database = {
           fuel_type: string
           id?: string
           images?: string[] | null
+          is_premium?: boolean
           mileage: number
           model: string
           power?: number | null
@@ -142,6 +146,7 @@ export type Database = {
         }
         Update: {
           body_type?: string
+          boost_until?: string | null
           brand?: string
           city?: string | null
           color?: string | null
@@ -153,6 +158,7 @@ export type Database = {
           fuel_type?: string
           id?: string
           images?: string[] | null
+          is_premium?: boolean
           mileage?: number
           model?: string
           power?: number | null

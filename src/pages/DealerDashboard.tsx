@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, Heart, MessageCircle, TrendingUp, Car, BarChart3, ArrowLeft } from 'lucide-react';
+import { Eye, Heart, MessageCircle, TrendingUp, Car, BarChart3, ArrowLeft, Crown, Rocket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { toast } from 'sonner';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -20,6 +21,8 @@ interface ListingAnalytics {
   favorites: number;
   conversations: number;
   messages: number;
+  isPremium: boolean;
+  boostUntil: string | null;
 }
 
 interface Overview {
@@ -53,6 +56,34 @@ export default function DealerDashboard() {
       setError('Kon analytics niet laden');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const togglePremium = async (listingId: string, currentPremium: boolean) => {
+    const { error } = await supabase
+      .from('listings')
+      .update({ is_premium: !currentPremium } as any)
+      .eq('id', listingId);
+    if (error) {
+      toast.error('Kon premium status niet wijzigen');
+    } else {
+      toast.success(!currentPremium ? 'Listing is nu Premium!' : 'Premium uitgeschakeld');
+      fetchAnalytics();
+    }
+  };
+
+  const boostListing = async (listingId: string) => {
+    const boostUntil = new Date();
+    boostUntil.setDate(boostUntil.getDate() + 7);
+    const { error } = await supabase
+      .from('listings')
+      .update({ boost_until: boostUntil.toISOString() } as any)
+      .eq('id', listingId);
+    if (error) {
+      toast.error('Kon listing niet boosten');
+    } else {
+      toast.success('Listing geboost voor 7 dagen!');
+      fetchAnalytics();
     }
   };
 
@@ -192,13 +223,15 @@ export default function DealerDashboard() {
                       <MessageCircle className="h-4 w-4 inline" />
                     </TableHead>
                     <TableHead className="text-right">Conversie</TableHead>
+                    <TableHead className="text-center">Premium / Boost</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {listings.map((l) => {
                     const conversionRate = l.views > 0 ? ((l.favorites + l.conversations) / l.views * 100) : 0;
+                    const isBoosted = l.boostUntil && new Date(l.boostUntil) > new Date();
                     return (
-                      <TableRow key={l.id}>
+                      <TableRow key={l.id} className={l.isPremium ? 'bg-premium/5' : ''}>
                         <TableCell>
                           <Link to={`/auto/${l.id}`} className="flex items-center gap-3 hover:text-primary transition-colors">
                             <img
@@ -206,7 +239,10 @@ export default function DealerDashboard() {
                               alt={l.title}
                               className="h-10 w-14 rounded-md object-cover flex-shrink-0"
                             />
-                            <span className="font-medium text-sm truncate max-w-[180px]">{l.title}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-sm truncate max-w-[180px]">{l.title}</span>
+                              {l.isPremium && <Crown className="h-3.5 w-3.5 text-premium flex-shrink-0" />}
+                            </div>
                           </Link>
                         </TableCell>
                         <TableCell className="text-right font-semibold text-sm">{formatPrice(l.price)}</TableCell>
@@ -222,6 +258,29 @@ export default function DealerDashboard() {
                           <span className={`text-sm font-medium ${conversionRate > 5 ? 'text-success' : conversionRate > 2 ? 'text-warning' : 'text-muted-foreground'}`}>
                             {conversionRate.toFixed(1)}%
                           </span>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <Button
+                              variant={l.isPremium ? 'default' : 'outline'}
+                              size="sm"
+                              className={l.isPremium ? 'bg-premium hover:bg-premium/90 text-premium-foreground h-7 text-xs gap-1' : 'h-7 text-xs gap-1'}
+                              onClick={() => togglePremium(l.id, l.isPremium)}
+                            >
+                              <Crown className="h-3 w-3" />
+                              {l.isPremium ? 'Premium' : 'Maak Premium'}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className={`h-7 text-xs gap-1 ${isBoosted ? 'text-primary border-primary/50' : ''}`}
+                              onClick={() => boostListing(l.id)}
+                              disabled={!!isBoosted}
+                            >
+                              <Rocket className="h-3 w-3" />
+                              {isBoosted ? 'Geboost' : 'Boost'}
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );

@@ -39,6 +39,8 @@ export interface Listing {
   isNonSmoker?: boolean;
   hasMaintenanceHistory?: boolean;
   lastMaintenance?: string;
+  isPremium?: boolean;
+  boostUntil?: string;
 }
 
 export interface Seller {
