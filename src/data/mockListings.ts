@@ -589,3 +589,47 @@ export const getRelatedListings = (listing: Listing, count: number = 4): Listing
     .filter(l => l.id !== listing.id && (l.brand === listing.brand || l.bodyType === listing.bodyType))
     .slice(0, count);
 };
+
+export interface PriceAnalysis {
+  averagePrice: number;
+  minPrice: number;
+  maxPrice: number;
+  comparableCount: number;
+  rating: 'good' | 'fair' | 'high';
+}
+
+export const getPriceAnalysis = (listing: Listing): PriceAnalysis | null => {
+  const comparable = mockListings.filter(
+    l => l.id !== listing.id &&
+      l.brand === listing.brand &&
+      Math.abs(l.year - listing.year) <= 2 &&
+      Math.abs(l.mileage - listing.mileage) < 40000
+  );
+
+  if (comparable.length === 0) {
+    // Fallback: same body type and similar price range
+    const fallback = mockListings.filter(
+      l => l.id !== listing.id &&
+        l.bodyType === listing.bodyType &&
+        Math.abs(l.year - listing.year) <= 2
+    );
+    if (fallback.length < 2) return null;
+    return buildAnalysis(listing, fallback);
+  }
+
+  return buildAnalysis(listing, comparable);
+};
+
+function buildAnalysis(listing: Listing, comparable: Listing[]): PriceAnalysis {
+  const prices = comparable.map(l => l.price);
+  const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
+  const min = Math.min(...prices);
+  const max = Math.max(...prices);
+  const diff = (listing.price - avg) / avg;
+
+  let rating: PriceAnalysis['rating'] = 'fair';
+  if (diff < -0.05) rating = 'good';
+  else if (diff > 0.05) rating = 'high';
+
+  return { averagePrice: Math.round(avg), minPrice: min, maxPrice: max, comparableCount: comparable.length, rating };
+}

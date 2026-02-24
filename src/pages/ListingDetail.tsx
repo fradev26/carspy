@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { ImageGallery, ListingGrid } from '@/modules/listings';
+import { ImageGallery, ListingGrid, PriceIndicator } from '@/modules/listings';
+import { useCompare } from '@/hooks/useCompare';
+import { GitCompareArrows } from 'lucide-react';
 import { getListingById, getRelatedListings } from '@/data/mockListings';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -13,6 +15,8 @@ export default function ListingDetail() {
   const { id } = useParams<{ id: string }>();
   const listing = getListingById(id || '');
   const [isFavorite, setIsFavorite] = useState(false);
+  const { add, has } = useCompare();
+  const isComparing = has(listing?.id || '');
 
   if (!listing) {
     return (
@@ -92,6 +96,9 @@ export default function ListingDetail() {
               ))}
             </div>
 
+            {/* Price Indicator */}
+            <PriceIndicator listing={listing} />
+
             {/* Description */}
             <Card className="border-border/60 shadow-card">
               <CardContent className="p-6">
@@ -141,6 +148,15 @@ export default function ListingDetail() {
                   </Button>
                   <Button variant="outline" size="icon" className="border-border/60 flex-shrink-0">
                     <Share2 className="h-5 w-5" />
+                  </Button>
+                  <Button
+                    variant={isComparing ? "default" : "outline"}
+                    size="icon"
+                    className={cn("flex-shrink-0", !isComparing && "border-border/60")}
+                    onClick={() => listing && add(listing)}
+                    disabled={isComparing}
+                  >
+                    <GitCompareArrows className="h-5 w-5" />
                   </Button>
                 </div>
 
