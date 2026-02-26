@@ -5,11 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { isDealer } = useProfile();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,12 +99,14 @@ export function Header() {
                   <DropdownMenuItem asChild>
                     <Link to="/dashboard" className="cursor-pointer">Mijn advertenties</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/dealer-analytics" className="cursor-pointer flex items-center gap-2">
-                      <BarChart3 className="h-4 w-4" />
-                      Dealer Analytics
-                    </Link>
-                  </DropdownMenuItem>
+                  {isDealer && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/zakelijk" className="cursor-pointer flex items-center gap-2">
+                        <BarChart3 className="h-4 w-4" />
+                        Zakelijk Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem asChild>
                     <Link to="/favorieten" className="cursor-pointer">Favorieten</Link>
                   </DropdownMenuItem>
