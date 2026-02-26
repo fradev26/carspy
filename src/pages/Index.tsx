@@ -21,7 +21,7 @@ const websiteJsonLd = [
     "@type": "WebSite",
     "name": "AutoSpy",
     "url": "https://autospy.nl/",
-    "description": "Tweedehands auto's kopen en verkopen in Nederland en België",
+    "description": "Tweedehands auto's kopen en verkopen in Nederland en België. Vind jouw perfecte occasion bij geverifieerde dealers.",
     "potentialAction": {
       "@type": "SearchAction",
       "target": "https://autospy.nl/zoeken?brand={search_term_string}",
@@ -36,16 +36,9 @@ const websiteJsonLd = [
     "logo": "https://autospy.nl/favicon.ico",
     "contactPoint": {
       "@type": "ContactPoint",
-      "telephone": "+31-800-123-4567",
+      "email": "info@autospy.nl",
       "contactType": "customer service",
       "availableLanguage": "Dutch"
-    },
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": "Autoweg 123",
-      "addressLocality": "Amsterdam",
-      "postalCode": "1234 AB",
-      "addressCountry": "NL"
     }
   },
   {
@@ -106,7 +99,7 @@ const Index = () => {
             </div>
             <div className="hidden sm:flex items-center gap-2">
               <Car className="h-4 w-4" />
-              <span>25.000+ auto's</span>
+              <span>Duizenden occasions</span>
             </div>
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4" />
@@ -122,8 +115,8 @@ const Index = () => {
         <div className="container">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-2xl font-semibold">Nieuwste advertenties</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Vandaag toegevoegd</p>
+              <h2 className="text-2xl font-semibold">Uitgelichte advertenties</h2>
+              <p className="mt-1 text-sm text-muted-foreground">Recent toegevoegd</p>
             </div>
             <Button variant="outline" asChild className="gap-2 shadow-sm">
               <Link to="/zoeken">

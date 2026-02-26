@@ -33,7 +33,35 @@ export default function Sell() {
   });
 
   const updateForm = (key: string, value: string) => setFormData(prev => ({ ...prev, [key]: value }));
-  const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
+  const validateStep = (step: number): string | null => {
+    switch (step) {
+      case 0:
+        if (!formData.brand) return 'Selecteer een merk';
+        if (!formData.model) return 'Vul het model in';
+        if (!formData.year) return 'Vul het bouwjaar in';
+        if (!formData.mileage) return 'Vul de kilometerstand in';
+        return null;
+      case 1:
+        if (!formData.fuelType) return 'Selecteer het brandstoftype';
+        if (!formData.transmission) return 'Selecteer de transmissie';
+        if (!formData.bodyType) return 'Selecteer het carrosserietype';
+        return null;
+      case 3:
+        if (!formData.price) return 'Vul de vraagprijs in';
+        return null;
+      default:
+        return null;
+    }
+  };
+
+  const nextStep = () => {
+    const error = validateStep(currentStep);
+    if (error) {
+      toast({ title: error, variant: 'destructive' });
+      return;
+    }
+    setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
+  };
   const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 0));
 
   const generateDescription = async () => {
