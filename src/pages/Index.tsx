@@ -1,10 +1,19 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Shield, Zap, Users, Car } from 'lucide-react';
+import { ArrowRight, Shield, Zap, Users, Car, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SearchBar } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
 import { mockListings } from '@/data/mockListings';
 import { SEOHead } from '@/components/SEOHead';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+
+const faqItems = [
+  { question: "Is AutoSpy gratis te gebruiken?", answer: "Ja, zoeken en vergelijken op AutoSpy is volledig gratis. Ook het plaatsen van een advertentie is gratis. Premium opties zijn beschikbaar voor extra zichtbaarheid." },
+  { question: "Hoe weet ik of een dealer betrouwbaar is?", answer: "Alle dealers op AutoSpy worden geverifieerd voordat ze advertenties mogen plaatsen. We controleren KvK-registratie, reviews en handelsgeschiedenis om jouw veiligheid te waarborgen." },
+  { question: "Kan ik auto's vergelijken op AutoSpy?", answer: "Ja, je kunt tot 3 auto's naast elkaar vergelijken op prijs, specificaties, uitrusting en meer. Gebruik de vergelijkknop op elke advertentie om te starten." },
+  { question: "Hoe werkt de prijsindicatie?", answer: "Onze prijsindicatie vergelijkt de vraagprijs met vergelijkbare auto's op basis van merk, model, bouwjaar en kilometerstand. Zo zie je direct of een auto scherp geprijsd is." },
+  { question: "In welke regio's is AutoSpy actief?", answer: "AutoSpy is actief in heel Nederland en België. Je kunt zoeken op provincie of stad om auto's bij jou in de buurt te vinden." },
+];
 
 const websiteJsonLd = [
   {
@@ -38,6 +47,18 @@ const websiteJsonLd = [
       "postalCode": "1234 AB",
       "addressCountry": "NL"
     }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqItems.map(faq => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
   }
 ];
 
@@ -174,6 +195,33 @@ const Index = () => {
           >
             <Link to="/verkopen">Start nu met verkopen</Link>
           </Button>
+        </div>
+      </section>
+      {/* FAQ */}
+      <section className="py-12 md:py-20 bg-muted/30">
+        <div className="container">
+          <div className="mx-auto max-w-3xl">
+            <div className="text-center mb-10">
+              <h2 className="text-2xl font-semibold md:text-3xl">Veelgestelde vragen</h2>
+              <p className="mt-2 text-muted-foreground">Alles wat je wilt weten over AutoSpy</p>
+            </div>
+            <Accordion type="single" collapsible className="space-y-3">
+              {faqItems.map((faq, i) => (
+                <AccordionItem
+                  key={i}
+                  value={`faq-${i}`}
+                  className="bg-card rounded-xl border border-border/60 px-6 shadow-sm data-[state=open]:shadow-md transition-shadow"
+                >
+                  <AccordionTrigger className="text-left font-medium hover:no-underline py-5">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground leading-relaxed pb-5">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
         </div>
       </section>
     </div>
