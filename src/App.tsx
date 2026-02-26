@@ -17,6 +17,8 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Compare from "./pages/Compare";
 import Messages from "./pages/Messages";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import { CompareProvider } from "./hooks/useCompare";
 
 const queryClient = new QueryClient();
@@ -55,6 +57,8 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="/vergelijken" element={<Compare />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/voorwaarden" element={<Terms />} />
               <Route path="/berichten" element={
                 <ProtectedRoute>
                   <Messages />

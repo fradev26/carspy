@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Car, Mail, Phone, MapPin } from 'lucide-react';
+import { Car, Mail } from 'lucide-react';
 
 export function Footer() {
   return (
@@ -51,22 +51,17 @@ export function Footer() {
             <h3 className="font-semibold">Ondersteuning</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Help center
-                </Link>
-              </li>
-              <li>
-                <Link to="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/#faq" className="text-muted-foreground hover:text-foreground transition-colors">
                   Veelgestelde vragen
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
                   Privacybeleid
                 </Link>
               </li>
               <li>
-                <Link to="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/voorwaarden" className="text-muted-foreground hover:text-foreground transition-colors">
                   Algemene voorwaarden
                 </Link>
               </li>
@@ -79,18 +74,10 @@ export function Footer() {
             <ul className="space-y-3 text-sm">
               <li className="flex items-center gap-2 text-muted-foreground">
                 <Mail className="h-4 w-4" />
-                info@autospy.nl
+                <a href="mailto:info@autospy.nl" className="hover:text-foreground transition-colors">info@autospy.nl</a>
               </li>
-              <li className="flex items-center gap-2 text-muted-foreground">
-                <Phone className="h-4 w-4" />
-                0800-123 4567
-              </li>
-              <li className="flex items-start gap-2 text-muted-foreground">
-                <MapPin className="h-4 w-4 mt-0.5" />
-                <span>
-                  Autoweg 123<br />
-                  1234 AB Amsterdam
-                </span>
+              <li className="text-muted-foreground text-xs leading-relaxed">
+                Neem contact op via e-mail voor vragen over AutoSpy.
               </li>
             </ul>
           </div>
@@ -103,14 +90,11 @@ export function Footer() {
               © {new Date().getFullYear()} AutoSpy. Alle rechten voorbehouden.
             </p>
             <div className="flex items-center gap-4">
-              <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Privacy
               </Link>
-              <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <Link to="/voorwaarden" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                 Voorwaarden
-              </Link>
-              <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                Cookies
               </Link>
             </div>
           </div>

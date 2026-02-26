@@ -73,7 +73,23 @@ export default function ListingDetail() {
       return;
     }
     if (!listing) return;
-    toast({ title: 'Berichten functie', description: 'Beschikbaar zodra er echte listings zijn.' });
+    toast({ title: 'Bericht verzenden', description: 'De berichtenfunctie wordt binnenkort gelanceerd.' });
+  };
+
+  const handleShare = async () => {
+    if (!listing) return;
+    const url = `${window.location.origin}/auto/${listing.id}`;
+    const shareData = { title: listing.title, text: `Bekijk ${listing.title} op AutoSpy`, url };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast({ title: 'Link gekopieerd', description: 'De link is naar je klembord gekopieerd.' });
+      }
+    } catch {
+      // User cancelled share
+    }
   };
 
   if (!listing) {
@@ -150,7 +166,7 @@ export default function ListingDetail() {
                   >
                     <Heart className={cn("h-5 w-5", isFavorite && "fill-current")} />
                   </Button>
-                  <Button variant="outline" size="icon" className="border-border/60">
+                  <Button variant="outline" size="icon" className="border-border/60" onClick={handleShare}>
                     <Share2 className="h-5 w-5" />
                   </Button>
                 </div>
@@ -222,7 +238,7 @@ export default function ListingDetail() {
                   >
                     <Heart className={cn("h-5 w-5", isFavorite && "fill-current")} />
                   </Button>
-                  <Button variant="outline" size="icon" className="border-border/60 flex-shrink-0">
+                  <Button variant="outline" size="icon" className="border-border/60 flex-shrink-0" onClick={handleShare}>
                     <Share2 className="h-5 w-5" />
                   </Button>
                   <Button
@@ -273,10 +289,12 @@ export default function ListingDetail() {
 
                 {/* Contact Buttons */}
                 <div className="space-y-3">
-                  {listing.seller.phone && (
-                    <Button className="w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90 h-12 text-base shadow-sm">
-                      <Phone className="h-5 w-5" />
-                      {listing.seller.phone}
+                {listing.seller.phone && (
+                    <Button asChild className="w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90 h-12 text-base shadow-sm">
+                      <a href={`tel:${listing.seller.phone.replace(/\s/g, '')}`}>
+                        <Phone className="h-5 w-5" />
+                        {listing.seller.phone}
+                      </a>
                     </Button>
                   )}
                   <Button variant="outline" className="w-full gap-2 h-12 text-base border-border/60" onClick={handleSendMessage}>
@@ -297,9 +315,11 @@ export default function ListingDetail() {
             <div className="lg:hidden fixed bottom-16 left-0 right-0 z-40 border-t bg-card/95 backdrop-blur-lg p-4 safe-bottom">
               <div className="flex gap-3">
                 {listing.seller.phone && (
-                  <Button className="flex-1 gap-2 bg-accent text-accent-foreground hover:bg-accent/90 h-12 shadow-sm">
-                    <Phone className="h-5 w-5" />
-                    Bellen
+                  <Button asChild className="flex-1 gap-2 bg-accent text-accent-foreground hover:bg-accent/90 h-12 shadow-sm">
+                    <a href={`tel:${listing.seller.phone.replace(/\s/g, '')}`}>
+                      <Phone className="h-5 w-5" />
+                      Bellen
+                    </a>
                   </Button>
                 )}
                 <Button variant="outline" className="flex-1 gap-2 h-12 border-border/60" onClick={handleSendMessage}>

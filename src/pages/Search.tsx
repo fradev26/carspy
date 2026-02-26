@@ -178,6 +178,17 @@ export default function Search() {
   const filteredListings = useMemo(() => {
     let results = [...mockListings];
 
+    // Free-text query from URL (?q=...)
+    const query = searchParams.get('q')?.toLowerCase().trim();
+    if (query) {
+      results = results.filter(l =>
+        l.title.toLowerCase().includes(query) ||
+        l.brand.toLowerCase().includes(query) ||
+        l.model.toLowerCase().includes(query) ||
+        l.description.toLowerCase().includes(query)
+      );
+    }
+
     // Basic filters
     if (filters.brand && filters.brand !== 'all') {
       results = results.filter(l => l.brand === filters.brand);

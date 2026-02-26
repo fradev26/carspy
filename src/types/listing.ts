@@ -249,8 +249,8 @@ export const SORT_OPTIONS: SortOption[] = [
 
 export const CAR_BRANDS = [
   'Audi', 'BMW', 'Citroën', 'Dacia', 'Fiat', 'Ford', 'Honda', 'Hyundai', 
-  'Kia', 'Mazda', 'Mercedes-Benz', 'Nissan', 'Opel', 'Peugeot', 'Renault', 
-  'Seat', 'Skoda', 'Tesla', 'Toyota', 'Volkswagen', 'Volvo'
+  'Kia', 'Mazda', 'Mercedes-Benz', 'Nissan', 'Opel', 'Peugeot', 'Porsche',
+  'Renault', 'Seat', 'Skoda', 'Tesla', 'Toyota', 'Volkswagen', 'Volvo'
 ];
 
 // Brand -> Models mapping for dynamic filtering
@@ -269,6 +269,7 @@ export const CAR_MODELS: Record<string, string[]> = {
   'Nissan': ['Micra', 'Juke', 'Qashqai', 'X-Trail', 'Leaf', 'Ariya'],
   'Opel': ['Corsa', 'Astra', 'Insignia', 'Mokka', 'Crossland', 'Grandland'],
   'Peugeot': ['108', '208', '308', '508', '2008', '3008', '5008', 'Partner', 'Rifter', 'e-208', 'e-2008'],
+  'Porsche': ['911', 'Cayenne', 'Macan', 'Panamera', 'Taycan', 'Boxster', 'Cayman'],
   'Renault': ['Clio', 'Megane', 'Captur', 'Kadjar', 'Koleos', 'Scenic', 'Zoe', 'Arkana', 'Austral'],
   'Seat': ['Ibiza', 'Leon', 'Arona', 'Ateca', 'Tarraco'],
   'Skoda': ['Fabia', 'Scala', 'Octavia', 'Superb', 'Kamiq', 'Karoq', 'Kodiaq', 'Enyaq'],
