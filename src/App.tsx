@@ -11,7 +11,7 @@ import Search from "./pages/Search";
 import ListingDetail from "./pages/ListingDetail";
 import Sell from "./pages/Sell";
 import Dashboard from "./pages/Dashboard";
-import DealerDashboard from "./pages/DealerDashboard";
+import BusinessDashboard from "./pages/BusinessDashboard";
 import Favorites from "./pages/Favorites";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -46,9 +46,14 @@ const App = () => (
                   <Dashboard />
                 </ProtectedRoute>
               } />
+              <Route path="/zakelijk" element={
+                <ProtectedRoute>
+                  <BusinessDashboard />
+                </ProtectedRoute>
+              } />
               <Route path="/dealer-analytics" element={
                 <ProtectedRoute>
-                  <DealerDashboard />
+                  <BusinessDashboard />
                 </ProtectedRoute>
               } />
               <Route path="/favorieten" element={

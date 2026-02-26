@@ -6,7 +6,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, fullName: string, dealerOptions?: { dealerName: string; vatNumber: string }) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
@@ -38,17 +38,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    fullName: string,
+    dealerOptions?: { dealerName: string; vatNumber: string }
+  ) => {
     const redirectUrl = `${window.location.origin}/`;
     
+    const metadata: Record<string, string | boolean> = {
+      full_name: fullName,
+    };
+
+    if (dealerOptions) {
+      metadata.is_dealer = true;
+      metadata.dealer_name = dealerOptions.dealerName;
+      metadata.vat_number = dealerOptions.vatNumber;
+    }
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: redirectUrl,
-        data: {
-          full_name: fullName,
-        },
+        data: metadata,
       },
     });
     

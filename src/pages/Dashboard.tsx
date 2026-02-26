@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { SEOHead } from '@/components/SEOHead';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Eye, Edit, Trash2, Bell, Search as SearchIcon } from 'lucide-react';
+import { Plus, Eye, Edit, Trash2, Bell, Search as SearchIcon, BarChart3, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useSavedSearches } from '@/hooks/useSavedSearches';
+import { useProfile } from '@/hooks/useProfile';
 
 interface Listing {
   id: string;
@@ -25,6 +26,7 @@ export default function Dashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { isDealer, profile } = useProfile();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const { savedSearches, remove: removeSavedSearch, loading: searchesLoading } = useSavedSearches();
@@ -83,6 +85,24 @@ export default function Dashboard() {
           <Link to="/verkopen"><Plus className="h-4 w-4" />Nieuwe advertentie</Link>
         </Button>
       </div>
+
+      {/* Dealer banner */}
+      {isDealer && (
+        <Card className="mt-6 border-primary/30 bg-primary/5">
+          <CardContent className="flex items-center justify-between p-4">
+            <div className="flex items-center gap-3">
+              <BarChart3 className="h-5 w-5 text-primary" />
+              <div>
+                <p className="font-semibold text-sm">Zakelijk Dashboard</p>
+                <p className="text-xs text-muted-foreground">Bekijk voorraadanalytics, AI-prijsanalyse en meer</p>
+              </div>
+            </div>
+            <Button asChild variant="outline" size="sm" className="gap-1.5">
+              <Link to="/zakelijk">Openen <ArrowRight className="h-3.5 w-3.5" /></Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs defaultValue="listings" className="mt-8">
         <TabsList>

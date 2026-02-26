@@ -221,6 +221,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          company_website: string | null
           created_at: string
           dealer_name: string | null
           email: string | null
@@ -229,9 +230,11 @@ export type Database = {
           is_dealer: boolean
           phone: string | null
           updated_at: string
+          vat_number: string | null
         }
         Insert: {
           avatar_url?: string | null
+          company_website?: string | null
           created_at?: string
           dealer_name?: string | null
           email?: string | null
@@ -240,9 +243,11 @@ export type Database = {
           is_dealer?: boolean
           phone?: string | null
           updated_at?: string
+          vat_number?: string | null
         }
         Update: {
           avatar_url?: string | null
+          company_website?: string | null
           created_at?: string
           dealer_name?: string | null
           email?: string | null
@@ -251,6 +256,7 @@ export type Database = {
           is_dealer?: boolean
           phone?: string | null
           updated_at?: string
+          vat_number?: string | null
         }
         Relationships: []
       }
