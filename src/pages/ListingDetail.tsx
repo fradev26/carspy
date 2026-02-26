@@ -27,9 +27,9 @@ export default function ListingDetail() {
   const formatPrice = (price: number) => new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(price);
   const formatMileage = (mileage: number) => new Intl.NumberFormat('nl-NL').format(mileage);
 
-  const vehicleJsonLd = useMemo(() => {
+  const jsonLdSchemas = useMemo(() => {
     if (!listing) return undefined;
-    return {
+    const vehicle = {
       "@context": "https://schema.org",
       "@type": "Vehicle",
       "name": listing.title,
@@ -54,6 +54,16 @@ export default function ListingDetail() {
         }
       }
     };
+    const breadcrumb = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://autospy.nl/" },
+        { "@type": "ListItem", "position": 2, "name": "Zoeken", "item": "https://autospy.nl/zoeken" },
+        { "@type": "ListItem", "position": 3, "name": listing.title, "item": `https://autospy.nl/auto/${listing.id}` }
+      ]
+    };
+    return [vehicle, breadcrumb];
   }, [listing]);
 
   const handleSendMessage = async () => {
@@ -93,7 +103,7 @@ export default function ListingDetail() {
         description={`${listing.title} - ${formatPrice(listing.price)} - ${formatMileage(listing.mileage)} km - Bouwjaar ${listing.year} - ${listing.fuelType} - ${listing.transmission}`}
         canonical={`https://autospy.nl/auto/${listing.id}`}
         ogImage={listing.images[0]}
-        jsonLd={vehicleJsonLd}
+        jsonLd={jsonLdSchemas}
       />
       <div className="container py-6">
         {/* Back button */}
