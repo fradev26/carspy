@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Search, Plus, Heart, User } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,12 +12,12 @@ const navItems = [
   { icon: User, label: 'Account', path: '/dashboard', authPath: '/auth' },
 ];
 
-export function BottomNav() {
+export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref) {
   const location = useLocation();
   const { user } = useAuth();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/60 bg-card/95 backdrop-blur-lg supports-[backdrop-filter]:bg-card/80 md:hidden safe-bottom">
+    <nav ref={ref} className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/60 bg-card/95 backdrop-blur-lg supports-[backdrop-filter]:bg-card/80 md:hidden safe-bottom">
       <div className="flex items-center justify-around h-16">
         {navItems.map((item) => {
           const path = item.authPath && !user ? item.authPath : item.path;
@@ -56,4 +57,4 @@ export function BottomNav() {
       </div>
     </nav>
   );
-}
+});

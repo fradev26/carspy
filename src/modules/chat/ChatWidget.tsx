@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, forwardRef } from 'react';
 import { MessageCircle, X, Send, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,7 @@ const SUGGESTIONS = [
   'Tips voor een zuinige auto',
 ];
 
-export function ChatWidget() {
+export const ChatWidget = forwardRef<HTMLDivElement>(function ChatWidget(_props, ref) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const { messages, isLoading, send, clear } = useChat();
@@ -39,7 +39,7 @@ export function ChatWidget() {
   };
 
   return (
-    <>
+    <div ref={ref}>
       {/* Floating button */}
       <button
         onClick={() => setOpen(o => !o)}
@@ -131,6 +131,6 @@ export function ChatWidget() {
           </form>
         </div>
       )}
-    </>
+    </div>
   );
-}
+});
