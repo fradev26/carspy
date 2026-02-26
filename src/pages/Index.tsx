@@ -4,12 +4,54 @@ import { Button } from '@/components/ui/button';
 import { SearchBar } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
 import { mockListings } from '@/data/mockListings';
+import { SEOHead } from '@/components/SEOHead';
+
+const websiteJsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "AutoSpy",
+    "url": "https://autospy.nl/",
+    "description": "Tweedehands auto's kopen en verkopen in Nederland en België",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://autospy.nl/zoeken?brand={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "AutoSpy",
+    "url": "https://autospy.nl",
+    "logo": "https://autospy.nl/favicon.ico",
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+31-800-123-4567",
+      "contactType": "customer service",
+      "availableLanguage": "Dutch"
+    },
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Autoweg 123",
+      "addressLocality": "Amsterdam",
+      "postalCode": "1234 AB",
+      "addressCountry": "NL"
+    }
+  }
+];
 
 const Index = () => {
   const latestListings = mockListings.slice(0, 6);
 
   return (
     <div className="flex flex-col">
+      <SEOHead
+        title="AutoSpy - Tweedehands auto's kopen en verkopen in Nederland en België"
+        description="Doorzoek 25.000+ occasions. Vind jouw perfecte tweedehands auto bij geverifieerde dealers in Nederland en België."
+        canonical="https://autospy.nl/"
+        jsonLd={websiteJsonLd}
+      />
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary to-primary/90 py-16 md:py-24">
         {/* Background Pattern */}

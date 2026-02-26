@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useCompare } from '@/hooks/useCompare';
+import { SEOHead } from '@/components/SEOHead';
 
 export default function Compare() {
   const { items, remove, clear } = useCompare();
@@ -39,6 +40,12 @@ export default function Compare() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Auto's vergelijken - AutoSpy"
+        description="Vergelijk tweedehands auto's op prijs, specificaties en uitrusting. Maak de beste keuze met AutoSpy."
+        canonical="https://autospy.nl/vergelijken"
+        noindex
+      />
       <div className="container py-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
