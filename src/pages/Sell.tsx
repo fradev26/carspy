@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { SEOHead } from '@/components/SEOHead';
 import { useNavigate } from 'react-router-dom';
 import { Check, ChevronRight, ChevronLeft, Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -160,6 +161,11 @@ export default function Sell() {
 
   return (
     <div className="container max-w-3xl py-8">
+      <SEOHead
+        title="Auto verkopen - AutoSpy"
+        description="Plaats gratis je advertentie en bereik duizenden kopers. Verkoop je auto snel en eenvoudig via AutoSpy."
+        canonical="https://autospy.nl/verkopen"
+      />
       <h1 className="text-2xl font-bold text-center">Auto verkopen</h1>
 
       {/* Progress */}

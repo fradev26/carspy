@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { SEOHead } from '@/components/SEOHead';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, Car } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -83,6 +84,7 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4 py-12">
+      <SEOHead title="Inloggen - AutoSpy" description="Log in of maak een account aan bij AutoSpy." noindex />
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <Link to="/" className="mx-auto flex items-center gap-2 mb-4">

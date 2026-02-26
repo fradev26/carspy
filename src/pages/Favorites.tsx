@@ -4,6 +4,7 @@ import { ListingGrid } from '@/modules/listings';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Listing } from '@/types/listing';
+import { SEOHead } from '@/components/SEOHead';
 
 export default function Favorites() {
   const { user } = useAuth();
@@ -92,6 +93,7 @@ export default function Favorites() {
 
   return (
     <div className="container py-8">
+      <SEOHead title="Mijn favorieten - AutoSpy" description="Bekijk je opgeslagen favoriete auto's." noindex />
       <h1 className="text-2xl font-bold">Mijn favorieten</h1>
       <p className="mt-1 text-muted-foreground">{listings.length} opgeslagen auto's</p>
 

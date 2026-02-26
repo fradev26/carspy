@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useTransition } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { SEOHead } from '@/components/SEOHead';
 import { Grid, List, SlidersHorizontal, Car, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -332,6 +333,19 @@ export default function Search() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Auto's zoeken - AutoSpy"
+        description="Zoek en filter tweedehands auto's op merk, prijs, bouwjaar, kilometerstand en meer. Vind jouw perfecte occasion."
+        canonical="https://autospy.nl/zoeken"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://autospy.nl/" },
+            { "@type": "ListItem", "position": 2, "name": "Zoeken", "item": "https://autospy.nl/zoeken" }
+          ]
+        }}
+      />
       <div className="container py-6">
         <div className="flex gap-8">
           {/* Desktop Filters - Sticky Sidebar */}

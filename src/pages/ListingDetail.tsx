@@ -7,11 +7,12 @@ import { Separator } from '@/components/ui/separator';
 import { ImageGallery, ListingGrid, PriceIndicator } from '@/modules/listings';
 import { useCompare } from '@/hooks/useCompare';
 import { getListingById, getRelatedListings } from '@/data/mockListings';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { SEOHead } from '@/components/SEOHead';
 
 export default function ListingDetail() {
   const { id } = useParams<{ id: string }>();
@@ -23,15 +24,44 @@ export default function ListingDetail() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const formatPrice = (price: number) => new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(price);
+  const formatMileage = (mileage: number) => new Intl.NumberFormat('nl-NL').format(mileage);
+
+  const vehicleJsonLd = useMemo(() => {
+    if (!listing) return undefined;
+    return {
+      "@context": "https://schema.org",
+      "@type": "Vehicle",
+      "name": listing.title,
+      "brand": { "@type": "Brand", "name": listing.brand },
+      "model": listing.model,
+      "vehicleModelDate": listing.year.toString(),
+      "mileageFromOdometer": { "@type": "QuantitativeValue", "value": listing.mileage, "unitCode": "KMT" },
+      "fuelType": listing.fuelType,
+      "vehicleTransmission": listing.transmission,
+      "color": listing.color,
+      "numberOfDoors": listing.doors,
+      "image": listing.images[0],
+      "description": listing.description,
+      "offers": {
+        "@type": "Offer",
+        "price": listing.price,
+        "priceCurrency": "EUR",
+        "availability": "https://schema.org/InStock",
+        "seller": {
+          "@type": listing.seller.type === 'dealer' ? "AutoDealer" : "Person",
+          "name": listing.seller.name
+        }
+      }
+    };
+  }, [listing]);
+
   const handleSendMessage = async () => {
     if (!user) {
       navigate('/auth');
       return;
     }
     if (!listing) return;
-    
-    // For mock listings, we can't create real conversations since seller IDs don't exist in auth
-    // This will work once listings come from the database
     toast({ title: 'Berichten functie', description: 'Beschikbaar zodra er echte listings zijn.' });
   };
 
@@ -48,8 +78,6 @@ export default function ListingDetail() {
   }
 
   const relatedListings = getRelatedListings(listing, 3);
-  const formatPrice = (price: number) => new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(price);
-  const formatMileage = (mileage: number) => new Intl.NumberFormat('nl-NL').format(mileage);
 
   const specs = [
     { icon: Calendar, label: 'Bouwjaar', value: listing.year.toString() },
@@ -60,6 +88,13 @@ export default function ListingDetail() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title={`${listing.title} - AutoSpy`}
+        description={`${listing.title} - ${formatPrice(listing.price)} - ${formatMileage(listing.mileage)} km - Bouwjaar ${listing.year} - ${listing.fuelType} - ${listing.transmission}`}
+        canonical={`https://autospy.nl/auto/${listing.id}`}
+        ogImage={listing.images[0]}
+        jsonLd={vehicleJsonLd}
+      />
       <div className="container py-6">
         {/* Back button */}
         <Button variant="ghost" asChild className="mb-4 -ml-2 text-muted-foreground hover:text-foreground">
