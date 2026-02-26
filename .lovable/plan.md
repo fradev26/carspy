@@ -1,97 +1,110 @@
 
 
-# Audit: Problemen die investeerders kunnen afschrikken
+# Zakelijk Dashboard met Bedrijfsregistratie en AI Prijsanalyse
 
-Na een grondige analyse van de volledige codebase heb ik de volgende problemen geidentificeerd, ingedeeld per ernst.
-
----
-
-## KRITIEK - Direct zichtbare problemen
-
-### 1. 404-pagina is in het Engels
-De NotFound-pagina toont "Oops! Page not found" en "Return to Home" terwijl de hele site in het Nederlands is. Dit breekt de consistentie en oogt onprofessioneel.
-
-**Oplossing:** Vertaal naar Nederlands, voeg SEOHead toe, en gebruik een Link-component in plaats van een `<a>`-tag.
-
-### 2. Footer-links naar "#" (dode links)
-De footer bevat 5 links die naar `#` wijzen: Help center, Veelgestelde vragen, Privacybeleid, Algemene voorwaarden, en Cookies. Dit ziet er onaf uit bij een demo.
-
-**Oplossing:** Maak aparte placeholder-pagina's aan voor de belangrijkste juridische pagina's (Privacy, Voorwaarden), of link naar de homepage FAQ voor "Veelgestelde vragen".
-
-### 3. Nep-contactgegevens zichtbaar
-De footer en JSON-LD tonen nepgegevens: "Autoweg 123, 1234 AB Amsterdam", "0800-123 4567", "info@autospy.nl". Dit kan vragen oproepen bij investeerders over legitimiteit.
-
-**Oplossing:** Vervang door een generiek "Neem contact op"-formulier of verwijder de specifieke adresgegevens en toon alleen het e-mailadres.
-
-### 4. Porsche ontbreekt in CAR_BRANDS
-De mockdata bevat nu een Porsche Taycan (listing 15), maar "Porsche" staat niet in de `CAR_BRANDS` array in `types/listing.ts`. Dit betekent dat je Porsche niet kunt selecteren bij het verkopen of filteren.
-
-**Oplossing:** Voeg "Porsche" toe aan de `CAR_BRANDS` array en `CAR_MODELS` mapping.
+## Overzicht
+Dit plan voegt een volledige zakelijke laag toe aan AutoSpy: bedrijven kunnen zich registreren met bedrijfsnaam en BTW-nummer, krijgen automatisch toegang tot een uitgebreid zakelijk dashboard, en kunnen AI-prijsanalyses uitvoeren op hun voorraad.
 
 ---
 
-## HOOG - Functionele problemen
+## 1. Database-uitbreiding: Bedrijfsgegevens op profiel
 
-### 5. Share-knop doet niets
-De Share-knop op de detailpagina (`<Share2>`) heeft geen onClick-handler. Een investeerder die dit probeert zal een niet-werkende knop zien.
+De bestaande `profiles`-tabel wordt uitgebreid met zakelijke velden:
 
-**Oplossing:** Implementeer een eenvoudige share-functie met `navigator.share()` of kopieer de URL naar het klembord.
+```text
+profiles tabel - nieuwe kolommen:
++------------------+----------+-----------+
+| Kolom            | Type     | Nullable  |
++------------------+----------+-----------+
+| vat_number       | text     | Ja        |
+| company_website  | text     | Ja        |
++------------------+----------+-----------+
+```
 
-### 6. "Stuur bericht"-knop op detailpagina toont alleen een toast
-De bericht-knop toont "Beschikbaar zodra er echte listings zijn" -- dit is een dev-message die investeerders niet moeten zien.
-
-**Oplossing:** Navigeer naar de berichtenpagina of toon een professioneler bericht zoals "Deze functie is binnenkort beschikbaar".
-
-### 7. Sell-formulier mist validatie tussen stappen
-Je kunt door alle stappen klikken zonder verplichte velden in te vullen. Bij het overzicht staan dan lege velden.
-
-**Oplossing:** Voeg stap-validatie toe die controleert of verplichte velden ingevuld zijn voordat je naar de volgende stap kunt.
-
-### 8. Header zoekbalk doet niets nuttigs
-De zoekbalk in de header navigeert naar `/zoeken?q=...` maar de zoekpagina filtert niet op `q`-parameter. De zoekterm wordt dus genegeerd.
-
-**Oplossing:** Voeg een `q` (query) filter toe aan de zoekpagina die filtert op titel/merk/model.
+Het bestaande `is_dealer`-veld en `dealer_name`-veld worden hergebruikt. Wanneer een gebruiker zich registreert met bedrijfsnaam + BTW-nummer, wordt `is_dealer = true` gezet.
 
 ---
 
-## MEDIUM - Visuele en UX-problemen
+## 2. Registratieformulier uitbreiden (Auth.tsx)
 
-### 9. "Vandaag toegevoegd" is niet waar
-De homepage toont "Vandaag toegevoegd" bij de nieuwste advertenties, maar dit zijn statische mockdata. Investeerders die dit twee keer bekijken zien dezelfde "vandaag toegevoegde" auto's.
+Het registratieformulier krijgt een toggle "Ik registreer als bedrijf" die extra velden toont:
 
-**Oplossing:** Verander naar "Uitgelichte advertenties" of "Recent toegevoegd".
+- **Bedrijfsnaam** (verplicht bij zakelijke registratie)
+- **BTW-nummer** (verplicht, met NL-formaat validatie: `NL + 9 cijfers + B + 2 cijfers`)
 
-### 10. "25.000+ auto's" claim versus 20 mocklistings
-De hero-sectie claimt "25.000+ auto's" maar er zijn er maar 20. Bij het zoeken zie je direct dat dit niet klopt.
-
-**Oplossing:** Verander naar een meer generieke tekst zoals "Vind jouw perfecte occasion" zonder specifieke aantallen.
-
-### 11. Telefoonknop op detailpagina is niet klikbaar
-De telefoonknop toont het nummer maar linkt niet naar `tel:`. Een investeerder op mobiel kan niet direct bellen.
-
-**Oplossing:** Wrap de button in een `<a href="tel:...">`.
-
-### 12. Geen loading state bij afbeeldingen op homepage
-Als Unsplash-afbeeldingen langzaam laden, zien gebruikers lege kaarten. De shimmer-animatie werkt alleen op de ListingCard maar er is geen fallback bij netwerk-problemen.
-
-**Oplossing:** Dit is al deels geimplementeerd via de shimmer in ListingCard -- controleer of het werkt met de nieuwe Unsplash URLs.
+Bij registratie worden deze velden opgeslagen in `user_metadata` en via de bestaande trigger `handle_new_user` naar het profiel geschreven. De trigger wordt aangepast om de nieuwe velden te verwerken.
 
 ---
 
-## Implementatieplan
+## 3. Zakelijk Dashboard (nieuwe pagina)
+
+Een nieuwe route `/zakelijk` die alleen zichtbaar is voor dealers (`is_dealer = true`). Dit dashboard vervangt de huidige `/dealer-analytics` route en biedt:
+
+### 3a. Overzichtspaneel
+- Totaal actieve advertenties, views, favorieten, berichten
+- Omzet-indicator (som van verkochte auto's)
+- Gemiddelde tijd-tot-verkoop
+
+### 3b. Voorraadoverzicht met acties
+- Tabel met alle listings + status, views, favorieten, conversieratio
+- Bulk-acties: meerdere listings tegelijk Premium maken of boosten
+- Quick-edit prijs direct vanuit de tabel
+- Status wijzigen (actief/gereserveerd/verkocht)
+
+### 3c. AI Prijsanalyse per wagentype
+- Nieuwe knop "AI Marktanalyse" per listing in het dashboard
+- Hergebruikt de bestaande `price-analysis` edge function
+- Toont: marktpositie, aanbevolen prijsrange, onderhandelingstips
+- Nieuw: mogelijkheid om analyse te doen voor een wagentype dat nog niet in voorraad zit (merk + model + bouwjaar + km-stand invoeren, AI geeft marktinschatting)
+
+### 3d. Prestatiemetrieken
+- Grafiek: views/favorieten/berichten per week (tijdlijn)
+- Top-performers: welke advertenties het best presteren
+- Conversieratio vergelijking tussen listings
+
+---
+
+## 4. Navigatie-aanpassingen
+
+- Header: "Dealer Analytics" in het dropdown-menu wordt **conditioneel** -- alleen zichtbaar als `is_dealer = true`
+- Dashboard-pagina (`/dashboard`): toont een banner/link naar het zakelijk dashboard als de gebruiker dealer is
+- Nieuwe route `/zakelijk` wordt beveiligd met `ProtectedRoute` + dealer-check
+
+---
+
+## 5. AI Prijsanalyse voor losse wagentypes
+
+Een nieuw onderdeel op het zakelijke dashboard: "Marktverkenner". De dealer vult in:
+- Merk, model, bouwjaar, kilometerstand, brandstof
+- De bestaande `price-analysis` edge function wordt aangeroepen met synthetische data
+- Resultaat: geschatte marktprijs, prijsrange, en tips
+
+Dit hergebruikt de bestaande edge function zonder wijzigingen aan de backend.
+
+---
+
+## Technische details
 
 ### Bestanden die worden aangepast:
-1. **src/pages/NotFound.tsx** -- Vertaling naar Nederlands + SEOHead
-2. **src/layouts/Footer.tsx** -- Dode links fixen, contactgegevens aanpassen
-3. **src/types/listing.ts** -- Porsche toevoegen aan CAR_BRANDS en CAR_MODELS
-4. **src/pages/ListingDetail.tsx** -- Share-knop werkend maken, telefoonlink toevoegen, bericht-toast aanpassen
-5. **src/pages/Index.tsx** -- "Vandaag toegevoegd" en "25.000+" tekst aanpassen
-6. **src/pages/Sell.tsx** -- Stap-validatie toevoegen
-7. **src/pages/Search.tsx** -- Zoekterm `q` parameter ondersteunen
+1. **Database migratie** -- `vat_number` en `company_website` toevoegen aan `profiles`, trigger `handle_new_user` uitbreiden
+2. **`src/pages/Auth.tsx`** -- Toggle voor zakelijke registratie, extra velden, validatie
+3. **`src/hooks/useAuth.tsx`** -- `signUp` uitbreiden met dealer-velden in `user_metadata`
+4. **`src/pages/DealerDashboard.tsx`** -- Uitbreiden met nieuwe secties (bulk-acties, quick-edit, AI analyse, marktverkenner)
+5. **`src/layouts/Header.tsx`** -- Conditioneel "Zakelijk Dashboard" tonen op basis van profiel
+6. **`src/pages/Dashboard.tsx`** -- Banner naar zakelijk dashboard voor dealers
+7. **`src/App.tsx`** -- Route `/zakelijk` toevoegen (of `/dealer-analytics` hernoemen)
 
 ### Bestanden die worden aangemaakt:
-Geen nieuwe bestanden nodig.
+- **`src/hooks/useProfile.ts`** -- Hook om profieldata (inclusief `is_dealer`) op te halen en te cachen
 
-### Volgorde:
-Alle wijzigingen zijn onafhankelijk en kunnen parallel worden uitgevoerd. Geschatte omvang: ~150 regels code aanpassingen verspreid over 7 bestanden.
+### Geen wijzigingen nodig aan:
+- Edge functions (bestaande `price-analysis` en `dealer-analytics` worden hergebruikt)
+- Supabase RLS policies (bestaande policies dekken dit al)
+
+### Volgorde van implementatie:
+1. Database migratie (nieuwe kolommen + trigger-update)
+2. useProfile hook
+3. Auth.tsx registratieformulier
+4. DealerDashboard.tsx uitbreiden
+5. Header + Dashboard + routing aanpassen
 
