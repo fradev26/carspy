@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { Car, Mail } from 'lucide-react';
+import { Car, Mail, Heart } from 'lucide-react';
+import fradesLogo from '@/assets/frades-logo.png';
 
 export function Footer() {
   return (
@@ -97,6 +98,22 @@ export function Footer() {
                 Voorwaarden
               </Link>
             </div>
+          </div>
+          
+          {/* Frades Digital Credit */}
+          <div className="mt-8 pt-8 border-t flex flex-col items-center gap-3 md:flex-row md:justify-center">
+            <p className="text-sm text-muted-foreground">
+              Made with <Heart className="h-3.5 w-3.5 inline text-destructive mx-1" /> by
+            </p>
+            <a 
+              href="https://digital.frades.be" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            >
+              <img src={fradesLogo} alt="Frades Digital" className="h-5" />
+              <span className="text-sm font-semibold text-foreground">Frades Digital</span>
+            </a>
           </div>
         </div>
       </div>
