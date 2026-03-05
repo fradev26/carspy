@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useTransition } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { SEOHead } from '@/components/SEOHead';
-import { Grid, List, SlidersHorizontal, Car, Bell } from 'lucide-react';
+import { Grid, List, SlidersHorizontal, Car, Bell, Sparkles, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -382,6 +382,14 @@ export default function Search() {
           <div className="flex-1">
             {/* Header */}
             <div className="mb-6">
+              {/* AI Search Bar */}
+              <div className="mb-5 flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3">
+                <Sparkles className="h-5 w-5 text-primary shrink-0" />
+                <p className="text-sm text-muted-foreground flex-1">
+                  <span className="font-medium text-foreground">VATUUR. AI:</span> Beschrijf wat je zoekt en laat AI de filters instellen — open de chat rechtsonder!
+                </p>
+              </div>
+
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <h1 className="text-2xl font-bold md:text-3xl">Auto's zoeken</h1>

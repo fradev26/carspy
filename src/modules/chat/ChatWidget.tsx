@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, forwardRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { MessageCircle, X, Send, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +16,8 @@ const SUGGESTIONS = [
 ];
 
 export const ChatWidget = forwardRef<HTMLDivElement>(function ChatWidget(_props, ref) {
+  const location = useLocation();
+  const isHomepage = location.pathname === '/';
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const { messages, isLoading, send, clear } = useChat();
@@ -37,6 +40,9 @@ export const ChatWidget = forwardRef<HTMLDivElement>(function ChatWidget(_props,
     setInput('');
     send(trimmed);
   };
+
+  // Hide on homepage — the inline AIChatSection takes over
+  if (isHomepage) return null;
 
   return (
     <div ref={ref}>
