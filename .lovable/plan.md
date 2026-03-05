@@ -1,110 +1,67 @@
 
 
-# Zakelijk Dashboard met Bedrijfsregistratie en AI Prijsanalyse
+# Frades Workshop Platform Styling Toepassen
 
-## Overzicht
-Dit plan voegt een volledige zakelijke laag toe aan AutoSpy: bedrijven kunnen zich registreren met bedrijfsnaam en BTW-nummer, krijgen automatisch toegang tot een uitgebreid zakelijk dashboard, en kunnen AI-prijsanalyses uitvoeren op hun voorraad.
+## Wat verandert er
 
----
+Het volledige kleurenschema en typografie worden aangepast van het huidige "Deep Blue + Electric Orange" automotive thema naar het "Frades Workshop" thema met amber/rood-roze als primaire kleur, nieuwe statuskleur-tokens, extra fonts (JetBrains Mono, Sora), en visuele effecten (shine, glow).
 
-## 1. Database-uitbreiding: Bedrijfsgegevens op profiel
+## Aanpassingen per bestand
 
-De bestaande `profiles`-tabel wordt uitgebreid met zakelijke velden:
+### 1. `src/index.css` — Design tokens bijwerken
 
-```text
-profiles tabel - nieuwe kolommen:
-+------------------+----------+-----------+
-| Kolom            | Type     | Nullable  |
-+------------------+----------+-----------+
-| vat_number       | text     | Ja        |
-| company_website  | text     | Ja        |
-+------------------+----------+-----------+
-```
+**Light mode `:root`:**
+- `--primary`: 347 77% 50% (amber/rood-roze)
+- `--primary-foreground`: 0 0% 100%
+- `--secondary`: 220 14% 96%
+- `--secondary-foreground`: 220 13% 18%
+- `--background`: 210 20% 98%
+- `--foreground`: 220 13% 18%
+- `--border` / `--input`: 220 13% 91%
+- `--ring`: 347 77% 50% (volgt primary)
+- `--muted`: 220 14% 96%
+- `--muted-foreground`: 220 9% 46%
+- `--accent`: 347 77% 50% (zelfde als primary voor dit thema)
+- `--radius`: 0.75rem (was 0.625rem)
 
-Het bestaande `is_dealer`-veld en `dealer_name`-veld worden hergebruikt. Wanneer een gebruiker zich registreert met bedrijfsnaam + BTW-nummer, wordt `is_dealer = true` gezet.
+**Nieuwe status CSS-variabelen toevoegen:**
+- `--status-pending`: 45 93% 47%
+- `--status-diagnosing`: 199 89% 48%
+- `--status-waiting-parts`: 280 67% 55%
+- `--status-in-progress`: 24 95% 53%
+- `--status-ready`: 142 71% 45%
+- `--status-delivered`: 210 20% 55%
 
----
+**Dark mode aanpassen** naar complementaire donkere variant.
 
-## 2. Registratieformulier uitbreiden (Auth.tsx)
+**Nieuwe utility classes toevoegen:**
+- `.shine-effect` — gloss gradient overlay op primary buttons
+- `.glow-auth` — pulserende radiale gradient animatie (voor auth-pagina)
 
-Het registratieformulier krijgt een toggle "Ik registreer als bedrijf" die extra velden toont:
+### 2. `tailwind.config.ts` — Fonts & statuskleur-mapping
 
-- **Bedrijfsnaam** (verplicht bij zakelijke registratie)
-- **BTW-nummer** (verplicht, met NL-formaat validatie: `NL + 9 cijfers + B + 2 cijfers`)
+- `fontFamily.sans`: `["Inter", "system-ui", "sans-serif"]` (blijft)
+- `fontFamily.mono`: `["JetBrains Mono", "monospace"]` toevoegen
+- `fontFamily.display`: `["Sora", "Inter", "sans-serif"]` toevoegen
+- Nieuwe `colors.status` object met pending/diagnosing/waiting-parts/in-progress/ready/delivered
+- Nieuwe keyframe `glow` voor pulserende auth-achtergrond
+- Container padding naar `2rem`
 
-Bij registratie worden deze velden opgeslagen in `user_metadata` en via de bestaande trigger `handle_new_user` naar het profiel geschreven. De trigger wordt aangepast om de nieuwe velden te verwerken.
+### 3. `index.html` — Google Fonts import
 
----
+JetBrains Mono en Sora toevoegen via Google Fonts `<link>` in de `<head>`.
 
-## 3. Zakelijk Dashboard (nieuwe pagina)
+### 4. `src/components/ui/button.tsx` — Shine effect
 
-Een nieuwe route `/zakelijk` die alleen zichtbaar is voor dealers (`is_dealer = true`). Dit dashboard vervangt de huidige `/dealer-analytics` route en biedt:
+Primary button variant krijgt een extra `relative overflow-hidden` class met een `::after` pseudo-element voor het shine-effect (via de `.shine-effect` utility uit index.css).
 
-### 3a. Overzichtspaneel
-- Totaal actieve advertenties, views, favorieten, berichten
-- Omzet-indicator (som van verkochte auto's)
-- Gemiddelde tijd-tot-verkoop
+## Bestanden die NIET wijzigen
+- Alle pagina's en componenten die al `hsl(var(--primary))` etc. gebruiken via Tailwind — die pikken automatisch de nieuwe kleuren op.
+- Supabase/backend bestanden.
 
-### 3b. Voorraadoverzicht met acties
-- Tabel met alle listings + status, views, favorieten, conversieratio
-- Bulk-acties: meerdere listings tegelijk Premium maken of boosten
-- Quick-edit prijs direct vanuit de tabel
-- Status wijzigen (actief/gereserveerd/verkocht)
-
-### 3c. AI Prijsanalyse per wagentype
-- Nieuwe knop "AI Marktanalyse" per listing in het dashboard
-- Hergebruikt de bestaande `price-analysis` edge function
-- Toont: marktpositie, aanbevolen prijsrange, onderhandelingstips
-- Nieuw: mogelijkheid om analyse te doen voor een wagentype dat nog niet in voorraad zit (merk + model + bouwjaar + km-stand invoeren, AI geeft marktinschatting)
-
-### 3d. Prestatiemetrieken
-- Grafiek: views/favorieten/berichten per week (tijdlijn)
-- Top-performers: welke advertenties het best presteren
-- Conversieratio vergelijking tussen listings
-
----
-
-## 4. Navigatie-aanpassingen
-
-- Header: "Dealer Analytics" in het dropdown-menu wordt **conditioneel** -- alleen zichtbaar als `is_dealer = true`
-- Dashboard-pagina (`/dashboard`): toont een banner/link naar het zakelijk dashboard als de gebruiker dealer is
-- Nieuwe route `/zakelijk` wordt beveiligd met `ProtectedRoute` + dealer-check
-
----
-
-## 5. AI Prijsanalyse voor losse wagentypes
-
-Een nieuw onderdeel op het zakelijke dashboard: "Marktverkenner". De dealer vult in:
-- Merk, model, bouwjaar, kilometerstand, brandstof
-- De bestaande `price-analysis` edge function wordt aangeroepen met synthetische data
-- Resultaat: geschatte marktprijs, prijsrange, en tips
-
-Dit hergebruikt de bestaande edge function zonder wijzigingen aan de backend.
-
----
-
-## Technische details
-
-### Bestanden die worden aangepast:
-1. **Database migratie** -- `vat_number` en `company_website` toevoegen aan `profiles`, trigger `handle_new_user` uitbreiden
-2. **`src/pages/Auth.tsx`** -- Toggle voor zakelijke registratie, extra velden, validatie
-3. **`src/hooks/useAuth.tsx`** -- `signUp` uitbreiden met dealer-velden in `user_metadata`
-4. **`src/pages/DealerDashboard.tsx`** -- Uitbreiden met nieuwe secties (bulk-acties, quick-edit, AI analyse, marktverkenner)
-5. **`src/layouts/Header.tsx`** -- Conditioneel "Zakelijk Dashboard" tonen op basis van profiel
-6. **`src/pages/Dashboard.tsx`** -- Banner naar zakelijk dashboard voor dealers
-7. **`src/App.tsx`** -- Route `/zakelijk` toevoegen (of `/dealer-analytics` hernoemen)
-
-### Bestanden die worden aangemaakt:
-- **`src/hooks/useProfile.ts`** -- Hook om profieldata (inclusief `is_dealer`) op te halen en te cachen
-
-### Geen wijzigingen nodig aan:
-- Edge functions (bestaande `price-analysis` en `dealer-analytics` worden hergebruikt)
-- Supabase RLS policies (bestaande policies dekken dit al)
-
-### Volgorde van implementatie:
-1. Database migratie (nieuwe kolommen + trigger-update)
-2. useProfile hook
-3. Auth.tsx registratieformulier
-4. DealerDashboard.tsx uitbreiden
-5. Header + Dashboard + routing aanpassen
+## Volgorde
+1. `index.html` — fonts laden
+2. `src/index.css` — tokens + utilities
+3. `tailwind.config.ts` — font families + statuskleuren + container padding
+4. `src/components/ui/button.tsx` — shine effect
 
