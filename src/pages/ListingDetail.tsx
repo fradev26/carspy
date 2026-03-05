@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Phone, Mail, MapPin, Calendar, Gauge, Fuel, Settings, Star, Heart, Share2, Shield, Check, GitCompareArrows, Home } from 'lucide-react';
+import { ArrowLeft, Phone, Mail, MapPin, Calendar, Gauge, Fuel, Settings, Star, Heart, Share2, Shield, Check, GitCompareArrows, Home, Sparkles, Loader2, Lightbulb, Wrench, AlertTriangle, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,7 @@ import { ImageGallery, ListingGrid, PriceIndicator } from '@/modules/listings';
 import { useCompare } from '@/hooks/useCompare';
 import { getListingById, getRelatedListings } from '@/data/mockListings';
 import { useState, useMemo } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { FEATURE_OPTIONS } from '@/types/listing';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,6 +21,9 @@ export default function ListingDetail() {
   const { id } = useParams<{ id: string }>();
   const listing = getListingById(id || '');
   const [isFavorite, setIsFavorite] = useState(false);
+  const [vehicleAnalysis, setVehicleAnalysis] = useState<any>(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
   const { add, has } = useCompare();
   const isComparing = has(listing?.id || '');
   const { user } = useAuth();
@@ -90,6 +94,23 @@ export default function ListingDetail() {
       }
     } catch {
       // User cancelled share
+    }
+  };
+
+  const handleVehicleAnalysis = async () => {
+    if (vehicleAnalysis || analysisLoading || !listing) return;
+    setAnalysisLoading(true);
+    setAnalysisError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('vehicle-analysis', {
+        body: { listing: { title: listing.title, brand: listing.brand, model: listing.model, year: listing.year, mileage: listing.mileage, fuelType: listing.fuelType, transmission: listing.transmission, power: listing.power, bodyType: listing.bodyType, features: listing.features, price: listing.price } },
+      });
+      if (error) throw new Error(error.message);
+      setVehicleAnalysis(data);
+    } catch (e) {
+      setAnalysisError(e instanceof Error ? e.message : 'Analyse niet beschikbaar');
+    } finally {
+      setAnalysisLoading(false);
     }
   };
 
@@ -220,6 +241,90 @@ export default function ListingDetail() {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* AI Analysis Card */}
+            <Card className="border-primary/30 shadow-elevated overflow-hidden">
+              <div className="bg-gradient-to-r from-primary/10 to-primary/5 px-6 py-4 border-b border-primary/20">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  <h3 className="font-semibold text-foreground">VATUUR. AI Analyse</h3>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Betrouwbaarheid, onderhoud & geschiktheid</p>
+              </div>
+              <CardContent className="p-5">
+                {!vehicleAnalysis && !analysisLoading && !analysisError && (
+                  <Button onClick={handleVehicleAnalysis} className="w-full gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    AI-analyse starten
+                  </Button>
+                )}
+                {analysisLoading && (
+                  <div className="flex flex-col items-center gap-3 py-6">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    <p className="text-sm text-muted-foreground">AI analyseert dit voertuig...</p>
+                  </div>
+                )}
+                {analysisError && (
+                  <div className="space-y-2">
+                    <p className="text-sm text-destructive">{analysisError}</p>
+                    <Button variant="outline" size="sm" className="w-full" onClick={handleVehicleAnalysis}>Opnieuw</Button>
+                  </div>
+                )}
+                {vehicleAnalysis && (
+                  <div className="space-y-4">
+                    {vehicleAnalysis.reliability && (
+                      <div className="flex items-start gap-3">
+                        <Shield className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Betrouwbaarheid</p>
+                          <p className="text-sm text-foreground/80 mt-0.5">{vehicleAnalysis.reliability}</p>
+                        </div>
+                      </div>
+                    )}
+                    {vehicleAnalysis.commonIssues?.length > 0 && (
+                      <div className="flex items-start gap-3">
+                        <AlertTriangle className="h-4 w-4 text-warning mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Aandachtspunten</p>
+                          <ul className="mt-1 space-y-1">
+                            {vehicleAnalysis.commonIssues.map((issue: string, i: number) => (
+                              <li key={i} className="text-sm text-foreground/80">• {issue}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+                    {vehicleAnalysis.maintenanceCost && (
+                      <div className="flex items-start gap-3">
+                        <Wrench className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Onderhoud</p>
+                          <p className="text-sm text-foreground/80 mt-0.5">{vehicleAnalysis.maintenanceCost}</p>
+                        </div>
+                      </div>
+                    )}
+                    {vehicleAnalysis.suitability?.length > 0 && (
+                      <div className="flex items-start gap-3">
+                        <Users className="h-4 w-4 text-success mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Geschikt voor</p>
+                          <ul className="mt-1 space-y-1">
+                            {vehicleAnalysis.suitability.map((s: string, i: number) => (
+                              <li key={i} className="text-sm text-foreground/80">✓ {s}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+                    {vehicleAnalysis.verdict && (
+                      <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 mt-2">
+                        <p className="text-sm font-medium text-foreground">{vehicleAnalysis.verdict}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Price Card - Desktop */}
             <Card className="hidden lg:block sticky top-20 border-border/60 shadow-elevated">
               <CardContent className="p-6 space-y-6">
