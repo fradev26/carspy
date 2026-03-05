@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useTransition } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 import { SEOHead } from '@/components/SEOHead';
 import { Grid, List, SlidersHorizontal, Car, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
