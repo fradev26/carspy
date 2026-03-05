@@ -68,7 +68,7 @@ const Index = () => {
         jsonLd={websiteJsonLd}
       />
       {/* Hero Section */}
-      <section className="relative overflow-hidden -mt-14 lg:-mt-16 pt-32 pb-24 lg:pt-44 lg:pb-36">
+      <section className="relative overflow-hidden -mt-14 lg:-mt-16 pt-24 pb-16 lg:pt-44 lg:pb-36">
         {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center"
@@ -80,22 +80,22 @@ const Index = () => {
         <div className="container relative z-10">
           <div className="mx-auto max-w-3xl text-center">
             <div className="animate-fade-in">
-              <h1 className="text-4xl font-bold text-white md:text-5xl lg:text-6xl leading-tight">
+              <h1 className="text-3xl font-bold text-white md:text-5xl lg:text-6xl leading-tight">
                 De slimste manier om een tweedehands auto te vinden
               </h1>
-              <p className="mt-5 text-lg text-white/80 md:text-xl max-w-2xl mx-auto leading-relaxed">
+              <p className="mt-3 text-base text-white/80 md:text-xl max-w-2xl mx-auto leading-relaxed lg:mt-5 lg:text-lg">
                 Vergelijk duizenden tweedehands auto's van betrouwbare dealers en particulieren in Nederland en België.
               </p>
             </div>
           </div>
           
-          <div className="mx-auto mt-10 max-w-4xl animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-            <p className="text-white/90 font-semibold text-base mb-3 ml-1">Zoek jouw auto</p>
+          <div className="mx-auto mt-6 max-w-4xl animate-fade-in-up lg:mt-10" style={{ animationDelay: '0.1s' }}>
+            <p className="text-white/90 font-semibold text-base mb-3 ml-1 hidden lg:block">Zoek jouw auto</p>
             <SearchBar variant="hero" />
           </div>
           
-          {/* Trust indicators */}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-white/90">
+          {/* Trust indicators - hidden on mobile, shown on desktop */}
+          <div className="mt-6 hidden md:flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-white/90 lg:mt-8">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-green-400" />
               <span>Geverifieerde dealers</span>
@@ -110,7 +110,7 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Social proof */}
+          {/* Social proof - compact on mobile */}
           <div className="mt-4 flex items-center justify-center gap-2 text-sm text-white/70">
             <div className="flex items-center gap-0.5">
               {[...Array(5)].map((_, i) => (
@@ -120,8 +120,8 @@ const Index = () => {
             <span>4.8/5 op basis van 1.200+ reviews</span>
           </div>
 
-          {/* Secondary CTA */}
-          <div className="mt-5 text-center">
+          {/* Secondary CTA - hidden on mobile */}
+          <div className="mt-5 text-center hidden lg:block">
             <Link to="/verkopen" className="text-sm text-white/70 hover:text-white transition-colors underline underline-offset-4">
               of verkoop je auto gratis →
             </Link>
