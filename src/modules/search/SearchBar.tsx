@@ -206,7 +206,7 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Model</label>
                 {brand && brand !== 'all' && availableModels.length > 0 ? (
-                  <Select value={model} onValueChange={setModel}>
+                  <Select value={model || 'all'} onValueChange={(v) => setModel(v === 'all' ? '' : v)}>
                     <SelectTrigger className="h-12 bg-background border-border/60">
                       <SelectValue placeholder="Alle modellen" />
                     </SelectTrigger>
