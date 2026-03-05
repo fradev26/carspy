@@ -78,7 +78,7 @@ export default function Dashboard() {
 
   return (
     <div className="container py-8">
-      <SEOHead title="Dashboard - AutoSpy" description="Beheer je advertenties en berichten." noindex />
+      <SEOHead title="Dashboard - VATUUR." description="Beheer je advertenties en berichten." noindex />
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Dashboard</h1>
         <Button asChild className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">

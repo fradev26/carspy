@@ -41,9 +41,9 @@ export default function Compare() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Auto's vergelijken - AutoSpy"
-        description="Vergelijk tweedehands auto's op prijs, specificaties en uitrusting. Maak de beste keuze met AutoSpy."
-        canonical="https://autospy.nl/vergelijken"
+        title="Auto's vergelijken - VATUUR."
+        description="Vergelijk tweedehands auto's op prijs, specificaties en uitrusting. Maak de beste keuze met VATUUR."
+        canonical="https://vatuur.nl/vergelijken"
         noindex
       />
       <div className="container py-6">

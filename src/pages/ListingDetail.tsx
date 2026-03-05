@@ -59,9 +59,9 @@ export default function ListingDetail() {
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
       "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://autospy.nl/" },
-        { "@type": "ListItem", "position": 2, "name": "Zoeken", "item": "https://autospy.nl/zoeken" },
-        { "@type": "ListItem", "position": 3, "name": listing.title, "item": `https://autospy.nl/auto/${listing.id}` }
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://vatuur.nl/" },
+        { "@type": "ListItem", "position": 2, "name": "Zoeken", "item": "https://vatuur.nl/zoeken" },
+        { "@type": "ListItem", "position": 3, "name": listing.title, "item": `https://vatuur.nl/auto/${listing.id}` }
       ]
     };
     return [vehicle, breadcrumb];
@@ -79,7 +79,7 @@ export default function ListingDetail() {
   const handleShare = async () => {
     if (!listing) return;
     const url = `${window.location.origin}/auto/${listing.id}`;
-    const shareData = { title: listing.title, text: `Bekijk ${listing.title} op AutoSpy`, url };
+    const shareData = { title: listing.title, text: `Bekijk ${listing.title} op VATUUR.`, url };
     try {
       if (navigator.share) {
         await navigator.share(shareData);
@@ -116,9 +116,9 @@ export default function ListingDetail() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title={`${listing.title} - AutoSpy`}
+        title={`${listing.title} - VATUUR.`}
         description={`${listing.title} - ${formatPrice(listing.price)} - ${formatMileage(listing.mileage)} km - Bouwjaar ${listing.year} - ${listing.fuelType} - ${listing.transmission}`}
-        canonical={`https://autospy.nl/auto/${listing.id}`}
+        canonical={`https://vatuur.nl/auto/${listing.id}`}
         ogImage={listing.images[0]}
         jsonLd={jsonLdSchemas}
       />
