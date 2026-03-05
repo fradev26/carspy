@@ -211,7 +211,7 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
                       <SelectValue placeholder="Alle modellen" />
                     </SelectTrigger>
                     <SelectContent className="bg-card max-h-72">
-                      <SelectItem value="">Alle modellen</SelectItem>
+                      <SelectItem value="all">Alle modellen</SelectItem>
                       {availableModels.map((m) => (
                         <SelectItem key={m} value={m}>{m}</SelectItem>
                       ))}
