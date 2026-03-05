@@ -1,110 +1,95 @@
 
 
-# Zakelijk Dashboard met Bedrijfsregistratie en AI Prijsanalyse
+## Plan: VATUUR. volledig AI-wired maken
 
-## Overzicht
-Dit plan voegt een volledige zakelijke laag toe aan AutoSpy: bedrijven kunnen zich registreren met bedrijfsnaam en BTW-nummer, krijgen automatisch toegang tot een uitgebreid zakelijk dashboard, en kunnen AI-prijsanalyses uitvoeren op hun voorraad.
-
----
-
-## 1. Database-uitbreiding: Bedrijfsgegevens op profiel
-
-De bestaande `profiles`-tabel wordt uitgebreid met zakelijke velden:
-
-```text
-profiles tabel - nieuwe kolommen:
-+------------------+----------+-----------+
-| Kolom            | Type     | Nullable  |
-+------------------+----------+-----------+
-| vat_number       | text     | Ja        |
-| company_website  | text     | Ja        |
-+------------------+----------+-----------+
-```
-
-Het bestaande `is_dealer`-veld en `dealer_name`-veld worden hergebruikt. Wanneer een gebruiker zich registreert met bedrijfsnaam + BTW-nummer, wordt `is_dealer = true` gezet.
+### Overzicht
+De AI-chat wordt van een klein floating widget naar een prominente, altijd-zichtbare interface getransformeerd. Daarnaast wordt de AI-assistent verrijkt met kennis over alle site-functies en wordt er een AI-analyseknop toegevoegd op elke ListingCard.
 
 ---
 
-## 2. Registratieformulier uitbreiden (Auth.tsx)
+### 1. Prominente AI-chatbar op de homepage (vervangt het floating widget)
 
-Het registratieformulier krijgt een toggle "Ik registreer als bedrijf" die extra velden toont:
+**Bestand: `src/pages/Index.tsx`**
+- Voeg een grote, prominente AI-chatbalk toe **direct onder de hero-sectie** — vergelijkbaar met een ChatGPT-achtige interface
+- De balk bevat een groot inputveld met suggestie-chips eronder ("Ik zoek een gezinsauto onder €20k", "Vergelijk BMW vs Audi", etc.)
+- Wanneer de gebruiker een vraag stelt, schuift een chatvenster open (inline op de pagina, niet als popup)
+- Titel/branding: "Vraag het aan VATUUR. AI — jouw slimste auto-assistent"
 
-- **Bedrijfsnaam** (verplicht bij zakelijke registratie)
-- **BTW-nummer** (verplicht, met NL-formaat validatie: `NL + 9 cijfers + B + 2 cijfers`)
+**Bestand: `src/modules/chat/AIChatSection.tsx`** (nieuw)
+- Herbruikbare component: groot inputveld + suggesties + inline chatvenster
+- Hergebruikt `useChat` hook
+- Responsief: volledige breedte op mobiel, gecentreerd op desktop
+- Bevat de suggestie-chips en toont streaming antwoorden met markdown
 
-Bij registratie worden deze velden opgeslagen in `user_metadata` en via de bestaande trigger `handle_new_user` naar het profiel geschreven. De trigger wordt aangepast om de nieuwe velden te verwerken.
+### 2. AI-chat prominent op zoekpagina
+
+**Bestand: `src/pages/Search.tsx`**
+- Voeg bovenaan de zoekresultaten een compacte AI-balk toe: "Beschrijf wat je zoekt en laat AI de filters instellen"
+- Input stuurt naar dezelfde `useChat` hook
+- De AI kan zoeksuggesties geven die direct als filters worden toegepast
+
+### 3. AI-knop op elke ListingCard
+
+**Bestand: `src/modules/listings/ListingCard.tsx`**
+- Voeg een klein AI-icoon (Sparkles) toe naast de favoriet/vergelijk-knoppen op de image overlay
+- Bij klik opent een compact modal/popover dat de `price-analysis` edge function aanroept voor dat specifieke voertuig
+- Toont: samenvatting, details en tips (zelfde structuur als PriceIndicator AI-analyse)
+
+**Bestand: `src/modules/listings/AIAnalysisModal.tsx`** (nieuw)
+- Dialog component die een snelle AI-analyse toont voor een willekeurig voertuig
+- Roept `price-analysis` edge function aan
+- Toont loading state, resultaat met summary/details/tips
+
+### 4. Floating widget behouden maar minder prominent
+
+**Bestand: `src/modules/chat/ChatWidget.tsx`**
+- Op de homepage: verberg het floating widget (de inline sectie neemt het over)
+- Op andere pagina's: behoud als kleinere floating button rechtsonder, maar met subtielere styling
+
+**Bestand: `src/layouts/AppLayout.tsx`**
+- Geef de huidige route door zodat ChatWidget weet of het op de homepage is
+
+### 5. System prompt uitbreiden met volledige site-kennis
+
+**Bestand: `supabase/functions/chat/index.ts`**
+- Hernoem "AutoSpy AI" → "VATUUR. AI"
+- Voeg kennis toe over:
+  - Zoekfunctie: alle beschikbare filters (merk, model, prijs, bouwjaar, km-stand, brandstof, transmissie, carrosserie, kleur, vermogen, locatie, etc.)
+  - Vergelijkfunctie: tot 3 auto's vergelijken
+  - Advertentie plaatsen: stappen en vereisten
+  - Prijsindicator: hoe de marktanalyse werkt
+  - Favorieten en opgeslagen zoekopdrachten
+  - Dealerregistratie en zakelijk dashboard
+  - Navigatie-instructies (verwijs naar correcte URL-paden)
+
+### 6. AI-analyse op detailpagina verbeteren
+
+**Bestand: `src/pages/ListingDetail.tsx`**
+- Voeg een prominente "VATUUR. AI Analyse" kaart toe in de sidebar (desktop) en boven de contactknoppen (mobiel)
+- Eén-klik analyse die automatisch het volledige voertuig analyseert (niet alleen prijs, maar ook betrouwbaarheid, onderhoudskosten, geschiktheid)
+
+**Bestand: `supabase/functions/vehicle-analysis/index.ts`** (nieuw)
+- Bredere AI-analyse dan alleen prijs: betrouwbaarheid, veelvoorkomende problemen, onderhoudskosten, geschiktheid voor doelgroepen
+- Gebruikt dezelfde Lovable AI gateway
+
+**Bestand: `supabase/config.toml`**
+- Voeg `[functions.vehicle-analysis]` toe met `verify_jwt = false`
 
 ---
 
-## 3. Zakelijk Dashboard (nieuwe pagina)
+### Bestanden overzicht
 
-Een nieuwe route `/zakelijk` die alleen zichtbaar is voor dealers (`is_dealer = true`). Dit dashboard vervangt de huidige `/dealer-analytics` route en biedt:
-
-### 3a. Overzichtspaneel
-- Totaal actieve advertenties, views, favorieten, berichten
-- Omzet-indicator (som van verkochte auto's)
-- Gemiddelde tijd-tot-verkoop
-
-### 3b. Voorraadoverzicht met acties
-- Tabel met alle listings + status, views, favorieten, conversieratio
-- Bulk-acties: meerdere listings tegelijk Premium maken of boosten
-- Quick-edit prijs direct vanuit de tabel
-- Status wijzigen (actief/gereserveerd/verkocht)
-
-### 3c. AI Prijsanalyse per wagentype
-- Nieuwe knop "AI Marktanalyse" per listing in het dashboard
-- Hergebruikt de bestaande `price-analysis` edge function
-- Toont: marktpositie, aanbevolen prijsrange, onderhandelingstips
-- Nieuw: mogelijkheid om analyse te doen voor een wagentype dat nog niet in voorraad zit (merk + model + bouwjaar + km-stand invoeren, AI geeft marktinschatting)
-
-### 3d. Prestatiemetrieken
-- Grafiek: views/favorieten/berichten per week (tijdlijn)
-- Top-performers: welke advertenties het best presteren
-- Conversieratio vergelijking tussen listings
-
----
-
-## 4. Navigatie-aanpassingen
-
-- Header: "Dealer Analytics" in het dropdown-menu wordt **conditioneel** -- alleen zichtbaar als `is_dealer = true`
-- Dashboard-pagina (`/dashboard`): toont een banner/link naar het zakelijk dashboard als de gebruiker dealer is
-- Nieuwe route `/zakelijk` wordt beveiligd met `ProtectedRoute` + dealer-check
-
----
-
-## 5. AI Prijsanalyse voor losse wagentypes
-
-Een nieuw onderdeel op het zakelijke dashboard: "Marktverkenner". De dealer vult in:
-- Merk, model, bouwjaar, kilometerstand, brandstof
-- De bestaande `price-analysis` edge function wordt aangeroepen met synthetische data
-- Resultaat: geschatte marktprijs, prijsrange, en tips
-
-Dit hergebruikt de bestaande edge function zonder wijzigingen aan de backend.
-
----
-
-## Technische details
-
-### Bestanden die worden aangepast:
-1. **Database migratie** -- `vat_number` en `company_website` toevoegen aan `profiles`, trigger `handle_new_user` uitbreiden
-2. **`src/pages/Auth.tsx`** -- Toggle voor zakelijke registratie, extra velden, validatie
-3. **`src/hooks/useAuth.tsx`** -- `signUp` uitbreiden met dealer-velden in `user_metadata`
-4. **`src/pages/DealerDashboard.tsx`** -- Uitbreiden met nieuwe secties (bulk-acties, quick-edit, AI analyse, marktverkenner)
-5. **`src/layouts/Header.tsx`** -- Conditioneel "Zakelijk Dashboard" tonen op basis van profiel
-6. **`src/pages/Dashboard.tsx`** -- Banner naar zakelijk dashboard voor dealers
-7. **`src/App.tsx`** -- Route `/zakelijk` toevoegen (of `/dealer-analytics` hernoemen)
-
-### Bestanden die worden aangemaakt:
-- **`src/hooks/useProfile.ts`** -- Hook om profieldata (inclusief `is_dealer`) op te halen en te cachen
-
-### Geen wijzigingen nodig aan:
-- Edge functions (bestaande `price-analysis` en `dealer-analytics` worden hergebruikt)
-- Supabase RLS policies (bestaande policies dekken dit al)
-
-### Volgorde van implementatie:
-1. Database migratie (nieuwe kolommen + trigger-update)
-2. useProfile hook
-3. Auth.tsx registratieformulier
-4. DealerDashboard.tsx uitbreiden
-5. Header + Dashboard + routing aanpassen
+| Bestand | Wijziging |
+|---------|-----------|
+| `src/modules/chat/AIChatSection.tsx` | Nieuw: prominente inline AI-chat component |
+| `src/modules/listings/AIAnalysisModal.tsx` | Nieuw: AI-analyse popup per voertuig |
+| `src/pages/Index.tsx` | AI-chatsectie toevoegen onder hero |
+| `src/pages/Search.tsx` | Compacte AI-balk bovenaan resultaten |
+| `src/modules/listings/ListingCard.tsx` | AI-analyseknop op kaart |
+| `src/pages/ListingDetail.tsx` | Prominente AI-analysekaart in sidebar |
+| `src/modules/chat/ChatWidget.tsx` | Verbergen op homepage |
+| `src/layouts/AppLayout.tsx` | Route-info doorgeven |
+| `supabase/functions/chat/index.ts` | System prompt updaten naar VATUUR. AI met volledige site-kennis |
+| `supabase/functions/vehicle-analysis/index.ts` | Nieuw: brede voertuiganalyse edge function |
+| `supabase/config.toml` | Vehicle-analysis function toevoegen |
 
