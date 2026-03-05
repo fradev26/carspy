@@ -9,6 +9,7 @@ import { useCompare } from '@/hooks/useCompare';
 import { getListingById, getRelatedListings } from '@/data/mockListings';
 import { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
+import { FEATURE_OPTIONS } from '@/types/listing';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -209,7 +210,7 @@ export default function ListingDetail() {
                   {listing.features.map((feature) => (
                     <div key={feature} className="flex items-center gap-2 text-sm">
                       <Check className="h-4 w-4 text-success flex-shrink-0" />
-                      <span className="text-foreground/80">{feature}</span>
+                      <span className="text-foreground/80">{FEATURE_OPTIONS.find(f => f.value === feature)?.label || feature}</span>
                     </div>
                   ))}
                 </div>
