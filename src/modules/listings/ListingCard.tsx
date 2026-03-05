@@ -70,6 +70,7 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
               <img
                 src={imageUrl}
                 alt={listing.title}
+                loading="lazy"
                 className={cn(
                   "h-full w-full object-cover transition-all duration-500 group-hover:scale-105",
                   imageLoaded ? "opacity-100" : "opacity-0"
@@ -77,7 +78,6 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
                 onLoad={() => setImageLoaded(true)}
                 onError={() => setImageError(true)}
               />
-              
               {/* Price Badge */}
               <div className="absolute left-3 top-3 rounded-lg bg-card/95 px-3 py-1.5 shadow-elevated backdrop-blur-sm">
                 <span className="text-lg font-bold text-accent">{formatPrice(listing.price)}</span>
@@ -167,6 +167,7 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
           <img
             src={imageUrl}
             alt={listing.title}
+            loading="lazy"
             className={cn(
               "h-full w-full object-cover transition-all duration-500 group-hover:scale-105",
               imageLoaded ? "opacity-100" : "opacity-0"

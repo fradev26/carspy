@@ -7,10 +7,15 @@
     <meta name="description" content="Doorzoek 25.000+ occasions. Vind jouw perfecte tweedehands auto bij geverifieerde dealers in Nederland en België.">
     <meta name="author" content="AutoSpy" />
 
-    <!-- Google Fonts -->
+    <!-- Preload critical fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Montserrat:wght@700;800;900&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;700&display=swap">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;700&display=swap" rel="stylesheet"></noscript>
+
+    <!-- Preload hero image for LCP -->
+    <link rel="preload" as="image" href="/hero-image.png">
 
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://autospy.nl/og-default.png">
@@ -19,13 +24,12 @@
     <meta property="og:site_name" content="AutoSpy" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    
     <meta name="twitter:image" content="https://autospy.nl/og-default.png">
     <meta property="og:title" content="AutoSpy - Tweedehands auto&#39;s kopen en verkopen">
-  <meta name="twitter:title" content="AutoSpy - Tweedehands auto&#39;s kopen en verkopen">
-  <meta property="og:description" content="Doorzoek 25.000+ occasions. Vind jouw perfecte tweedehands auto bij geverifieerde dealers in Nederland en België.">
-  <meta name="twitter:description" content="Doorzoek 25.000+ occasions. Vind jouw perfecte tweedehands auto bij geverifieerde dealers in Nederland en België.">
-</head>
+    <meta name="twitter:title" content="AutoSpy - Tweedehands auto&#39;s kopen en verkopen">
+    <meta property="og:description" content="Doorzoek 25.000+ occasions. Vind jouw perfecte tweedehands auto bij geverifieerde dealers in Nederland en België.">
+    <meta name="twitter:description" content="Doorzoek 25.000+ occasions. Vind jouw perfecte tweedehands auto bij geverifieerde dealers in Nederland en België.">
+  </head>
 
   <body>
     <div id="root"></div>
