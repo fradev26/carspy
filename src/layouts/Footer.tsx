@@ -13,7 +13,7 @@ export function Footer() {
                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
                  <Car className="h-5 w-5 text-primary-foreground" />
                </div>
-               <span className="text-xl font-black" style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
+               <span className="text-xl" style={{ fontFamily: 'Montserrat', fontWeight: 500 }}>VATUUR<span style={{ fontWeight: 900 }}>.</span></span>
              </Link>
             <p className="text-sm text-muted-foreground">
               De slimste manier om je volgende auto te vinden of je huidige auto te verkopen.

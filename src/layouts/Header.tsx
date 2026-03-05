@@ -33,7 +33,7 @@ export function Header() {
            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-sm">
              <Car className="h-5 w-5 text-primary-foreground" />
            </div>
-           <span className="text-lg font-black text-foreground" style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
+           <span className="text-xl text-foreground" style={{ fontFamily: 'Montserrat', fontWeight: 500 }}>VATUUR<span style={{ fontWeight: 900 }}>.</span></span>
          </Link>
         
         <Button variant="ghost" size="icon" asChild className="text-muted-foreground">
@@ -50,7 +50,7 @@ export function Header() {
            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-sm group-hover:shadow-md transition-shadow">
              <Car className="h-5 w-5 text-primary-foreground" />
            </div>
-           <span className="text-xl font-black text-foreground" style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
+           <span className="text-2xl text-foreground" style={{ fontFamily: 'Montserrat', fontWeight: 500 }}>VATUUR<span style={{ fontWeight: 900 }}>.</span></span>
          </Link>
 
         {/* Desktop Search */}
