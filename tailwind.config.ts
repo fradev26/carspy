@@ -12,7 +12,7 @@ export default {
   theme: {
     container: {
       center: true,
-      padding: "1rem",
+      padding: "2rem",
       screens: {
         "2xl": "1400px",
       },
@@ -20,6 +20,8 @@ export default {
     extend: {
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
+        mono: ["JetBrains Mono", "monospace"],
+        display: ["Sora", "Inter", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -66,6 +68,14 @@ export default {
         premium: {
           DEFAULT: "hsl(var(--premium))",
           foreground: "hsl(var(--premium-foreground))",
+        },
+        status: {
+          pending: "hsl(var(--status-pending))",
+          diagnosing: "hsl(var(--status-diagnosing))",
+          "waiting-parts": "hsl(var(--status-waiting-parts))",
+          "in-progress": "hsl(var(--status-in-progress))",
+          ready: "hsl(var(--status-ready))",
+          delivered: "hsl(var(--status-delivered))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
@@ -128,6 +138,10 @@ export default {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
         },
+        "glow": {
+          "0%, 100%": { opacity: "0.6", transform: "scale(1)" },
+          "50%": { opacity: "1", transform: "scale(1.02)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -137,7 +151,8 @@ export default {
         "scale-in": "scale-in 0.3s ease-out",
         "slide-up": "slide-up 0.4s ease-out",
         "pulse-soft": "pulse-soft 2s ease-in-out infinite",
-        "shimmer": "shimmer 2s linear infinite",
+        "shimmer": "shimmer 3s ease-in-out infinite",
+        "glow": "glow 4s ease-in-out infinite",
       },
     },
   },
