@@ -89,6 +89,7 @@ const Index = () => {
           </div>
           
           <div className="mx-auto mt-10 max-w-4xl animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+            <p className="text-white/90 font-semibold text-base mb-3 ml-1">Zoek jouw auto</p>
             <SearchBar variant="hero" />
           </div>
           
