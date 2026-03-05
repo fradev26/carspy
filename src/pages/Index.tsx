@@ -8,35 +8,35 @@ import { SEOHead } from '@/components/SEOHead';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const faqItems = [
-  { question: "Is AutoSpy gratis te gebruiken?", answer: "Ja, zoeken en vergelijken op AutoSpy is volledig gratis. Ook het plaatsen van een advertentie is gratis. Premium opties zijn beschikbaar voor extra zichtbaarheid." },
-  { question: "Hoe weet ik of een dealer betrouwbaar is?", answer: "Alle dealers op AutoSpy worden geverifieerd voordat ze advertenties mogen plaatsen. We controleren KvK-registratie, reviews en handelsgeschiedenis om jouw veiligheid te waarborgen." },
-  { question: "Kan ik auto's vergelijken op AutoSpy?", answer: "Ja, je kunt tot 3 auto's naast elkaar vergelijken op prijs, specificaties, uitrusting en meer. Gebruik de vergelijkknop op elke advertentie om te starten." },
+  { question: "Is VATUUR. gratis te gebruiken?", answer: "Ja, zoeken en vergelijken op VATUUR. is volledig gratis. Ook het plaatsen van een advertentie is gratis. Premium opties zijn beschikbaar voor extra zichtbaarheid." },
+  { question: "Hoe weet ik of een dealer betrouwbaar is?", answer: "Alle dealers op VATUUR. worden geverifieerd voordat ze advertenties mogen plaatsen. We controleren KvK-registratie, reviews en handelsgeschiedenis om jouw veiligheid te waarborgen." },
+  { question: "Kan ik auto's vergelijken op VATUUR.?", answer: "Ja, je kunt tot 3 auto's naast elkaar vergelijken op prijs, specificaties, uitrusting en meer. Gebruik de vergelijkknop op elke advertentie om te starten." },
   { question: "Hoe werkt de prijsindicatie?", answer: "Onze prijsindicatie vergelijkt de vraagprijs met vergelijkbare auto's op basis van merk, model, bouwjaar en kilometerstand. Zo zie je direct of een auto scherp geprijsd is." },
-  { question: "In welke regio's is AutoSpy actief?", answer: "AutoSpy is actief in heel Nederland en België. Je kunt zoeken op provincie of stad om auto's bij jou in de buurt te vinden." },
+  { question: "In welke regio's is VATUUR. actief?", answer: "VATUUR. is actief in heel Nederland en België. Je kunt zoeken op provincie of stad om auto's bij jou in de buurt te vinden." },
 ];
 
 const websiteJsonLd = [
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "AutoSpy",
-    "url": "https://autospy.nl/",
+    "name": "VATUUR.",
+    "url": "https://vatuur.nl/",
     "description": "Tweedehands auto's kopen en verkopen in Nederland en België. Vind jouw perfecte occasion bij geverifieerde dealers.",
     "potentialAction": {
       "@type": "SearchAction",
-      "target": "https://autospy.nl/zoeken?brand={search_term_string}",
+      "target": "https://vatuur.nl/zoeken?brand={search_term_string}",
       "query-input": "required name=search_term_string"
     }
   },
   {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": "AutoSpy",
-    "url": "https://autospy.nl",
-    "logo": "https://autospy.nl/favicon.ico",
+    "name": "VATUUR.",
+    "url": "https://vatuur.nl",
+    "logo": "https://vatuur.nl/favicon.ico",
     "contactPoint": {
       "@type": "ContactPoint",
-      "email": "info@autospy.nl",
+      "email": "info@vatuur.nl",
       "contactType": "customer service",
       "availableLanguage": "Dutch"
     }
@@ -61,9 +61,9 @@ const Index = () => {
   return (
     <div className="flex flex-col">
       <SEOHead
-        title="AutoSpy - Tweedehands auto's kopen en verkopen in Nederland en België"
+        title="VATUUR. - Tweedehands auto's kopen en verkopen in Nederland en België"
         description="Doorzoek 25.000+ occasions. Vind jouw perfecte tweedehands auto bij geverifieerde dealers in Nederland en België."
-        canonical="https://autospy.nl/"
+        canonical="https://vatuur.nl/"
         jsonLd={websiteJsonLd}
       />
       {/* Hero Section */}
@@ -151,7 +151,7 @@ const Index = () => {
       <section className="py-12 md:py-20">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="text-2xl font-semibold md:text-3xl">Waarom AutoSpy?</h2>
+            <h2 className="text-2xl font-semibold md:text-3xl">Waarom VATUUR.?</h2>
             <p className="mt-2 text-muted-foreground">De slimste manier om jouw volgende auto te vinden</p>
           </div>
           <div className="grid gap-8 md:grid-cols-3">
@@ -215,7 +215,7 @@ const Index = () => {
           <div className="mx-auto max-w-3xl">
             <div className="text-center mb-10">
               <h2 className="text-2xl font-semibold md:text-3xl">Veelgestelde vragen</h2>
-              <p className="mt-2 text-muted-foreground">Alles wat je wilt weten over AutoSpy</p>
+              <p className="mt-2 text-muted-foreground">Alles wat je wilt weten over VATUUR.</p>
             </div>
             <Accordion type="single" collapsible className="space-y-3">
               {faqItems.map((faq, i) => (

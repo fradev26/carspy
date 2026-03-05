@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { SEOHead } from '@/components/SEOHead';
 import { useNavigate, Link } from 'react-router-dom';
-import { Eye, EyeOff, Car, Building2 } from 'lucide-react';
+import { Eye, EyeOff, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -172,14 +172,11 @@ function SignupForm() {
 export default function Auth() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4 py-12 glow-auth">
-      <SEOHead title="Inloggen - AutoSpy" description="Log in of maak een account aan bij AutoSpy." noindex />
+      <SEOHead title="Inloggen - VATUUR." description="Log in of maak een account aan bij VATUUR." noindex />
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <Link to="/" className="mx-auto flex items-center gap-2 mb-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-              <Car className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <span className="text-2xl font-bold">AutoSpy</span>
+            <span className="text-3xl text-primary font-bold select-none" style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
           </Link>
           <CardTitle>Welkom</CardTitle>
           <CardDescription>Log in of maak een account aan</CardDescription>

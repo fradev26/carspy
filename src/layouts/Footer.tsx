@@ -72,10 +72,10 @@ export function Footer() {
             <ul className="space-y-3 text-sm">
               <li className="flex items-center gap-2 text-muted-foreground">
                 <Mail className="h-4 w-4" />
-                <a href="mailto:info@autospy.nl" className="hover:text-foreground transition-colors">info@autospy.nl</a>
+                <a href="mailto:info@vatuur.nl" className="hover:text-foreground transition-colors">info@vatuur.nl</a>
               </li>
               <li className="text-muted-foreground text-xs leading-relaxed">
-                Neem contact op via e-mail voor vragen over AutoSpy.
+                Neem contact op via e-mail voor vragen over VATUUR.
               </li>
             </ul>
           </div>
@@ -85,7 +85,7 @@ export function Footer() {
         <div className="mt-12 pt-8 border-t">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} AutoSpy. Alle rechten voorbehouden.
+              © {new Date().getFullYear()} VATUUR. Alle rechten voorbehouden.
             </p>
             <div className="flex items-center gap-4">
               <Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
