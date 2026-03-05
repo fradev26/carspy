@@ -25,7 +25,7 @@ export function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const isVisible = !isHomepage || scrolled;
+  const isTransparent = isHomepage && !scrolled;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,17 +42,17 @@ export function Header() {
   return (
     <header className={cn(
       "fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300",
-      isVisible
-        ? "opacity-100 translate-y-0 pointer-events-auto bg-card/95 backdrop-blur-lg border-b border-border/60 shadow-sm"
-        : "opacity-0 -translate-y-full pointer-events-none bg-transparent"
+      isTransparent
+        ? "bg-transparent"
+        : "bg-card/95 backdrop-blur-lg border-b border-border/60 shadow-sm"
     )}>
       {/* Mobile + Tablet Header */}
       <div className="container flex h-14 items-center justify-between gap-4 lg:hidden">
         <Link to="/" className="flex items-center">
-           <span className="text-4xl font-bold select-none text-primary" style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
+           <span className={cn("text-4xl font-bold select-none transition-colors duration-300", isTransparent ? "text-white" : "text-primary")} style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
          </Link>
         
-        <Button variant="ghost" size="icon" asChild className="text-foreground hover:bg-muted">
+        <Button variant="ghost" size="icon" asChild className={cn("hover:bg-transparent", isTransparent ? "text-white" : "text-foreground hover:bg-muted")}>
           <Link to="/zoeken">
             <Search className="h-5 w-5" />
           </Link>
@@ -63,7 +63,7 @@ export function Header() {
       <div className="container hidden h-16 items-center justify-between gap-6 lg:flex">
         {/* Logo */}
         <Link to="/" className="flex items-center">
-           <span className="text-5xl text-primary font-bold select-none" style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
+           <span className={cn("text-5xl font-bold select-none transition-colors duration-300", isTransparent ? "text-white" : "text-primary")} style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
          </Link>
 
         {/* Desktop Search */}
