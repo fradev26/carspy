@@ -38,18 +38,21 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
                   <item.icon className="h-6 w-6" />
                 </div>
               ) : (
-                <>
+                <div className="flex flex-col items-center gap-1">
                   <item.icon className={cn(
-                    'h-5 w-5 transition-colors',
+                    'h-5 w-5 transition-colors duration-200',
                     isActive && 'text-primary'
                   )} />
                   <span className={cn(
-                    "text-[10px] font-medium transition-colors",
+                    "text-[10px] font-medium transition-colors duration-200",
                     isActive && "text-primary"
                   )}>
                     {item.label}
                   </span>
-                </>
+                  {isActive && (
+                    <div className="absolute bottom-1 h-1 w-1 rounded-full bg-primary animate-scale-in" />
+                  )}
+                </div>
               )}
             </Link>
           );

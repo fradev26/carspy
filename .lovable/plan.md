@@ -1,57 +1,110 @@
 
 
-# Visuele Optimalisaties — Plan
+# Zakelijk Dashboard met Bedrijfsregistratie en AI Prijsanalyse
 
-## Gevonden verbeterpunten
+## Overzicht
+Dit plan voegt een volledige zakelijke laag toe aan AutoSpy: bedrijven kunnen zich registreren met bedrijfsnaam en BTW-nummer, krijgen automatisch toegang tot een uitgebreid zakelijk dashboard, en kunnen AI-prijsanalyses uitvoeren op hun voorraad.
 
-Na analyse van de codebase zijn dit de visuele optimalisaties die toegepast kunnen worden:
+---
 
-### 1. Vloeiende tab-overgangen (Dashboard, Auth, BusinessDashboard)
-Tabs wisselen momenteel abrupt van inhoud. Door een fade+slide animatie toe te voegen aan `TabsContent` wordt het wisselen vloeiend.
+## 1. Database-uitbreiding: Bedrijfsgegevens op profiel
 
-**Bestand:** `src/components/ui/tabs.tsx`
-- Voeg `data-[state=active]:animate-fade-in` toe aan TabsContent
-- Voeg `transition-all duration-200` toe aan TabsTrigger voor een vloeiende active-state overgang
+De bestaande `profiles`-tabel wordt uitgebreid met zakelijke velden:
 
-### 2. Pagina-overgangen in AppLayout
-Bij navigatie tussen pagina's verschijnt content abrupt.
+```text
+profiles tabel - nieuwe kolommen:
++------------------+----------+-----------+
+| Kolom            | Type     | Nullable  |
++------------------+----------+-----------+
+| vat_number       | text     | Ja        |
+| company_website  | text     | Ja        |
++------------------+----------+-----------+
+```
 
-**Bestand:** `src/layouts/AppLayout.tsx`
-- Wrap `<Outlet />` in een container met `animate-fade-in` class zodat elke paginawissel een subtiele fade-in krijgt
+Het bestaande `is_dealer`-veld en `dealer_name`-veld worden hergebruikt. Wanneer een gebruiker zich registreert met bedrijfsnaam + BTW-nummer, wordt `is_dealer = true` gezet.
 
-### 3. Card hover-effecten verbeteren
-ListingCard heeft al hover, maar cards in Dashboard en andere pagina's missen consistente hover-lift.
+---
 
-**Bestand:** `src/components/ui/card.tsx`
-- Voeg `transition-all duration-300` toe als standaard op de Card component
+## 2. Registratieformulier uitbreiden (Auth.tsx)
 
-### 4. Auth-pagina glow-effect activeren
-De `.glow-auth` utility class bestaat al in CSS maar wordt nergens gebruikt.
+Het registratieformulier krijgt een toggle "Ik registreer als bedrijf" die extra velden toont:
 
-**Bestand:** `src/pages/Auth.tsx`
-- Voeg `glow-auth` class toe aan de achtergrond-container van de auth-pagina
+- **Bedrijfsnaam** (verplicht bij zakelijke registratie)
+- **BTW-nummer** (verplicht, met NL-formaat validatie: `NL + 9 cijfers + B + 2 cijfers`)
 
-### 5. Bottom navigation active-state animatie
-De BottomNav wisselt nu zonder visuele overgang van active state.
+Bij registratie worden deze velden opgeslagen in `user_metadata` en via de bestaande trigger `handle_new_user` naar het profiel geschreven. De trigger wordt aangepast om de nieuwe velden te verwerken.
 
-**Bestand:** `src/components/BottomNav.tsx`
-- Voeg een animated dot/indicator toe onder het actieve item met `scale-in` animatie
+---
 
-### 6. Image loading shimmer consistentie
-ListingCard heeft een shimmer, maar de Favorites en Dashboard loading states gebruiken alleen een spinner.
+## 3. Zakelijk Dashboard (nieuwe pagina)
 
-**Bestand:** `src/components/ui/skeleton-card.tsx`
-- Controleer of shimmer-animatie consistent wordt toegepast
+Een nieuwe route `/zakelijk` die alleen zichtbaar is voor dealers (`is_dealer = true`). Dit dashboard vervangt de huidige `/dealer-analytics` route en biedt:
 
-## Samenvatting wijzigingen
+### 3a. Overzichtspaneel
+- Totaal actieve advertenties, views, favorieten, berichten
+- Omzet-indicator (som van verkochte auto's)
+- Gemiddelde tijd-tot-verkoop
 
-| Bestand | Wijziging |
-|---------|-----------|
-| `src/components/ui/tabs.tsx` | Fade-in animatie op TabsContent, smooth trigger transition |
-| `src/layouts/AppLayout.tsx` | Fade-in wrapper rond Outlet |
-| `src/components/ui/card.tsx` | Standaard transition op Card |
-| `src/pages/Auth.tsx` | glow-auth achtergrond toevoegen |
-| `src/components/BottomNav.tsx` | Animated active indicator |
+### 3b. Voorraadoverzicht met acties
+- Tabel met alle listings + status, views, favorieten, conversieratio
+- Bulk-acties: meerdere listings tegelijk Premium maken of boosten
+- Quick-edit prijs direct vanuit de tabel
+- Status wijzigen (actief/gereserveerd/verkocht)
 
-Alle animaties gebruiken bestaande keyframes uit `tailwind.config.ts` — er hoeven geen nieuwe animaties aangemaakt te worden.
+### 3c. AI Prijsanalyse per wagentype
+- Nieuwe knop "AI Marktanalyse" per listing in het dashboard
+- Hergebruikt de bestaande `price-analysis` edge function
+- Toont: marktpositie, aanbevolen prijsrange, onderhandelingstips
+- Nieuw: mogelijkheid om analyse te doen voor een wagentype dat nog niet in voorraad zit (merk + model + bouwjaar + km-stand invoeren, AI geeft marktinschatting)
+
+### 3d. Prestatiemetrieken
+- Grafiek: views/favorieten/berichten per week (tijdlijn)
+- Top-performers: welke advertenties het best presteren
+- Conversieratio vergelijking tussen listings
+
+---
+
+## 4. Navigatie-aanpassingen
+
+- Header: "Dealer Analytics" in het dropdown-menu wordt **conditioneel** -- alleen zichtbaar als `is_dealer = true`
+- Dashboard-pagina (`/dashboard`): toont een banner/link naar het zakelijk dashboard als de gebruiker dealer is
+- Nieuwe route `/zakelijk` wordt beveiligd met `ProtectedRoute` + dealer-check
+
+---
+
+## 5. AI Prijsanalyse voor losse wagentypes
+
+Een nieuw onderdeel op het zakelijke dashboard: "Marktverkenner". De dealer vult in:
+- Merk, model, bouwjaar, kilometerstand, brandstof
+- De bestaande `price-analysis` edge function wordt aangeroepen met synthetische data
+- Resultaat: geschatte marktprijs, prijsrange, en tips
+
+Dit hergebruikt de bestaande edge function zonder wijzigingen aan de backend.
+
+---
+
+## Technische details
+
+### Bestanden die worden aangepast:
+1. **Database migratie** -- `vat_number` en `company_website` toevoegen aan `profiles`, trigger `handle_new_user` uitbreiden
+2. **`src/pages/Auth.tsx`** -- Toggle voor zakelijke registratie, extra velden, validatie
+3. **`src/hooks/useAuth.tsx`** -- `signUp` uitbreiden met dealer-velden in `user_metadata`
+4. **`src/pages/DealerDashboard.tsx`** -- Uitbreiden met nieuwe secties (bulk-acties, quick-edit, AI analyse, marktverkenner)
+5. **`src/layouts/Header.tsx`** -- Conditioneel "Zakelijk Dashboard" tonen op basis van profiel
+6. **`src/pages/Dashboard.tsx`** -- Banner naar zakelijk dashboard voor dealers
+7. **`src/App.tsx`** -- Route `/zakelijk` toevoegen (of `/dealer-analytics` hernoemen)
+
+### Bestanden die worden aangemaakt:
+- **`src/hooks/useProfile.ts`** -- Hook om profieldata (inclusief `is_dealer`) op te halen en te cachen
+
+### Geen wijzigingen nodig aan:
+- Edge functions (bestaande `price-analysis` en `dealer-analytics` worden hergebruikt)
+- Supabase RLS policies (bestaande policies dekken dit al)
+
+### Volgorde van implementatie:
+1. Database migratie (nieuwe kolommen + trigger-update)
+2. useProfile hook
+3. Auth.tsx registratieformulier
+4. DealerDashboard.tsx uitbreiden
+5. Header + Dashboard + routing aanpassen
 
