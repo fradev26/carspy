@@ -1,110 +1,68 @@
 
 
-# Zakelijk Dashboard met Bedrijfsregistratie en AI Prijsanalyse
+# AutoSpy Marketplace Improvements
 
-## Overzicht
-Dit plan voegt een volledige zakelijke laag toe aan AutoSpy: bedrijven kunnen zich registreren met bedrijfsnaam en BTW-nummer, krijgen automatisch toegang tot een uitgebreid zakelijk dashboard, en kunnen AI-prijsanalyses uitvoeren op hun voorraad.
+## Assessment
 
----
+After reviewing the codebase, **most of what you've described is already implemented**. The project has comprehensive filters (7 categories with 30+ filter options), a sidebar/grid search layout, compare feature, sorting, mobile slide panel, listing cards with icons, and proper navigation. Here's what actually needs improvement:
 
-## 1. Database-uitbreiding: Bedrijfsgegevens op profiel
+## Gaps to Address
 
-De bestaande `profiles`-tabel wordt uitgebreid met zakelijke velden:
+### 1. Missing Filters
+- **Country** (Netherlands / Belgium) — not present
+- **City / postal code** input — not present (only province dropdown exists)
+- **Radius options** — exists but limited; needs 25/50/100/250km values
+- **Engine size filter** — field exists on listings but no filter UI
 
-```text
-profiles tabel - nieuwe kolommen:
-+------------------+----------+-----------+
-| Kolom            | Type     | Nullable  |
-+------------------+----------+-----------+
-| vat_number       | text     | Ja        |
-| company_website  | text     | Ja        |
-+------------------+----------+-----------+
-```
+### 2. Listing Cards Missing Transmission
+The `ListingCard` component shows year, mileage, fuel type, and location — but **not transmission**. This is a key spec buyers look for.
 
-Het bestaande `is_dealer`-veld en `dealer_name`-veld worden hergebruikt. Wanneer een gebruiker zich registreert met bedrijfsnaam + BTW-nummer, wordt `is_dealer = true` gezet.
+### 3. No Pagination
+The search results page renders all filtered listings at once. Need pagination (e.g. 24 per page) with page controls.
 
----
+### 4. Location Filter Improvements
+The `FilterPanel` and `HomepageFilters` only have province + radius. Need country selector and city/postal code input.
 
-## 2. Registratieformulier uitbreiden (Auth.tsx)
+## Changes
 
-Het registratieformulier krijgt een toggle "Ik registreer als bedrijf" die extra velden toont:
+### `src/types/listing.ts`
+- Add `COUNTRY_OPTIONS` constant: `[{ value: 'nl', label: 'Nederland' }, { value: 'be', label: 'België' }]`
+- Add `RADIUS_OPTIONS` constant: `[25, 50, 100, 250]`
+- Add `country?: string` and `postalCode?: string` to `SearchFilters`
+- Add `country?: string` to `Listing.location`
 
-- **Bedrijfsnaam** (verplicht bij zakelijke registratie)
-- **BTW-nummer** (verplicht, met NL-formaat validatie: `NL + 9 cijfers + B + 2 cijfers`)
+### `src/modules/listings/ListingCard.tsx`
+- Add transmission icon (Settings2 or similar) between fuel type and location in both default and horizontal variants
 
-Bij registratie worden deze velden opgeslagen in `user_metadata` en via de bestaande trigger `handle_new_user` naar het profiel geschreven. De trigger wordt aangepast om de nieuwe velden te verwerken.
+### `src/pages/Search.tsx`
+- Add pagination state (`page`, `perPage = 24`)
+- Slice `filteredListings` by page
+- Add pagination controls (prev/next + page numbers) below listings
+- Parse `country` and `postalCode` from URL params
 
----
+### `src/modules/search/FilterPanel.tsx` — Location section
+- Add country selector (NL/BE/both)
+- Add city/postal code text input
+- Update radius options to 25/50/100/250 km
 
-## 3. Zakelijk Dashboard (nieuwe pagina)
+### `src/modules/search/HomepageFilters.tsx` — Location tab
+- Same additions: country, city/postal code, radius options
 
-Een nieuwe route `/zakelijk` die alleen zichtbaar is voor dealers (`is_dealer = true`). Dit dashboard vervangt de huidige `/dealer-analytics` route en biedt:
+### `src/modules/search/SearchBar.tsx`
+- Add `country` and `postalCode` to URL param serialization
 
-### 3a. Overzichtspaneel
-- Totaal actieve advertenties, views, favorieten, berichten
-- Omzet-indicator (som van verkochte auto's)
-- Gemiddelde tijd-tot-verkoop
+### `src/modules/search/FilterChips.tsx`
+- Add chip rendering for country and postalCode filters
 
-### 3b. Voorraadoverzicht met acties
-- Tabel met alle listings + status, views, favorieten, conversieratio
-- Bulk-acties: meerdere listings tegelijk Premium maken of boosten
-- Quick-edit prijs direct vanuit de tabel
-- Status wijzigen (actief/gereserveerd/verkocht)
+## Files to Edit
 
-### 3c. AI Prijsanalyse per wagentype
-- Nieuwe knop "AI Marktanalyse" per listing in het dashboard
-- Hergebruikt de bestaande `price-analysis` edge function
-- Toont: marktpositie, aanbevolen prijsrange, onderhandelingstips
-- Nieuw: mogelijkheid om analyse te doen voor een wagentype dat nog niet in voorraad zit (merk + model + bouwjaar + km-stand invoeren, AI geeft marktinschatting)
-
-### 3d. Prestatiemetrieken
-- Grafiek: views/favorieten/berichten per week (tijdlijn)
-- Top-performers: welke advertenties het best presteren
-- Conversieratio vergelijking tussen listings
-
----
-
-## 4. Navigatie-aanpassingen
-
-- Header: "Dealer Analytics" in het dropdown-menu wordt **conditioneel** -- alleen zichtbaar als `is_dealer = true`
-- Dashboard-pagina (`/dashboard`): toont een banner/link naar het zakelijk dashboard als de gebruiker dealer is
-- Nieuwe route `/zakelijk` wordt beveiligd met `ProtectedRoute` + dealer-check
-
----
-
-## 5. AI Prijsanalyse voor losse wagentypes
-
-Een nieuw onderdeel op het zakelijke dashboard: "Marktverkenner". De dealer vult in:
-- Merk, model, bouwjaar, kilometerstand, brandstof
-- De bestaande `price-analysis` edge function wordt aangeroepen met synthetische data
-- Resultaat: geschatte marktprijs, prijsrange, en tips
-
-Dit hergebruikt de bestaande edge function zonder wijzigingen aan de backend.
-
----
-
-## Technische details
-
-### Bestanden die worden aangepast:
-1. **Database migratie** -- `vat_number` en `company_website` toevoegen aan `profiles`, trigger `handle_new_user` uitbreiden
-2. **`src/pages/Auth.tsx`** -- Toggle voor zakelijke registratie, extra velden, validatie
-3. **`src/hooks/useAuth.tsx`** -- `signUp` uitbreiden met dealer-velden in `user_metadata`
-4. **`src/pages/DealerDashboard.tsx`** -- Uitbreiden met nieuwe secties (bulk-acties, quick-edit, AI analyse, marktverkenner)
-5. **`src/layouts/Header.tsx`** -- Conditioneel "Zakelijk Dashboard" tonen op basis van profiel
-6. **`src/pages/Dashboard.tsx`** -- Banner naar zakelijk dashboard voor dealers
-7. **`src/App.tsx`** -- Route `/zakelijk` toevoegen (of `/dealer-analytics` hernoemen)
-
-### Bestanden die worden aangemaakt:
-- **`src/hooks/useProfile.ts`** -- Hook om profieldata (inclusief `is_dealer`) op te halen en te cachen
-
-### Geen wijzigingen nodig aan:
-- Edge functions (bestaande `price-analysis` en `dealer-analytics` worden hergebruikt)
-- Supabase RLS policies (bestaande policies dekken dit al)
-
-### Volgorde van implementatie:
-1. Database migratie (nieuwe kolommen + trigger-update)
-2. useProfile hook
-3. Auth.tsx registratieformulier
-4. DealerDashboard.tsx uitbreiden
-5. Header + Dashboard + routing aanpassen
+| File | Change |
+|------|--------|
+| `src/types/listing.ts` | Add country/postalCode types and constants |
+| `src/modules/listings/ListingCard.tsx` | Add transmission to card specs |
+| `src/pages/Search.tsx` | Add pagination, new filter URL params |
+| `src/modules/search/FilterPanel.tsx` | Add country, city/postal, radius options to location section |
+| `src/modules/search/HomepageFilters.tsx` | Same location filter additions |
+| `src/modules/search/SearchBar.tsx` | Serialize new filter params |
+| `src/modules/search/FilterChips.tsx` | Display new filter chips |
 
