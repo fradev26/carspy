@@ -67,7 +67,7 @@ const Index = () => {
         jsonLd={websiteJsonLd}
       />
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 lg:py-32">
+      <section className="relative overflow-hidden py-24 lg:py-36">
         {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center"
@@ -79,11 +79,11 @@ const Index = () => {
         <div className="container relative z-10">
           <div className="mx-auto max-w-3xl text-center">
             <div className="animate-fade-in">
-              <h1 className="text-3xl font-bold text-white md:text-5xl lg:text-6xl tracking-tight">
-                Vind jouw perfecte auto
+              <h1 className="text-4xl font-bold text-white md:text-5xl lg:text-6xl leading-tight">
+                De slimste manier om een tweedehands auto te vinden
               </h1>
-              <p className="mt-4 text-lg text-white/80 md:text-xl max-w-2xl mx-auto">
-                Doorzoek duizenden occasions en vind de auto die bij je past
+              <p className="mt-5 text-lg text-white/80 md:text-xl max-w-2xl mx-auto leading-relaxed">
+                Vergelijk duizenden tweedehands auto's van betrouwbare dealers en particulieren in Nederland en België.
               </p>
             </div>
           </div>
@@ -93,19 +93,36 @@ const Index = () => {
           </div>
           
           {/* Trust indicators */}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-white/70">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-white/90">
             <div className="flex items-center gap-2">
-              <Shield className="h-4 w-4" />
+              <CheckCircle2 className="h-5 w-5 text-green-400" />
               <span>Geverifieerde dealers</span>
             </div>
-            <div className="hidden sm:flex items-center gap-2">
-              <Car className="h-4 w-4" />
-              <span>Duizenden occasions</span>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-green-400" />
+              <span>25.000+ auto's online</span>
             </div>
             <div className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
+              <CheckCircle2 className="h-5 w-5 text-green-400" />
               <span>Dagelijks nieuwe advertenties</span>
             </div>
+          </div>
+
+          {/* Social proof */}
+          <div className="mt-4 flex items-center justify-center gap-2 text-sm text-white/70">
+            <div className="flex items-center gap-0.5">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+              ))}
+            </div>
+            <span>4.8/5 op basis van 1.200+ reviews</span>
+          </div>
+
+          {/* Secondary CTA */}
+          <div className="mt-5 text-center">
+            <Link to="/verkopen" className="text-sm text-white/70 hover:text-white transition-colors underline underline-offset-4">
+              of verkoop je auto gratis →
+            </Link>
           </div>
         </div>
       </section>
