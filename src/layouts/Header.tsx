@@ -42,21 +42,17 @@ export function Header() {
   return (
     <header className={cn(
       "fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300",
-      isSolid ? "bg-card/95 backdrop-blur-lg border-b border-border/60 shadow-sm" : "bg-transparent"
+      isVisible
+        ? "opacity-100 translate-y-0 pointer-events-auto bg-card/95 backdrop-blur-lg border-b border-border/60 shadow-sm"
+        : "opacity-0 -translate-y-full pointer-events-none bg-transparent"
     )}>
       {/* Mobile + Tablet Header */}
       <div className="container flex h-14 items-center justify-between gap-4 lg:hidden">
         <Link to="/" className="flex items-center">
-           <span className={cn(
-             "text-4xl font-bold select-none transition-colors duration-300",
-             isSolid ? "text-primary" : "text-primary"
-           )} style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
+           <span className="text-4xl font-bold select-none text-primary" style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
          </Link>
         
-        <Button variant="ghost" size="icon" asChild className={cn(
-          "transition-colors",
-          isSolid ? "text-foreground hover:bg-muted" : "text-white hover:bg-white/10 hover:text-white"
-        )}>
+        <Button variant="ghost" size="icon" asChild className="text-foreground hover:bg-muted">
           <Link to="/zoeken">
             <Search className="h-5 w-5" />
           </Link>
@@ -73,49 +69,32 @@ export function Header() {
         {/* Desktop Search */}
         <form onSubmit={handleSearch} className="flex-1 max-w-lg">
           <div className="relative w-full">
-            <Search className={cn(
-              "absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors",
-              isSolid ? "text-muted-foreground" : "text-white/60"
-            )} />
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
               placeholder="Zoek op merk, model..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={cn(
-                "w-full pl-10 pr-4 h-11 transition-colors",
-                isSolid
-                  ? "bg-muted border-border text-foreground placeholder:text-muted-foreground focus:bg-background"
-                  : "bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20 focus:border-white/50"
-              )}
+              className="w-full pl-10 pr-4 h-11 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:bg-background"
             />
           </div>
         </form>
 
         {/* Desktop Navigation */}
         <nav className="flex items-center gap-1">
-          <Button variant="ghost" asChild className={cn(
-            "font-bold transition-colors",
-            isSolid ? "text-foreground hover:bg-muted" : "text-white hover:bg-white/10 hover:text-white"
-          )}>
+          <Button variant="ghost" asChild className="font-bold text-foreground hover:bg-muted">
             <Link to="/zoeken">Zoeken</Link>
           </Button>
           
           {user ? (
             <>
-              <Button variant="ghost" asChild className={cn(
-                "gap-2 font-bold transition-colors",
-                isSolid ? "text-foreground hover:bg-muted" : "text-white hover:bg-white/10 hover:text-white"
-              )}>
+              <Button variant="ghost" asChild className="gap-2 font-bold text-foreground hover:bg-muted">
                 <Link to="/favorieten">
                   <Heart className="h-4 w-4" />
                   Favorieten
                 </Link>
               </Button>
-              <Button variant="ghost" asChild className={cn(
-                "gap-2 font-bold transition-colors",
-                isSolid ? "text-foreground hover:bg-muted" : "text-white hover:bg-white/10 hover:text-white"
-              )}>
+              <Button variant="ghost" asChild className="gap-2 font-bold text-foreground hover:bg-muted">
                 <Link to="/berichten">
                   <MessageCircle className="h-4 w-4" />
                   Berichten
@@ -124,10 +103,7 @@ export function Header() {
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className={cn(
-                    "gap-2 font-bold transition-colors",
-                    isSolid ? "text-foreground hover:bg-muted" : "text-white hover:bg-white/10 hover:text-white"
-                  )}>
+                  <Button variant="ghost" className="gap-2 font-bold text-foreground hover:bg-muted">
                     <User className="h-4 w-4" />
                     Account
                   </Button>
@@ -155,12 +131,7 @@ export function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
               
-              <Button asChild className={cn(
-                "ml-2 gap-2 font-bold shadow-sm",
-                isSolid
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "bg-white text-primary hover:bg-white/90"
-              )}>
+              <Button asChild className="ml-2 gap-2 font-bold shadow-sm bg-primary text-primary-foreground hover:bg-primary/90">
                 <Link to="/verkopen">
                   <Plus className="h-4 w-4" />
                   Auto verkopen
@@ -169,18 +140,10 @@ export function Header() {
             </>
           ) : (
             <>
-              <Button variant="ghost" asChild className={cn(
-                "font-bold transition-colors",
-                isSolid ? "text-foreground hover:bg-muted" : "text-white hover:bg-white/10 hover:text-white"
-              )}>
+              <Button variant="ghost" asChild className="font-bold text-foreground hover:bg-muted">
                 <Link to="/auth">Inloggen</Link>
               </Button>
-              <Button asChild className={cn(
-                "ml-2 gap-2 font-bold shadow-sm",
-                isSolid
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "bg-white text-primary hover:bg-white/90"
-              )}>
+              <Button asChild className="ml-2 gap-2 font-bold shadow-sm bg-primary text-primary-foreground hover:bg-primary/90">
                 <Link to="/auth">
                   <Plus className="h-4 w-4" />
                   Auto verkopen
