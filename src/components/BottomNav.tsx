@@ -1,6 +1,6 @@
 import { forwardRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Search, Heart, User, Sparkles } from 'lucide-react';
+import { Home, Search, Heart, User, Sparkles, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { AIFullscreenChat } from '@/modules/chat/AIFullscreenChat';
