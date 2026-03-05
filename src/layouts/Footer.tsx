@@ -101,7 +101,7 @@ export function Footer() {
           </div>
           
           {/* Frades Digital Credit */}
-          <div className="mt-8 pt-8 border-t flex justify-center items-center gap-2">
+          <div className="mt-4 py-2 border-t flex justify-center items-center gap-2">
             <span className="text-sm text-muted-foreground flex items-center gap-1">
               Made with <Heart className="h-4 w-4 text-destructive fill-destructive" /> by
             </span>
