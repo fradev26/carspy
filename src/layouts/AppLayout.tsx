@@ -9,7 +9,7 @@ export function AppLayout() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="flex-1 pb-16 md:pb-0">
+      <main className="flex-1 pb-16 lg:pb-0">
         <div className="animate-fade-in">
           <Outlet />
         </div>

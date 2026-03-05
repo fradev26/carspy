@@ -1,49 +1,110 @@
 
 
-# iPad Weergave Optimalisatie
+# Zakelijk Dashboard met Bedrijfsregistratie en AI Prijsanalyse
 
-## Probleem
+## Overzicht
+Dit plan voegt een volledige zakelijke laag toe aan AutoSpy: bedrijven kunnen zich registreren met bedrijfsnaam en BTW-nummer, krijgen automatisch toegang tot een uitgebreid zakelijk dashboard, en kunnen AI-prijsanalyses uitvoeren op hun voorraad.
 
-De app heeft twee layouts: mobiel (<768px) en desktop (>=768px). iPads (768-1024px) krijgen de desktop-layout, maar de header-navigatie past daar krap in en de content-grids zijn niet optimaal voor die schermgrootte.
+---
 
-## Aanpassingen
+## 1. Database-uitbreiding: Bedrijfsgegevens op profiel
 
-### 1. Tablet breakpoint toevoegen (`src/hooks/use-mobile.tsx`)
-- Nieuwe hook `useIsTablet()` toevoegen die `true` retourneert voor schermen 768-1024px
-- Optioneel: bestaande `useIsMobile` aanpassen naar <768px (blijft ongewijzigd)
+De bestaande `profiles`-tabel wordt uitgebreid met zakelijke velden:
 
-### 2. Header aanpassen voor tablet (`src/layouts/Header.tsx`)
-- Bij tablet (md tot lg): compactere navigatie tonen
-  - Zoekbalk smaller maken
-  - Nav-items als icon-only buttons (zonder tekst), met tooltips
-  - "Auto verkopen" knop korter ("Verkopen")
-- Breakpoints verschuiven: mobile header tonen tot `md` (768px), tablet-header van `md` tot `lg` (1024px), volle desktop-header vanaf `lg`
+```text
+profiles tabel - nieuwe kolommen:
++------------------+----------+-----------+
+| Kolom            | Type     | Nullable  |
++------------------+----------+-----------+
+| vat_number       | text     | Ja        |
+| company_website  | text     | Ja        |
++------------------+----------+-----------+
+```
 
-### 3. BottomNav zichtbaar op tablet (`src/components/BottomNav.tsx`)
-- `md:hidden` wijzigen naar `lg:hidden` zodat de BottomNav ook op iPad zichtbaar blijft
-- Dit geeft iPads de app-achtige navigatie-ervaring
+Het bestaande `is_dealer`-veld en `dealer_name`-veld worden hergebruikt. Wanneer een gebruiker zich registreert met bedrijfsnaam + BTW-nummer, wordt `is_dealer = true` gezet.
 
-### 4. AppLayout padding aanpassen (`src/layouts/AppLayout.tsx`)
-- `pb-16 md:pb-0` wijzigen naar `pb-16 lg:pb-0` (consistent met BottomNav zichtbaarheid)
+---
 
-### 5. Listing grids optimaliseren
-- `src/modules/listings/ListingGrid.tsx`: huidige `sm:grid-cols-2 lg:grid-cols-3` is al goed voor tablet (2 kolommen)
-- `src/pages/Index.tsx`: hero section padding aanpassen met `md:py-20` tussenstap
-- `src/pages/Search.tsx`: filter sidebar als sheet/overlay houden op tablet in plaats van naast de resultaten
+## 2. Registratieformulier uitbreiden (Auth.tsx)
 
-### 6. Header breakpoints verschuiven (`src/layouts/Header.tsx`)
-- Mobiele header: `lg:hidden` (was `md:hidden`) -- tonen tot 1024px
-- Desktop header: `hidden lg:flex` (was `hidden md:flex`) -- tonen vanaf 1024px
-- Dit zorgt dat iPads de compacte mobiele header + BottomNav krijgen (app-ervaring)
+Het registratieformulier krijgt een toggle "Ik registreer als bedrijf" die extra velden toont:
 
-## Samenvatting bestanden
+- **Bedrijfsnaam** (verplicht bij zakelijke registratie)
+- **BTW-nummer** (verplicht, met NL-formaat validatie: `NL + 9 cijfers + B + 2 cijfers`)
 
-| Bestand | Wijziging |
-|---------|-----------|
-| `src/layouts/Header.tsx` | Breakpoints md→lg voor mobile/desktop header switch |
-| `src/components/BottomNav.tsx` | `md:hidden` → `lg:hidden` |
-| `src/layouts/AppLayout.tsx` | `md:pb-0` → `lg:pb-0` |
-| `src/pages/Index.tsx` | Tussenliggende padding voor tablet |
+Bij registratie worden deze velden opgeslagen in `user_metadata` en via de bestaande trigger `handle_new_user` naar het profiel geschreven. De trigger wordt aangepast om de nieuwe velden te verwerken.
 
-De kernstrategie is simpel: iPads krijgen de **mobiele app-layout** (compacte header + bottom nav) in plaats van de krappe desktop-layout. Dit sluit aan bij de bestaande mobile-first strategie.
+---
+
+## 3. Zakelijk Dashboard (nieuwe pagina)
+
+Een nieuwe route `/zakelijk` die alleen zichtbaar is voor dealers (`is_dealer = true`). Dit dashboard vervangt de huidige `/dealer-analytics` route en biedt:
+
+### 3a. Overzichtspaneel
+- Totaal actieve advertenties, views, favorieten, berichten
+- Omzet-indicator (som van verkochte auto's)
+- Gemiddelde tijd-tot-verkoop
+
+### 3b. Voorraadoverzicht met acties
+- Tabel met alle listings + status, views, favorieten, conversieratio
+- Bulk-acties: meerdere listings tegelijk Premium maken of boosten
+- Quick-edit prijs direct vanuit de tabel
+- Status wijzigen (actief/gereserveerd/verkocht)
+
+### 3c. AI Prijsanalyse per wagentype
+- Nieuwe knop "AI Marktanalyse" per listing in het dashboard
+- Hergebruikt de bestaande `price-analysis` edge function
+- Toont: marktpositie, aanbevolen prijsrange, onderhandelingstips
+- Nieuw: mogelijkheid om analyse te doen voor een wagentype dat nog niet in voorraad zit (merk + model + bouwjaar + km-stand invoeren, AI geeft marktinschatting)
+
+### 3d. Prestatiemetrieken
+- Grafiek: views/favorieten/berichten per week (tijdlijn)
+- Top-performers: welke advertenties het best presteren
+- Conversieratio vergelijking tussen listings
+
+---
+
+## 4. Navigatie-aanpassingen
+
+- Header: "Dealer Analytics" in het dropdown-menu wordt **conditioneel** -- alleen zichtbaar als `is_dealer = true`
+- Dashboard-pagina (`/dashboard`): toont een banner/link naar het zakelijk dashboard als de gebruiker dealer is
+- Nieuwe route `/zakelijk` wordt beveiligd met `ProtectedRoute` + dealer-check
+
+---
+
+## 5. AI Prijsanalyse voor losse wagentypes
+
+Een nieuw onderdeel op het zakelijke dashboard: "Marktverkenner". De dealer vult in:
+- Merk, model, bouwjaar, kilometerstand, brandstof
+- De bestaande `price-analysis` edge function wordt aangeroepen met synthetische data
+- Resultaat: geschatte marktprijs, prijsrange, en tips
+
+Dit hergebruikt de bestaande edge function zonder wijzigingen aan de backend.
+
+---
+
+## Technische details
+
+### Bestanden die worden aangepast:
+1. **Database migratie** -- `vat_number` en `company_website` toevoegen aan `profiles`, trigger `handle_new_user` uitbreiden
+2. **`src/pages/Auth.tsx`** -- Toggle voor zakelijke registratie, extra velden, validatie
+3. **`src/hooks/useAuth.tsx`** -- `signUp` uitbreiden met dealer-velden in `user_metadata`
+4. **`src/pages/DealerDashboard.tsx`** -- Uitbreiden met nieuwe secties (bulk-acties, quick-edit, AI analyse, marktverkenner)
+5. **`src/layouts/Header.tsx`** -- Conditioneel "Zakelijk Dashboard" tonen op basis van profiel
+6. **`src/pages/Dashboard.tsx`** -- Banner naar zakelijk dashboard voor dealers
+7. **`src/App.tsx`** -- Route `/zakelijk` toevoegen (of `/dealer-analytics` hernoemen)
+
+### Bestanden die worden aangemaakt:
+- **`src/hooks/useProfile.ts`** -- Hook om profieldata (inclusief `is_dealer`) op te halen en te cachen
+
+### Geen wijzigingen nodig aan:
+- Edge functions (bestaande `price-analysis` en `dealer-analytics` worden hergebruikt)
+- Supabase RLS policies (bestaande policies dekken dit al)
+
+### Volgorde van implementatie:
+1. Database migratie (nieuwe kolommen + trigger-update)
+2. useProfile hook
+3. Auth.tsx registratieformulier
+4. DealerDashboard.tsx uitbreiden
+5. Header + Dashboard + routing aanpassen
 
