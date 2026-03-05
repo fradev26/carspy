@@ -76,6 +76,41 @@ export default function Sell() {
   };
   const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 0));
 
+  const fetchAnalysis = async () => {
+    setAnalysisLoading(true);
+    setAnalysisError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('vehicle-analysis', {
+        body: {
+          listing: {
+            title: `${formData.brand} ${formData.model}`,
+            brand: formData.brand,
+            model: formData.model,
+            year: formData.year,
+            mileage: formData.mileage,
+            fuelType: formData.fuelType,
+            transmission: formData.transmission,
+            power: formData.power,
+            bodyType: formData.bodyType,
+            price: formData.price,
+          },
+        },
+      });
+      if (error) throw new Error(error.message);
+      setAnalysisResult(data as VehicleAnalysis);
+    } catch (e) {
+      setAnalysisError(e instanceof Error ? e.message : 'Analyse niet beschikbaar');
+    } finally {
+      setAnalysisLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (currentStep === 4 && !analysisResult && !analysisLoading) {
+      fetchAnalysis();
+    }
+  }, [currentStep]);
+
   const generateDescription = async () => {
     if (!formData.brand || !formData.model) {
       toast({ title: 'Vul eerst merk en model in', variant: 'destructive' });
