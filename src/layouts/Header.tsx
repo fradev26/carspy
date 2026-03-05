@@ -27,8 +27,8 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-card/95 backdrop-blur-lg supports-[backdrop-filter]:bg-card/80">
-      {/* Mobile Header */}
-      <div className="container flex h-14 items-center justify-between gap-4 md:hidden">
+      {/* Mobile + Tablet Header */}
+      <div className="container flex h-14 items-center justify-between gap-4 lg:hidden">
         <Link to="/" className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-sm">
             <Car className="h-5 w-5 text-primary-foreground" />
@@ -44,7 +44,7 @@ export function Header() {
       </div>
 
       {/* Desktop Header */}
-      <div className="container hidden h-16 items-center justify-between gap-6 md:flex">
+      <div className="container hidden h-16 items-center justify-between gap-6 lg:flex">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 group">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-sm group-hover:shadow-md transition-shadow">
