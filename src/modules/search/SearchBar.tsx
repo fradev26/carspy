@@ -96,6 +96,8 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
     if (filters.province) params.set('province', filters.province);
     if (filters.radius) params.set('radius', filters.radius.toString());
     if (filters.onlineSince) params.set('onlineSince', filters.onlineSince);
+    if (filters.country) params.set('country', filters.country);
+    if (filters.postalCode) params.set('postalCode', filters.postalCode);
     if (filters.sellerType) params.set('sellerType', filters.sellerType);
     if (filters.maxPreviousOwners) params.set('maxPreviousOwners', filters.maxPreviousOwners.toString());
     if (filters.minWarranty) params.set('minWarranty', filters.minWarranty);
@@ -152,6 +154,8 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
     filters.interiorMaterials?.length,
     filters.minDoors,
     filters.minSeats,
+    filters.country,
+    filters.postalCode,
     filters.province,
     filters.onlineSince,
     filters.sellerType,
