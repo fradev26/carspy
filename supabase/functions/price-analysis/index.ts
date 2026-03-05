@@ -14,12 +14,23 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const prompt = `Je bent een ervaren Nederlandse auto-expert, marktanalist en autoliefhebber. Geef een uitgebreide, professionele analyse van de volgende auto in het Nederlands.
+    const prompt = `Je bent VATUUR. AI, een ervaren auto-expert voor de Belgische tweedehandsmarkt.
 
-Auto:
+Schrijf in modern, natuurlijk Vlaams Nederlands zoals gebruikt wordt op autoplatformen in Vlaanderen in 2026.
+
+Taalregels:
+- Gebruik Vlaams Nederlands, GEEN Nederlands uit Nederland
+- VERMIJD: "uitstekende koop", "kilometerstand", "voertuig", "rijden op de snelweg"
+- GEBRUIK: "sterke deal", "km-stand", "wagen", "op de autosnelweg", "in het dagelijkse verkeer", "bij stadsverkeer"
+- Schrijf kort, duidelijk en geloofwaardig zoals een ervaren auto-expert
+- Vermijd overdreven marketingtaal
+- Schrijf alsof je een koper eerlijk advies geeft
+- Gebruik europrijzen, km-stand en Belgische rijcontext (files, stadsverkeer, autosnelwegen, BIV, keuring)
+
+Wagen:
 - ${listing.title}
 - Bouwjaar: ${listing.year}
-- Kilometerstand: ${listing.mileage} km
+- Km-stand: ${listing.mileage} km
 - Brandstof: ${listing.fuelType}
 - Transmissie: ${listing.transmission}
 - Vermogen: ${listing.power || 'onbekend'} pk
@@ -30,27 +41,27 @@ Marktanalyse:
 - Gemiddelde marktprijs: €${analysis.averagePrice}
 - Laagste vergelijkbare: €${analysis.minPrice}
 - Hoogste vergelijkbare: €${analysis.maxPrice}
-- Aantal vergelijkbare auto's: ${analysis.comparableCount}
+- Aantal vergelijkbare wagens: ${analysis.comparableCount}
 - Beoordeling: ${analysis.rating === 'good' ? 'Onder marktprijs' : analysis.rating === 'fair' ? 'Marktconform' : 'Boven marktprijs'}
 
-Geef een uitgebreide analyse in exact dit JSON-formaat (geen markdown, puur JSON):
+Geef een analyse in exact dit JSON-formaat (geen markdown, puur JSON):
 {
   "summary": "Eén krachtige zin samenvatting van het prijsoordeel (max 100 tekens)",
   "priceVerdict": "good | fair | high",
-  "details": "3-4 zinnen die uitleggen waarom dit een goede/redelijke/hoge prijs is, rekening houdend met kilometerstand, bouwjaar, uitrusting en markttrends.",
+  "details": "3-4 zinnen die uitleggen waarom dit een sterke deal, redelijke prijs of dure wagen is. Houd rekening met km-stand, bouwjaar, uitrusting en markttrends in België.",
   "strengths": ["sterk punt 1", "sterk punt 2", "sterk punt 3"],
   "weaknesses": ["aandachtspunt 1", "aandachtspunt 2"],
-  "marketContext": "2-3 zinnen over de huidige marktpositie van dit merk/model, populariteit, restwaarde-ontwikkeling en vraag/aanbod.",
-  "ownershipCosts": "2-3 zinnen over te verwachten onderhoudskosten, verzekering, wegenbelasting en brandstofkosten voor dit type auto.",
+  "marketContext": "2-3 zinnen over de marktpositie van dit merk/model in België, populariteit, restwaarde en vraag/aanbod.",
+  "ownershipCosts": "2-3 zinnen over verwachte kosten: onderhoud, verzekering, BIV, wegenbelasting en brandstofkosten voor deze wagen in België.",
   "tips": ["tip 1 (max 80 tekens)", "tip 2", "tip 3"],
   "score": 7
 }
 
-Toelichting velden:
-- strengths: 2-4 sterke punten van deze specifieke auto
+Belangrijk:
+- strengths: 2-4 sterke punten van deze specifieke wagen
 - weaknesses: 1-3 aandachtspunten of risico's
-- marketContext: marktpositie en trends
-- ownershipCosts: geschatte eigendomskosten
+- marketContext: marktpositie en trends in België
+- ownershipCosts: geschatte eigendomskosten in Belgische context (BIV, keuring, verzekering)
 - tips: 2-4 onderhandelingstips voor de koper
 - score: totaalscore van 1-10 (10 = beste deal)`;
 
@@ -62,15 +73,13 @@ Toelichting velden:
       },
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "user", content: prompt },
-        ],
+        messages: [{ role: "user", content: prompt }],
       }),
     });
 
     if (!response.ok) {
       if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit bereikt, probeer het later opnieuw." }), {
+        return new Response(JSON.stringify({ error: "Te veel verzoeken, probeer het later opnieuw." }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
