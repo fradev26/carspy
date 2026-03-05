@@ -1,6 +1,6 @@
 import { forwardRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Search, Heart, User, Sparkles, Plus } from 'lucide-react';
+import { Home, Search, Heart, User, Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { AIFullscreenChat } from '@/modules/chat/AIFullscreenChat';
@@ -9,7 +9,6 @@ const navItems = [
   { icon: Home, label: 'Home', path: '/' },
   { icon: Search, label: 'Zoeken', path: '/zoeken' },
   { icon: Sparkles, label: 'AI', path: null, isAI: true },
-  { icon: Plus, label: 'Verkopen', path: '/verkopen', isAction: true },
   { icon: Heart, label: 'Favorieten', path: '/favorieten' },
   { icon: User, label: 'Account', path: '/dashboard', authPath: '/auth' },
 ];
@@ -37,22 +36,6 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
                   </div>
                   <span className="text-[10px] font-semibold text-primary -mt-0.5">AI</span>
                 </button>
-              );
-            }
-
-            // Sell vehicle action button
-            if (item.isAction) {
-              return (
-                <Link
-                  key={item.label}
-                  to={item.path!}
-                  className="flex flex-col items-center justify-center w-full h-full relative"
-                >
-                  <div className="flex items-center justify-center w-12 h-12 -mt-5 rounded-full bg-secondary text-secondary-foreground shadow-lg shadow-secondary/30 transition-transform active:scale-95">
-                    <Plus className="h-6 w-6" />
-                  </div>
-                  <span className="text-[10px] font-semibold text-secondary -mt-0.5">Verkopen</span>
-                </Link>
               );
             }
 
