@@ -67,14 +67,14 @@ const Index = () => {
         jsonLd={websiteJsonLd}
       />
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-24 lg:py-36">
+      <section className="relative overflow-hidden -mt-14 lg:-mt-16 pt-32 pb-24 lg:pt-44 lg:pb-36">
         {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url('/hero-image.png')` }}
         />
         {/* Dark overlay for readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-foreground/70 via-foreground/50 to-foreground/80" />
+        <div className="absolute inset-0 bg-gradient-to-b from-foreground/80 via-foreground/50 to-foreground/80" />
         
         <div className="container relative z-10">
           <div className="mx-auto max-w-3xl text-center">
