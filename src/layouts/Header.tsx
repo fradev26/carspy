@@ -63,7 +63,7 @@ export function Header() {
       <div className="container hidden h-16 items-center justify-between gap-6 lg:flex">
         {/* Logo */}
         <Link to="/" className="flex items-center">
-           <span className="text-5xl text-primary font-bold select-none" style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
+           <span className={cn("text-5xl font-bold select-none transition-colors duration-300", isTransparent ? "text-white" : "text-primary")} style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
          </Link>
 
         {/* Desktop Search */}
