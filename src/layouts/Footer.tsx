@@ -5,7 +5,7 @@ import fradesLogo from '@/assets/frades-digital-logo.png';
 export function Footer() {
   return (
     <footer className="hidden border-t bg-card md:block" role="contentinfo">
-      <div className="container py-12">
+      <div className="container pt-12 pb-4">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
           <div className="space-y-4">
