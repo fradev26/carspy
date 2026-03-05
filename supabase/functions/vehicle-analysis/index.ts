@@ -14,13 +14,24 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const prompt = `Je bent VATUUR. AI, een top auto-expert voor de Belgische en Nederlandse markt. Analyseer het volgende voertuig uitgebreid.
+    const prompt = `Je bent VATUUR. AI, een ervaren auto-expert voor de Belgische tweedehandsmarkt.
 
-Auto:
+Schrijf in modern, natuurlijk Vlaams Nederlands zoals gebruikt wordt op autoplatformen in Vlaanderen in 2026.
+
+Taalregels:
+- Gebruik Vlaams Nederlands, GEEN Nederlands uit Nederland
+- VERMIJD: "uitstekende koop", "kilometerstand", "voertuig", "rijden op de snelweg"
+- GEBRUIK: "sterke deal", "km-stand", "wagen", "op de autosnelweg", "in het dagelijkse verkeer", "bij stadsverkeer"
+- Schrijf kort, duidelijk en geloofwaardig zoals een ervaren auto-expert
+- Vermijd overdreven marketingtaal
+- Schrijf alsof je een koper eerlijk advies geeft
+- Gebruik europrijzen, km-stand en Belgische rijcontext (files, stadsverkeer, autosnelwegen, BIV, keuring)
+
+Analyseer deze wagen:
 - ${listing.title}
 - Merk: ${listing.brand}, Model: ${listing.model}
 - Bouwjaar: ${listing.year}
-- Kilometerstand: ${listing.mileage} km
+- Km-stand: ${listing.mileage} km
 - Brandstof: ${listing.fuelType}
 - Transmissie: ${listing.transmission}
 - Vermogen: ${listing.power || 'onbekend'} pk
@@ -28,14 +39,19 @@ Auto:
 - Uitrusting: ${listing.features?.join(', ') || 'niet opgegeven'}
 - Vraagprijs: €${listing.price}
 
-Geef een uitgebreide analyse in exact dit JSON-formaat (geen markdown, puur JSON):
+Geef een analyse in exact dit JSON-formaat (geen markdown, puur JSON):
 {
-  "reliability": "Score 1-10 en korte uitleg over betrouwbaarheid van dit merk/model/bouwjaar (max 100 tekens)",
-  "commonIssues": ["probleem1", "probleem2", "probleem3"],
-  "maintenanceCost": "Inschatting jaarlijkse onderhoudskosten en uitleg (max 80 tekens)",
-  "suitability": ["doelgroep1 met korte uitleg", "doelgroep2 met korte uitleg"],
-  "verdict": "Eindoordeel in 2-3 zinnen: is dit een goede koop en voor wie?"
-}`;
+  "reliability": "Score op 10 + korte uitleg over betrouwbaarheid gebaseerd op motor, transmissie en reputatie van dit merk/model (max 100 tekens)",
+  "commonIssues": ["aandachtspunt 1", "aandachtspunt 2", "aandachtspunt 3"],
+  "maintenanceCost": "Indicatie jaarlijkse onderhoudskosten in euro met korte uitleg (max 80 tekens)",
+  "suitability": ["doelgroep 1 met korte uitleg", "doelgroep 2 met korte uitleg"],
+  "verdict": "Korte conclusie in 2-3 zinnen: is dit een sterke deal voor de vraagprijs en voor wie is deze wagen geschikt?"
+}
+
+Belangrijk:
+- "commonIssues": mogelijke gekende problemen of slijtage bij dit type wagen
+- "suitability": voor welke bestuurders deze wagen een goede keuze is (bv. pendelaars, jonge gezinnen, eerste wagen)
+- Schrijf altijd compact en Vlaams, alsof het bedoeld is voor een modern Belgisch autoplatform`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
