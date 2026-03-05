@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SEOHead } from '@/components/SEOHead';
 import { useNavigate } from 'react-router-dom';
-import { Check, ChevronRight, ChevronLeft, Upload, X } from 'lucide-react';
+import { Check, ChevronRight, ChevronLeft, Upload, X, Sparkles, Loader2, ShieldCheck, AlertTriangle, Wrench, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,7 +13,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+
+interface VehicleAnalysis {
+  reliability: string;
+  commonIssues: string[];
+  maintenanceCost: string;
+  suitability: string[];
+  verdict: string;
+}
 
 const steps = ['Basisgegevens', 'Details', "Foto's", 'Prijs & Beschrijving', 'Overzicht'];
 
@@ -26,6 +35,9 @@ export default function Sell() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [analysisResult, setAnalysisResult] = useState<VehicleAnalysis | null>(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     brand: '', model: '', year: '', mileage: '', fuelType: '', transmission: '', 
@@ -63,6 +75,41 @@ export default function Sell() {
     setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
   };
   const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 0));
+
+  const fetchAnalysis = async () => {
+    setAnalysisLoading(true);
+    setAnalysisError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('vehicle-analysis', {
+        body: {
+          listing: {
+            title: `${formData.brand} ${formData.model}`,
+            brand: formData.brand,
+            model: formData.model,
+            year: formData.year,
+            mileage: formData.mileage,
+            fuelType: formData.fuelType,
+            transmission: formData.transmission,
+            power: formData.power,
+            bodyType: formData.bodyType,
+            price: formData.price,
+          },
+        },
+      });
+      if (error) throw new Error(error.message);
+      setAnalysisResult(data as VehicleAnalysis);
+    } catch (e) {
+      setAnalysisError(e instanceof Error ? e.message : 'Analyse niet beschikbaar');
+    } finally {
+      setAnalysisLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (currentStep === 4 && !analysisResult && !analysisLoading) {
+      fetchAnalysis();
+    }
+  }, [currentStep]);
 
   const generateDescription = async () => {
     if (!formData.brand || !formData.model) {
@@ -315,7 +362,7 @@ export default function Sell() {
           )}
 
           {currentStep === 4 && (
-            <div className="space-y-4">
+            <div className="space-y-6">
               <h3 className="font-semibold">Controleer je gegevens</h3>
               <div className="grid gap-2 text-sm">
                 <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Auto</span><span className="font-medium">{formData.brand} {formData.model}</span></div>
@@ -325,6 +372,90 @@ export default function Sell() {
                 <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Transmissie</span><span className="font-medium">{formData.transmission}</span></div>
                 <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Foto's</span><span className="font-medium">{imagePreviews.length} foto's</span></div>
                 <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Vraagprijs</span><span className="font-medium text-accent">€ {formData.price}</span></div>
+              </div>
+
+              <Separator />
+
+              {/* AI Analyse */}
+              <div className="space-y-4">
+                <h3 className="font-semibold flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  VATUUR. AI Analyse
+                </h3>
+
+                {analysisLoading && (
+                  <div className="flex flex-col items-center gap-3 py-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <p className="text-sm text-muted-foreground">AI analyseert je wagen...</p>
+                  </div>
+                )}
+
+                {analysisError && (
+                  <div className="rounded-lg bg-destructive/10 p-4 text-sm text-destructive">
+                    {analysisError}
+                    <Button variant="outline" size="sm" className="mt-2 w-full" onClick={fetchAnalysis}>
+                      Opnieuw proberen
+                    </Button>
+                  </div>
+                )}
+
+                {analysisResult && (
+                  <div className="space-y-4">
+                    {/* Betrouwbaarheid */}
+                    <div className="flex items-start gap-3 rounded-lg bg-primary/5 border border-primary/20 p-4">
+                      <ShieldCheck className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Betrouwbaarheid</p>
+                        <p className="text-sm text-foreground/80 mt-1">{analysisResult.reliability}</p>
+                      </div>
+                    </div>
+
+                    {/* Aandachtspunten */}
+                    {analysisResult.commonIssues?.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+                          <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                          Aandachtspunten
+                        </p>
+                        {analysisResult.commonIssues.map((issue, i) => (
+                          <div key={i} className="flex items-start gap-2 text-sm">
+                            <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
+                            <span className="text-foreground/80">{issue}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Onderhoud */}
+                    <div className="flex items-start gap-3">
+                      <Wrench className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Onderhoud</p>
+                        <p className="text-sm text-foreground/80 mt-1">{analysisResult.maintenanceCost}</p>
+                      </div>
+                    </div>
+
+                    {/* Geschikt voor */}
+                    {analysisResult.suitability?.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+                          <Target className="h-3.5 w-3.5" />
+                          Geschikt voor
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {analysisResult.suitability.map((s, i) => (
+                            <Badge key={i} variant="secondary" className="text-xs">{s}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <Separator />
+
+                    {/* Samenvatting */}
+                    <p className="text-sm text-foreground/80 italic">{analysisResult.verdict}</p>
+                  </div>
+                )}
               </div>
             </div>
           )}
