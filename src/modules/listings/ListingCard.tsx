@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MapPin, Fuel, Gauge, Calendar, Eye, GitCompareArrows, Crown } from 'lucide-react';
+import { Heart, MapPin, Fuel, Gauge, Calendar, Eye, GitCompareArrows, Crown, Settings2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -130,6 +130,10 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
                     <Fuel className="h-4 w-4" />
                     <span className="capitalize">{listing.fuelType}</span>
                   </span>
+                  <span className="flex items-center gap-1.5">
+                    <Settings2 className="h-4 w-4" />
+                    <span className="capitalize">{listing.transmission}</span>
+                  </span>
                 </div>
               </div>
 
@@ -249,6 +253,10 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
             <span className="flex items-center gap-1 rounded-md bg-muted px-2 py-1">
               <Fuel className="h-3 w-3" />
               <span className="capitalize">{listing.fuelType}</span>
+            </span>
+            <span className="flex items-center gap-1 rounded-md bg-muted px-2 py-1">
+              <Settings2 className="h-3 w-3" />
+              <span className="capitalize">{listing.transmission}</span>
             </span>
           </div>
 
