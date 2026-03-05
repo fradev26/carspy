@@ -1,9 +1,11 @@
+import { lazy, Suspense } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { BottomNav } from '@/components/BottomNav';
 import { CompareBar } from '@/components/CompareBar';
-import { ChatWidget } from '@/modules/chat/ChatWidget';
+
+const ChatWidget = lazy(() => import('@/modules/chat/ChatWidget').then(m => ({ default: m.ChatWidget })));
 
 export function AppLayout() {
   return (
@@ -17,7 +19,9 @@ export function AppLayout() {
       <Footer />
       <CompareBar />
       <BottomNav />
-      <ChatWidget />
+      <Suspense fallback={null}>
+        <ChatWidget />
+      </Suspense>
     </div>
   );
 }
