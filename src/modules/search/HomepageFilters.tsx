@@ -20,9 +20,12 @@ import {
   ONLINE_SINCE_OPTIONS,
   WARRANTY_OPTIONS,
   FEATURE_OPTIONS,
+  COUNTRY_OPTIONS,
+  RADIUS_OPTIONS,
 } from '@/types/listing';
 import { cn } from '@/lib/utils';
 import { FilterPresets } from './FilterPresets';
+import { Input } from '@/components/ui/input';
 
 interface HomepageFiltersProps {
   filters: SearchFilters;
@@ -139,6 +142,8 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
       filters.features?.length,
     ].filter(Boolean).length,
     location: [
+      filters.country,
+      filters.postalCode,
       filters.province,
       filters.onlineSince,
     ].filter(Boolean).length,
@@ -547,6 +552,39 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
         <TabsContent value="location" className="mt-4 animate-fade-in">
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-4">
+              {/* Country */}
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Land</Label>
+                <div className="flex flex-wrap gap-2">
+                  {COUNTRY_OPTIONS.map((c) => (
+                    <button
+                      key={c.value}
+                      type="button"
+                      onClick={() => updateFilter('country', filters.country === c.value ? undefined : c.value)}
+                      className={cn(
+                        "px-3 py-1.5 text-sm rounded-full border transition-all duration-200",
+                        filters.country === c.value
+                          ? "bg-primary text-primary-foreground border-primary" 
+                          : "bg-background text-foreground/70 border-border/60 hover:border-primary/50 hover:text-foreground"
+                      )}
+                    >
+                      {c.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* City / Postal Code */}
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Stad of postcode</Label>
+                <Input
+                  placeholder="Bijv. Amsterdam, 1012"
+                  value={filters.postalCode || ''}
+                  onChange={(e) => updateFilter('postalCode', e.target.value || undefined)}
+                  className="h-9 border-border/60 text-sm"
+                />
+              </div>
+
               {/* Province */}
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Provincie</Label>
@@ -565,6 +603,22 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
             </div>
 
             <div className="space-y-4">
+              {/* Radius */}
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Zoekstraal</Label>
+                <Select value={filters.radius?.toString() || ''} onValueChange={(v) => updateFilter('radius', v && v !== 'none' ? parseInt(v) : undefined)}>
+                  <SelectTrigger className="h-9 border-border/60 text-sm">
+                    <SelectValue placeholder="Heel land" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card">
+                    <SelectItem value="none">Heel land</SelectItem>
+                    {RADIUS_OPTIONS.map((r) => (
+                      <SelectItem key={r.value} value={r.value.toString()}>{r.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Online Since */}
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Online sinds</Label>

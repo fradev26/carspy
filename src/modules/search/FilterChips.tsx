@@ -12,6 +12,7 @@ import {
   ONLINE_SINCE_OPTIONS,
   WARRANTY_OPTIONS,
   FEATURE_OPTIONS,
+  COUNTRY_OPTIONS,
 } from '@/types/listing';
 import { cn } from '@/lib/utils';
 
@@ -111,11 +112,20 @@ export function FilterChips({ filters, onRemoveFilter, onClearAll, className }: 
   }
 
   // Location filters
+  if (filters.country) {
+    const countryLabel = COUNTRY_OPTIONS.find(c => c.value === filters.country)?.label || filters.country;
+    chips.push({ key: 'country', label: countryLabel, category: 'location' });
+  }
+
+  if (filters.postalCode) {
+    chips.push({ key: 'postalCode', label: filters.postalCode, category: 'location' });
+  }
+
   if (filters.province) {
     chips.push({ key: 'province', label: filters.province, category: 'location' });
   }
 
-  if (filters.radius && filters.radius < 200) {
+  if (filters.radius) {
     chips.push({ key: 'radius', label: `${filters.radius} km`, category: 'location' });
   }
 

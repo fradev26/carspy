@@ -23,9 +23,12 @@ import {
   ONLINE_SINCE_OPTIONS,
   WARRANTY_OPTIONS,
   FEATURE_OPTIONS,
+  COUNTRY_OPTIONS,
+  RADIUS_OPTIONS,
 } from '@/types/listing';
 import { cn } from '@/lib/utils';
 import { FilterPresets } from './FilterPresets';
+import { Input } from '@/components/ui/input';
 
 interface FilterPanelProps {
   filters: SearchFilters;
@@ -111,6 +114,8 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
         filters.minSeats,
       ].filter(Boolean).length,
       location: [
+        filters.country,
+        filters.postalCode,
         filters.province,
         filters.radius,
         filters.onlineSince,
@@ -596,6 +601,33 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
         onToggle={() => toggleSection('location')}
       >
         <div className="space-y-4">
+          {/* Country */}
+          <div className="space-y-2">
+            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Land</Label>
+            <Select value={filters.country || ''} onValueChange={(v) => updateFilter('country', v === 'all' ? undefined : v)}>
+              <SelectTrigger className="border-border/60">
+                <SelectValue placeholder="Alle landen" />
+              </SelectTrigger>
+              <SelectContent className="bg-card">
+                <SelectItem value="all">Alle landen</SelectItem>
+                {COUNTRY_OPTIONS.map((c) => (
+                  <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* City / Postal Code */}
+          <div className="space-y-2">
+            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Stad of postcode</Label>
+            <Input
+              placeholder="Bijv. Amsterdam, 1012"
+              value={filters.postalCode || ''}
+              onChange={(e) => updateFilter('postalCode', e.target.value || undefined)}
+              className="border-border/60"
+            />
+          </div>
+
           {/* Province */}
           <div className="space-y-2">
             <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Provincie</Label>
@@ -613,21 +645,19 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
           </div>
 
           {/* Radius */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Zoekstraal</Label>
-              <span className="text-sm text-foreground font-medium">
-                {filters.radius ? `${filters.radius} km` : 'Heel NL'}
-              </span>
-            </div>
-            <Slider
-              value={[filters.radius || 200]}
-              onValueChange={([v]) => updateFilter('radius', v === 200 ? undefined : v)}
-              min={10}
-              max={200}
-              step={10}
-              className="w-full"
-            />
+          <div className="space-y-2">
+            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Zoekstraal</Label>
+            <Select value={filters.radius?.toString() || ''} onValueChange={(v) => updateFilter('radius', v && v !== 'none' ? parseInt(v) : undefined)}>
+              <SelectTrigger className="border-border/60">
+                <SelectValue placeholder="Heel land" />
+              </SelectTrigger>
+              <SelectContent className="bg-card">
+                <SelectItem value="none">Heel land</SelectItem>
+                {RADIUS_OPTIONS.map((r) => (
+                  <SelectItem key={r.value} value={r.value.toString()}>{r.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Online Since */}

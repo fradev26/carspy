@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useTransition } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 import { SEOHead } from '@/components/SEOHead';
 import { Grid, List, SlidersHorizontal, Car, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -108,6 +109,12 @@ function parseFiltersFromURL(searchParams: URLSearchParams): SearchFilters {
   const radius = searchParams.get('radius');
   if (radius) filters.radius = parseInt(radius);
 
+  const country = searchParams.get('country');
+  if (country) filters.country = country;
+
+  const postalCode = searchParams.get('postalCode');
+  if (postalCode) filters.postalCode = postalCode;
+
   const onlineSince = searchParams.get('onlineSince');
   if (onlineSince) filters.onlineSince = onlineSince as OnlineSince;
 
@@ -151,6 +158,8 @@ export default function Search() {
   const { save } = useSavedSearches();
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [searchName, setSearchName] = useState('');
+  const [page, setPage] = useState(1);
+  const perPage = 24;
 
   // Update filters when URL params change
   useEffect(() => {
@@ -161,6 +170,7 @@ export default function Search() {
   // Simulate loading when filters change
   const handleFiltersChange = (newFilters: SearchFilters) => {
     setIsLoading(true);
+    setPage(1);
     startTransition(() => {
       setFilters(newFilters);
       setTimeout(() => setIsLoading(false), 300);
@@ -504,7 +514,57 @@ export default function Search() {
                   ))}
                 </div>
               ) : filteredListings.length > 0 ? (
-                <ListingGrid listings={filteredListings} variant={viewMode} columns={3} />
+                <>
+                  <ListingGrid listings={filteredListings.slice((page - 1) * perPage, page * perPage)} variant={viewMode} columns={3} />
+                  
+                  {/* Pagination */}
+                  {filteredListings.length > perPage && (
+                    <div className="mt-8 flex items-center justify-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={page === 1}
+                        onClick={() => { setPage(p => p - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                        className="border-border/60"
+                      >
+                        Vorige
+                      </Button>
+                      {Array.from({ length: Math.min(Math.ceil(filteredListings.length / perPage), 7) }, (_, i) => {
+                        const totalPages = Math.ceil(filteredListings.length / perPage);
+                        let pageNum: number;
+                        if (totalPages <= 7) {
+                          pageNum = i + 1;
+                        } else if (page <= 4) {
+                          pageNum = i + 1;
+                        } else if (page >= totalPages - 3) {
+                          pageNum = totalPages - 6 + i;
+                        } else {
+                          pageNum = page - 3 + i;
+                        }
+                        return (
+                          <Button
+                            key={pageNum}
+                            variant={page === pageNum ? 'default' : 'outline'}
+                            size="sm"
+                            className={cn("w-9 h-9", page !== pageNum && "border-border/60")}
+                            onClick={() => { setPage(pageNum); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                          >
+                            {pageNum}
+                          </Button>
+                        );
+                      })}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={page >= Math.ceil(filteredListings.length / perPage)}
+                        onClick={() => { setPage(p => p + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                        className="border-border/60"
+                      >
+                        Volgende
+                      </Button>
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted mb-4">

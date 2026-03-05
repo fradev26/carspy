@@ -99,6 +99,8 @@ export interface SearchFilters {
   minSeats?: number;
   
   // 5. Location & Timing (Locatie & timing)
+  country?: string;
+  postalCode?: string;
   location?: string;
   province?: string;
   radius?: number;
@@ -196,6 +198,18 @@ export const COLOR_OPTIONS = [
 export const PROVINCES = [
   'Noord-Holland', 'Zuid-Holland', 'Utrecht', 'Noord-Brabant', 'Gelderland',
   'Overijssel', 'Limburg', 'Flevoland', 'Groningen', 'Friesland', 'Drenthe', 'Zeeland'
+];
+
+export const COUNTRY_OPTIONS = [
+  { value: 'nl', label: 'Nederland' },
+  { value: 'be', label: 'België' },
+];
+
+export const RADIUS_OPTIONS = [
+  { value: 25, label: '25 km' },
+  { value: 50, label: '50 km' },
+  { value: 100, label: '100 km' },
+  { value: 250, label: '250 km' },
 ];
 
 export const FEATURE_OPTIONS: { value: string; label: string; category: string }[] = [
