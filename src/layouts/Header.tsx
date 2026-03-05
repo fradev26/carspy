@@ -19,14 +19,13 @@ export function Header() {
   const isHomepage = location.pathname === '/';
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
+    const handleScroll = () => setScrolled(window.scrollY > 300);
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // On homepage: transparent until scrolled. On other pages: always solid.
-  const isSolid = !isHomepage || scrolled;
+  const isVisible = !isHomepage || scrolled;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
