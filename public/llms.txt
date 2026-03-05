@@ -1,9 +1,9 @@
-# AutoSpy
+# VATUUR.
 
-> AutoSpy is een Nederlands platform voor het kopen en verkopen van tweedehands auto's.
+> VATUUR. is een Nederlands platform voor het kopen en verkopen van tweedehands auto's.
 
-## Wat is AutoSpy?
-AutoSpy is een online marktplaats voor occasions (tweedehands auto's) in Nederland en België. Het platform brengt kopers en verkopers samen en biedt uitgebreide zoek- en vergelijkingsfuncties.
+## Wat is VATUUR.?
+VATUUR. is een online marktplaats voor occasions (tweedehands auto's) in Nederland en België. Het platform brengt kopers en verkopers samen en biedt uitgebreide zoek- en vergelijkingsfuncties.
 
 ## Belangrijkste functies
 
@@ -34,13 +34,11 @@ AutoSpy is een online marktplaats voor occasions (tweedehands auto's) in Nederla
 - Dealer dashboard met analytics
 
 ## Technische details
-- Website: https://autospy.nl
+- Website: https://vatuur.nl
 - Taal: Nederlands
 - Regio: Nederland en België
 - Type: Tweedehands auto marktplaats
 - Aantal listings: 25.000+
 
 ## Contact
-- Email: info@autospy.nl
-- Telefoon: 0800-123 4567
-- Adres: Autoweg 123, 1234 AB Amsterdam
+- Email: info@vatuur.nl
