@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SEOHead } from '@/components/SEOHead';
 import { useNavigate } from 'react-router-dom';
-import { Check, ChevronRight, ChevronLeft, Upload, X } from 'lucide-react';
+import { Check, ChevronRight, ChevronLeft, Upload, X, Sparkles, Loader2, ShieldCheck, AlertTriangle, Wrench, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,7 +13,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+
+interface VehicleAnalysis {
+  reliability: string;
+  commonIssues: string[];
+  maintenanceCost: string;
+  suitability: string[];
+  verdict: string;
+}
 
 const steps = ['Basisgegevens', 'Details', "Foto's", 'Prijs & Beschrijving', 'Overzicht'];
 
