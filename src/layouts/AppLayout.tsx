@@ -10,7 +10,9 @@ export function AppLayout() {
     <div className="flex min-h-screen flex-col">
       <Header />
       <main className="flex-1 pb-16 md:pb-0">
-        <Outlet />
+        <div className="animate-fade-in">
+          <Outlet />
+        </div>
       </main>
       <Footer />
       <CompareBar />
