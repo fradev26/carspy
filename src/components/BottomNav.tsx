@@ -10,7 +10,7 @@ const navItems = [
   { icon: Search, label: 'Zoeken', path: '/zoeken' },
   { icon: Sparkles, label: 'AI', path: null, isAI: true },
   { icon: Heart, label: 'Favorieten', path: '/favorieten' },
-  { icon: User, label: 'Account', path: '/dashboard', authPath: '/auth' },
+  { icon: Plus, label: 'Verkopen', path: '/verkopen', authPath: '/auth' },
 ];
 
 export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref) {
