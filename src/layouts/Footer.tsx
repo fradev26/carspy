@@ -10,11 +10,11 @@ export function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-                <Car className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <span className="text-xl font-bold">AutoSpy</span>
-            </Link>
+               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+                 <Car className="h-5 w-5 text-primary-foreground" />
+               </div>
+               <span className="text-xl font-black" style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
+             </Link>
             <p className="text-sm text-muted-foreground">
               De slimste manier om je volgende auto te vinden of je huidige auto te verkopen.
             </p>

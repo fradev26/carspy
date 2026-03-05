@@ -30,11 +30,11 @@ export function Header() {
       {/* Mobile + Tablet Header */}
       <div className="container flex h-14 items-center justify-between gap-4 lg:hidden">
         <Link to="/" className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-sm">
-            <Car className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <span className="text-lg font-bold text-foreground">AutoSpy</span>
-        </Link>
+           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-sm">
+             <Car className="h-5 w-5 text-primary-foreground" />
+           </div>
+           <span className="text-lg font-black text-foreground" style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
+         </Link>
         
         <Button variant="ghost" size="icon" asChild className="text-muted-foreground">
           <Link to="/zoeken">
@@ -47,11 +47,11 @@ export function Header() {
       <div className="container hidden h-16 items-center justify-between gap-6 lg:flex">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-sm group-hover:shadow-md transition-shadow">
-            <Car className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <span className="text-xl font-bold text-foreground">AutoSpy</span>
-        </Link>
+           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-sm group-hover:shadow-md transition-shadow">
+             <Car className="h-5 w-5 text-primary-foreground" />
+           </div>
+           <span className="text-xl font-black text-foreground" style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
+         </Link>
 
         {/* Desktop Search */}
         <form onSubmit={handleSearch} className="flex-1 max-w-lg">
