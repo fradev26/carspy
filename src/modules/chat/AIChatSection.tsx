@@ -86,31 +86,29 @@ export function AIChatSection() {
 
             {/* Input Area */}
             <div className={cn("p-4", expanded && "border-t border-border/40")}>
-              <div className="flex items-end gap-3">
+              <div className="flex items-end gap-2">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
                   <Bot className="h-5 w-5 text-primary" />
                 </div>
-                <div className="relative flex-1">
-                  <textarea
-                    ref={inputRef}
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Stel een vraag over auto's, prijzen, of vergelijkingen..."
-                    disabled={isLoading}
-                    rows={1}
-                    className="w-full resize-none rounded-xl border border-border/60 bg-background px-4 py-3 pr-12 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 disabled:opacity-50"
-                  />
-                  <Button
-                    type="button"
-                    size="icon"
-                    onClick={handleSend}
-                    disabled={!input.trim() || isLoading}
-                    className="absolute right-1.5 bottom-1.5 h-8 w-8 rounded-lg"
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </div>
+                <textarea
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Stel een vraag over auto's, prijzen, of vergelijkingen..."
+                  disabled={isLoading}
+                  rows={1}
+                  className="flex-1 resize-none rounded-xl border border-border/60 bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 disabled:opacity-50"
+                />
+                <Button
+                  type="button"
+                  size="icon"
+                  onClick={handleSend}
+                  disabled={!input.trim() || isLoading}
+                  className="h-10 w-10 shrink-0 rounded-lg"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
                 {messages.length > 0 && (
                   <Button
                     variant="ghost"
