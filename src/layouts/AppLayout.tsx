@@ -14,7 +14,7 @@ export function AppLayout() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className={`flex-1 pb-16 lg:pb-0 ${isHomepage ? '' : 'pt-14 lg:pt-16'}`}>
+      <main className={`flex-1 pb-20 lg:pb-0 safe-bottom ${isHomepage ? '' : 'pt-14 lg:pt-16'}`}>
         <div className="animate-fade-in">
           <Outlet />
         </div>
