@@ -67,21 +67,22 @@ const Index = () => {
         jsonLd={websiteJsonLd}
       />
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary via-primary to-primary/90 py-16 md:py-24">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }} />
-        </div>
+      <section className="relative overflow-hidden py-20 lg:py-32">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1920&q=80')` }}
+        />
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-foreground/70 via-foreground/50 to-foreground/80" />
         
         <div className="container relative z-10">
           <div className="mx-auto max-w-3xl text-center">
             <div className="animate-fade-in">
-              <h1 className="text-3xl font-bold text-primary-foreground md:text-5xl lg:text-6xl tracking-tight">
+              <h1 className="text-3xl font-bold text-white md:text-5xl lg:text-6xl tracking-tight">
                 Vind jouw perfecte auto
               </h1>
-              <p className="mt-4 text-lg text-primary-foreground/80 md:text-xl max-w-2xl mx-auto">
+              <p className="mt-4 text-lg text-white/80 md:text-xl max-w-2xl mx-auto">
                 Doorzoek duizenden occasions en vind de auto die bij je past
               </p>
             </div>
@@ -92,7 +93,7 @@ const Index = () => {
           </div>
           
           {/* Trust indicators */}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-primary-foreground/70">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-white/70">
             <div className="flex items-center gap-2">
               <Shield className="h-4 w-4" />
               <span>Geverifieerde dealers</span>
