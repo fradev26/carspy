@@ -35,6 +35,10 @@ export default function Sell() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [analysisResult, setAnalysisResult] = useState<VehicleAnalysis | null>(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   
   const [formData, setFormData] = useState({
     brand: '', model: '', year: '', mileage: '', fuelType: '', transmission: '', 
