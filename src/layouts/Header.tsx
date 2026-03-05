@@ -26,11 +26,11 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/20 bg-primary">
+    <header className="fixed top-0 left-0 right-0 z-50 w-full bg-transparent">
       {/* Mobile + Tablet Header */}
       <div className="container flex h-14 items-center justify-between gap-4 lg:hidden">
         <Link to="/" className="flex items-center">
-           <span className="text-4xl text-white font-bold select-none" style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
+           <span className="text-4xl text-primary font-bold select-none" style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
          </Link>
         
         <Button variant="ghost" size="icon" asChild className="text-white hover:bg-white/10 hover:text-white">
@@ -44,7 +44,7 @@ export function Header() {
       <div className="container hidden h-16 items-center justify-between gap-6 lg:flex">
         {/* Logo */}
         <Link to="/" className="flex items-center">
-           <span className="text-5xl text-white font-bold select-none" style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
+           <span className="text-5xl text-primary font-bold select-none" style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
          </Link>
 
         {/* Desktop Search */}
