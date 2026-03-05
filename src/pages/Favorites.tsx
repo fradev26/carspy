@@ -93,7 +93,7 @@ export default function Favorites() {
 
   return (
     <div className="container py-8">
-      <SEOHead title="Mijn favorieten - AutoSpy" description="Bekijk je opgeslagen favoriete auto's." noindex />
+      <SEOHead title="Mijn favorieten - VATUUR." description="Bekijk je opgeslagen favoriete auto's." noindex />
       <h1 className="text-2xl font-bold">Mijn favorieten</h1>
       <p className="mt-1 text-muted-foreground">{listings.length} opgeslagen auto's</p>
 

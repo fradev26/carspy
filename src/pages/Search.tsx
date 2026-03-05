@@ -355,15 +355,15 @@ export default function Search() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Auto's zoeken - AutoSpy"
+        title="Auto's zoeken - VATUUR."
         description="Zoek en filter tweedehands auto's op merk, prijs, bouwjaar, kilometerstand en meer. Vind jouw perfecte occasion."
-        canonical="https://autospy.nl/zoeken"
+        canonical="https://vatuur.nl/zoeken"
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
           "itemListElement": [
-            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://autospy.nl/" },
-            { "@type": "ListItem", "position": 2, "name": "Zoeken", "item": "https://autospy.nl/zoeken" }
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://vatuur.nl/" },
+            { "@type": "ListItem", "position": 2, "name": "Zoeken", "item": "https://vatuur.nl/zoeken" }
           ]
         }}
       />

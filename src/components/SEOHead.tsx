@@ -29,7 +29,7 @@ export function SEOHead({
   title,
   description,
   canonical,
-  ogImage = 'https://autospy.nl/og-default.png',
+  ogImage = 'https://vatuur.nl/og-default.png',
   ogType = 'website',
   noindex = false,
   jsonLd,

@@ -68,7 +68,7 @@ export const ChatWidget = forwardRef<HTMLDivElement>(function ChatWidget(_props,
             <div className="flex items-center gap-2">
               <MessageCircle className="h-5 w-5" />
               <div>
-                <p className="text-sm font-semibold">AutoSpy AI</p>
+                <p className="text-sm font-semibold">VATUUR. AI</p>
                 <p className="text-xs opacity-80">Jouw auto-assistent</p>
               </div>
             </div>
@@ -82,7 +82,7 @@ export const ChatWidget = forwardRef<HTMLDivElement>(function ChatWidget(_props,
             {messages.length === 0 ? (
               <div className="space-y-3 py-4">
                 <p className="text-center text-sm text-muted-foreground">
-                  👋 Hoi! Ik ben AutoSpy AI. Stel me een vraag over auto's of gebruik een suggestie:
+                  👋 Hoi! Ik ben VATUUR. AI. Stel me een vraag over auto's of gebruik een suggestie:
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {SUGGESTIONS.map(s => (

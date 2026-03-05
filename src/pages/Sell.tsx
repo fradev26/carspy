@@ -190,9 +190,9 @@ export default function Sell() {
   return (
     <div className="container max-w-3xl py-8">
       <SEOHead
-        title="Auto verkopen - AutoSpy"
-        description="Plaats gratis je advertentie en bereik duizenden kopers. Verkoop je auto snel en eenvoudig via AutoSpy."
-        canonical="https://autospy.nl/verkopen"
+        title="Auto verkopen - VATUUR."
+        description="Plaats gratis je advertentie en bereik duizenden kopers. Verkoop je auto snel en eenvoudig via VATUUR."
+        canonical="https://vatuur.nl/verkopen"
       />
       <h1 className="text-2xl font-bold text-center">Auto verkopen</h1>
 

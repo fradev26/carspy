@@ -361,7 +361,7 @@ export default function BusinessDashboard() {
 
   return (
     <div className="container py-8 space-y-8">
-      <SEOHead title="Zakelijk Dashboard - AutoSpy" description="Beheer je voorraad en bekijk prestaties." noindex />
+      <SEOHead title="Zakelijk Dashboard - VATUUR." description="Beheer je voorraad en bekijk prestaties." noindex />
 
       {/* Header */}
       <div>
