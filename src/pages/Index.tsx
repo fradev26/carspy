@@ -71,7 +71,7 @@ const Index = () => {
         {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1920&q=80')` }}
+          style={{ backgroundImage: `url('/hero-image.png')` }}
         />
         {/* Dark overlay for readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-foreground/70 via-foreground/50 to-foreground/80" />
