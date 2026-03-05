@@ -8,7 +8,6 @@ import { ImageGallery, ListingGrid, PriceIndicator } from '@/modules/listings';
 import { useCompare } from '@/hooks/useCompare';
 import { getListingById, getRelatedListings } from '@/data/mockListings';
 import { useState, useMemo } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { FEATURE_OPTIONS } from '@/types/listing';
 import { supabase } from '@/integrations/supabase/client';
