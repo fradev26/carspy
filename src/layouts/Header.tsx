@@ -26,14 +26,14 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-card/95 backdrop-blur-lg supports-[backdrop-filter]:bg-card/80">
+    <header className="sticky top-0 z-50 w-full border-b border-white/20 bg-primary">
       {/* Mobile + Tablet Header */}
       <div className="container flex h-14 items-center justify-between gap-4 lg:hidden">
         <Link to="/" className="flex items-center">
-           <span className="text-4xl text-foreground select-none" style={{ fontFamily: 'Montserrat', fontWeight: 500 }}>VATUUR.</span>
+           <span className="text-4xl text-white font-bold select-none" style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
          </Link>
         
-        <Button variant="ghost" size="icon" asChild className="text-muted-foreground">
+        <Button variant="ghost" size="icon" asChild className="text-white hover:bg-white/10 hover:text-white">
           <Link to="/zoeken">
             <Search className="h-5 w-5" />
           </Link>
@@ -44,38 +44,38 @@ export function Header() {
       <div className="container hidden h-16 items-center justify-between gap-6 lg:flex">
         {/* Logo */}
         <Link to="/" className="flex items-center">
-           <span className="text-5xl text-foreground select-none" style={{ fontFamily: 'Montserrat', fontWeight: 500 }}>VATUUR.</span>
+           <span className="text-5xl text-white font-bold select-none" style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
          </Link>
 
         {/* Desktop Search */}
         <form onSubmit={handleSearch} className="flex-1 max-w-lg">
           <div className="relative w-full">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/60" />
             <Input
               type="search"
               placeholder="Zoek op merk, model..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 h-11 bg-muted/50 border-border/60 focus:bg-background transition-colors"
+              className="w-full pl-10 pr-4 h-11 bg-white/10 border-white/30 text-white placeholder:text-white/50 focus:bg-white/20 focus:border-white/50 transition-colors"
             />
           </div>
         </form>
 
         {/* Desktop Navigation */}
         <nav className="flex items-center gap-1">
-          <Button variant="ghost" asChild className="text-muted-foreground hover:text-foreground">
+          <Button variant="ghost" asChild className="text-white font-bold hover:bg-white/10 hover:text-white">
             <Link to="/zoeken">Zoeken</Link>
           </Button>
           
           {user ? (
             <>
-              <Button variant="ghost" asChild className="gap-2 text-muted-foreground hover:text-foreground">
+              <Button variant="ghost" asChild className="gap-2 text-white font-bold hover:bg-white/10 hover:text-white">
                 <Link to="/favorieten">
                   <Heart className="h-4 w-4" />
                   Favorieten
                 </Link>
               </Button>
-              <Button variant="ghost" asChild className="gap-2 text-muted-foreground hover:text-foreground">
+              <Button variant="ghost" asChild className="gap-2 text-white font-bold hover:bg-white/10 hover:text-white">
                 <Link to="/berichten">
                   <MessageCircle className="h-4 w-4" />
                   Berichten
@@ -84,7 +84,7 @@ export function Header() {
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="gap-2 text-muted-foreground hover:text-foreground">
+                  <Button variant="ghost" className="gap-2 text-white font-bold hover:bg-white/10 hover:text-white">
                     <User className="h-4 w-4" />
                     Account
                   </Button>
@@ -112,7 +112,7 @@ export function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
               
-              <Button asChild className="ml-2 gap-2 bg-accent text-accent-foreground hover:bg-accent/90 shadow-sm">
+              <Button asChild className="ml-2 gap-2 bg-white text-primary font-bold hover:bg-white/90 shadow-sm">
                 <Link to="/verkopen">
                   <Plus className="h-4 w-4" />
                   Auto verkopen
@@ -121,10 +121,10 @@ export function Header() {
             </>
           ) : (
             <>
-              <Button variant="ghost" asChild className="text-muted-foreground hover:text-foreground">
+              <Button variant="ghost" asChild className="text-white font-bold hover:bg-white/10 hover:text-white">
                 <Link to="/auth">Inloggen</Link>
               </Button>
-              <Button asChild className="ml-2 gap-2 bg-accent text-accent-foreground hover:bg-accent/90 shadow-sm">
+              <Button asChild className="ml-2 gap-2 bg-white text-primary font-bold hover:bg-white/90 shadow-sm">
                 <Link to="/auth">
                   <Plus className="h-4 w-4" />
                   Auto verkopen
