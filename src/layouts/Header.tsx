@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Heart, User, Plus, LogOut, MessageCircle, BarChart3 } from 'lucide-react';
+import { Search, Heart, User, Plus, LogOut, MessageCircle, BarChart3, Menu, Shield, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { cn } from '@/lib/utils';
@@ -11,6 +13,7 @@ import { cn } from '@/lib/utils';
 export function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signOut } = useAuth();
@@ -36,7 +39,13 @@ export function Header() {
 
   const handleSignOut = async () => {
     await signOut();
+    setMobileMenuOpen(false);
     navigate('/');
+  };
+
+  const handleMobileNav = (path: string) => {
+    setMobileMenuOpen(false);
+    navigate(path);
   };
 
   return (
@@ -52,11 +61,62 @@ export function Header() {
            <span className="text-4xl font-bold select-none text-primary" style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
          </Link>
         
-        <Button variant="ghost" size="icon" asChild className={cn("hover:bg-transparent", isTransparent ? "text-white" : "text-foreground hover:bg-muted")}>
-          <Link to="/zoeken">
-            <Search className="h-5 w-5" />
-          </Link>
-        </Button>
+        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" className={cn("hover:bg-transparent", isTransparent ? "text-white" : "text-foreground hover:bg-muted")}>
+              <Menu className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-72">
+            <SheetHeader>
+              <SheetTitle className="text-left text-primary" style={{ fontFamily: 'Montserrat' }}>VATUUR.</SheetTitle>
+            </SheetHeader>
+            <nav className="mt-6 flex flex-col gap-1">
+              {user ? (
+                <>
+                  <button onClick={() => handleMobileNav('/dashboard')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
+                    <User className="h-4 w-4 text-muted-foreground" /> Mijn advertenties
+                  </button>
+                  <button onClick={() => handleMobileNav('/favorieten')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
+                    <Heart className="h-4 w-4 text-muted-foreground" /> Favorieten
+                  </button>
+                  <button onClick={() => handleMobileNav('/berichten')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
+                    <MessageCircle className="h-4 w-4 text-muted-foreground" /> Berichten
+                  </button>
+                  {isDealer && (
+                    <button onClick={() => handleMobileNav('/zakelijk')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
+                      <BarChart3 className="h-4 w-4 text-muted-foreground" /> Zakelijk Dashboard
+                    </button>
+                  )}
+                  <Separator className="my-2" />
+                  <button onClick={() => handleMobileNav('/privacy')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors">
+                    <Shield className="h-4 w-4" /> Privacybeleid
+                  </button>
+                  <button onClick={() => handleMobileNav('/voorwaarden')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors">
+                    <FileText className="h-4 w-4" /> Algemene voorwaarden
+                  </button>
+                  <Separator className="my-2" />
+                  <button onClick={handleSignOut} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors">
+                    <LogOut className="h-4 w-4" /> Uitloggen
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button onClick={() => handleMobileNav('/auth')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
+                    <User className="h-4 w-4 text-muted-foreground" /> Inloggen / Registreren
+                  </button>
+                  <Separator className="my-2" />
+                  <button onClick={() => handleMobileNav('/privacy')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors">
+                    <Shield className="h-4 w-4" /> Privacybeleid
+                  </button>
+                  <button onClick={() => handleMobileNav('/voorwaarden')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors">
+                    <FileText className="h-4 w-4" /> Algemene voorwaarden
+                  </button>
+                </>
+              )}
+            </nav>
+          </SheetContent>
+        </Sheet>
       </div>
 
       {/* Desktop Header */}
