@@ -49,7 +49,7 @@ export function Header() {
       {/* Mobile + Tablet Header */}
       <div className="container flex h-14 items-center justify-between gap-4 lg:hidden">
         <Link to="/" className="flex items-center">
-           <span className={cn("text-4xl font-bold select-none transition-colors duration-300", isTransparent ? "text-white" : "text-primary")} style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
+           <span className="text-4xl font-bold select-none text-primary" style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
          </Link>
         
         <Button variant="ghost" size="icon" asChild className={cn("hover:bg-transparent", isTransparent ? "text-white" : "text-foreground hover:bg-muted")}>
@@ -63,7 +63,7 @@ export function Header() {
       <div className="container hidden h-16 items-center justify-between gap-6 lg:flex">
         {/* Logo */}
         <Link to="/" className="flex items-center">
-           <span className={cn("text-5xl font-bold select-none transition-colors duration-300", isTransparent ? "text-white" : "text-primary")} style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
+           <span className="text-5xl font-bold select-none text-primary" style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
          </Link>
 
         {/* Desktop Search */}
