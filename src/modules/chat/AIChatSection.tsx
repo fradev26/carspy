@@ -47,7 +47,7 @@ export function AIChatSection() {
   };
 
   return (
-    <section className="py-10 md:py-16">
+    <section className="hidden lg:block py-10 md:py-16">
       <div className="container">
         <div className="mx-auto max-w-3xl">
           {/* Header */}
