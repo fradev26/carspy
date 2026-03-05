@@ -25,7 +25,7 @@ export function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const isVisible = !isHomepage || scrolled;
+  const isTransparent = isHomepage && !scrolled;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
