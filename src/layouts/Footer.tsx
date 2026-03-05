@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Car, Mail, Heart } from 'lucide-react';
+import { Mail, Heart } from 'lucide-react';
 import fradesLogo from '@/assets/frades-digital-logo.png';
 
 export function Footer() {
@@ -9,11 +9,8 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
           <div className="space-y-4">
-            <Link to="/" className="flex items-center gap-2">
-               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-                 <Car className="h-5 w-5 text-primary-foreground" />
-               </div>
-               <span className="text-xl" style={{ fontFamily: 'Montserrat', fontWeight: 500 }}>VATUUR<span style={{ fontWeight: 900 }}>.</span></span>
+            <Link to="/" className="flex items-center">
+               <span className="text-2xl text-foreground select-none" style={{ fontFamily: 'Montserrat', fontWeight: 500 }}>VATUUR.</span>
              </Link>
             <p className="text-sm text-muted-foreground">
               De slimste manier om je volgende auto te vinden of je huidige auto te verkopen.

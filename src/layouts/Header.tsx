@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Car, Heart, User, Plus, LogOut, Menu, MessageCircle, BarChart3 } from 'lucide-react';
+import { Search, Heart, User, Plus, LogOut, MessageCircle, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -29,11 +29,8 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-card/95 backdrop-blur-lg supports-[backdrop-filter]:bg-card/80">
       {/* Mobile + Tablet Header */}
       <div className="container flex h-14 items-center justify-between gap-4 lg:hidden">
-        <Link to="/" className="flex items-center gap-2.5">
-           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-sm">
-             <Car className="h-5 w-5 text-primary-foreground" />
-           </div>
-           <span className="text-xl text-foreground" style={{ fontFamily: 'Montserrat', fontWeight: 500 }}>VATUUR<span style={{ fontWeight: 900 }}>.</span></span>
+        <Link to="/" className="flex items-center">
+           <span className="text-4xl text-foreground select-none" style={{ fontFamily: 'Montserrat', fontWeight: 500 }}>VATUUR.</span>
          </Link>
         
         <Button variant="ghost" size="icon" asChild className="text-muted-foreground">
@@ -46,11 +43,8 @@ export function Header() {
       {/* Desktop Header */}
       <div className="container hidden h-16 items-center justify-between gap-6 lg:flex">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 group">
-           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary shadow-sm group-hover:shadow-md transition-shadow">
-             <Car className="h-5 w-5 text-primary-foreground" />
-           </div>
-           <span className="text-2xl text-foreground" style={{ fontFamily: 'Montserrat', fontWeight: 500 }}>VATUUR<span style={{ fontWeight: 900 }}>.</span></span>
+        <Link to="/" className="flex items-center">
+           <span className="text-5xl text-foreground select-none" style={{ fontFamily: 'Montserrat', fontWeight: 500 }}>VATUUR.</span>
          </Link>
 
         {/* Desktop Search */}
