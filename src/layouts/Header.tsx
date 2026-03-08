@@ -200,7 +200,7 @@ export function Header() {
             </>
           ) : (
             <>
-              <Button variant="ghost" asChild className={cn("font-bold", isTransparent ? "text-white hover:bg-white/10" : "text-foreground hover:bg-muted")}>
+              <Button variant="ghost" asChild className={cn("font-bold", isTransparent ? "text-white hover:bg-white/10 hover:text-white" : "text-foreground hover:bg-muted hover:text-foreground")}>
                 <Link to="/auth">Inloggen</Link>
               </Button>
               <Button asChild className="ml-2 gap-2 font-bold shadow-sm bg-primary text-primary-foreground hover:bg-primary/90">
