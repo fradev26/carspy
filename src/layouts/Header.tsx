@@ -129,32 +129,32 @@ export function Header() {
         {/* Desktop Search */}
         <form onSubmit={handleSearch} className="flex-1 max-w-lg">
           <div className="relative w-full">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className={cn("absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2", isTransparent ? "text-white/60" : "text-muted-foreground")} />
             <Input
               type="search"
               placeholder="Zoek op merk, model..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 h-11 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:bg-background"
+              className={cn("w-full pl-10 pr-4 h-11", isTransparent ? "bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:bg-white/15" : "bg-muted border-border text-foreground placeholder:text-muted-foreground focus:bg-background")}
             />
           </div>
         </form>
 
         {/* Desktop Navigation */}
         <nav className="flex items-center gap-1">
-          <Button variant="ghost" asChild className="font-bold text-foreground hover:bg-muted">
+          <Button variant="ghost" asChild className={cn("font-bold", isTransparent ? "text-white hover:bg-white/10" : "text-foreground hover:bg-muted")}>
             <Link to="/zoeken">Zoeken</Link>
           </Button>
           
           {user ? (
             <>
-              <Button variant="ghost" asChild className="gap-2 font-bold text-foreground hover:bg-muted">
+              <Button variant="ghost" asChild className={cn("gap-2 font-bold", isTransparent ? "text-white hover:bg-white/10" : "text-foreground hover:bg-muted")}>
                 <Link to="/favorieten">
                   <Heart className="h-4 w-4" />
                   Favorieten
                 </Link>
               </Button>
-              <Button variant="ghost" asChild className="gap-2 font-bold text-foreground hover:bg-muted">
+              <Button variant="ghost" asChild className={cn("gap-2 font-bold", isTransparent ? "text-white hover:bg-white/10" : "text-foreground hover:bg-muted")}>
                 <Link to="/berichten">
                   <MessageCircle className="h-4 w-4" />
                   Berichten
@@ -163,7 +163,7 @@ export function Header() {
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="gap-2 font-bold text-foreground hover:bg-muted">
+                  <Button variant="ghost" className={cn("gap-2 font-bold", isTransparent ? "text-white hover:bg-white/10" : "text-foreground hover:bg-muted")}>
                     <User className="h-4 w-4" />
                     Account
                   </Button>
@@ -200,7 +200,7 @@ export function Header() {
             </>
           ) : (
             <>
-              <Button variant="ghost" asChild className="font-bold text-foreground hover:bg-muted">
+              <Button variant="ghost" asChild className={cn("font-bold", isTransparent ? "text-white hover:bg-white/10" : "text-foreground hover:bg-muted")}>
                 <Link to="/auth">Inloggen</Link>
               </Button>
               <Button asChild className="ml-2 gap-2 font-bold shadow-sm bg-primary text-primary-foreground hover:bg-primary/90">
