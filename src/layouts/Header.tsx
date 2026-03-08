@@ -142,19 +142,19 @@ export function Header() {
 
         {/* Desktop Navigation */}
         <nav className="flex items-center gap-1">
-          <Button variant="ghost" asChild className={cn("font-bold", isTransparent ? "text-white hover:bg-white/10" : "text-foreground hover:bg-muted")}>
+          <Button variant="ghost" asChild className={cn("font-bold", isTransparent ? "text-white hover:bg-white/10 hover:text-white" : "text-foreground hover:bg-muted hover:text-foreground")}>
             <Link to="/zoeken">Zoeken</Link>
           </Button>
           
           {user ? (
             <>
-              <Button variant="ghost" asChild className={cn("gap-2 font-bold", isTransparent ? "text-white hover:bg-white/10" : "text-foreground hover:bg-muted")}>
+              <Button variant="ghost" asChild className={cn("gap-2 font-bold", isTransparent ? "text-white hover:bg-white/10 hover:text-white" : "text-foreground hover:bg-muted hover:text-foreground")}>
                 <Link to="/favorieten">
                   <Heart className="h-4 w-4" />
                   Favorieten
                 </Link>
               </Button>
-              <Button variant="ghost" asChild className={cn("gap-2 font-bold", isTransparent ? "text-white hover:bg-white/10" : "text-foreground hover:bg-muted")}>
+              <Button variant="ghost" asChild className={cn("gap-2 font-bold", isTransparent ? "text-white hover:bg-white/10 hover:text-white" : "text-foreground hover:bg-muted hover:text-foreground")}>
                 <Link to="/berichten">
                   <MessageCircle className="h-4 w-4" />
                   Berichten
@@ -163,7 +163,7 @@ export function Header() {
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className={cn("gap-2 font-bold", isTransparent ? "text-white hover:bg-white/10" : "text-foreground hover:bg-muted")}>
+                  <Button variant="ghost" className={cn("gap-2 font-bold", isTransparent ? "text-white hover:bg-white/10 hover:text-white" : "text-foreground hover:bg-muted hover:text-foreground")}>
                     <User className="h-4 w-4" />
                     Account
                   </Button>
@@ -200,7 +200,7 @@ export function Header() {
             </>
           ) : (
             <>
-              <Button variant="ghost" asChild className={cn("font-bold", isTransparent ? "text-white hover:bg-white/10" : "text-foreground hover:bg-muted")}>
+              <Button variant="ghost" asChild className={cn("font-bold", isTransparent ? "text-white hover:bg-white/10 hover:text-white" : "text-foreground hover:bg-muted hover:text-foreground")}>
                 <Link to="/auth">Inloggen</Link>
               </Button>
               <Button asChild className="ml-2 gap-2 font-bold shadow-sm bg-primary text-primary-foreground hover:bg-primary/90">
