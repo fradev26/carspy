@@ -122,6 +122,36 @@ export default function Sell() {
     }
   };
 
+  const parseSellTimeScore = (estimatedTime: string): { score: number; speed: 'snel' | 'gemiddeld' | 'langzaam' } => {
+    const text = estimatedTime.toLowerCase();
+    
+    // Parse days
+    const daysMatch = text.match(/(\d+)-(\d+)\s*dag/);
+    if (daysMatch) {
+      const maxDays = parseInt(daysMatch[2]);
+      return { score: 90, speed: 'snel' };
+    }
+    
+    // Parse weeks
+    const weeksMatch = text.match(/(\d+)-(\d+)\s*week/);
+    if (weeksMatch) {
+      const maxWeeks = parseInt(weeksMatch[2]);
+      if (maxWeeks <= 2) return { score: 75, speed: 'snel' };
+      if (maxWeeks <= 4) return { score: 50, speed: 'gemiddeld' };
+      return { score: 25, speed: 'langzaam' };
+    }
+    
+    // Parse months
+    const monthsMatch = text.match(/(\d+)-(\d+)\s*maand/);
+    if (monthsMatch) {
+      const maxMonths = parseInt(monthsMatch[2]);
+      if (maxMonths <= 1) return { score: 40, speed: 'gemiddeld' };
+      return { score: 15, speed: 'langzaam' };
+    }
+    
+    return { score: 50, speed: 'gemiddeld' };
+  };
+
   const generateDescription = async () => {
     if (!formData.brand || !formData.model) {
       toast({ title: 'Vul eerst merk en model in', variant: 'destructive' });
