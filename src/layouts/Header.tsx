@@ -163,7 +163,7 @@ export function Header() {
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className={cn("gap-2 font-bold", isTransparent ? "text-white hover:bg-white/10" : "text-foreground hover:bg-muted")}>
+                  <Button variant="ghost" className={cn("gap-2 font-bold", isTransparent ? "text-white hover:bg-white/10 hover:text-white" : "text-foreground hover:bg-muted hover:text-foreground")}>
                     <User className="h-4 w-4" />
                     Account
                   </Button>
