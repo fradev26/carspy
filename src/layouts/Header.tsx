@@ -129,13 +129,13 @@ export function Header() {
         {/* Desktop Search */}
         <form onSubmit={handleSearch} className="flex-1 max-w-lg">
           <div className="relative w-full">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className={cn("absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2", isTransparent ? "text-white/60" : "text-muted-foreground")} />
             <Input
               type="search"
               placeholder="Zoek op merk, model..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 h-11 bg-muted border-border text-foreground placeholder:text-muted-foreground focus:bg-background"
+              className={cn("w-full pl-10 pr-4 h-11", isTransparent ? "bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:bg-white/15" : "bg-muted border-border text-foreground placeholder:text-muted-foreground focus:bg-background")}
             />
           </div>
         </form>
