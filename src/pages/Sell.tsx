@@ -426,15 +426,46 @@ export default function Sell() {
                     )}
 
                     {/* Geschatte verkooptijd */}
-                    {analysisResult.estimatedSellTime && (
-                      <div className="flex items-start gap-3 rounded-lg bg-accent/5 border border-accent/20 p-4">
-                        <Clock className="h-5 w-5 text-accent shrink-0 mt-0.5" />
-                        <div>
-                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Geschatte verkooptijd</p>
-                          <p className="text-sm text-foreground/80 mt-1">{analysisResult.estimatedSellTime}</p>
+                    {analysisResult.estimatedSellTime && (() => {
+                      const { score, speed } = parseSellTimeScore(analysisResult.estimatedSellTime);
+                      const speedColors = {
+                        snel: 'text-green-600',
+                        gemiddeld: 'text-amber-600',
+                        langzaam: 'text-orange-600'
+                      };
+                      const speedBgColors = {
+                        snel: '[&>div]:bg-green-500',
+                        gemiddeld: '[&>div]:bg-amber-500',
+                        langzaam: '[&>div]:bg-orange-500'
+                      };
+                      const speedLabelBg = {
+                        snel: 'bg-green-50',
+                        gemiddeld: 'bg-amber-50',
+                        langzaam: 'bg-orange-50'
+                      };
+                      
+                      return (
+                        <div className="rounded-lg bg-accent/5 border border-accent/20 p-4 space-y-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-5 w-5 text-accent shrink-0" />
+                              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Geschatte verkooptijd</p>
+                            </div>
+                            <Badge variant="outline" className={`${speedBgColors[speed]} ${speedColors[speed]} border-current`}>
+                              {speed.charAt(0).toUpperCase() + speed.slice(1)}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-foreground/80">{analysisResult.estimatedSellTime}</p>
+                          <div className={`space-y-1.5 ${speedBgColors[speed]}`}>
+                            <Progress value={score} className="h-2" />
+                            <div className="flex justify-between text-xs text-muted-foreground px-0.5">
+                              <span>Langzaam</span>
+                              <span>Snel</span>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      );
+                    })()}
 
                     {/* Betrouwbaarheid */}
                     <div className="flex items-start gap-3 rounded-lg bg-primary/5 border border-primary/20 p-4">
