@@ -14,6 +14,10 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
+    const priceContext = listing.price
+      ? `- Vraagprijs: €${listing.price}`
+      : `- Vraagprijs: niet opgegeven (geef zelf een prijsvoorstel)`;
+
     const prompt = `Je bent VATUUR. AI, een ervaren auto-expert voor de Belgische tweedehandsmarkt.
 
 Schrijf in modern, natuurlijk Vlaams Nederlands zoals gebruikt wordt op autoplatformen in Vlaanderen in 2026.
@@ -37,7 +41,7 @@ Analyseer deze wagen:
 - Vermogen: ${listing.power || 'onbekend'} pk
 - Carrosserie: ${listing.bodyType}
 - Uitrusting: ${listing.features?.join(', ') || 'niet opgegeven'}
-- Vraagprijs: €${listing.price}
+${priceContext}
 
 Geef een analyse in exact dit JSON-formaat (geen markdown, puur JSON):
 {
@@ -45,12 +49,19 @@ Geef een analyse in exact dit JSON-formaat (geen markdown, puur JSON):
   "commonIssues": ["aandachtspunt 1", "aandachtspunt 2", "aandachtspunt 3"],
   "maintenanceCost": "Indicatie jaarlijkse onderhoudskosten in euro met korte uitleg (max 80 tekens)",
   "suitability": ["doelgroep 1 met korte uitleg", "doelgroep 2 met korte uitleg"],
+  "suggestedPrice": 25000,
+  "priceRange": { "min": 22000, "max": 28000 },
+  "priceExplanation": "Korte uitleg (2-3 zinnen) waarom dit een eerlijke vraagprijs is voor deze wagen op de Belgische markt, rekening houdend met km-stand, bouwjaar en uitrusting.",
+  "estimatedSellTime": "Geschatte verkooptijd in weken/maanden, bv. '2-4 weken' of '1-2 maanden', met korte uitleg waarom (populariteit, vraag/aanbod, seizoen).",
   "verdict": "Korte conclusie in 2-3 zinnen: is dit een sterke deal voor de vraagprijs en voor wie is deze wagen geschikt?"
 }
 
 Belangrijk:
 - "commonIssues": mogelijke gekende problemen of slijtage bij dit type wagen
 - "suitability": voor welke bestuurders deze wagen een goede keuze is (bv. pendelaars, jonge gezinnen, eerste wagen)
+- "suggestedPrice": een eerlijk prijsvoorstel in euro (integer), gebaseerd op de Belgische tweedehandsmarkt
+- "priceRange": minimum en maximum prijsrange waarbinnen de wagen realistisch kan verkocht worden
+- "estimatedSellTime": hoe lang het gemiddeld duurt om dit type wagen te verkopen op de Belgische markt
 - Schrijf altijd compact en Vlaams, alsof het bedoeld is voor een modern Belgisch autoplatform`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -90,7 +101,7 @@ Belangrijk:
       const jsonStr = content.replace(/```json?\n?/g, "").replace(/```/g, "").trim();
       parsed = JSON.parse(jsonStr);
     } catch {
-      parsed = { verdict: content, reliability: "N/A", commonIssues: [], maintenanceCost: "N/A", suitability: [] };
+      parsed = { verdict: content, reliability: "N/A", commonIssues: [], maintenanceCost: "N/A", suitability: [], suggestedPrice: 0, priceRange: { min: 0, max: 0 }, priceExplanation: "", estimatedSellTime: "" };
     }
 
     return new Response(JSON.stringify(parsed), {
