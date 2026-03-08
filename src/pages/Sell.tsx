@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { SEOHead } from '@/components/SEOHead';
 import { useNavigate } from 'react-router-dom';
-import { Check, ChevronRight, ChevronLeft, Upload, X, Sparkles, Loader2, ShieldCheck, AlertTriangle, Wrench, Target } from 'lucide-react';
+import { Check, ChevronRight, ChevronLeft, Upload, X, Sparkles, Loader2, ShieldCheck, AlertTriangle, Wrench, Target, Euro, Clock, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,6 +22,10 @@ interface VehicleAnalysis {
   maintenanceCost: string;
   suitability: string[];
   verdict: string;
+  suggestedPrice: number;
+  priceRange: { min: number; max: number };
+  priceExplanation: string;
+  estimatedSellTime: string;
 }
 
 const steps = ['Basisgegevens', 'Details', "Foto's", 'Prijs & Beschrijving', 'Overzicht'];
@@ -92,7 +96,7 @@ export default function Sell() {
             transmission: formData.transmission,
             power: formData.power,
             bodyType: formData.bodyType,
-            price: formData.price,
+            price: formData.price || undefined,
           },
         },
       });
@@ -106,10 +110,16 @@ export default function Sell() {
   };
 
   useEffect(() => {
-    if (currentStep === 4 && !analysisResult && !analysisLoading) {
+    if (currentStep === 3 && !analysisResult && !analysisLoading) {
       fetchAnalysis();
     }
   }, [currentStep]);
+
+  const applySuggestedPrice = () => {
+    if (analysisResult?.suggestedPrice) {
+      updateForm('price', String(analysisResult.suggestedPrice));
+    }
+  };
 
   const generateDescription = async () => {
     if (!formData.brand || !formData.model) {
@@ -155,7 +165,6 @@ export default function Sell() {
     
     setImageFiles(prev => [...prev, ...files]);
     
-    // Create previews
     files.forEach(file => {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -198,10 +207,8 @@ export default function Sell() {
     setIsSubmitting(true);
     
     try {
-      // Upload images first
       const imageUrls = await uploadImages();
       
-      // Create listing
       const { error } = await supabase.from('listings').insert({
         user_id: user.id,
         title: `${formData.brand} ${formData.model}`,
@@ -336,47 +343,8 @@ export default function Sell() {
           )}
 
           {currentStep === 3 && (
-            <div className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2"><Label>Vraagprijs *</Label><Input type="number" value={formData.price} onChange={(e) => updateForm('price', e.target.value)} placeholder="25000" /></div>
-                <div className="space-y-2"><Label>Stad</Label><Input value={formData.city} onChange={(e) => updateForm('city', e.target.value)} placeholder="Amsterdam" /></div>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label>Beschrijving</Label>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={generateDescription}
-                    disabled={isGenerating}
-                    className="gap-1.5"
-                  >
-                    {isGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-                    {isGenerating ? 'Bezig...' : 'Genereer met AI'}
-                  </Button>
-                </div>
-                <Textarea value={formData.description} onChange={(e) => updateForm('description', e.target.value)} placeholder="Beschrijf je auto..." rows={6} />
-              </div>
-            </div>
-          )}
-
-          {currentStep === 4 && (
             <div className="space-y-6">
-              <h3 className="font-semibold">Controleer je gegevens</h3>
-              <div className="grid gap-2 text-sm">
-                <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Auto</span><span className="font-medium">{formData.brand} {formData.model}</span></div>
-                <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Bouwjaar</span><span className="font-medium">{formData.year}</span></div>
-                <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Km-stand</span><span className="font-medium">{formData.mileage} km</span></div>
-                <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Brandstof</span><span className="font-medium">{formData.fuelType}</span></div>
-                <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Transmissie</span><span className="font-medium">{formData.transmission}</span></div>
-                <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Foto's</span><span className="font-medium">{imagePreviews.length} foto's</span></div>
-                <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Vraagprijs</span><span className="font-medium text-accent">€ {formData.price}</span></div>
-              </div>
-
-              <Separator />
-
-              {/* AI Analyse */}
+              {/* AI Analyse - Prijsvoorstel */}
               <div className="space-y-4">
                 <h3 className="font-semibold flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-primary" />
@@ -401,6 +369,42 @@ export default function Sell() {
 
                 {analysisResult && (
                   <div className="space-y-4">
+                    {/* Prijsvoorstel */}
+                    {analysisResult.suggestedPrice > 0 && (
+                      <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Euro className="h-5 w-5 text-primary" />
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Prijsvoorstel</p>
+                        </div>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-3xl font-bold text-primary">€ {analysisResult.suggestedPrice.toLocaleString('nl-BE')}</span>
+                        </div>
+                        {analysisResult.priceRange && (
+                          <p className="text-xs text-muted-foreground">
+                            Prijsrange: € {analysisResult.priceRange.min?.toLocaleString('nl-BE')} – € {analysisResult.priceRange.max?.toLocaleString('nl-BE')}
+                          </p>
+                        )}
+                        {analysisResult.priceExplanation && (
+                          <p className="text-sm text-foreground/80">{analysisResult.priceExplanation}</p>
+                        )}
+                        <Button variant="outline" size="sm" className="gap-1.5" onClick={applySuggestedPrice}>
+                          <TrendingUp className="h-3.5 w-3.5" />
+                          Gebruik dit prijsvoorstel
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Geschatte verkooptijd */}
+                    {analysisResult.estimatedSellTime && (
+                      <div className="flex items-start gap-3 rounded-lg bg-accent/5 border border-accent/20 p-4">
+                        <Clock className="h-5 w-5 text-accent shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Geschatte verkooptijd</p>
+                          <p className="text-sm text-foreground/80 mt-1">{analysisResult.estimatedSellTime}</p>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Betrouwbaarheid */}
                     <div className="flex items-start gap-3 rounded-lg bg-primary/5 border border-primary/20 p-4">
                       <ShieldCheck className="h-5 w-5 text-primary shrink-0 mt-0.5" />
@@ -456,6 +460,46 @@ export default function Sell() {
                     <p className="text-sm text-foreground/80 italic">{analysisResult.verdict}</p>
                   </div>
                 )}
+              </div>
+
+              <Separator />
+
+              {/* Prijs & beschrijving formulier */}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2"><Label>Vraagprijs *</Label><Input type="number" value={formData.price} onChange={(e) => updateForm('price', e.target.value)} placeholder="25000" /></div>
+                <div className="space-y-2"><Label>Stad</Label><Input value={formData.city} onChange={(e) => updateForm('city', e.target.value)} placeholder="Amsterdam" /></div>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>Beschrijving</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={generateDescription}
+                    disabled={isGenerating}
+                    className="gap-1.5"
+                  >
+                    {isGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                    {isGenerating ? 'Bezig...' : 'Genereer met AI'}
+                  </Button>
+                </div>
+                <Textarea value={formData.description} onChange={(e) => updateForm('description', e.target.value)} placeholder="Beschrijf je auto..." rows={6} />
+              </div>
+            </div>
+          )}
+
+          {currentStep === 4 && (
+            <div className="space-y-6">
+              <h3 className="font-semibold">Controleer je gegevens</h3>
+              <div className="grid gap-2 text-sm">
+                <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Auto</span><span className="font-medium">{formData.brand} {formData.model}</span></div>
+                <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Bouwjaar</span><span className="font-medium">{formData.year}</span></div>
+                <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Km-stand</span><span className="font-medium">{formData.mileage} km</span></div>
+                <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Brandstof</span><span className="font-medium">{formData.fuelType}</span></div>
+                <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Transmissie</span><span className="font-medium">{formData.transmission}</span></div>
+                <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Foto's</span><span className="font-medium">{imagePreviews.length} foto's</span></div>
+                <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Vraagprijs</span><span className="font-medium text-accent">€ {formData.price}</span></div>
               </div>
             </div>
           )}
