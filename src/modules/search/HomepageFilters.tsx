@@ -413,7 +413,7 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
                       type="button"
                       onClick={() => toggleArrayFilter('paintTypes', paint.value)}
                       className={cn(
-                        "px-3 py-1.5 text-sm rounded-full border transition-all duration-200",
+                        "px-3 py-1.5 text-sm rounded-full border transition-all duration-200 focus-ring",
                         filters.paintTypes?.includes(paint.value)
                           ? "bg-primary text-primary-foreground border-primary" 
                           : "bg-background text-foreground/70 border-border/60 hover:border-primary/50 hover:text-foreground"
