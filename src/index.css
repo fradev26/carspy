@@ -170,6 +170,11 @@
     @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
   }
   
+  /* Focus visible for custom interactive elements */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+  
   /* Shine effect for primary buttons */
   .shine-effect {
     @apply relative overflow-hidden;

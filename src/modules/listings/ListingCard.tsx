@@ -58,7 +58,7 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
 
   if (variant === 'horizontal') {
     return (
-      <Link to={`/auto/${listing.id}`} className="block">
+      <Link to={`/auto/${listing.id}`} className="block" aria-label={`${listing.title} - ${formatPrice(listing.price)}`}>
         <Card className={cn(
           "group overflow-hidden transition-all duration-300 hover:shadow-card-hover hover:-translate-y-0.5 border-border/60",
           isPremium && "border-premium/50 shadow-glow-premium ring-1 ring-premium/20"
@@ -86,17 +86,18 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
               </div>
               
               {/* Favorite Button */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn(
-                  'absolute right-3 top-3 h-9 w-9 rounded-full bg-card/90 backdrop-blur-sm shadow-md transition-all hover:scale-110',
-                  favorite ? 'text-accent' : 'text-muted-foreground hover:text-accent'
-                )}
-                onClick={handleFavoriteClick}
-              >
-                <Heart className={cn('h-4 w-4 transition-transform', favorite && 'fill-current scale-110')} />
-              </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={favorite ? 'Verwijder uit favorieten' : 'Toevoegen aan favorieten'}
+            className={cn(
+              'absolute right-3 top-3 h-9 w-9 rounded-full bg-card/90 backdrop-blur-sm shadow-md transition-all hover:scale-110',
+              favorite ? 'text-accent' : 'text-muted-foreground hover:text-accent'
+            )}
+            onClick={handleFavoriteClick}
+          >
+            <Heart className={cn('h-4 w-4 transition-transform', favorite && 'fill-current scale-110')} />
+          </Button>
               
               {/* Status / Premium Badges */}
               {isPremium && (
@@ -156,7 +157,7 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
   }
 
   return (
-    <Link to={`/auto/${listing.id}`} className="block">
+    <Link to={`/auto/${listing.id}`} className="block" aria-label={`${listing.title} - ${formatPrice(listing.price)}`}>
       <Card className={cn(
         "group overflow-hidden transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1 border-border/60",
         isPremium && "border-premium/50 shadow-glow-premium ring-1 ring-premium/20"
@@ -190,6 +191,7 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
           <Button
             variant="ghost"
             size="icon"
+            aria-label={favorite ? 'Verwijder uit favorieten' : 'Toevoegen aan favorieten'}
             className={cn(
               'absolute right-3 top-3 h-9 w-9 rounded-full bg-card/90 backdrop-blur-sm shadow-md transition-all hover:scale-110',
               favorite ? 'text-accent' : 'text-muted-foreground hover:text-accent'
@@ -203,6 +205,7 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
           <Button
             variant="ghost"
             size="icon"
+            aria-label={isComparing ? 'Wordt vergeleken' : 'Vergelijk deze auto'}
             className={cn(
               'absolute right-3 top-14 h-9 w-9 rounded-full bg-card/90 backdrop-blur-sm shadow-md transition-all hover:scale-110',
               isComparing ? 'text-primary' : 'text-muted-foreground hover:text-primary'

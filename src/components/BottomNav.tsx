@@ -29,6 +29,7 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
                 <button
                   key={item.label}
                   onClick={() => setAiOpen(true)}
+                  aria-label="Open AI assistent"
                   className="flex flex-col items-center justify-center w-full h-full relative"
                 >
                   <div className="flex items-center justify-center w-12 h-12 -mt-5 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-transform active:scale-95">

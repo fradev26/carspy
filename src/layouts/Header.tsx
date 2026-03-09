@@ -63,7 +63,7 @@ export function Header() {
         
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className={cn("hover:bg-transparent", isTransparent ? "text-white" : "text-foreground hover:bg-muted")}>
+            <Button variant="ghost" size="icon" aria-label="Open menu" className={cn("hover:bg-transparent", isTransparent ? "text-white" : "text-foreground hover:bg-muted")}>
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
