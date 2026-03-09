@@ -86,17 +86,18 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
               </div>
               
               {/* Favorite Button */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className={cn(
-                  'absolute right-3 top-3 h-9 w-9 rounded-full bg-card/90 backdrop-blur-sm shadow-md transition-all hover:scale-110',
-                  favorite ? 'text-accent' : 'text-muted-foreground hover:text-accent'
-                )}
-                onClick={handleFavoriteClick}
-              >
-                <Heart className={cn('h-4 w-4 transition-transform', favorite && 'fill-current scale-110')} />
-              </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={favorite ? 'Verwijder uit favorieten' : 'Toevoegen aan favorieten'}
+            className={cn(
+              'absolute right-3 top-3 h-9 w-9 rounded-full bg-card/90 backdrop-blur-sm shadow-md transition-all hover:scale-110',
+              favorite ? 'text-accent' : 'text-muted-foreground hover:text-accent'
+            )}
+            onClick={handleFavoriteClick}
+          >
+            <Heart className={cn('h-4 w-4 transition-transform', favorite && 'fill-current scale-110')} />
+          </Button>
               
               {/* Status / Premium Badges */}
               {isPremium && (
