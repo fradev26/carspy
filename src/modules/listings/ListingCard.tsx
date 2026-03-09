@@ -58,7 +58,7 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
 
   if (variant === 'horizontal') {
     return (
-      <Link to={`/auto/${listing.id}`} className="block">
+      <Link to={`/auto/${listing.id}`} className="block" aria-label={`${listing.title} - ${formatPrice(listing.price)}`}>
         <Card className={cn(
           "group overflow-hidden transition-all duration-300 hover:shadow-card-hover hover:-translate-y-0.5 border-border/60",
           isPremium && "border-premium/50 shadow-glow-premium ring-1 ring-premium/20"
