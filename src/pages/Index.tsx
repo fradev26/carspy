@@ -68,7 +68,7 @@ const Index = () => {
         jsonLd={websiteJsonLd}
       />
       {/* Hero Section */}
-      <section className="relative overflow-hidden -mt-14 lg:-mt-16 pt-24 pb-16 lg:pt-44 lg:pb-36">
+      <section className="relative overflow-hidden -mt-14 lg:-mt-16 pt-32 pb-16 lg:pt-44 lg:pb-36">
         {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center"
