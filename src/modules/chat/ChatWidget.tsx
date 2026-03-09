@@ -128,10 +128,11 @@ export const ChatWidget = forwardRef<HTMLDivElement>(function ChatWidget(_props,
               value={input}
               onChange={e => setInput(e.target.value)}
               placeholder="Stel een vraag..."
+              aria-label="Stel een vraag aan VATUUR AI"
               disabled={isLoading}
               className="flex-1"
             />
-            <Button type="submit" size="icon" disabled={!input.trim() || isLoading}>
+            <Button type="submit" size="icon" aria-label="Verstuur bericht" disabled={!input.trim() || isLoading}>
               <Send className="h-4 w-4" />
             </Button>
           </form>
