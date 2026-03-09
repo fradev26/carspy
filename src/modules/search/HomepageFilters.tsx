@@ -296,12 +296,12 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
                         key={body.value}
                         type="button"
                         onClick={() => toggleArrayFilter('bodyTypes', body.value)}
-                        className={cn(
-                          "flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border-2 transition-all duration-200",
-                          isSelected
-                            ? "bg-primary/10 border-primary text-primary shadow-sm"
-                            : "bg-muted/30 border-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:border-border/60"
-                        )}
+                      className={cn(
+                        "flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border-2 transition-all duration-200 focus-ring",
+                        isSelected
+                          ? "bg-primary/10 border-primary text-primary shadow-sm"
+                          : "bg-muted/30 border-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:border-border/60"
+                      )}
                       >
                         <BodyTypeIcon type={body.value} className={cn("h-6 w-6", isSelected && "text-primary")} />
                         <span className={cn("text-xs font-medium truncate w-full text-center", isSelected && "text-primary")}>
