@@ -1,110 +1,56 @@
 
 
-# Zakelijk Dashboard met Bedrijfsregistratie en AI Prijsanalyse
+## Plan: Betaalde Boost & Premium advertenties met Stripe
 
-## Overzicht
-Dit plan voegt een volledige zakelijke laag toe aan AutoSpy: bedrijven kunnen zich registreren met bedrijfsnaam en BTW-nummer, krijgen automatisch toegang tot een uitgebreid zakelijk dashboard, en kunnen AI-prijsanalyses uitvoeren op hun voorraad.
+### Aanbevolen provider: Stripe
+Uit de geschiktheidscheck blijkt dat **Stripe** de beste fit is voor VATUUR. Paddle (Merchant of Record) is niet geschikt omdat het platform transacties rond fysieke goederen (auto's) faciliteert. Stripe geeft je volledige controle, ondersteunt eenmalige betalingen perfect, en is kostenefficiënt voor de Belgische/Nederlandse markt (~1,5% + €0,25 voor Europese kaarten).
 
----
-
-## 1. Database-uitbreiding: Bedrijfsgegevens op profiel
-
-De bestaande `profiles`-tabel wordt uitgebreid met zakelijke velden:
-
-```text
-profiles tabel - nieuwe kolommen:
-+------------------+----------+-----------+
-| Kolom            | Type     | Nullable  |
-+------------------+----------+-----------+
-| vat_number       | text     | Ja        |
-| company_website  | text     | Ja        |
-+------------------+----------+-----------+
-```
-
-Het bestaande `is_dealer`-veld en `dealer_name`-veld worden hergebruikt. Wanneer een gebruiker zich registreert met bedrijfsnaam + BTW-nummer, wordt `is_dealer = true` gezet.
+Goed nieuws: je hebt **geen eigen Stripe-account nodig** om te starten — Lovable's ingebouwde Stripe-integratie werkt direct met een testomgeving. Voor live betalingen claim je later een Stripe-account (eenmalige verificatie).
 
 ---
 
-## 2. Registratieformulier uitbreiden (Auth.tsx)
+### Wat we gaan bouwen
 
-Het registratieformulier krijgt een toggle "Ik registreer als bedrijf" die extra velden toont:
+**Twee betaalde producten (eenmalige aankopen):**
 
-- **Bedrijfsnaam** (verplicht bij zakelijke registratie)
-- **BTW-nummer** (verplicht, met NL-formaat validatie: `NL + 9 cijfers + B + 2 cijfers`)
+| Product | Prijs (voorstel) | Looptijd | Effect |
+|---|---|---|---|
+| **Boost** | €9,95 | 7 dagen | Listing krijgt prioriteit in zoekresultaten + "Boosted" badge |
+| **Premium** | €19,95 | 30 dagen | Boven Boost in resultaten + gouden kroon + uitgelicht op homepage |
 
-Bij registratie worden deze velden opgeslagen in `user_metadata` en via de bestaande trigger `handle_new_user` naar het profiel geschreven. De trigger wordt aangepast om de nieuwe velden te verwerken.
-
----
-
-## 3. Zakelijk Dashboard (nieuwe pagina)
-
-Een nieuwe route `/zakelijk` die alleen zichtbaar is voor dealers (`is_dealer = true`). Dit dashboard vervangt de huidige `/dealer-analytics` route en biedt:
-
-### 3a. Overzichtspaneel
-- Totaal actieve advertenties, views, favorieten, berichten
-- Omzet-indicator (som van verkochte auto's)
-- Gemiddelde tijd-tot-verkoop
-
-### 3b. Voorraadoverzicht met acties
-- Tabel met alle listings + status, views, favorieten, conversieratio
-- Bulk-acties: meerdere listings tegelijk Premium maken of boosten
-- Quick-edit prijs direct vanuit de tabel
-- Status wijzigen (actief/gereserveerd/verkocht)
-
-### 3c. AI Prijsanalyse per wagentype
-- Nieuwe knop "AI Marktanalyse" per listing in het dashboard
-- Hergebruikt de bestaande `price-analysis` edge function
-- Toont: marktpositie, aanbevolen prijsrange, onderhandelingstips
-- Nieuw: mogelijkheid om analyse te doen voor een wagentype dat nog niet in voorraad zit (merk + model + bouwjaar + km-stand invoeren, AI geeft marktinschatting)
-
-### 3d. Prestatiemetrieken
-- Grafiek: views/favorieten/berichten per week (tijdlijn)
-- Top-performers: welke advertenties het best presteren
-- Conversieratio vergelijking tussen listings
+De `listings`-tabel heeft hiervoor al de juiste velden: `is_premium` (boolean) en `boost_until` (timestamp). Geen schema-aanpassingen nodig.
 
 ---
 
-## 4. Navigatie-aanpassingen
+### Implementatiestappen (3 fases)
 
-- Header: "Dealer Analytics" in het dropdown-menu wordt **conditioneel** -- alleen zichtbaar als `is_dealer = true`
-- Dashboard-pagina (`/dashboard`): toont een banner/link naar het zakelijk dashboard als de gebruiker dealer is
-- Nieuwe route `/zakelijk` wordt beveiligd met `ProtectedRoute` + dealer-check
+**Fase 1 — Stripe activeren** (deze stap)
+- `enable_stripe_payments` aanroepen → testomgeving wordt automatisch klaargezet
+- Edge functions, secrets en webhook-infrastructuur worden geconfigureerd
+
+**Fase 2 — Producten aanmaken**
+- "Boost 7 dagen" en "Premium 30 dagen" als eenmalige producten in Stripe
+- Prijzen instellen in EUR
+
+**Fase 3 — Checkout & activatie inbouwen**
+- "Promoot deze advertentie"-knop op het dashboard van de verkoper bij elke listing (en in `DealerDashboard` bulk-actie blijft werken)
+- Modal met keuze Boost/Premium → Stripe Checkout opent
+- Webhook handler activeert na betaling automatisch:
+  - Boost → `boost_until = now() + 7 dagen`
+  - Premium → `is_premium = true` + `boost_until = now() + 30 dagen` (auto-uitschakelen via cron of bij volgende fetch-check)
+- Bevestigingspagina na succesvolle betaling
+- Aankoophistoriek zichtbaar in dashboard
 
 ---
 
-## 5. AI Prijsanalyse voor losse wagentypes
+### Wat er gebeurt na het activeren
+1. Een testomgeving (`sandbox`) is direct beschikbaar — je kan testen met test-creditcards zonder echt geld
+2. Voor live betalingen: Stripe-account claimen + identiteitsverificatie (eenmalig, ~10 min)
+3. **BTW**: Je beheert dit zelf. Stripe Tax is optioneel activeerbaar voor automatische BTW-berekening (raden we aan voor BE/NL)
 
-Een nieuw onderdeel op het zakelijke dashboard: "Marktverkenner". De dealer vult in:
-- Merk, model, bouwjaar, kilometerstand, brandstof
-- De bestaande `price-analysis` edge function wordt aangeroepen met synthetische data
-- Resultaat: geschatte marktprijs, prijsrange, en tips
+### Vereisten
+- ✅ Lovable Cloud is actief
+- ⚠️ **Pro plan vereist** voor payments — bevestig dat dit klaar is
 
-Dit hergebruikt de bestaande edge function zonder wijzigingen aan de backend.
-
----
-
-## Technische details
-
-### Bestanden die worden aangepast:
-1. **Database migratie** -- `vat_number` en `company_website` toevoegen aan `profiles`, trigger `handle_new_user` uitbreiden
-2. **`src/pages/Auth.tsx`** -- Toggle voor zakelijke registratie, extra velden, validatie
-3. **`src/hooks/useAuth.tsx`** -- `signUp` uitbreiden met dealer-velden in `user_metadata`
-4. **`src/pages/DealerDashboard.tsx`** -- Uitbreiden met nieuwe secties (bulk-acties, quick-edit, AI analyse, marktverkenner)
-5. **`src/layouts/Header.tsx`** -- Conditioneel "Zakelijk Dashboard" tonen op basis van profiel
-6. **`src/pages/Dashboard.tsx`** -- Banner naar zakelijk dashboard voor dealers
-7. **`src/App.tsx`** -- Route `/zakelijk` toevoegen (of `/dealer-analytics` hernoemen)
-
-### Bestanden die worden aangemaakt:
-- **`src/hooks/useProfile.ts`** -- Hook om profieldata (inclusief `is_dealer`) op te halen en te cachen
-
-### Geen wijzigingen nodig aan:
-- Edge functions (bestaande `price-analysis` en `dealer-analytics` worden hergebruikt)
-- Supabase RLS policies (bestaande policies dekken dit al)
-
-### Volgorde van implementatie:
-1. Database migratie (nieuwe kolommen + trigger-update)
-2. useProfile hook
-3. Auth.tsx registratieformulier
-4. DealerDashboard.tsx uitbreiden
-5. Header + Dashboard + routing aanpassen
+Klaar om Stripe te activeren?
 
