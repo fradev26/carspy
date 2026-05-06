@@ -4,3 +4,4 @@ export { FilterChips } from './FilterChips';
 export { FilterPresets } from './FilterPresets';
 export { HomepageFilters } from './HomepageFilters';
 export { SmartSearchBar } from './SmartSearchBar';
+export { HeroSearch } from './HeroSearch';
