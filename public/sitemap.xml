@@ -16,6 +16,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://vatuur.be/wat-is-mijn-auto-waard</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://vatuur.nl/vergelijken</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
