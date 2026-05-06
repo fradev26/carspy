@@ -148,7 +148,8 @@ function parseFiltersFromURL(searchParams: URLSearchParams): SearchFilters {
 }
 
 export default function Search() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<SearchFilters>(() => parseFiltersFromURL(searchParams));
   const [sortBy, setSortBy] = useState('newest');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
