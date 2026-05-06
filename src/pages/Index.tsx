@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Shield, Zap, Users, Car, CheckCircle2, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SearchBar } from '@/modules/search';
+import { HeroSearch } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
 import { mockListings } from '@/data/mockListings';
 import { SEOHead } from '@/components/SEOHead';
@@ -91,7 +91,7 @@ const Index = () => {
           
           <div className="mx-auto mt-6 max-w-4xl animate-fade-in-up lg:mt-10" style={{ animationDelay: '0.1s' }}>
             <p className="text-white/90 font-semibold text-base mb-3 ml-1 hidden lg:block">Zoek jouw auto</p>
-            <SearchBar variant="hero" />
+            <HeroSearch />
           </div>
           
           {/* Trust indicators - hidden on mobile, shown on desktop */}

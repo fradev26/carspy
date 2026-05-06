@@ -1,56 +1,70 @@
+## Plan: Slim Zoeken (AI-gestuurde natural language search)
 
+Gebruikers typen vragen zoals *"Rode BMW SUV onder 20.000 euro"* en de AI zet dit om naar gestructureerde filters die de bestaande zoekpagina gebruikt. Geen extra services nodig — Lovable AI (Gemini) is al beschikbaar.
 
-## Plan: Betaalde Boost & Premium advertenties met Stripe
+### Hoe het werkt (flow)
 
-### Aanbevolen provider: Stripe
-Uit de geschiktheidscheck blijkt dat **Stripe** de beste fit is voor VATUUR. Paddle (Merchant of Record) is niet geschikt omdat het platform transacties rond fysieke goederen (auto's) faciliteert. Stripe geeft je volledige controle, ondersteunt eenmalige betalingen perfect, en is kostenefficiënt voor de Belgische/Nederlandse markt (~1,5% + €0,25 voor Europese kaarten).
+```
+Gebruiker typt natuurlijke vraag
+        ↓
+Edge function `smart-search` (Lovable AI + tool calling)
+        ↓
+Gestructureerde filters (JSON) + interpretatie-zin
+        ↓
+Redirect naar /zoeken?... met AI-filter chips bovenaan
+        ↓
+Bestaande filterlogica toont resultaten
+```
 
-Goed nieuws: je hebt **geen eigen Stripe-account nodig** om te starten — Lovable's ingebouwde Stripe-integratie werkt direct met een testomgeving. Voor live betalingen claim je later een Stripe-account (eenmalige verificatie).
+### Wat we bouwen
 
----
+**1. Edge function `supabase/functions/smart-search/index.ts`**
+- Input: `{ query: string }`
+- Gebruikt Lovable AI (`google/gemini-3-flash-preview`) met **tool calling** om gestructureerde output af te dwingen (geen JSON-parsing-bugs).
+- Tool schema mapt op bestaande `SearchFilters`: brand, model, minPrice/maxPrice, minYear/maxYear, maxMileage, fuelTypes, transmissions, bodyTypes, colors, features, minPower.
+- Systeem-prompt bevat:
+  - Lijst geldige merken/modellen/carrosserie/brandstof uit `src/types/listing.ts`
+  - Synoniemen-regels: *zuinig* → hybride/elektrisch + maxPower laag, *gezinswagen* → SUV/MPV + minSeats 5, *sportief* → hoge pk, *goedkoop* → maxPrice 15000, *weinig km* → maxMileage 80000, *automaat* → automaat
+  - Fuzzy: spelfouten corrigeren ("mercedess" → Mercedes-Benz, "volswagen" → Volkswagen), deelmatches ("BMW 3" → 3 Series)
+  - Vlaamse/Nederlandse tone (past bij VATUUR-stijl)
+- Output: `{ filters, intent: "We zochten een betaalbare BMW SUV in rood met automaat", confidence }`
+- Standaard CORS, 429/402 error handling.
 
-### Wat we gaan bouwen
+**2. Frontend component `src/modules/search/SmartSearchBar.tsx`**
+- Eén groot input veld met Sparkles-icoon en placeholder *"Beschrijf je droomwagen… bv. 'rode BMW SUV onder 20.000 euro'"*
+- Submit → call edge function → toon korte loader ("AI begrijpt je vraag…") → navigeer naar `/zoeken?...&aiIntent=...`
+- Voorbeeld-chips eronder (3-4 quick prompts) om gebruikers op weg te helpen.
 
-**Twee betaalde producten (eenmalige aankopen):**
+**3. Toggle Klassiek / Slim zoeken op homepage (`SearchBar.tsx` hero variant)**
+- Twee tabs bovenaan de hero search-card: **Klassiek** (huidige formulier) en **Slim** (nieuwe SmartSearchBar). Standaard: Slim.
 
-| Product | Prijs (voorstel) | Looptijd | Effect |
-|---|---|---|---|
-| **Boost** | €9,95 | 7 dagen | Listing krijgt prioriteit in zoekresultaten + "Boosted" badge |
-| **Premium** | €19,95 | 30 dagen | Boven Boost in resultaten + gouden kroon + uitgelicht op homepage |
+**4. AI-intent banner op `/zoeken`**
+- Nieuwe URL-param `aiIntent` → toon bovenaan resultaten een card met Sparkles icoon: *"We zochten: {intent}"* + knop "Filters aanpassen" (opent FilterPanel) en "Klassiek zoeken".
+- Actieve AI-filters worden via bestaande `FilterChips` getoond — visueel gemarkeerd met een subtiele Sparkles badge zodat duidelijk is welke filters door AI zijn ingevuld.
 
-De `listings`-tabel heeft hiervoor al de juiste velden: `is_premium` (boolean) en `boost_until` (timestamp). Geen schema-aanpassingen nodig.
+**5. Fallback**
+- Als de AI geen enkel filter kan extraheren → toon *"We hebben je vraag niet helemaal begrepen, hier zijn populaire wagens"* en alle resultaten.
+- Bij netwerkfout / 402 / 429 → toast met duidelijke melding, fallback naar klassiek formulier.
 
----
+### Bestanden
 
-### Implementatiestappen (3 fases)
+**Nieuw:**
+- `supabase/functions/smart-search/index.ts` — edge function met Lovable AI tool calling
+- `src/modules/search/SmartSearchBar.tsx` — input + submit logica
+- `src/hooks/useSmartSearch.ts` — wrapper om `supabase.functions.invoke('smart-search')`
 
-**Fase 1 — Stripe activeren** (deze stap)
-- `enable_stripe_payments` aanroepen → testomgeving wordt automatisch klaargezet
-- Edge functions, secrets en webhook-infrastructuur worden geconfigureerd
+**Aangepast:**
+- `src/modules/search/SearchBar.tsx` — Tabs toevoegen (Klassiek / Slim) in hero variant
+- `src/pages/Search.tsx` — AI-intent banner + parsing van `aiIntent` URL param
+- `src/modules/search/index.ts` — export SmartSearchBar
+- `supabase/config.toml` — `[functions.smart-search] verify_jwt = false` (publieke search)
 
-**Fase 2 — Producten aanmaken**
-- "Boost 7 dagen" en "Premium 30 dagen" als eenmalige producten in Stripe
-- Prijzen instellen in EUR
+### Geen DB-wijzigingen
+Slim zoeken werkt 100% met bestaande `listings` tabel en `SearchFilters` types. Geen migrations nodig.
 
-**Fase 3 — Checkout & activatie inbouwen**
-- "Promoot deze advertentie"-knop op het dashboard van de verkoper bij elke listing (en in `DealerDashboard` bulk-actie blijft werken)
-- Modal met keuze Boost/Premium → Stripe Checkout opent
-- Webhook handler activeert na betaling automatisch:
-  - Boost → `boost_until = now() + 7 dagen`
-  - Premium → `is_premium = true` + `boost_until = now() + 30 dagen` (auto-uitschakelen via cron of bij volgende fetch-check)
-- Bevestigingspagina na succesvolle betaling
-- Aankoophistoriek zichtbaar in dashboard
+### Out of scope (kunnen later)
+- Live autocomplete tijdens typen (kost extra AI-calls per toetsaanslag)
+- Opslaan van AI-zoekgeschiedenis als saved searches (kan gebouwd op bestaande `saved_searches` tabel later)
+- Voice input
 
----
-
-### Wat er gebeurt na het activeren
-1. Een testomgeving (`sandbox`) is direct beschikbaar — je kan testen met test-creditcards zonder echt geld
-2. Voor live betalingen: Stripe-account claimen + identiteitsverificatie (eenmalig, ~10 min)
-3. **BTW**: Je beheert dit zelf. Stripe Tax is optioneel activeerbaar voor automatische BTW-berekening (raden we aan voor BE/NL)
-
-### Vereisten
-- ✅ Lovable Cloud is actief
-- ⚠️ **Pro plan vereist** voor payments — bevestig dat dit klaar is
-
-Klaar om Stripe te activeren?
-
+Klaar om te bouwen?

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
-import { FilterPanel, FilterChips } from '@/modules/search';
+import { FilterPanel, FilterChips, SmartSearchBar } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
 import { mockListings } from '@/data/mockListings';
 import { 
@@ -148,7 +148,8 @@ function parseFiltersFromURL(searchParams: URLSearchParams): SearchFilters {
 }
 
 export default function Search() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<SearchFilters>(() => parseFiltersFromURL(searchParams));
   const [sortBy, setSortBy] = useState('newest');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -382,13 +383,39 @@ export default function Search() {
           <div className="flex-1">
             {/* Header */}
             <div className="mb-6">
-              {/* AI Search Bar */}
-              <div className="mb-5 flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3">
-                <Sparkles className="h-5 w-5 text-primary shrink-0" />
-                <p className="text-sm text-muted-foreground flex-1">
-                  <span className="font-medium text-foreground">VATUUR. AI:</span> Beschrijf wat je zoekt en laat AI de filters instellen — open de chat rechtsonder!
-                </p>
-              </div>
+              {/* AI Search Bar / Intent Banner */}
+              {searchParams.get('aiIntent') ? (
+                <div className="mb-5 flex items-start gap-3 rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 to-accent/10 p-4">
+                  <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">
+                      {searchParams.get('aiIntent')}
+                    </p>
+                    {searchParams.get('aiQuery') && (
+                      <p className="mt-0.5 text-xs text-muted-foreground italic truncate">
+                        Je vraag: "{searchParams.get('aiQuery')}"
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const next = new URLSearchParams(searchParams);
+                      next.delete('aiIntent');
+                      next.delete('aiQuery');
+                      navigate(`/zoeken?${next.toString()}`);
+                    }}
+                    className="shrink-0 text-muted-foreground hover:text-foreground"
+                  >
+                    Klassiek zoeken
+                  </Button>
+                </div>
+              ) : (
+                <div className="mb-5">
+                  <SmartSearchBar variant="compact" />
+                </div>
+              )}
 
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
