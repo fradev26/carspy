@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.dealer-analytics]
 verify_jwt = false
+
+[functions.smart-search]
+verify_jwt = false
