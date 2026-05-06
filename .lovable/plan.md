@@ -1,70 +1,54 @@
-## Plan: Slim Zoeken (AI-gestuurde natural language search)
+## Plan: SEO-landingspagina "Wat is mijn auto waard?"
 
-Gebruikers typen vragen zoals *"Rode BMW SUV onder 20.000 euro"* en de AI zet dit om naar gestructureerde filters die de bestaande zoekpagina gebruikt. Geen extra services nodig — Lovable AI (Gemini) is al beschikbaar.
+Een nieuwe publieke pagina op `/wat-is-mijn-auto-waard` die dient als SEO backlink-asset én lead generator richting de verkoopflow.
 
-### Hoe het werkt (flow)
+### Route & navigatie
+- Nieuwe route in `src/App.tsx`: `/wat-is-mijn-auto-waard` → lazy loaded `AutoWaarde` page (publiek, geen auth).
+- Toevoegen aan `public/sitemap.xml` zodat Google de pagina indexeert.
+- Footer-link onder "Verkopen" sectie naar de nieuwe pagina (interne backlink).
 
-```
-Gebruiker typt natuurlijke vraag
-        ↓
-Edge function `smart-search` (Lovable AI + tool calling)
-        ↓
-Gestructureerde filters (JSON) + interpretatie-zin
-        ↓
-Redirect naar /zoeken?... met AI-filter chips bovenaan
-        ↓
-Bestaande filterlogica toont resultaten
-```
+### Pagina structuur (`src/pages/AutoWaarde.tsx`)
 
-### Wat we bouwen
+**1. Hero**
+- H1: *"Wat is mijn auto waard?"* (rode punt zoals brand-stijl)
+- Subtitel + CTA-knoppen *"Bereken mijn autowaarde"* (scrollt naar tool) en *"Direct verkopen"* → `/verkopen`
+- Trust-badge "Gratis & vrijblijvend"
 
-**1. Edge function `supabase/functions/smart-search/index.ts`**
-- Input: `{ query: string }`
-- Gebruikt Lovable AI (`google/gemini-3-flash-preview`) met **tool calling** om gestructureerde output af te dwingen (geen JSON-parsing-bugs).
-- Tool schema mapt op bestaande `SearchFilters`: brand, model, minPrice/maxPrice, minYear/maxYear, maxMileage, fuelTypes, transmissions, bodyTypes, colors, features, minPower.
-- Systeem-prompt bevat:
-  - Lijst geldige merken/modellen/carrosserie/brandstof uit `src/types/listing.ts`
-  - Synoniemen-regels: *zuinig* → hybride/elektrisch + maxPower laag, *gezinswagen* → SUV/MPV + minSeats 5, *sportief* → hoge pk, *goedkoop* → maxPrice 15000, *weinig km* → maxMileage 80000, *automaat* → automaat
-  - Fuzzy: spelfouten corrigeren ("mercedess" → Mercedes-Benz, "volswagen" → Volkswagen), deelmatches ("BMW 3" → 3 Series)
-  - Vlaamse/Nederlandse tone (past bij VATUUR-stijl)
-- Output: `{ filters, intent: "We zochten een betaalbare BMW SUV in rood met automaat", confidence }`
-- Standaard CORS, 429/402 error handling.
+**2. Hoe werkt het** — 5 cards met icoon
+- Merk & model · Bouwjaar · Kilometerstand · Staat van de wagen · Marktdata vergelijking
 
-**2. Frontend component `src/modules/search/SmartSearchBar.tsx`**
-- Eén groot input veld met Sparkles-icoon en placeholder *"Beschrijf je droomwagen… bv. 'rode BMW SUV onder 20.000 euro'"*
-- Submit → call edge function → toon korte loader ("AI begrijpt je vraag…") → navigeer naar `/zoeken?...&aiIntent=...`
-- Voorbeeld-chips eronder (3-4 quick prompts) om gebruikers op weg te helpen.
+**3. Waardetool** (interactief formulier, sectie-id `#waardetool`)
+- Velden: Merk (Select uit `CAR_BRANDS`), Model (Select uit `CAR_MODELS[brand]` of vrij), Bouwjaar, Km-stand
+- Knop *"Bereken waarde"* → toont indicatieve range (vanaf / richtprijs / tot)
+- Heuristische schatting client-side: basis per merk-segment (premium vs mainstream) × leeftijds-depreciatie (~12%/jaar) × km-factor — duidelijk gelabeld als "indicatie op basis van marktdata"
+- Na resultaat: CTA-knoppen *"Verkoop nu via Vatuur"* (`/verkopen`), *"Bekijk vergelijkbare wagens"* (`/zoeken?brand=...&model=...`), *"Nieuwe waardebepaling"*
 
-**3. Toggle Klassiek / Slim zoeken op homepage (`SearchBar.tsx` hero variant)**
-- Twee tabs bovenaan de hero search-card: **Klassiek** (huidige formulier) en **Slim** (nieuwe SmartSearchBar). Standaard: Slim.
+**4. Trust sectie** — 3 cards
+- Live marktdata · Onafhankelijk (geen opkoper) · AI-gestuurd
 
-**4. AI-intent banner op `/zoeken`**
-- Nieuwe URL-param `aiIntent` → toon bovenaan resultaten een card met Sparkles icoon: *"We zochten: {intent}"* + knop "Filters aanpassen" (opent FilterPanel) en "Klassiek zoeken".
-- Actieve AI-filters worden via bestaande `FilterChips` getoond — visueel gemarkeerd met een subtiele Sparkles badge zodat duidelijk is welke filters door AI zijn ingevuld.
+**5. Final CTA**
+- *"Auto verkopen"* + *"Vergelijkbare wagens bekijken"* + link naar homepage
 
-**5. Fallback**
-- Als de AI geen enkel filter kan extraheren → toon *"We hebben je vraag niet helemaal begrepen, hier zijn populaire wagens"* en alle resultaten.
-- Bij netwerkfout / 402 / 429 → toast met duidelijke melding, fallback naar klassiek formulier.
+### SEO
+- `SEOHead` met:
+  - Title: *"Wat is mijn auto waard? | Gratis autowaarde berekenen | VATUUR."*
+  - Meta description gericht op zoekwoorden "auto waarde bepalen", "wat is mijn auto waard", "auto taxatie online"
+  - Canonical: `https://vatuur.be/wat-is-mijn-auto-waard`
+  - JSON-LD: BreadcrumbList (Home > Wat is mijn auto waard) + FAQPage (4 Q&A's over autotaxatie)
+- Correcte H1 (één), H2's per sectie
+- Mobile-first via bestaande Tailwind responsive classes
 
 ### Bestanden
-
 **Nieuw:**
-- `supabase/functions/smart-search/index.ts` — edge function met Lovable AI tool calling
-- `src/modules/search/SmartSearchBar.tsx` — input + submit logica
-- `src/hooks/useSmartSearch.ts` — wrapper om `supabase.functions.invoke('smart-search')`
+- `src/pages/AutoWaarde.tsx` — volledige landingspagina (geen DB, alle logica client-side)
 
 **Aangepast:**
-- `src/modules/search/SearchBar.tsx` — Tabs toevoegen (Klassiek / Slim) in hero variant
-- `src/pages/Search.tsx` — AI-intent banner + parsing van `aiIntent` URL param
-- `src/modules/search/index.ts` — export SmartSearchBar
-- `supabase/config.toml` — `[functions.smart-search] verify_jwt = false` (publieke search)
+- `src/App.tsx` — lazy import + Route binnen `AppLayout`
+- `src/layouts/Footer.tsx` — link toevoegen "Wat is mijn auto waard?"
+- `public/sitemap.xml` — URL toevoegen
 
-### Geen DB-wijzigingen
-Slim zoeken werkt 100% met bestaande `listings` tabel en `SearchFilters` types. Geen migrations nodig.
-
-### Out of scope (kunnen later)
-- Live autocomplete tijdens typen (kost extra AI-calls per toetsaanslag)
-- Opslaan van AI-zoekgeschiedenis als saved searches (kan gebouwd op bestaande `saved_searches` tabel later)
-- Voice input
+### Geen backend nodig
+- 100% client-side (heuristiek voor de schatting, geen edge function)
+- Geen DB-wijzigingen, geen secrets
 
 Klaar om te bouwen?

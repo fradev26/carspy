@@ -32,6 +32,11 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link to="/wat-is-mijn-auto-waard" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Wat is mijn auto waard?
+                </Link>
+              </li>
+              <li>
                 <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">
                   Mijn account
                 </Link>

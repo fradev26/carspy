@@ -22,6 +22,7 @@ const Compare = lazy(() => import("./pages/Compare"));
 const Messages = lazy(() => import("./pages/Messages"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Terms = lazy(() => import("./pages/Terms"));
+const AutoWaarde = lazy(() => import("./pages/AutoWaarde"));
 
 const queryClient = new QueryClient();
 
@@ -47,6 +48,7 @@ const App = () => (
                 <Route path="/vergelijken" element={<Compare />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/voorwaarden" element={<Terms />} />
+                <Route path="/wat-is-mijn-auto-waard" element={<AutoWaarde />} />
                 <Route path="/berichten" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
               </Route>
               <Route path="/auth" element={<Auth />} />
