@@ -7,12 +7,15 @@ import { useChat } from '@/hooks/useChat';
 import { cn } from '@/lib/utils';
 
 const SUGGESTIONS = [
-  'Ik zoek een gezinsauto onder €20.000',
-  'Wat is een goede eerste auto?',
-  'BMW vs Audi vergelijken',
-  'Zuinige auto met automaat',
-  'Beste elektrische SUV?',
-  'Tips voor een betrouwbare occasion',
+  'Welke gezinsauto met automaat onder €18.000 heeft de laagste km-stand?',
+  'Is deze BMW 320d uit 2019 voor €22.500 een eerlijke prijs?',
+  'Wat zijn de 3 betrouwbaarste hybrides tot €25.000 in België?',
+];
+
+const FILTER_BENEFITS = [
+  'Begrijpt context: budget + gebruik + voorkeuren tegelijk',
+  'Geeft een dealscore 1–10 per wagen, geen verkooppraatjes',
+  'Filtert ruis weg — geen 1.200 resultaten doorscrollen',
 ];
 
 export function AIChatSection() {
