@@ -120,7 +120,7 @@ export function Header() {
 
       {/* Desktop Header */}
       <div className="container hidden h-16 items-center justify-between gap-6 lg:flex">
-        <Logo size="lg" asLink />
+        <Logo size="xl" asLink />
 
 
         {/* Desktop Search */}
