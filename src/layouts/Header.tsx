@@ -120,10 +120,8 @@ export function Header() {
 
       {/* Desktop Header */}
       <div className="container hidden h-16 items-center justify-between gap-6 lg:flex">
-        {/* Logo */}
-        <Link to="/" className="flex items-center">
-           <span className="text-5xl font-bold select-none text-primary" style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
-         </Link>
+        <Logo size="lg" asLink />
+
 
         {/* Desktop Search */}
         <form onSubmit={handleSearch} className="flex-1 max-w-lg">
