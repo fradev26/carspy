@@ -60,10 +60,10 @@ export function AIChatSection() {
               AI-Assistent
             </div>
             <h2 className="text-2xl font-bold md:text-3xl">
-              Vraag het aan <span className="text-primary">VATUUR. AI</span>
+              Filters tonen alles. <span className="text-primary">VATUUR. AI</span> toont wat past.
             </h2>
             <p className="mt-2 text-muted-foreground">
-              Jouw slimste auto-assistent — zoek, vergelijk en krijg advies in natuurlijke taal
+              Stel je vraag in normale taal. De assistent vergelijkt prijs, km-stand, opties en marktwaarde — en zegt eerlijk wanneer een wagen géén goede deal is.
             </p>
           </div>
 
