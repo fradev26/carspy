@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { cn } from '@/lib/utils';
+import { Logo } from '@/components/Logo';
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState('');
