@@ -274,7 +274,7 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
                   className="h-12 w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90 shadow-glow-accent font-semibold"
                 >
                   <Search className="h-5 w-5" />
-                  <span className="hidden sm:inline">Zoeken</span>
+                  <span className="hidden sm:inline">Toon resultaten</span>
                 </Button>
               </div>
             </div>
