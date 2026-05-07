@@ -1,54 +1,21 @@
-## Plan: SEO-landingspagina "Wat is mijn auto waard?"
+## Fix: Hero search toggle centering
 
-Een nieuwe publieke pagina op `/wat-is-mijn-auto-waard` die dient als SEO backlink-asset én lead generator richting de verkoopflow.
+De `TabsList` in `src/modules/search/HeroSearch.tsx` heeft nu `grid w-full max-w-md grid-cols-2` zonder centrering, waardoor hij links uitlijnt. Daarnaast staat het label "Zoek jouw auto" in `Index.tsx` links uitgelijnd, wat de visuele groep breekt.
 
-### Route & navigatie
-- Nieuwe route in `src/App.tsx`: `/wat-is-mijn-auto-waard` → lazy loaded `AutoWaarde` page (publiek, geen auth).
-- Toevoegen aan `public/sitemap.xml` zodat Google de pagina indexeert.
-- Footer-link onder "Verkopen" sectie naar de nieuwe pagina (interne backlink).
+### Wijzigingen
 
-### Pagina structuur (`src/pages/AutoWaarde.tsx`)
+**`src/modules/search/HeroSearch.tsx`**
+- Wrapper `div` rond de `Tabs` met `flex flex-col items-center w-full`.
+- `TabsList` krijgt `mx-auto` toegevoegd zodat de segmented control horizontaal centreert binnen de hero container, op alle breakpoints (mobile/tablet/desktop).
+- `TabsContent` panels behouden volle breedte (`w-full`) zodat de zoekbalk eronder netjes uitgelijnd blijft met de toggle.
 
-**1. Hero**
-- H1: *"Wat is mijn auto waard?"* (rode punt zoals brand-stijl)
-- Subtitel + CTA-knoppen *"Bereken mijn autowaarde"* (scrollt naar tool) en *"Direct verkopen"* → `/verkopen`
-- Trust-badge "Gratis & vrijblijvend"
+**`src/pages/Index.tsx`**
+- Het label "Zoek jouw auto" boven `<HeroSearch />` wordt `text-center` (was links via `ml-1`), zodat de volgorde Titel → Subtitel → (label) → Toggle → Zoekbalk → Suggesties één gecentreerde visuele groep vormt.
+- De `HeroSearch` wrapper container blijft `max-w-4xl mx-auto` (al aanwezig).
 
-**2. Hoe werkt het** — 5 cards met icoon
-- Merk & model · Bouwjaar · Kilometerstand · Staat van de wagen · Marktdata vergelijking
+### Acceptance check
+- Toggle staat exact onder headline/subtext gecentreerd op 375px, 768px en 1280px+.
+- Geen horizontale offset meer; Slim en Klassiek tab geven identieke layout.
+- Zoekbalk blijft uitgelijnd met de toggle erboven.
 
-**3. Waardetool** (interactief formulier, sectie-id `#waardetool`)
-- Velden: Merk (Select uit `CAR_BRANDS`), Model (Select uit `CAR_MODELS[brand]` of vrij), Bouwjaar, Km-stand
-- Knop *"Bereken waarde"* → toont indicatieve range (vanaf / richtprijs / tot)
-- Heuristische schatting client-side: basis per merk-segment (premium vs mainstream) × leeftijds-depreciatie (~12%/jaar) × km-factor — duidelijk gelabeld als "indicatie op basis van marktdata"
-- Na resultaat: CTA-knoppen *"Verkoop nu via Vatuur"* (`/verkopen`), *"Bekijk vergelijkbare wagens"* (`/zoeken?brand=...&model=...`), *"Nieuwe waardebepaling"*
-
-**4. Trust sectie** — 3 cards
-- Live marktdata · Onafhankelijk (geen opkoper) · AI-gestuurd
-
-**5. Final CTA**
-- *"Auto verkopen"* + *"Vergelijkbare wagens bekijken"* + link naar homepage
-
-### SEO
-- `SEOHead` met:
-  - Title: *"Wat is mijn auto waard? | Gratis autowaarde berekenen | VATUUR."*
-  - Meta description gericht op zoekwoorden "auto waarde bepalen", "wat is mijn auto waard", "auto taxatie online"
-  - Canonical: `https://vatuur.be/wat-is-mijn-auto-waard`
-  - JSON-LD: BreadcrumbList (Home > Wat is mijn auto waard) + FAQPage (4 Q&A's over autotaxatie)
-- Correcte H1 (één), H2's per sectie
-- Mobile-first via bestaande Tailwind responsive classes
-
-### Bestanden
-**Nieuw:**
-- `src/pages/AutoWaarde.tsx` — volledige landingspagina (geen DB, alle logica client-side)
-
-**Aangepast:**
-- `src/App.tsx` — lazy import + Route binnen `AppLayout`
-- `src/layouts/Footer.tsx` — link toevoegen "Wat is mijn auto waard?"
-- `public/sitemap.xml` — URL toevoegen
-
-### Geen backend nodig
-- 100% client-side (heuristiek voor de schatting, geen edge function)
-- Geen DB-wijzigingen, geen secrets
-
-Klaar om te bouwen?
+Geen logica, routing, of backend changes.
