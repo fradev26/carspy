@@ -125,20 +125,28 @@ export function AIChatSection() {
               </div>
             </div>
 
-            {/* Suggestions */}
+            {/* Suggestions + waarom beter dan filters */}
             {messages.length === 0 && (
-              <div className="px-4 pb-4">
+              <div className="px-4 pb-4 space-y-3">
                 <div className="flex flex-wrap gap-2">
                   {SUGGESTIONS.map((s) => (
                     <button
                       key={s}
                       onClick={() => send(s)}
-                      className="rounded-full border border-border/60 bg-muted/50 px-3.5 py-1.5 text-xs text-foreground/80 transition-all hover:bg-primary/10 hover:text-primary hover:border-primary/30"
+                      className="rounded-full border border-border/60 bg-muted/50 px-3.5 py-1.5 text-xs text-foreground/80 transition-all hover:bg-primary/10 hover:text-primary hover:border-primary/30 text-left"
                     >
                       {s}
                     </button>
                   ))}
                 </div>
+                <ul className="grid gap-1.5 pt-2 border-t border-border/40 text-xs text-muted-foreground sm:grid-cols-3">
+                  {FILTER_BENEFITS.map((b) => (
+                    <li key={b} className="flex items-start gap-1.5">
+                      <span className="text-primary mt-0.5">✓</span>
+                      <span>{b}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
           </div>
