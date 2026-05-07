@@ -59,7 +59,7 @@ export function SmartSearchBar({ className, variant = 'hero' }: Props) {
             className="h-10 gap-2 bg-accent text-accent-foreground hover:bg-accent/90 shadow-glow-accent font-semibold"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            <span className="hidden sm:inline">{loading ? 'Begrijpt…' : 'Zoek'}</span>
+            <span className="hidden sm:inline">{loading ? 'Begrijpt…' : 'Vind mijn auto'}</span>
           </Button>
         </div>
       </form>
