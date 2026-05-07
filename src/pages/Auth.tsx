@@ -175,9 +175,9 @@ export default function Auth() {
       <SEOHead title="Inloggen - VATUUR." description="Log in of maak een account aan bij VATUUR." noindex />
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <Link to="/" className="mx-auto flex items-center gap-2 mb-4">
-            <span className="text-3xl text-primary font-bold select-none" style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
-          </Link>
+          <div className="mx-auto mb-4 flex justify-center">
+            <Logo size="lg" asLink />
+          </div>
           <CardTitle>Welkom</CardTitle>
           <CardDescription>Log in of maak een account aan</CardDescription>
         </CardHeader>
