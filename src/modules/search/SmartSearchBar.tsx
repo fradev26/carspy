@@ -8,9 +8,8 @@ import { cn } from '@/lib/utils';
 
 const EXAMPLES = [
   'Rode BMW SUV onder 20.000 euro',
-  'Zuinige gezinswagen met automaat',
-  'Elektrische stadswagen met lage km',
-  'Mercedes met veel pk en automaat',
+  'Zuinige gezinswagen automaat',
+  'Elektrische auto lage km-stand',
 ];
 
 interface Props {
@@ -65,20 +64,14 @@ export function SmartSearchBar({ className, variant = 'hero' }: Props) {
       </form>
 
       {variant === 'hero' && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          <span className="text-xs text-muted-foreground self-center mr-1">Voorbeelden:</span>
-          {EXAMPLES.map((ex) => (
-            <button
-              key={ex}
-              type="button"
-              onClick={() => { setQuery(ex); submit(undefined, ex); }}
-              disabled={loading}
-              className="rounded-full border border-border/60 bg-background/50 px-3 py-1 text-xs text-foreground/70 hover:border-primary/50 hover:text-foreground transition-colors focus-ring disabled:opacity-50"
-            >
-              {ex}
-            </button>
+        <p className="mt-3 text-center text-xs text-white/60">
+          Bijvoorbeeld: {EXAMPLES.map((ex, i) => (
+            <span key={ex}>
+              {i > 0 && <span className="mx-2">·</span>}
+              <span>"{ex}"</span>
+            </span>
           ))}
-        </div>
+        </p>
       )}
     </div>
   );
