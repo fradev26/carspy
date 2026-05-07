@@ -25,12 +25,12 @@ export function HeroSearch({ className }: Props) {
             Klassiek
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="smart" className="mt-0">
+        <TabsContent value="smart" className="mt-0 w-full">
           <div className="glass rounded-2xl p-6 shadow-floating">
             <SmartSearchBar variant="hero" />
           </div>
         </TabsContent>
-        <TabsContent value="classic" className="mt-0">
+        <TabsContent value="classic" className="mt-0 w-full">
           <SearchBar variant="hero" />
         </TabsContent>
       </Tabs>
