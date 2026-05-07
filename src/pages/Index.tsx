@@ -6,7 +6,7 @@ import { ListingGrid } from '@/modules/listings';
 import { mockListings } from '@/data/mockListings';
 import { SEOHead } from '@/components/SEOHead';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { AIChatSection } from '@/modules/chat/AIChatSection';
+
 
 const faqItems = [
   { question: "Is VATUUR gratis te gebruiken?", answer: "Ja, zoeken en vergelijken op VATUUR. is volledig gratis. Ook het plaatsen van een advertentie is gratis. Premium opties zijn beschikbaar voor extra zichtbaarheid." },
@@ -129,8 +129,6 @@ const Index = () => {
       </section>
 
 
-      {/* AI Chat Section */}
-      <AIChatSection />
 
       {/* Latest Listings */}
       <section className="bg-muted/30 py-12 md:py-16">
