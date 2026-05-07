@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { cn } from '@/lib/utils';
+import { Logo } from '@/components/Logo';
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -57,10 +58,8 @@ export function Header() {
     )}>
       {/* Mobile + Tablet Header */}
       <div className="container flex h-14 items-center justify-between gap-4 lg:hidden">
-        <Link to="/" className="flex items-center">
-           <span className="text-4xl font-bold select-none text-primary" style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
-         </Link>
-        
+        <Logo size="lg" asLink />
+
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" aria-label="Open menu" className={cn("hover:bg-transparent", isTransparent ? "text-white" : "text-foreground hover:bg-muted")}>
@@ -69,7 +68,9 @@ export function Header() {
           </SheetTrigger>
           <SheetContent side="right" className="w-72">
             <SheetHeader>
-              <SheetTitle className="text-left text-primary" style={{ fontFamily: 'Montserrat' }}>VATUUR.</SheetTitle>
+              <SheetTitle className="text-left">
+                <Logo size="md" />
+              </SheetTitle>
             </SheetHeader>
             <nav className="mt-6 flex flex-col gap-1">
               {user ? (
@@ -121,10 +122,8 @@ export function Header() {
 
       {/* Desktop Header */}
       <div className="container hidden h-16 items-center justify-between gap-6 lg:flex">
-        {/* Logo */}
-        <Link to="/" className="flex items-center">
-           <span className="text-5xl font-bold select-none text-primary" style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
-         </Link>
+        <Logo size="xl" asLink />
+
 
         {/* Desktop Search */}
         <form onSubmit={handleSearch} className="flex-1 max-w-lg">
