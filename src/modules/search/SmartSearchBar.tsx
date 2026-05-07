@@ -6,11 +6,6 @@ import { Button } from '@/components/ui/button';
 import { useSmartSearch, filtersToParams } from '@/hooks/useSmartSearch';
 import { cn } from '@/lib/utils';
 
-const EXAMPLES = [
-  'Rode BMW SUV onder 20.000 euro',
-  'Zuinige gezinswagen automaat',
-  'Elektrische auto lage km-stand',
-];
 
 interface Props {
   className?: string;
@@ -47,7 +42,7 @@ export function SmartSearchBar({ className, variant = 'hero' }: Props) {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Beschrijf je droomwagen… bv. 'rode BMW SUV onder 20.000 euro'"
+            placeholder="Beschrijf je droomwagen…"
             disabled={loading}
             className="flex-1 border-0 bg-transparent text-base shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
             aria-label="Slim zoeken"
@@ -62,17 +57,6 @@ export function SmartSearchBar({ className, variant = 'hero' }: Props) {
           </Button>
         </div>
       </form>
-
-      {variant === 'hero' && (
-        <p className="mt-3 text-center text-xs text-white/60">
-          Bijvoorbeeld: {EXAMPLES.map((ex, i) => (
-            <span key={ex}>
-              {i > 0 && <span className="mx-2">·</span>}
-              <span>"{ex}"</span>
-            </span>
-          ))}
-        </p>
-      )}
     </div>
   );
 }
