@@ -7,12 +7,15 @@ import { useChat } from '@/hooks/useChat';
 import { cn } from '@/lib/utils';
 
 const SUGGESTIONS = [
-  'Ik zoek een gezinsauto onder €20.000',
-  'Wat is een goede eerste auto?',
-  'BMW vs Audi vergelijken',
-  'Zuinige auto met automaat',
-  'Beste elektrische SUV?',
-  'Tips voor een betrouwbare occasion',
+  'Welke gezinsauto met automaat onder €18.000 heeft de laagste km-stand?',
+  'Is deze BMW 320d uit 2019 voor €22.500 een eerlijke prijs?',
+  'Wat zijn de 3 betrouwbaarste hybrides tot €25.000 in België?',
+];
+
+const FILTER_BENEFITS = [
+  'Begrijpt context: budget + gebruik + voorkeuren tegelijk',
+  'Geeft een dealscore 1–10 per wagen, geen verkooppraatjes',
+  'Filtert ruis weg — geen 1.200 resultaten doorscrollen',
 ];
 
 export function AIChatSection() {
@@ -57,10 +60,10 @@ export function AIChatSection() {
               AI-Assistent
             </div>
             <h2 className="text-2xl font-bold md:text-3xl">
-              Vraag het aan <span className="text-primary">VATUUR. AI</span>
+              Filters tonen alles. <span className="text-primary">VATUUR. AI</span> toont wat past.
             </h2>
             <p className="mt-2 text-muted-foreground">
-              Jouw slimste auto-assistent — zoek, vergelijk en krijg advies in natuurlijke taal
+              Stel je vraag in normale taal. De assistent vergelijkt prijs, km-stand, opties en marktwaarde — en zegt eerlijk wanneer een wagen géén goede deal is.
             </p>
           </div>
 
@@ -95,7 +98,7 @@ export function AIChatSection() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Stel een vraag over auto's, prijzen, of vergelijkingen..."
+                  placeholder="bv. 'gezinsauto automaat onder €18k met lage km'"
                   disabled={isLoading}
                   rows={1}
                   className="flex-1 resize-none rounded-xl border border-border/60 bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 disabled:opacity-50"
@@ -122,20 +125,28 @@ export function AIChatSection() {
               </div>
             </div>
 
-            {/* Suggestions */}
+            {/* Suggestions + waarom beter dan filters */}
             {messages.length === 0 && (
-              <div className="px-4 pb-4">
+              <div className="px-4 pb-4 space-y-3">
                 <div className="flex flex-wrap gap-2">
                   {SUGGESTIONS.map((s) => (
                     <button
                       key={s}
                       onClick={() => send(s)}
-                      className="rounded-full border border-border/60 bg-muted/50 px-3.5 py-1.5 text-xs text-foreground/80 transition-all hover:bg-primary/10 hover:text-primary hover:border-primary/30"
+                      className="rounded-full border border-border/60 bg-muted/50 px-3.5 py-1.5 text-xs text-foreground/80 transition-all hover:bg-primary/10 hover:text-primary hover:border-primary/30 text-left"
                     >
                       {s}
                     </button>
                   ))}
                 </div>
+                <ul className="grid gap-1.5 pt-2 border-t border-border/40 text-xs text-muted-foreground sm:grid-cols-3">
+                  {FILTER_BENEFITS.map((b) => (
+                    <li key={b} className="flex items-start gap-1.5">
+                      <span className="text-primary mt-0.5">✓</span>
+                      <span>{b}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
           </div>

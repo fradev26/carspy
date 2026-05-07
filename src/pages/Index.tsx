@@ -81,36 +81,35 @@ const Index = () => {
           <div className="mx-auto max-w-3xl text-center">
             <div className="animate-fade-in">
               <h1 className="text-3xl font-bold text-white md:text-5xl lg:text-6xl leading-tight">
-                De slimste manier om een tweedehands auto te vinden
+                Vind je volgende auto in één zin.
               </h1>
               <p className="mt-3 text-base text-white/80 md:text-xl max-w-2xl mx-auto leading-relaxed lg:mt-5 lg:text-lg">
-                Vergelijk duizenden tweedehands auto's van betrouwbare dealers en particulieren in Nederland en België.
+                Beschrijf wat je zoekt — VATUUR. doorzoekt 25.000+ occasions van geverifieerde dealers in Nederland & België en filtert direct het beste resultaat.
               </p>
             </div>
           </div>
           
           <div className="mx-auto mt-6 max-w-4xl animate-fade-in-up lg:mt-10" style={{ animationDelay: '0.1s' }}>
-            <p className="text-white/90 font-semibold text-base mb-3 text-center hidden lg:block">Zoek jouw auto</p>
             <HeroSearch />
           </div>
           
-          {/* Trust indicators - hidden on mobile, shown on desktop */}
+          {/* Trust indicators */}
           <div className="mt-6 hidden md:flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-white/90 lg:mt-8">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-green-400" />
-              <span>Geverifieerde dealers</span>
+              <span>Alleen geverifieerde verkopers</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-green-400" />
-              <span>25.000+ auto's online</span>
+              <span>25.000+ actuele occasions</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-green-400" />
-              <span>Dagelijks nieuwe advertenties</span>
+              <span>Dagelijks vers aanbod</span>
             </div>
           </div>
 
-          {/* Social proof - compact on mobile */}
+          {/* Social proof */}
           <div className="mt-4 flex items-center justify-center gap-2 text-sm text-white/70">
             <div className="flex items-center gap-0.5">
               {[...Array(5)].map((_, i) => (
@@ -120,10 +119,10 @@ const Index = () => {
             <span>4.8/5 op basis van 1.200+ reviews</span>
           </div>
 
-          {/* Secondary CTA - hidden on mobile */}
-          <div className="mt-5 text-center hidden lg:block">
-            <Link to="/verkopen" className="text-sm text-white/70 hover:text-white transition-colors underline underline-offset-4">
-              of verkoop je auto gratis →
+          {/* Secondary CTA */}
+          <div className="mt-5 text-center">
+            <Link to="/verkopen" className="text-sm text-white/80 hover:text-white transition-colors underline underline-offset-4">
+              Auto verkopen? Plaats gratis in 2 minuten →
             </Link>
           </div>
         </div>
@@ -143,7 +142,7 @@ const Index = () => {
             </div>
             <Button variant="outline" asChild className="gap-2 shadow-sm">
               <Link to="/zoeken">
-                Bekijk alles <ArrowRight className="h-4 w-4" />
+                Bekijk alle 25.000+ wagens <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
           </div>
@@ -156,34 +155,34 @@ const Index = () => {
         <div className="container">
           <div className="text-center mb-12">
             <h2 className="text-2xl font-semibold md:text-3xl">Waarom VATUUR?</h2>
-            <p className="mt-2 text-muted-foreground">De slimste manier om jouw volgende auto te vinden</p>
+            <p className="mt-2 text-muted-foreground">Concrete verschillen, geen marketingpraat</p>
           </div>
           <div className="grid gap-8 md:grid-cols-3">
             <div className="group text-center p-6 rounded-2xl transition-all duration-300 hover:bg-card hover:shadow-card-hover">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 group-hover:bg-primary/15 transition-colors">
                 <Shield className="h-7 w-7 text-primary" />
               </div>
-              <h3 className="mt-5 text-lg font-semibold">Betrouwbaar</h3>
+              <h3 className="mt-5 text-lg font-semibold">Geverifieerde dealers</h3>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                Alle dealers worden geverifieerd voor jouw veiligheid en gemak
+                Elke verkoper KvK-gecontroleerd. Geen anonieme advertenties of dubieuze opkopers.
               </p>
             </div>
             <div className="group text-center p-6 rounded-2xl transition-all duration-300 hover:bg-card hover:shadow-card-hover">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/10 group-hover:bg-accent/15 transition-colors">
                 <Zap className="h-7 w-7 text-accent" />
               </div>
-              <h3 className="mt-5 text-lg font-semibold">Snel & Eenvoudig</h3>
+              <h3 className="mt-5 text-lg font-semibold">AI doet het zoekwerk</h3>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                Vind in minuten de perfecte auto met onze slimme filters
+                Beschrijf wat je zoekt, VATUUR. AI levert de top-matches met dealscore en eerlijk advies.
               </p>
             </div>
             <div className="group text-center p-6 rounded-2xl transition-all duration-300 hover:bg-card hover:shadow-card-hover">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-success/10 group-hover:bg-success/15 transition-colors">
                 <Users className="h-7 w-7 text-success" />
               </div>
-              <h3 className="mt-5 text-lg font-semibold">Grote keuze</h3>
+              <h3 className="mt-5 text-lg font-semibold">25.000+ wagens</h3>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                Duizenden auto's van particulieren en betrouwbare dealers
+                Vers aanbod uit heel Nederland & België, dagelijks bijgewerkt.
               </p>
             </div>
           </div>
@@ -199,17 +198,17 @@ const Index = () => {
         </div>
         <div className="container relative z-10 text-center">
           <h2 className="text-2xl font-bold text-accent-foreground md:text-4xl">
-            Auto verkopen?
+            Auto verkopen in 2 minuten
           </h2>
           <p className="mt-3 text-lg text-accent-foreground/90 max-w-md mx-auto">
-            Plaats gratis je advertentie en bereik duizenden kopers
+            Gratis advertentie, AI-prijssuggestie en directe zichtbaarheid bij duizenden kopers.
           </p>
           <Button 
             asChild 
             size="lg" 
             className="mt-8 bg-card text-foreground hover:bg-card/90 shadow-floating text-base px-8"
           >
-            <Link to="/verkopen">Start nu met verkopen</Link>
+            <Link to="/verkopen">Plaats mijn advertentie</Link>
           </Button>
         </div>
       </section>
