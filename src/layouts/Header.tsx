@@ -68,7 +68,9 @@ export function Header() {
           </SheetTrigger>
           <SheetContent side="right" className="w-72">
             <SheetHeader>
-              <SheetTitle className="text-left text-primary" style={{ fontFamily: 'Montserrat' }}>VATUUR.</SheetTitle>
+              <SheetTitle className="text-left">
+                <Logo size="md" />
+              </SheetTitle>
             </SheetHeader>
             <nav className="mt-6 flex flex-col gap-1">
               {user ? (
