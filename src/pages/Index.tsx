@@ -142,7 +142,7 @@ const Index = () => {
             </div>
             <Button variant="outline" asChild className="gap-2 shadow-sm">
               <Link to="/zoeken">
-                Bekijk alles <ArrowRight className="h-4 w-4" />
+                Bekijk alle 25.000+ wagens <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
           </div>
