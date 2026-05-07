@@ -98,7 +98,7 @@ export function AIChatSection() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Stel een vraag over auto's, prijzen, of vergelijkingen..."
+                  placeholder="bv. 'gezinsauto automaat onder €18k met lage km'"
                   disabled={isLoading}
                   rows={1}
                   className="flex-1 resize-none rounded-xl border border-border/60 bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 disabled:opacity-50"
