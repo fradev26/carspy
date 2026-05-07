@@ -81,10 +81,10 @@ const Index = () => {
           <div className="mx-auto max-w-3xl text-center">
             <div className="animate-fade-in">
               <h1 className="text-3xl font-bold text-white md:text-5xl lg:text-6xl leading-tight">
-                De slimste manier om een tweedehands auto te vinden
+                Vind je volgende auto in één zin.
               </h1>
               <p className="mt-3 text-base text-white/80 md:text-xl max-w-2xl mx-auto leading-relaxed lg:mt-5 lg:text-lg">
-                Vergelijk duizenden tweedehands auto's van betrouwbare dealers en particulieren in Nederland en België.
+                Beschrijf wat je zoekt — VATUUR. doorzoekt 25.000+ occasions van geverifieerde dealers in Nederland & België en filtert direct het beste resultaat.
               </p>
             </div>
           </div>
