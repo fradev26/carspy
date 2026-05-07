@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Mail, Heart } from 'lucide-react';
 import fradesLogo from '@/assets/frades-digital-logo.png';
+import { Logo } from '@/components/Logo';
 
 export function Footer() {
   return (
