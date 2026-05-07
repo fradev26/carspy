@@ -155,34 +155,34 @@ const Index = () => {
         <div className="container">
           <div className="text-center mb-12">
             <h2 className="text-2xl font-semibold md:text-3xl">Waarom VATUUR?</h2>
-            <p className="mt-2 text-muted-foreground">De slimste manier om jouw volgende auto te vinden</p>
+            <p className="mt-2 text-muted-foreground">Concrete verschillen, geen marketingpraat</p>
           </div>
           <div className="grid gap-8 md:grid-cols-3">
             <div className="group text-center p-6 rounded-2xl transition-all duration-300 hover:bg-card hover:shadow-card-hover">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 group-hover:bg-primary/15 transition-colors">
                 <Shield className="h-7 w-7 text-primary" />
               </div>
-              <h3 className="mt-5 text-lg font-semibold">Betrouwbaar</h3>
+              <h3 className="mt-5 text-lg font-semibold">Geverifieerde dealers</h3>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                Alle dealers worden geverifieerd voor jouw veiligheid en gemak
+                Elke verkoper KvK-gecontroleerd. Geen anonieme advertenties of dubieuze opkopers.
               </p>
             </div>
             <div className="group text-center p-6 rounded-2xl transition-all duration-300 hover:bg-card hover:shadow-card-hover">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-accent/10 group-hover:bg-accent/15 transition-colors">
                 <Zap className="h-7 w-7 text-accent" />
               </div>
-              <h3 className="mt-5 text-lg font-semibold">Snel & Eenvoudig</h3>
+              <h3 className="mt-5 text-lg font-semibold">AI doet het zoekwerk</h3>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                Vind in minuten de perfecte auto met onze slimme filters
+                Beschrijf wat je zoekt, VATUUR. AI levert de top-matches met dealscore en eerlijk advies.
               </p>
             </div>
             <div className="group text-center p-6 rounded-2xl transition-all duration-300 hover:bg-card hover:shadow-card-hover">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-success/10 group-hover:bg-success/15 transition-colors">
                 <Users className="h-7 w-7 text-success" />
               </div>
-              <h3 className="mt-5 text-lg font-semibold">Grote keuze</h3>
+              <h3 className="mt-5 text-lg font-semibold">25.000+ wagens</h3>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                Duizenden auto's van particulieren en betrouwbare dealers
+                Vers aanbod uit heel Nederland & België, dagelijks bijgewerkt.
               </p>
             </div>
           </div>
