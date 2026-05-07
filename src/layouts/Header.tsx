@@ -58,10 +58,8 @@ export function Header() {
     )}>
       {/* Mobile + Tablet Header */}
       <div className="container flex h-14 items-center justify-between gap-4 lg:hidden">
-        <Link to="/" className="flex items-center">
-           <span className="text-4xl font-bold select-none text-primary" style={{ fontFamily: 'Montserrat' }}>VATUUR.</span>
-         </Link>
-        
+        <Logo size="lg" asLink />
+
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" aria-label="Open menu" className={cn("hover:bg-transparent", isTransparent ? "text-white" : "text-foreground hover:bg-muted")}>
