@@ -6,11 +6,6 @@ import { Button } from '@/components/ui/button';
 import { useSmartSearch, filtersToParams } from '@/hooks/useSmartSearch';
 import { cn } from '@/lib/utils';
 
-const EXAMPLES = [
-  'Rode BMW SUV onder 20.000 euro',
-  'Zuinige gezinswagen automaat',
-  'Elektrische auto lage km-stand',
-];
 
 interface Props {
   className?: string;
