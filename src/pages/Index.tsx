@@ -93,23 +93,23 @@ const Index = () => {
             <HeroSearch />
           </div>
           
-          {/* Trust indicators - hidden on mobile, shown on desktop */}
+          {/* Trust indicators */}
           <div className="mt-6 hidden md:flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-white/90 lg:mt-8">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-green-400" />
-              <span>Geverifieerde dealers</span>
+              <span>Alleen geverifieerde verkopers</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-green-400" />
-              <span>25.000+ auto's online</span>
+              <span>25.000+ actuele occasions</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-green-400" />
-              <span>Dagelijks nieuwe advertenties</span>
+              <span>Dagelijks vers aanbod</span>
             </div>
           </div>
 
-          {/* Social proof - compact on mobile */}
+          {/* Social proof */}
           <div className="mt-4 flex items-center justify-center gap-2 text-sm text-white/70">
             <div className="flex items-center gap-0.5">
               {[...Array(5)].map((_, i) => (
@@ -119,10 +119,10 @@ const Index = () => {
             <span>4.8/5 op basis van 1.200+ reviews</span>
           </div>
 
-          {/* Secondary CTA - hidden on mobile */}
-          <div className="mt-5 text-center hidden lg:block">
-            <Link to="/verkopen" className="text-sm text-white/70 hover:text-white transition-colors underline underline-offset-4">
-              of verkoop je auto gratis →
+          {/* Secondary CTA */}
+          <div className="mt-5 text-center">
+            <Link to="/verkopen" className="text-sm text-white/80 hover:text-white transition-colors underline underline-offset-4">
+              Auto verkopen? Plaats gratis in 2 minuten →
             </Link>
           </div>
         </div>
