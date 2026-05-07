@@ -198,17 +198,17 @@ const Index = () => {
         </div>
         <div className="container relative z-10 text-center">
           <h2 className="text-2xl font-bold text-accent-foreground md:text-4xl">
-            Auto verkopen?
+            Auto verkopen in 2 minuten
           </h2>
           <p className="mt-3 text-lg text-accent-foreground/90 max-w-md mx-auto">
-            Plaats gratis je advertentie en bereik duizenden kopers
+            Gratis advertentie, AI-prijssuggestie en directe zichtbaarheid bij duizenden kopers.
           </p>
           <Button 
             asChild 
             size="lg" 
             className="mt-8 bg-card text-foreground hover:bg-card/90 shadow-floating text-base px-8"
           >
-            <Link to="/verkopen">Start nu met verkopen</Link>
+            <Link to="/verkopen">Plaats mijn advertentie</Link>
           </Button>
         </div>
       </section>
