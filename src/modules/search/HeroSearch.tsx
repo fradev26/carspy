@@ -53,14 +53,14 @@ export function HeroSearch({ className }: Props) {
         </button>
       </div>
 
-      {/* Single container — each mode renders its own (only) styled shell */}
-      <div className="w-full min-h-[140px] md:min-h-[88px]">
+      {/* Fixed-height container — voorkomt dat de hero van hoogte verandert tussen modi */}
+      <div className="relative w-full h-[280px] sm:h-[260px] md:h-[72px]">
         {mode === 'smart' ? (
-          <div className="w-full animate-fade-in">
+          <div key="smart" className="absolute inset-0 animate-fade-in">
             <SmartSearchBar variant="hero" />
           </div>
         ) : (
-          <div className="w-full animate-fade-in">
+          <div key="classic" className="absolute inset-0 animate-fade-in">
             <ClassicHeroSearch />
           </div>
         )}
