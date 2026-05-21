@@ -182,7 +182,7 @@ const Index = () => {
           </div>
 
           {/* CTA Buttons */}
-          <div className="mt-6 grid grid-cols-2 gap-3 max-w-md mx-auto animate-fade-in-up lg:mt-8" style={{ animationDelay: '0.2s' }}>
+          <div className="mt-3 grid grid-cols-2 gap-3 max-w-md mx-auto animate-fade-in-up lg:mt-5" style={{ animationDelay: '0.2s' }}>
             <Button
               asChild
               size="lg"
