@@ -127,7 +127,7 @@ export default function AutoWaarde() {
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Button
                 size="lg"
-                className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90 shadow-glow-accent font-semibold"
+                className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
                 onClick={() => document.getElementById('waardetool')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 <Calculator className="h-5 w-5" />
