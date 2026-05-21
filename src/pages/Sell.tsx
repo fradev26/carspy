@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { SEOHead } from '@/components/SEOHead';
 import { useNavigate } from 'react-router-dom';
-import { Check, ChevronRight, ChevronLeft, Upload, X, Sparkles, Loader2, ShieldCheck, AlertTriangle, Wrench, Target, Euro, Clock, TrendingUp } from 'lucide-react';
+import { Check, ChevronRight, ChevronLeft, Upload, X, Sparkles, Loader2, ShieldCheck, AlertTriangle, Wrench, Target, Euro, Clock, TrendingUp, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -43,6 +43,7 @@ export default function Sell() {
   const [analysisResult, setAnalysisResult] = useState<VehicleAnalysis | null>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [analysisSnapshot, setAnalysisSnapshot] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     brand: '', model: '', year: '', mileage: '', fuelType: '', transmission: '', 
@@ -81,9 +82,17 @@ export default function Sell() {
   };
   const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 0));
 
+  const getAnalysisSignature = (data: typeof formData) => JSON.stringify({
+    brand: data.brand, model: data.model, year: data.year, mileage: data.mileage,
+    fuelType: data.fuelType, transmission: data.transmission, power: data.power,
+    bodyType: data.bodyType, price: data.price,
+  });
+
   const fetchAnalysis = async () => {
     setAnalysisLoading(true);
     setAnalysisError(null);
+    setAnalysisResult(null);
+    const signature = getAnalysisSignature(formData);
     try {
       const { data, error } = await supabase.functions.invoke('vehicle-analysis', {
         body: {
@@ -103,12 +112,17 @@ export default function Sell() {
       });
       if (error) throw new Error(error.message);
       setAnalysisResult(data as VehicleAnalysis);
+      setAnalysisSnapshot(signature);
     } catch (e) {
       setAnalysisError(e instanceof Error ? e.message : 'Analyse niet beschikbaar');
     } finally {
       setAnalysisLoading(false);
     }
   };
+
+  const isAnalysisStale = Boolean(
+    analysisResult && analysisSnapshot && analysisSnapshot !== getAnalysisSignature(formData)
+  );
 
   useEffect(() => {
     if (currentStep === 3 && !analysisResult && !analysisLoading) {
@@ -377,10 +391,34 @@ export default function Sell() {
             <div className="space-y-6">
               {/* AI Analyse - Prijsvoorstel */}
               <div className="space-y-4">
-                <h3 className="font-semibold flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  VATUUR. AI Analyse
-                </h3>
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    VATUUR. AI Analyse
+                  </h3>
+                  {analysisResult && !analysisLoading && (
+                    <Button variant="ghost" size="sm" className="gap-1.5 text-xs text-muted-foreground" onClick={fetchAnalysis}>
+                      <RefreshCw className="h-3.5 w-3.5" />
+                      Vernieuwen
+                    </Button>
+                  )}
+                </div>
+
+                {isAnalysisStale && !analysisLoading && (
+                  <div className="rounded-lg bg-warning/10 border border-warning/30 p-4 space-y-3">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
+                      <div className="space-y-0.5">
+                        <p className="text-sm font-medium text-foreground">Analyse verouderd</p>
+                        <p className="text-xs text-muted-foreground">De voertuiggegevens zijn gewijzigd sinds de laatste berekening.</p>
+                      </div>
+                    </div>
+                    <Button size="sm" className="w-full gap-1.5" onClick={fetchAnalysis}>
+                      <RefreshCw className="h-3.5 w-3.5" />
+                      Analyse opnieuw berekenen
+                    </Button>
+                  </div>
+                )}
 
                 {analysisLoading && (
                   <div className="flex flex-col items-center gap-3 py-8">
@@ -399,7 +437,7 @@ export default function Sell() {
                 )}
 
                 {analysisResult && (
-                  <div className="space-y-4">
+                  <div className={cn("space-y-4", isAnalysisStale && "opacity-60")}>
                     {/* Prijsvoorstel */}
                     {analysisResult.suggestedPrice > 0 && (
                       <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 space-y-3">
