@@ -286,7 +286,7 @@ export default function Sell() {
         {steps.map((step, index) => (
           <div key={step} className="flex items-center">
             <div className={cn(
-              'flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium',
+              'flex h-8 w-8 items-center justify-center rounded-md text-sm font-medium',
               index < currentStep ? 'bg-success text-success-foreground' : index === currentStep ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
             )}>
               {index < currentStep ? <Check className="h-4 w-4" /> : index + 1}
@@ -348,7 +348,7 @@ export default function Sell() {
               <div className="text-center">
                 <label className="cursor-pointer">
                   <input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" />
-                  <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-muted hover:bg-muted/80 transition-colors">
+                  <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-md bg-muted hover:bg-muted/80 transition-colors">
                     <Upload className="h-10 w-10 text-muted-foreground" />
                   </div>
                   <p className="mt-2 text-sm text-muted-foreground">Klik om foto's te uploaden (max 10)</p>
@@ -362,7 +362,7 @@ export default function Sell() {
                       <img src={preview} alt={`Preview ${index + 1}`} className="h-full w-full object-cover rounded-lg" />
                       <button
                         onClick={() => removeImage(index)}
-                        className="absolute -right-2 -top-2 rounded-full bg-destructive p-1 text-destructive-foreground"
+                        className="absolute -right-2 -top-2 rounded-md bg-destructive p-1 text-destructive-foreground"
                       >
                         <X className="h-4 w-4" />
                       </button>

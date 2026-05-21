@@ -184,7 +184,7 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
     return (
       <div className={cn('w-full', className)}>
         <form onSubmit={handleSearch}>
-          <div className="glass rounded-2xl p-6 shadow-floating">
+          <div className="rounded-lg border border-border/60 bg-card p-6 shadow-card">
             <div className="grid gap-4 md:grid-cols-5 md:gap-3">
               {/* Brand */}
               <div className="space-y-2">
@@ -344,7 +344,7 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
         {/* Expanded Advanced Filters - Using optimized HomepageFilters */}
         <Collapsible open={showAdvancedFilters}>
           <CollapsibleContent>
-            <div className="mt-4 glass rounded-2xl p-6 shadow-floating animate-fade-in">
+            <div className="mt-4 rounded-lg border border-border/60 bg-card p-6 shadow-card animate-fade-in">
               <div className="flex items-center justify-between mb-4 pb-4 border-b border-border/40">
                 <h3 className="text-lg font-semibold text-foreground">Geavanceerde filters</h3>
                 <div className="flex items-center gap-2">

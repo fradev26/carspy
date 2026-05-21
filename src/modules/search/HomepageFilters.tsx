@@ -297,7 +297,7 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
                         type="button"
                         onClick={() => toggleArrayFilter('bodyTypes', body.value)}
                       className={cn(
-                        "flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border-2 transition-all duration-200 focus-ring",
+                        "flex flex-col items-center justify-center gap-1.5 p-3 rounded-md border-2 transition-all duration-200 focus-ring",
                         isSelected
                           ? "bg-primary/10 border-primary text-primary shadow-sm"
                           : "bg-muted/30 border-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:border-border/60"
