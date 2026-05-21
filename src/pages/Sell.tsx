@@ -43,6 +43,7 @@ export default function Sell() {
   const [analysisResult, setAnalysisResult] = useState<VehicleAnalysis | null>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [analysisSnapshot, setAnalysisSnapshot] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     brand: '', model: '', year: '', mileage: '', fuelType: '', transmission: '', 
