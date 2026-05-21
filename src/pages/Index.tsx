@@ -141,7 +141,7 @@ const Index = () => {
         jsonLd={websiteJsonLd}
       />
       {/* Hero Section */}
-      <section className="relative overflow-hidden -mt-14 lg:-mt-16 pt-20 pb-8 lg:pt-32 lg:pb-24 min-h-[calc(100vh-80px)] sm:min-h-[620px] lg:min-h-[720px] flex flex-col justify-center">
+      <section className="relative overflow-hidden -mt-14 lg:-mt-16 pt-32 pb-16 lg:pt-44 lg:pb-36 min-h-[560px] sm:min-h-[620px] lg:min-h-[720px]">
         {/* Background Image (LCP, eager + responsive) */}
         <picture>
           <source
@@ -168,21 +168,21 @@ const Index = () => {
         <div className="container relative z-10">
           <div className="mx-auto max-w-3xl text-center">
             <div className="animate-fade-in">
-              <h1 className="text-2xl font-bold text-white md:text-5xl lg:text-6xl leading-tight">
+              <h1 className="text-3xl font-bold text-white md:text-5xl lg:text-6xl leading-tight">
                 Vind je volgende auto in één zin.
               </h1>
-              <p className="mt-2 text-sm text-white/80 md:text-xl max-w-2xl mx-auto leading-relaxed lg:mt-5 lg:text-lg">
+              <p className="mt-3 text-base text-white/80 md:text-xl max-w-2xl mx-auto leading-relaxed lg:mt-5 lg:text-lg">
                 Beschrijf wat je zoekt — VATUUR. doorzoekt 25.000+ occasions van geverifieerde dealers in Nederland & België en filtert direct het beste resultaat.
               </p>
             </div>
           </div>
 
-          <div className="mx-auto mt-4 max-w-4xl animate-fade-in-up lg:mt-10" style={{ animationDelay: '0.1s' }}>
+          <div className="mx-auto mt-6 max-w-4xl animate-fade-in-up lg:mt-10" style={{ animationDelay: '0.1s' }}>
             <HeroSearch />
           </div>
 
           {/* CTA Buttons */}
-          <div className="mt-4 grid grid-cols-2 gap-3 max-w-md mx-auto animate-fade-in-up lg:mt-8" style={{ animationDelay: '0.2s' }}>
+          <div className="mt-6 grid grid-cols-2 gap-3 max-w-md mx-auto animate-fade-in-up lg:mt-8" style={{ animationDelay: '0.2s' }}>
             <Button
               asChild
               size="lg"
