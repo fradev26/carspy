@@ -1,43 +1,33 @@
-# Above-the-fold compressie op mobiel
+# Fix overlap logo ↔ herotitel (mobiel)
 
-## Doel
-Op mobiel (iPhone-hoogte ~780px) moet alles binnen één viewport zichtbaar zijn: titel, beschrijving, zoekveld, CTA-knoppen én de eerste review. De hero zelf (achtergrond, positie) verandert niet — alleen interne spacing en de hoogte op mobiel.
+## Probleem
+Op mobiel zit het transparante logo "VATUUR." (h-14 header, ~56px) visueel te dicht op de herotitel. Door `pt-20` (80px) blijft er maar ~24px tussen header-bottom en titel — dat voelt als overlap, zeker met text-2xl titel.
 
-## Wijzigingen — `src/pages/Index.tsx`
+## Oplossing — `src/pages/Index.tsx` (alleen mobiel, `lg:` blijft ongewijzigd)
 
-Alle wijzigingen gelden enkel op mobiel (`< lg`). Desktop (`lg:`) blijft exact zoals nu.
-
-### 1. Hero sectie (regel 169)
-- `pt-32 pb-16` → `pt-20 pb-6` (compacter top/bottom padding mobiel)
-- `min-h-[560px] sm:min-h-[620px]` → `min-h-0 sm:min-h-0` (hero mag krimpen tot zijn content op mobiel, zodat reviews-sectie omhoog komt)
-- Desktop `lg:pt-44 lg:pb-36 lg:min-h-[720px]` blijft ongewijzigd
+### 1. Hero top padding (regel 169)
+- `pt-20` → `pt-24` op mobiel (24px → 40px ademruimte onder het logo)
+- `pb-6` blijft
 
 ### 2. Titel (regel 192)
-- `text-3xl` → `text-2xl` op mobiel (md/lg ongewijzigd)
+- `text-2xl` → `text-xl` op mobiel (strakker gezet, compenseert extra top padding)
+- Desktop `md:text-5xl lg:text-6xl` blijft
 
 ### 3. Beschrijving (regel 195)
-- `mt-3` → `mt-2`
-- `text-base` → `text-sm` op mobiel
-- Desktop `lg:mt-5 lg:text-lg` blijft
+- `mt-2` → `mt-1.5` op mobiel
+- `text-sm` blijft
 
 ### 4. HeroSearch container (regel 201)
-- `mt-6` → `mt-4`
-- Desktop `lg:mt-10` blijft
-
-### 5. CTA-knoppen container (regel 206)
-- `mt-3` → `mt-3` (al compact, blijft)
-- Knop-grootte op mobiel verkleinen: voeg `h-11` toe i.p.v. `size="lg"` standaard h-11 → blijft, maar `text-base` → `text-sm` op mobiel
-
-### 6. Trust indicators (regel 225)
-- Reeds `hidden md:flex` → blijft verborgen op mobiel, geen impact
-
-### 7. Social proof / reviews (regel 240)
 - `mt-4` → `mt-3` op mobiel
 
-## Resultaat
-Op een iPhone-viewport (~390×780) past de volledige hero-content + de top van de "Populaire merken / Uitgelichte advertenties"-sectie waar de eerste review (uitgelichte advertentie-kaart) zichtbaar wordt zonder scroll. Hero-achtergrond en compositie blijven intact; desktop blijft volledig ongewijzigd.
+### 5. CTA-knoppen (regel 206)
+- `mt-3` blijft
 
-## Technische notities
-- Geen absolute positioning, alles via Tailwind responsive utilities (mobile-first met `lg:` overrides).
-- `min-h-0` op mobiel zorgt dat de hero zich aanpast aan zijn content i.p.v. een vaste minimum-hoogte af te dwingen.
-- De "eerste review" wordt geïnterpreteerd als de eerste kaart in "Uitgelichte advertenties" (social proof block). De inline 4.8/5-sterrenrating blijft uiteraard in de hero zichtbaar.
+### 6. Social proof (regel 240)
+- `mt-3` → `mt-2` op mobiel
+
+## Resultaat
+- Duidelijke scheiding tussen logo en titel (~40px ademruimte).
+- Totale verticale winst door compactere titel/spacing compenseert de extra top padding, dus knoppen + eerste review blijven binnen 780px viewport.
+- Hero-achtergrond, hoogte (`min-h-0` op mobiel) en desktop layout ongewijzigd.
+- Geen absolute positioning, geen negatieve margins toegevoegd.
