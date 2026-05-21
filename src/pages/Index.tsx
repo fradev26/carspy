@@ -141,7 +141,7 @@ const Index = () => {
         jsonLd={websiteJsonLd}
       />
       {/* Hero Section */}
-      <section className="relative overflow-hidden -mt-14 lg:-mt-16 pt-20 pb-6 lg:pt-44 lg:pb-36 min-h-0 lg:min-h-[720px]">
+      <section className="relative overflow-hidden -mt-14 lg:-mt-16 pt-24 pb-6 lg:pt-44 lg:pb-36 min-h-0 lg:min-h-[720px]">
         {/* Background Image (LCP, eager + responsive) */}
         <picture>
           <source
@@ -168,16 +168,16 @@ const Index = () => {
         <div className="container relative z-10">
           <div className="mx-auto max-w-3xl text-center">
             <div className="animate-fade-in">
-              <h1 className="text-2xl font-bold text-white md:text-5xl lg:text-6xl leading-tight">
+              <h1 className="text-xl font-bold text-white md:text-5xl lg:text-6xl leading-tight">
                 Vind je volgende auto in één zin.
               </h1>
-              <p className="mt-2 text-sm text-white/80 md:text-xl max-w-2xl mx-auto leading-relaxed lg:mt-5 lg:text-lg">
+              <p className="mt-1.5 text-sm text-white/80 md:text-xl max-w-2xl mx-auto leading-relaxed lg:mt-5 lg:text-lg">
                 Beschrijf wat je zoekt — VATUUR. doorzoekt 25.000+ occasions van geverifieerde dealers in Nederland & België en filtert direct het beste resultaat.
               </p>
             </div>
           </div>
 
-          <div className="mx-auto mt-4 max-w-4xl animate-fade-in-up lg:mt-10" style={{ animationDelay: '0.1s' }}>
+          <div className="mx-auto mt-3 max-w-4xl animate-fade-in-up lg:mt-10" style={{ animationDelay: '0.1s' }}>
             <HeroSearch />
           </div>
 
@@ -217,7 +217,7 @@ const Index = () => {
           </div>
 
           {/* Social proof */}
-          <div className="mt-3 flex items-center justify-center gap-2 text-sm text-white/70 lg:mt-4">
+          <div className="mt-2 flex items-center justify-center gap-2 text-sm text-white/70 lg:mt-4">
             <div className="flex items-center gap-0.5">
               {[...Array(5)].map((_, i) => (
                 <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
