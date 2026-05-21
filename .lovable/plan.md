@@ -1,32 +1,24 @@
-# Knoppen + reviews direct onder zoekbox — consistente hoogte
+# Populaire merken naar hamburgermenu (mobiel)
 
 ## Doel
-De CTA-knoppen ("Zoek auto's" / "Plaats advertentie") en de review-balk staan in beide zoekmodi (slim & klassiek) **direct onder** de zoekbox, zonder grote witruimte. Beide zoekmodi hebben dezelfde hoogte zodat de layout niet verspringt bij het wisselen.
+De sectie "Populaire merken" verdwijnt van de homepage op mobiel en komt terug als navigatie-blok in het mobiele hamburgermenu. Op desktop blijft alles ongewijzigd.
 
-## Probleem nu
-`HeroSearch` reserveert een vaste hoogte (`h-[280px] sm:h-[260px] md:h-[72px]`) om layout-shift bij wisselen te voorkomen. Gevolg op mobiel:
-- Slim zoeken (~72px) krijgt ~210px lege ruimte eronder → knoppen staan ver onder de zoekbalk.
-- Klassiek zoeken vult de volle 280px (gestapeld) → knoppen staan er wél onder.
+## Wijzigingen
 
-## Oplossing
-Beide zoekvormen krijgen dezelfde compacte hoogte (~1 rij, ~72px) op alle viewports. De container wordt `auto` qua hoogte; CTA-knoppen en reviews volgen direct.
+### 1. `src/pages/Index.tsx` — sectie verbergen op mobiel
+- Voeg `hidden lg:block` toe aan de `<section>` met "Populaire merken" (regel 234).
+- Geen verdere wijzigingen aan layout of inhoud op desktop.
 
-### Wijzigingen
-
-**`src/modules/search/ClassicHeroSearch.tsx`** — mobiele variant compact maken
-- Vervang de gestapelde mobiele layout (3 selects + 2 knoppen, ~280px) door één compacte rij: een trigger-knop "Merk · Model · Prijs" die een bottom-sheet opent met dezelfde 3 selects + Zoeken. Hoogte: ~56–64px, vergelijkbaar met de Slim-balk.
-- Desktop layout (md:flex pill-rij, h-14) blijft ongewijzigd; hoogte komt al overeen met Slim variant op desktop.
-
-**`src/modules/search/HeroSearch.tsx`** — vaste hoogte verwijderen
-- Vervang `relative w-full h-[280px] sm:h-[260px] md:h-[72px]` door `relative w-full` (auto hoogte).
-- Absolute inset blijft voor de fade-in animatie maar wrapper krijgt `min-h` matched aan de compacte zoekbalk-hoogte zodat er geen sprong is tijdens de fade.
-
-**`src/pages/Index.tsx`** — spacing fijn afstemmen
-- CTA-knoppen container: `mt-3 lg:mt-5` blijft (zit al strak).
-- Review-balk container: behoud `mt-4`. Geen verdere wijziging nodig zodra hoogtes consistent zijn.
+### 2. `src/layouts/Header.tsx` — merkenblok in mobiel menu
+- Definieer een constante `POPULAR_BRANDS` (dezelfde 15 merken als op de homepage) bovenaan het bestand.
+- In de mobiele `SheetContent` `<nav>`, na het blok "Favorieten/Berichten/Zakelijk" en vóór de `Separator` boven Privacy/Voorwaarden:
+  - Voeg een sub-sectie toe met label "Populaire merken" (kleine uppercase muted text, consistent met menu-spacing).
+  - Render eronder een 2-koloms grid (`grid grid-cols-2 gap-1`) met knoppen per merk.
+  - Elk merk = `<button>` dat `handleMobileNav('/zoeken?brand=<merk>')` aanroept, met dezelfde styling-tokens als andere menu-items (px-3 py-2, text-sm, hover:bg-muted, rounded-md), maar compacter.
+- Plaatsing identiek voor ingelogde én niet-ingelogde gebruikers.
+- De bestaande `SheetContent` is al scrollbaar via Radix; bij overflow scrollt het menu vanzelf.
 
 ## Resultaat
-- Slim en Klassiek zoeken nemen dezelfde verticale ruimte in.
-- Knoppen + reviews staan in beide modi direct onder de zoekbox, geen lege ruimte.
-- Geen layout-shift bij het wisselen tussen zoekmodi.
-- Volledige filterfunctionaliteit blijft toegankelijk via de sheet op mobiel.
+- Mobiel: geen merken-sectie meer op de homepage; merken bereikbaar via hamburger → "Populaire merken" → directe filter-link.
+- Desktop: ongewijzigd (sectie blijft op homepage).
+- Geen duplicatie, geen overlay-in-overlay, consistent met bestaande menu-stijl.
