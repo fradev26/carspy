@@ -182,11 +182,11 @@ const Index = () => {
           </div>
 
           {/* CTA Buttons */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-4 animate-fade-in-up lg:mt-8" style={{ animationDelay: '0.2s' }}>
+          <div className="mt-6 grid grid-cols-2 gap-3 max-w-md mx-auto animate-fade-in-up lg:mt-8" style={{ animationDelay: '0.2s' }}>
             <Button
               asChild
               size="lg"
-              className="bg-primary text-white hover:bg-primary/90 shadow-lg text-base px-8"
+              className="w-full bg-primary text-white hover:bg-primary/90 shadow-lg text-base px-4"
             >
               <Link to="/zoeken">Zoek auto's</Link>
             </Button>
@@ -194,7 +194,7 @@ const Index = () => {
               asChild
               size="lg"
               variant="outline"
-              className="border-white/40 bg-white/10 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm text-base px-8"
+              className="w-full border-white/40 bg-white/10 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm text-base px-4"
             >
               <Link to="/verkopen">Plaats advertentie</Link>
             </Button>
