@@ -53,8 +53,8 @@ export function HeroSearch({ className }: Props) {
         </button>
       </div>
 
-      {/* Shared container — min-height prevents layout shift between modes */}
-      <div className="w-full glass rounded-lg p-4 md:p-6 shadow-floating min-h-[180px] md:min-h-[112px] flex items-center">
+      {/* Single container — each mode renders its own (only) styled shell */}
+      <div className="w-full min-h-[140px] md:min-h-[88px]">
         {mode === 'smart' ? (
           <div className="w-full animate-fade-in">
             <SmartSearchBar variant="hero" />
