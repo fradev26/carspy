@@ -289,7 +289,7 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
                     type="button"
                     onClick={() => setFuelType(fuelType === fuel.value ? '' : fuel.value)}
                     className={cn(
-                      "px-3 py-1.5 text-sm rounded-full border transition-all duration-200 focus-ring",
+                      "px-3 py-1.5 text-sm rounded-md border transition-all duration-200 focus-ring",
                       fuelType === fuel.value 
                         ? "bg-primary text-primary-foreground border-primary" 
                         : "bg-background/50 text-foreground/70 border-border/60 hover:border-primary/50 hover:text-foreground"

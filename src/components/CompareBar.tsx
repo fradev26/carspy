@@ -18,7 +18,7 @@ export function CompareBar() {
             {items.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center gap-2 rounded-full bg-muted px-3 py-1.5 text-sm font-medium"
+                className="flex items-center gap-2 rounded-md bg-muted px-3 py-1.5 text-sm font-medium"
               >
                 <span className="truncate max-w-[120px]">{item.title}</span>
                 <button

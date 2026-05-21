@@ -270,7 +270,7 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
                       type="button"
                       onClick={() => toggleArrayFilter('fuelTypes', fuel.value)}
                     className={cn(
-                      "px-3 py-1.5 text-sm rounded-full border transition-all duration-200 focus-ring",
+                      "px-3 py-1.5 text-sm rounded-md border transition-all duration-200 focus-ring",
                       filters.fuelTypes?.includes(fuel.value)
                         ? "bg-primary text-primary-foreground border-primary" 
                         : "bg-background text-foreground/70 border-border/60 hover:border-primary/50 hover:text-foreground"
@@ -330,7 +330,7 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
                       type="button"
                       onClick={() => toggleArrayFilter('transmissions', trans.value)}
                     className={cn(
-                      "px-3 py-1.5 text-sm rounded-full border transition-all duration-200 focus-ring",
+                      "px-3 py-1.5 text-sm rounded-md border transition-all duration-200 focus-ring",
                       filters.transmissions?.includes(trans.value)
                         ? "bg-primary text-primary-foreground border-primary" 
                         : "bg-background text-foreground/70 border-border/60 hover:border-primary/50 hover:text-foreground"
@@ -352,7 +352,7 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
                       type="button"
                       onClick={() => toggleArrayFilter('driveTypes', drive.value)}
                     className={cn(
-                      "px-3 py-1.5 text-sm rounded-full border transition-all duration-200 focus-ring",
+                      "px-3 py-1.5 text-sm rounded-md border transition-all duration-200 focus-ring",
                       filters.driveTypes?.includes(drive.value)
                         ? "bg-primary text-primary-foreground border-primary" 
                         : "bg-background text-foreground/70 border-border/60 hover:border-primary/50 hover:text-foreground"
@@ -413,7 +413,7 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
                       type="button"
                       onClick={() => toggleArrayFilter('paintTypes', paint.value)}
                       className={cn(
-                        "px-3 py-1.5 text-sm rounded-full border transition-all duration-200 focus-ring",
+                        "px-3 py-1.5 text-sm rounded-md border transition-all duration-200 focus-ring",
                         filters.paintTypes?.includes(paint.value)
                           ? "bg-primary text-primary-foreground border-primary" 
                           : "bg-background text-foreground/70 border-border/60 hover:border-primary/50 hover:text-foreground"
@@ -435,7 +435,7 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
                       type="button"
                       onClick={() => toggleArrayFilter('colors', color)}
                       className={cn(
-                        "px-3 py-1.5 text-sm rounded-full border transition-all duration-200 focus-ring",
+                        "px-3 py-1.5 text-sm rounded-md border transition-all duration-200 focus-ring",
                         filters.colors?.includes(color)
                           ? "bg-primary text-primary-foreground border-primary" 
                           : "bg-background text-foreground/70 border-border/60 hover:border-primary/50 hover:text-foreground"
@@ -459,7 +459,7 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
                       type="button"
                       onClick={() => toggleArrayFilter('interiorMaterials', mat.value)}
                       className={cn(
-                        "px-3 py-1.5 text-sm rounded-full border transition-all duration-200 focus-ring",
+                        "px-3 py-1.5 text-sm rounded-md border transition-all duration-200 focus-ring",
                         filters.interiorMaterials?.includes(mat.value)
                           ? "bg-primary text-primary-foreground border-primary" 
                           : "bg-background text-foreground/70 border-border/60 hover:border-primary/50 hover:text-foreground"
@@ -562,7 +562,7 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
                       type="button"
                       onClick={() => updateFilter('country', filters.country === c.value ? undefined : c.value)}
                       className={cn(
-                        "px-3 py-1.5 text-sm rounded-full border transition-all duration-200",
+                        "px-3 py-1.5 text-sm rounded-md border transition-all duration-200",
                         filters.country === c.value
                           ? "bg-primary text-primary-foreground border-primary" 
                           : "bg-background text-foreground/70 border-border/60 hover:border-primary/50 hover:text-foreground"
@@ -655,7 +655,7 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
                       type="button"
                       onClick={() => updateFilter('sellerType', filters.sellerType === type.value ? undefined : type.value)}
                       className={cn(
-                        "px-3 py-1.5 text-sm rounded-full border transition-all duration-200",
+                        "px-3 py-1.5 text-sm rounded-md border transition-all duration-200",
                         filters.sellerType === type.value
                           ? "bg-primary text-primary-foreground border-primary" 
                           : "bg-background text-foreground/70 border-border/60 hover:border-primary/50 hover:text-foreground"
