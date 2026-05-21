@@ -184,7 +184,7 @@ const Index = () => {
               <Link
                 key={brand}
                 to={`/zoeken?brand=${encodeURIComponent(brand)}`}
-                className="rounded-full border border-border/70 bg-muted/50 px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
+                className="rounded-md border border-border/70 bg-muted/50 px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
               >
                 {brand}
               </Link>

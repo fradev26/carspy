@@ -84,7 +84,7 @@ export function RecentSearches({ searches, onRemove, onClearAll, className }: Re
         {searches.map((search) => (
           <div
             key={search.id}
-            className="group relative flex items-center gap-2 rounded-full border border-border/60 bg-card/80 px-3 py-1.5 text-sm transition-all duration-200 hover:border-primary/50 hover:bg-card hover:shadow-sm cursor-pointer"
+            className="group relative flex items-center gap-2 rounded-md border border-border/60 bg-card/80 px-3 py-1.5 text-sm transition-all duration-200 hover:border-primary/50 hover:bg-card hover:shadow-sm cursor-pointer"
             onClick={() => handleSearchClick(search)}
           >
             <span className="text-foreground/90">{search.label}</span>
@@ -98,7 +98,7 @@ export function RecentSearches({ searches, onRemove, onClearAll, className }: Re
                 e.stopPropagation();
                 onRemove(search.id);
               }}
-              className="ml-1 rounded-full p-0.5 opacity-0 group-hover:opacity-100 hover:bg-muted-foreground/20 transition-all"
+              className="ml-1 rounded-sm p-0.5 opacity-0 group-hover:opacity-100 hover:bg-muted-foreground/20 transition-all"
               aria-label="Verwijder zoekopdracht"
             >
               <X className="h-3 w-3 text-muted-foreground" />

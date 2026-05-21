@@ -55,7 +55,7 @@ export function AIChatSection() {
         <div className="mx-auto max-w-3xl">
           {/* Header */}
           <div className="text-center mb-6">
-            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-4">
+            <div className="inline-flex items-center gap-2 rounded-md bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-4">
               <Sparkles className="h-4 w-4" />
               AI-Assistent
             </div>
@@ -133,7 +133,7 @@ export function AIChatSection() {
                     <button
                       key={s}
                       onClick={() => send(s)}
-                      className="rounded-full border border-border/60 bg-muted/50 px-3.5 py-1.5 text-xs text-foreground/80 transition-all hover:bg-primary/10 hover:text-primary hover:border-primary/30 text-left"
+                      className="rounded-md border border-border/60 bg-muted/50 px-3.5 py-1.5 text-xs text-foreground/80 transition-all hover:bg-primary/10 hover:text-primary hover:border-primary/30 text-left"
                     >
                       {s}
                     </button>

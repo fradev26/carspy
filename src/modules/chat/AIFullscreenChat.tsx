@@ -106,7 +106,7 @@ export function AIFullscreenChat({ open, onClose }: Props) {
                 <button
                   key={s}
                   onClick={() => send(s)}
-                  className="rounded-full border border-border/60 bg-muted/50 px-3.5 py-2 text-xs text-foreground/80 transition-all hover:bg-primary/10 hover:text-primary hover:border-primary/30 active:scale-95"
+                  className="rounded-md border border-border/60 bg-muted/50 px-3.5 py-2 text-xs text-foreground/80 transition-all hover:bg-primary/10 hover:text-primary hover:border-primary/30 active:scale-95"
                 >
                   {s}
                 </button>

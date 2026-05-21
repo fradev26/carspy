@@ -190,7 +190,7 @@ export function FilterChips({ filters, onRemoveFilter, onClearAll, className }: 
               {chip.label}
               <button
                 onClick={() => onRemoveFilter(chip.key, chip.value)}
-                className="ml-1 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
+                className="ml-1 rounded-sm p-0.5 hover:bg-muted-foreground/20 transition-colors"
                 aria-label={`Verwijder filter: ${chip.label}`}
               >
                 <X className="h-3 w-3" />
