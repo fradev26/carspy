@@ -1,11 +1,9 @@
-# Fix merknaam wrapping in mobiel menu
+# Menu verbreden en Tesla verwijderen
 
-## Wijziging
-In `src/layouts/Header.tsx`, pas de className van de merk-knoppen aan in beide mobiele menu-secties (ingelogd en niet-ingelogd):
+## Wijzigingen in `src/layouts/Header.tsx`
 
-- Voeg `truncate` toe (whitespace-nowrap + overflow-hidden + text-ellipsis)
-- Verklein horizontale padding van `px-3` naar `px-2` voor iets meer ruimte
-- Behoud `grid-cols-2`, `gap-1`, `text-sm` en menu-breedte
+1. Verwijder `'Tesla'` uit de `POPULAR_BRANDS` constante (blijven 14 merken in 2 kolommen, 7 rijen).
+2. Verbreed de mobiele `SheetContent` van `w-72` (288px) naar `w-80` (320px), zodat "Mercedes-Benz" volledig past zonder truncate.
 
 ## Resultaat
-Alle merknamen staan op een regel; te lange namen worden afgekapt met ellipsis. Geen line breaks, geen layout shifts, menu-breedte ongewijzigd.
+Mercedes-Benz volledig leesbaar; Tesla weg uit de lijst; menu blijft binnen mobiele drawer-conventies.
