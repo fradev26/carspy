@@ -126,6 +126,19 @@ export function Header() {
                     <User className="h-4 w-4 text-muted-foreground" /> Inloggen / Registreren
                   </button>
                   <Separator className="my-2" />
+                  <p className="px-3 pb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">Populaire merken</p>
+                  <div className="grid grid-cols-2 gap-1">
+                    {POPULAR_BRANDS.map((brand) => (
+                      <button
+                        key={brand}
+                        onClick={() => handleMobileNav(`/zoeken?brand=${encodeURIComponent(brand)}`)}
+                        className="rounded-md px-3 py-2 text-left text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                      >
+                        {brand}
+                      </button>
+                    ))}
+                  </div>
+                  <Separator className="my-2" />
                   <button onClick={() => handleMobileNav('/privacy')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors">
                     <Shield className="h-4 w-4" /> Privacybeleid
                   </button>
