@@ -217,7 +217,7 @@ const Index = () => {
           </div>
 
           {/* Social proof */}
-          <div className="mt-3 flex items-center justify-center gap-2 text-sm text-white/70 lg:mt-4">
+          <div className="mt-2 flex items-center justify-center gap-2 text-sm text-white/70 lg:mt-4">
             <div className="flex items-center gap-0.5">
               {[...Array(5)].map((_, i) => (
                 <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
