@@ -102,7 +102,7 @@ export function ClassicHeroSearch() {
       </div>
 
       {/* Mobile: stacked */}
-      <div className="md:hidden flex flex-col gap-2 rounded-2xl bg-white p-3 shadow-sm">
+      <div className="md:hidden flex flex-col gap-2 rounded-md bg-white p-3 shadow-sm">
         <Select value={brand} onValueChange={(v) => { setBrand(v); setModel(''); }}>
           <SelectTrigger className="h-11 bg-background text-sm">
             <SelectValue placeholder="Alle merken" />
