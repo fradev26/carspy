@@ -231,7 +231,7 @@ const Index = () => {
 
 
       {/* Popular Brands */}
-      <section className="border-b border-border/50 bg-background py-8 md:py-10">
+      <section className="hidden lg:block border-b border-border/50 bg-background py-8 md:py-10">
         <div className="container">
           <p className="mb-4 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
             Populaire merken
