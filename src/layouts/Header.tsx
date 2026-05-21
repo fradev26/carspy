@@ -14,7 +14,7 @@ import { Logo } from '@/components/Logo';
 const POPULAR_BRANDS = [
   'Volkswagen', 'BMW', 'Audi', 'Mercedes-Benz', 'Toyota',
   'Ford', 'Volvo', 'Peugeot', 'Renault', 'Hyundai',
-  'Kia', 'Tesla', 'Skoda', 'Seat', 'Opel',
+  'Kia', 'Skoda', 'Seat', 'Opel',
 ];
 
 export function Header() {
