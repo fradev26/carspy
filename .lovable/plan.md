@@ -1,66 +1,64 @@
-# Twee zoekmodi in de hero: Slim & Klassiek
+# Radius systeem: controlled sharpness voor VATUUR
 
-Eén hero-zoekcontainer met een segmented toggle erboven. De gebruiker schakelt instant tussen **Slim zoeken** (AI, natuurlijke taal) en **Klassiek zoeken** (Merk / Model / Prijs / Meer filters). Default = Slim zoeken.
+Doel: de UI laten matchen met het hoekige, high-confidence logo. Weg van de "friendly SaaS pill" look, naar een strakker "automotive tool" gevoel — zonder volledig vierkant te worden.
 
-## UX-gedrag
+## Het systeem (3 radius-levels)
 
-- Segmented control boven de zoekbalk, gecentreerd, met 2 opties.
-- Actieve optie: gevuld pill in primary (rood, wit label) met `Sparkles`-icoon bij Slim.
-- Inactieve optie: transparant pill, witte tekst, hover lichte witte overlay.
-- Instant switch via `useState<'smart' | 'classic'>` — geen route change.
-- Eén shared wrapper (`glass rounded-2xl`) met `min-height` zodat de hero niet verspringt bij wissel.
-- Beide modi voelen first-class: geen "geavanceerd"-label, geen tekstuele uitleg.
-
-## Componentstructuur
+Eén bron van waarheid in `tailwind.config.ts` + `index.css`. Daarna mag in components alleen nog `rounded-sm`, `rounded-md`, `rounded-lg` gebruikt worden.
 
 ```text
-HeroSearch (refactor)
-├── SearchModeToggle           (nieuw, intern)
-│     [ ✨ Slim zoeken ] [ Klassiek zoeken ]
-└── div.glass.rounded-2xl      (shared container, min-h vast)
-      ├── mode === 'smart'  → <SmartSearchBar variant="hero" />
-      └── mode === 'classic' → <ClassicHeroSearch />   (nieuw)
+sm  =  6px   inputs, badges, kleine chips, segmented toggle items
+md  = 10px   cards, containers, buttons, selects, dropdowns
+lg  = 14px   hero search container, modals, grote panels
 ```
 
-### ClassicHeroSearch (nieuw, in `src/modules/search/`)
+Verboden vanaf nu:
+- `rounded-full` op alles behalve avatars en pure icon-only round indicators (bv. status dot)
+- `rounded-2xl` / `rounded-3xl`
+- `rounded-xl` als "default"
 
-Horizontale pill-balk binnen dezelfde glass-container, met verticale scheidingslijnen:
+`--radius` in `index.css` gaat van `0.75rem` (12px) → `0.625rem` (10px) zodat de shadcn defaults (`lg`, `md`, `sm`, `xl`, `2xl`) automatisch verschuiven naar het nieuwe scale.
 
-```text
-[ Merk ▾ ] | [ Model ▾ ] | [ Prijs ▾ ] | [ ⚙ Meer filters ] | [ 🔍 Zoeken ]
-```
+## Concrete refactor scope
 
-- Velden zijn lokale `useState` (brand, model, maxPrice).
-- Model-Select is disabled tot Merk gekozen is.
-- "Meer filters" → `navigate('/zoeken?...')` met huidige selectie als query params (opent zoekpagina met filterpanel open).
-- "Zoeken"-CTA → `navigate('/zoeken?brand=...&model=...&maxPrice=...')`.
-- Op mobiel (`<md`): velden stacken verticaal binnen dezelfde container, CTA full-width.
+Alleen presentation/styling. Geen logica wijzigt.
 
-## State & logica
+1. **`tailwind.config.ts`** — `borderRadius` map herdefiniëren naar het 3-level systeem (sm/md/lg + behoud `DEFAULT`). `2xl`/`xl` mappen naar `lg` zodat bestaande klassen die we niet handmatig opruimen ook ingetoomd worden.
+2. **`src/index.css`** — `--radius` aanpassen naar `0.625rem` (10px).
+3. **`src/components/ui/button.tsx`** — `rounded-md` als basis (was al), maar `size: sm` van `rounded-md` houden en `lg` van `rounded-md` ipv `rounded-md`. Geen `rounded-full` varianten.
+4. **`src/modules/search/HeroSearch.tsx`**
+   - Segmented toggle: `rounded-full` → `rounded-md`, items van `rounded-full` → `rounded-sm`.
+   - Glass container: `rounded-2xl` → `rounded-lg` (14px).
+5. **`src/modules/search/ClassicHeroSearch.tsx`**
+   - Desktop pill row: `rounded-full` → `rounded-md`, `rounded-r-full` op CTA → `rounded-r-md`.
+   - Mobile container: `rounded-2xl` → `rounded-md`.
+   - Triggers: behouden geërfde radius.
+6. **`src/modules/search/SmartSearchBar.tsx`** — zoekbalk-input van pill → `rounded-md` (12px-achtig via scale). Submit button `rounded-md`.
+7. **`src/modules/listings/ListingCard.tsx`** + andere kaarten — controleren en `rounded-xl`/`rounded-2xl` → `rounded-md`. Behoud subtiele border, dial down shadow van `shadow-floating`/`shadow-elevated` naar `shadow-card` waar overdreven.
+8. **`src/components/BottomNav.tsx`** — actieve indicator: ronde "blob" → afgeronde rechthoek (`rounded-md`). Center AI-knop blijft cirkel (uitzondering: één hero-element).
+9. **Globale sweep** — `rg "rounded-(full|2xl|3xl|xl)"` door `src/` en per geval beslissen: vervangen door `rounded-md`/`rounded-lg`, of (zeldzaam) bewust laten staan met comment (avatar, dot, hero AI-knop).
 
-- Modus state lokaal in `HeroSearch` (`useState`). Persistentie niet nodig — homepage-only.
-- `SmartSearchBar` blijft ongewijzigd; routet zelf naar `/zoeken` na AI-parsing.
-- `ClassicHeroSearch` bouwt URL met `URLSearchParams` en gebruikt `react-router-dom` `useNavigate`.
-- Merken-lijst hergebruikt uit bestaande constanten (zelfde lijst als "Populaire merken" sectie); modellenlijst uit `mockListings` of bestaande brand→models mapping als die er is.
+## Uitzonderingen (bewust)
 
-## Design
+- **Avatars** → `rounded-full` blijft
+- **Status-dots** (online, badge-puntjes) → `rounded-full` blijft
+- **Center AI-knop in BottomNav** → cirkel blijft, dit is het visuele anker
 
-- Toggle pill-container: `bg-white/10 backdrop-blur p-1 rounded-full border border-white/20`.
-- Actieve knop: `bg-primary text-white shadow-sm`.
-- Inactieve knop: `text-white/80 hover:text-white hover:bg-white/10`.
-- Klassieke balk: witte achtergrond, `rounded-full` (zoals huidige homepage filters look), velden via shadcn `Select` met `border-0` en `divide-x` separators.
-- Geen layout shift: container krijgt `min-h-[140px] md:min-h-[96px]`.
+## CTA-richtlijn
 
-## Bestanden
+Primary CTA's: `rounded-md` (10px) + extra horizontale padding (`px-6`/`px-8`) ipv extra radius. Sterke rode fill, harde edge. Geen pill, geen full-round.
 
-- **Nieuw**: `src/modules/search/ClassicHeroSearch.tsx`
-- **Wijzigen**: `src/modules/search/HeroSearch.tsx` (toggle + conditional rendering, verwijder onderliggende "Liever filters gebruiken?" link want overbodig)
-- **Export**: `src/modules/search/index.ts` (geen wijziging nodig, `HeroSearch` blijft de public API)
+## Visuele check na implementatie
 
-## Waarom dit UX-gewijs werkt
+Screenshots maken op home (hero + toggle + zoekbalk), `/zoeken` (cards + filters), `/auto/:id` (detail card + sticky sidebar) op mobiel en desktop. Verifiëren dat:
+- Geen pill-buttons meer zichtbaar
+- Radius voelt consistent (max 3 niveaus per screen)
+- Logo + UI nu in dezelfde "taal"
 
-1. Eén visueel anker (de glass container) blijft op zijn plek → geen cognitieve reset bij switch.
-2. Segmented control is een bekend patroon (iOS-style) → direct begrijpelijk zonder uitleg.
-3. Default Slim zoeken pusht de AI-USP zonder Klassiek te verbergen — beide één tap weg.
-4. Klassieke balk lijkt op concurrent (vertrouwd), maar zit in dezelfde branding-shell → consistent met VATUUR.
-5. Vaste min-height voorkomt jank op slow devices en bewaart de hero-compositie.
+## Out of scope (voor later, indien gewenst)
+
+- Diagonale dividers / skewed accents
+- Angled hover states
+- Nieuwe shadow-scale
+
+Dit kan in een follow-up nadat het radius-fundament staat.
