@@ -19,7 +19,7 @@ export function HeroSearch({ className }: Props) {
       <div
         role="tablist"
         aria-label="Zoekmodus"
-        className="mb-4 inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/10 p-1 backdrop-blur-md"
+        className="mb-4 inline-flex items-center gap-1 rounded-md border border-white/20 bg-white/10 p-1 backdrop-blur-md"
       >
         <button
           role="tab"
@@ -27,7 +27,7 @@ export function HeroSearch({ className }: Props) {
           type="button"
           onClick={() => setMode('smart')}
           className={cn(
-            'inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all focus-ring',
+            'inline-flex items-center gap-1.5 rounded-sm px-4 py-2 text-sm font-medium transition-all focus-ring',
             mode === 'smart'
               ? 'bg-primary text-primary-foreground shadow-sm'
               : 'text-white/80 hover:text-white hover:bg-white/10'
@@ -42,7 +42,7 @@ export function HeroSearch({ className }: Props) {
           type="button"
           onClick={() => setMode('classic')}
           className={cn(
-            'inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all focus-ring',
+            'inline-flex items-center gap-1.5 rounded-sm px-4 py-2 text-sm font-medium transition-all focus-ring',
             mode === 'classic'
               ? 'bg-primary text-primary-foreground shadow-sm'
               : 'text-white/80 hover:text-white hover:bg-white/10'
@@ -54,7 +54,7 @@ export function HeroSearch({ className }: Props) {
       </div>
 
       {/* Shared container — min-height prevents layout shift between modes */}
-      <div className="w-full glass rounded-2xl p-4 md:p-6 shadow-floating min-h-[180px] md:min-h-[112px] flex items-center">
+      <div className="w-full glass rounded-lg p-4 md:p-6 shadow-floating min-h-[180px] md:min-h-[112px] flex items-center">
         {mode === 'smart' ? (
           <div className="w-full animate-fade-in">
             <SmartSearchBar variant="hero" />

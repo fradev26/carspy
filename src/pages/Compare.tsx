@@ -69,7 +69,7 @@ export default function Compare() {
                 <img src={item.images[0] || '/placeholder.svg'} alt={item.title} className="h-full w-full object-cover" />
                 <Button
                   variant="ghost" size="icon"
-                  className="absolute top-2 right-2 h-7 w-7 rounded-full bg-card/90 backdrop-blur-sm"
+                  className="absolute top-2 right-2 h-7 w-7 rounded-md bg-card/90 backdrop-blur-sm"
                   onClick={() => remove(item.id)}
                 >
                   <X className="h-4 w-4" />

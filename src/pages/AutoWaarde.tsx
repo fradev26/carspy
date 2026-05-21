@@ -113,7 +113,7 @@ export default function AutoWaarde() {
       <section className="relative overflow-hidden border-b border-border/60 bg-gradient-to-br from-primary/5 via-background to-accent/5">
         <div className="container py-12 md:py-20">
           <div className="mx-auto max-w-3xl text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary mb-4">
+            <div className="inline-flex items-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary mb-4">
               <Sparkles className="h-3.5 w-3.5" />
               Gratis &amp; vrijblijvend
             </div>

@@ -46,7 +46,7 @@ export function ClassicHeroSearch() {
   return (
     <div className="w-full">
       {/* Desktop: pill row with dividers */}
-      <div className="hidden md:flex items-stretch gap-0 rounded-full bg-white shadow-sm overflow-hidden divide-x divide-border/60">
+      <div className="hidden md:flex items-stretch gap-0 rounded-md bg-white shadow-sm overflow-hidden divide-x divide-border/60">
         <div className="flex-1 min-w-0">
           <Select value={brand} onValueChange={(v) => { setBrand(v); setModel(''); }}>
             <SelectTrigger className="h-14 w-full border-0 rounded-none bg-transparent px-5 text-sm font-medium focus:ring-0 focus:ring-offset-0 shadow-none">
@@ -94,7 +94,7 @@ export function ClassicHeroSearch() {
         <Button
           type="button"
           onClick={handleSearch}
-          className="h-14 rounded-none rounded-r-full bg-primary hover:bg-primary/90 text-primary-foreground px-8 gap-2 text-sm font-semibold"
+          className="h-14 rounded-none rounded-r-md bg-primary hover:bg-primary/90 text-primary-foreground px-8 gap-2 text-sm font-semibold"
         >
           <Search className="h-4 w-4" />
           Zoeken
@@ -102,7 +102,7 @@ export function ClassicHeroSearch() {
       </div>
 
       {/* Mobile: stacked */}
-      <div className="md:hidden flex flex-col gap-2 rounded-2xl bg-white p-3 shadow-sm">
+      <div className="md:hidden flex flex-col gap-2 rounded-md bg-white p-3 shadow-sm">
         <Select value={brand} onValueChange={(v) => { setBrand(v); setModel(''); }}>
           <SelectTrigger className="h-11 bg-background text-sm">
             <SelectValue placeholder="Alle merken" />

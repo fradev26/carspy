@@ -33,10 +33,10 @@ export function SmartSearchBar({ className, variant = 'hero' }: Props) {
     <div className={cn('w-full', className)}>
       <form onSubmit={submit}>
         <div className={cn(
-          'flex items-center gap-2 rounded-2xl border-2 border-primary/30 bg-background p-2 shadow-floating focus-within:border-primary/60 transition-colors',
+          'flex items-center gap-2 rounded-md border-2 border-primary/30 bg-background p-2 shadow-floating focus-within:border-primary/60 transition-colors',
           variant === 'hero' ? 'p-3' : 'p-2'
         )}>
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-primary/10">
             <Sparkles className="h-5 w-5 text-primary" />
           </div>
           <Input

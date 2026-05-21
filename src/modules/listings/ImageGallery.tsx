@@ -65,7 +65,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute left-3 top-1/2 -translate-y-1/2 h-11 w-11 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-elevated"
+                className="absolute left-3 top-1/2 -translate-y-1/2 h-11 w-11 rounded-md bg-card/90 backdrop-blur-sm hover:bg-card shadow-elevated"
                 onClick={goToPrevious}
               >
                 <ChevronLeft className="h-6 w-6" />
@@ -73,7 +73,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="absolute right-3 top-1/2 -translate-y-1/2 h-11 w-11 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-elevated"
+                className="absolute right-3 top-1/2 -translate-y-1/2 h-11 w-11 rounded-md bg-card/90 backdrop-blur-sm hover:bg-card shadow-elevated"
                 onClick={goToNext}
               >
                 <ChevronRight className="h-6 w-6" />
@@ -85,7 +85,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="absolute right-3 top-3 h-10 w-10 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-md"
+            className="absolute right-3 top-3 h-10 w-10 rounded-md bg-card/90 backdrop-blur-sm hover:bg-card shadow-md"
             onClick={() => setIsLightboxOpen(true)}
           >
             <Expand className="h-4 w-4" />
@@ -93,7 +93,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
 
           {/* Image counter */}
           {validImages.length > 1 && (
-            <div className="absolute bottom-3 right-3 rounded-full bg-card/90 px-3 py-1.5 text-sm font-medium backdrop-blur-sm shadow-md">
+            <div className="absolute bottom-3 right-3 rounded-md bg-card/90 px-3 py-1.5 text-sm font-medium backdrop-blur-sm shadow-md">
               {currentIndex + 1} / {validImages.length}
             </div>
           )}
@@ -142,7 +142,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute left-4 top-1/2 -translate-y-1/2 h-14 w-14 rounded-full bg-white/10 text-white hover:bg-white/20"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 h-14 w-14 rounded-md bg-white/10 text-white hover:bg-white/20"
                   onClick={goToPrevious}
                 >
                   <ChevronLeft className="h-8 w-8" />
@@ -150,7 +150,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 h-14 w-14 rounded-full bg-white/10 text-white hover:bg-white/20"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 h-14 w-14 rounded-md bg-white/10 text-white hover:bg-white/20"
                   onClick={goToNext}
                 >
                   <ChevronRight className="h-8 w-8" />
@@ -160,12 +160,12 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
 
             {/* Image counter in lightbox */}
             {validImages.length > 1 && (
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-5 py-2.5 text-base font-medium text-white backdrop-blur-sm">
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-md bg-white/10 px-5 py-2.5 text-base font-medium text-white backdrop-blur-sm">
                 {currentIndex + 1} / {validImages.length}
               </div>
             )}
 
-            <DialogClose className="absolute right-4 top-4 h-12 w-12 rounded-full bg-white/10 text-white hover:bg-white/20 flex items-center justify-center transition-colors">
+            <DialogClose className="absolute right-4 top-4 h-12 w-12 rounded-md bg-white/10 text-white hover:bg-white/20 flex items-center justify-center transition-colors">
               <X className="h-6 w-6" />
             </DialogClose>
           </div>
