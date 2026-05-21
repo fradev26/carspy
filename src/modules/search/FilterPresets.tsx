@@ -124,7 +124,17 @@ export function FilterPresets({ onApplyPreset, activeFilters, className }: Filte
                   ? 'bg-primary text-primary-foreground shadow-md' 
                   : 'border-border/60 hover:bg-accent hover:border-accent'
               )}
-              onClick={() => onApplyPreset(preset.filters)}
+              onClick={() => {
+                if (isActive) {
+                  const cleared: Partial<SearchFilters> = {};
+                  Object.keys(preset.filters).forEach((key) => {
+                    (cleared as Record<string, undefined>)[key] = undefined;
+                  });
+                  onApplyPreset(cleared);
+                } else {
+                  onApplyPreset(preset.filters);
+                }
+              }}
             >
               <Icon className="h-3.5 w-3.5" />
               <span>{preset.label}</span>

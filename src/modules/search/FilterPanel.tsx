@@ -83,7 +83,15 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
   };
 
   const applyPreset = (presetFilters: Partial<SearchFilters>) => {
-    onFiltersChange({ ...filters, ...presetFilters });
+    const newFilters = { ...filters };
+    Object.entries(presetFilters).forEach(([key, value]) => {
+      if (value === undefined) {
+        delete (newFilters as Record<string, unknown>)[key];
+      } else {
+        (newFilters as Record<string, unknown>)[key] = value;
+      }
+    });
+    onFiltersChange(newFilters);
   };
 
   // Calculate active filter count per section
