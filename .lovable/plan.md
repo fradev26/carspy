@@ -1,64 +1,80 @@
-# Radius systeem: controlled sharpness voor VATUUR
+# Border-radius QA audit
 
-Doel: de UI laten matchen met het hoekige, high-confidence logo. Weg van de "friendly SaaS pill" look, naar een strakker "automotive tool" gevoel — zonder volledig vierkant te worden.
+Tailwind-scale staat nu vast: `sm 6 / md 10 / lg 14`. Klassen `xl`, `2xl`, `3xl` worden ge-cap op 14px. Audit hieronder gaat over wat de gebruiker visueel ziet, niet over de literal classnames.
 
-## Het systeem (3 radius-levels)
+## ❌ Issues
 
-Eén bron van waarheid in `tailwind.config.ts` + `index.css`. Daarna mag in components alleen nog `rounded-sm`, `rounded-md`, `rounded-lg` gebruikt worden.
+1. **Stappen-circle in verkoopwizard** — `src/pages/Sell.tsx:289`
+   `h-8 w-8 rounded-full` (genummerd stepper). Geen avatar/dot → moet `rounded-md`.
 
-```text
-sm  =  6px   inputs, badges, kleine chips, segmented toggle items
-md  = 10px   cards, containers, buttons, selects, dropdowns
-lg  = 14px   hero search container, modals, grote panels
-```
+2. **Foto-upload tegel in verkoopwizard** — `src/pages/Sell.tsx:351`
+   `h-24 w-24 rounded-full bg-muted` (groot upload-zone). Voelt als "bubble". → `rounded-md`.
 
-Verboden vanaf nu:
-- `rounded-full` op alles behalve avatars en pure icon-only round indicators (bv. status dot)
-- `rounded-2xl` / `rounded-3xl`
-- `rounded-xl` als "default"
+3. **Seller-initiaal op detailpagina** — `src/pages/ListingDetail.tsx:365`
+   `h-12 w-12 rounded-full bg-primary` (grote rode cirkel). Botst met "geen grote rode vlakken" + radius-systeem. → `rounded-md` + neutralere bg (`bg-primary/10 text-primary`).
 
-`--radius` in `index.css` gaat van `0.75rem` (12px) → `0.625rem` (10px) zodat de shadcn defaults (`lg`, `md`, `sm`, `xl`, `2xl`) automatisch verschuiven naar het nieuwe scale.
+4. **Empty-state icon in zoekpagina** — `src/pages/Search.tsx:605`
+   `h-16 w-16 rounded-full bg-muted`. → `rounded-md`.
 
-## Concrete refactor scope
+5. **Deal-score gauge in AI-modal** — `src/modules/listings/AIAnalysisModal.tsx:51`
+   `rounded-full h-16 w-16 border-2`. Grote gekleurde cirkel = soft/playful. → `rounded-md` (of bewust uitzondering documenteren).
 
-Alleen presentation/styling. Geen logica wijzigt.
+6. **AI-FAB (chat widget)** — `src/modules/chat/ChatWidget.tsx:53`
+   `h-14 w-14 rounded-full shadow-lg`. Tweede ronde FAB naast BottomNav AI-knop = inconsistent + visueel concurreert. → `rounded-md` óf component verbergen op mobiel (al? checken).
 
-1. **`tailwind.config.ts`** — `borderRadius` map herdefiniëren naar het 3-level systeem (sm/md/lg + behoud `DEFAULT`). `2xl`/`xl` mappen naar `lg` zodat bestaande klassen die we niet handmatig opruimen ook ingetoomd worden.
-2. **`src/index.css`** — `--radius` aanpassen naar `0.625rem` (10px).
-3. **`src/components/ui/button.tsx`** — `rounded-md` als basis (was al), maar `size: sm` van `rounded-md` houden en `lg` van `rounded-md` ipv `rounded-md`. Geen `rounded-full` varianten.
-4. **`src/modules/search/HeroSearch.tsx`**
-   - Segmented toggle: `rounded-full` → `rounded-md`, items van `rounded-full` → `rounded-sm`.
-   - Glass container: `rounded-2xl` → `rounded-lg` (14px).
-5. **`src/modules/search/ClassicHeroSearch.tsx`**
-   - Desktop pill row: `rounded-full` → `rounded-md`, `rounded-r-full` op CTA → `rounded-r-md`.
-   - Mobile container: `rounded-2xl` → `rounded-md`.
-   - Triggers: behouden geërfde radius.
-6. **`src/modules/search/SmartSearchBar.tsx`** — zoekbalk-input van pill → `rounded-md` (12px-achtig via scale). Submit button `rounded-md`.
-7. **`src/modules/listings/ListingCard.tsx`** + andere kaarten — controleren en `rounded-xl`/`rounded-2xl` → `rounded-md`. Behoud subtiele border, dial down shadow van `shadow-floating`/`shadow-elevated` naar `shadow-card` waar overdreven.
-8. **`src/components/BottomNav.tsx`** — actieve indicator: ronde "blob" → afgeronde rechthoek (`rounded-md`). Center AI-knop blijft cirkel (uitzondering: één hero-element).
-9. **Globale sweep** — `rg "rounded-(full|2xl|3xl|xl)"` door `src/` en per geval beslissen: vervangen door `rounded-md`/`rounded-lg`, of (zeldzaam) bewust laten staan met comment (avatar, dot, hero AI-knop).
+7. **Verouderde `SearchBar.tsx` (glass-card)** — `src/modules/search/SearchBar.tsx:187,347`
+   Nog steeds `glass rounded-2xl … shadow-floating` met nested filterblok = exact het double-container patroon dat in vorige stap is opgeruimd. → vervangen of verwijderen als ongebruikt.
 
-## Uitzonderingen (bewust)
+8. **Body-type tegels in HomepageFilters** — `src/modules/search/HomepageFilters.tsx:300`
+   `rounded-xl border-2` (= 14px) naast `rounded-md` chips (10px) in dezelfde sectie → mix van twee radius-niveaus binnen één paneel. → `rounded-md` voor consistentie.
 
-- **Avatars** → `rounded-full` blijft
-- **Status-dots** (online, badge-puntjes) → `rounded-full` blijft
-- **Center AI-knop in BottomNav** → cirkel blijft, dit is het visuele anker
+9. **Skeleton cards** — `src/components/ui/skeleton-card.tsx:13,40`
+   `rounded-xl` (=14px) — ListingCard zelf gebruikt `rounded-lg` (Card default, ook 14px). Visueel gelijk maar gebruik `rounded-lg` voor één bron.
 
-## CTA-richtlijn
+## ⚠️ Twijfelgevallen
 
-Primary CTA's: `rounded-md` (10px) + extra horizontale padding (`px-6`/`px-8`) ipv extra radius. Sterke rode fill, harde edge. Geen pill, geen full-round.
+- **Brand-chips op homepage** (`Index.tsx:187`): `rounded-md` + `px-4 py-2` — radius klopt, maar door grote horizontale padding ogen ze nog licht "pill". Padding naar `px-3 py-1.5` overwegen.
+- **Chat-bubbles** (`ChatMessage.tsx:77`, `Messages.tsx:238`): `rounded-2xl` (=14px). Acceptabel voor messaging-context maar inconsistent met de rest van de UI op 10px. Overweeg `rounded-md`.
+- **AIFullscreenChat empty-state icoon** (`AIFullscreenChat.tsx:97`): `h-16 w-16 rounded-2xl bg-primary/10` — geen avatar; eerder `rounded-md`.
+- **BottomNav actieve dot** (`BottomNav.tsx:67`): 4×4px `rounded-full`. Mag als status-dot, maar een 6×2px `rounded-sm` balkje voelt strakker/tool-achtiger.
+- **Sell.tsx X-knop op foto** (`Sell.tsx:365`): klein icon-buttontje, `rounded-full` is borderline OK maar inconsistent met de rest.
 
-## Visuele check na implementatie
+## ✅ Correct toegepast
 
-Screenshots maken op home (hero + toggle + zoekbalk), `/zoeken` (cards + filters), `/auto/:id` (detail card + sticky sidebar) op mobiel en desktop. Verifiëren dat:
-- Geen pill-buttons meer zichtbaar
-- Radius voelt consistent (max 3 niveaus per screen)
-- Logo + UI nu in dezelfde "taal"
+- `Button` (alle sizes) — `rounded-md`
+- `Input`, `Select` triggers — `rounded-md`
+- `Badge` — `rounded-sm`
+- `Card` (default shadcn) — `rounded-lg` (14px)
+- `ListingCard` price badge + hover CTA — `rounded-lg`
+- `HeroSearch` toggle — `rounded-md` container / `rounded-sm` items
+- `ClassicHeroSearch` desktop pill row — `rounded-md` + `rounded-r-md` CTA
+- `SmartSearchBar` — `rounded-md` shell + `rounded-sm` icon-tile
+- `ImageGallery` floating controls — `rounded-md`
+- Avatar component, spinners, switch/slider/radio/progress, BottomNav center AI-knop — bewust `rounded-full` (uitzondering)
 
-## Out of scope (voor later, indien gewenst)
+## 🔧 Concrete fixes
 
-- Diagonale dividers / skewed accents
-- Angled hover states
-- Nieuwe shadow-scale
+| Bestand | Huidig | Wordt |
+|---|---|---|
+| `src/pages/Sell.tsx:289` | `... rounded-full text-sm font-medium` | `... rounded-md text-sm font-medium` |
+| `src/pages/Sell.tsx:351` | `h-24 w-24 ... rounded-full bg-muted` | `h-24 w-24 ... rounded-md bg-muted` |
+| `src/pages/Sell.tsx:365` | `... rounded-full bg-destructive p-1` | `... rounded-md bg-destructive p-1` |
+| `src/pages/ListingDetail.tsx:365` | `h-12 w-12 ... rounded-full bg-primary text-primary-foreground` | `h-12 w-12 ... rounded-md bg-primary/10 text-primary` |
+| `src/pages/Search.tsx:605` | `h-16 w-16 ... rounded-full bg-muted` | `h-16 w-16 ... rounded-md bg-muted` |
+| `src/modules/listings/AIAnalysisModal.tsx:51` | `rounded-full h-16 w-16 border-2` | `rounded-md h-16 w-16 border-2` |
+| `src/modules/chat/ChatWidget.tsx:53` | `h-14 w-14 ... rounded-full shadow-lg` | `h-14 w-14 ... rounded-md shadow-lg` |
+| `src/modules/search/SearchBar.tsx:187,347` | `glass rounded-2xl p-6 shadow-floating` | `rounded-lg border border-border/60 bg-card p-6 shadow-card` (één laag) |
+| `src/modules/search/HomepageFilters.tsx:300` | `... p-3 rounded-xl border-2 ...` | `... p-3 rounded-md border-2 ...` |
+| `src/components/ui/skeleton-card.tsx:13,40` | `rounded-xl border bg-card` | `rounded-lg border bg-card` |
+| `src/modules/chat/AIFullscreenChat.tsx:97` | `h-16 w-16 ... rounded-2xl bg-primary/10` | `h-16 w-16 ... rounded-md bg-primary/10` |
 
-Dit kan in een follow-up nadat het radius-fundament staat.
+Optioneel (twijfel — alleen op akkoord):
+- `Index.tsx:187` brand chip padding → `px-3 py-1.5`
+- `ChatMessage.tsx:77` + `Messages.tsx:238` bubble → `rounded-md`
+- `BottomNav.tsx:67` active dot → smal `rounded-sm` balkje
+
+## Implementatie-volgorde
+
+1. Verplichte fixes uit de tabel (klein, 1 file = 1 sed-edit).
+2. Visuele recheck via screenshot van `/`, `/verkopen`, `/zoeken`, een detailpagina.
+3. Twijfelgevallen alleen na bevestiging.
