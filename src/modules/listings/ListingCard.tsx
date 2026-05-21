@@ -193,8 +193,8 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
             size="icon"
             aria-label={favorite ? 'Verwijder uit favorieten' : 'Toevoegen aan favorieten'}
             className={cn(
-              'absolute right-3 top-3 h-9 w-9 rounded-md bg-card/90 backdrop-blur-sm shadow-md transition-all hover:scale-110',
-              favorite ? 'text-accent' : 'text-muted-foreground hover:text-accent'
+              'absolute right-3 top-3 h-9 w-9 rounded-md backdrop-blur-sm shadow-md transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground',
+              favorite ? 'bg-primary text-primary-foreground' : 'bg-card/90 text-accent'
             )}
             onClick={handleFavoriteClick}
           >
@@ -207,8 +207,8 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
             size="icon"
             aria-label={isComparing ? 'Wordt vergeleken' : 'Vergelijk deze auto'}
             className={cn(
-              'absolute right-3 top-14 h-9 w-9 rounded-md bg-card/90 backdrop-blur-sm shadow-md transition-all hover:scale-110',
-              isComparing ? 'text-primary' : 'text-muted-foreground hover:text-primary'
+              'absolute right-3 top-14 h-9 w-9 rounded-md backdrop-blur-sm shadow-md transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground',
+              isComparing ? 'bg-primary text-primary-foreground' : 'bg-card/90 text-primary'
             )}
             onClick={handleCompareClick}
             disabled={isComparing}
