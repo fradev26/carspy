@@ -147,6 +147,11 @@
     text-wrap: balance;
   }
   
+  /* Combined bottom nav + safe area padding */
+  .pb-nav {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+  }
+  
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);
   }
