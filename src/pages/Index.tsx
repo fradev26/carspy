@@ -90,8 +90,8 @@ const Index = () => {
           />
         </picture>
         {/* Dark overlay for readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-foreground/80 via-foreground/50 to-foreground/80" />
-        
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/70" />
+
         <div className="container relative z-10">
           <div className="mx-auto max-w-3xl text-center">
             <div className="animate-fade-in">
@@ -103,11 +103,30 @@ const Index = () => {
               </p>
             </div>
           </div>
-          
+
           <div className="mx-auto mt-6 max-w-4xl animate-fade-in-up lg:mt-10" style={{ animationDelay: '0.1s' }}>
             <HeroSearch />
           </div>
-          
+
+          {/* CTA Buttons */}
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-4 animate-fade-in-up lg:mt-8" style={{ animationDelay: '0.2s' }}>
+            <Button
+              asChild
+              size="lg"
+              className="bg-primary text-white hover:bg-primary/90 shadow-lg text-base px-8"
+            >
+              <Link to="/zoeken">Zoek auto's</Link>
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="border-white/40 bg-white/10 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm text-base px-8"
+            >
+              <Link to="/verkopen">Plaats advertentie</Link>
+            </Button>
+          </div>
+
           {/* Trust indicators */}
           <div className="mt-6 hidden md:flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-white/90 lg:mt-8">
             <div className="flex items-center gap-2">
@@ -132,13 +151,6 @@ const Index = () => {
               ))}
             </div>
             <span>4.8/5 op basis van 1.200+ reviews</span>
-          </div>
-
-          {/* Secondary CTA */}
-          <div className="mt-5 text-center">
-            <Link to="/verkopen" className="text-sm text-white/80 hover:text-white transition-colors underline underline-offset-4">
-              Auto verkopen? Plaats gratis in 2 minuten →
-            </Link>
           </div>
         </div>
       </section>
