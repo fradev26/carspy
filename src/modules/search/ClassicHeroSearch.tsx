@@ -94,7 +94,7 @@ export function ClassicHeroSearch() {
         <Button
           type="button"
           onClick={handleSearch}
-          className="h-14 rounded-none rounded-r-full bg-primary hover:bg-primary/90 text-primary-foreground px-8 gap-2 text-sm font-semibold"
+          className="h-14 rounded-none rounded-r-md bg-primary hover:bg-primary/90 text-primary-foreground px-8 gap-2 text-sm font-semibold"
         >
           <Search className="h-4 w-4" />
           Zoeken
