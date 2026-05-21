@@ -11,6 +11,12 @@ import { useProfile } from '@/hooks/useProfile';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/Logo';
 
+const POPULAR_BRANDS = [
+  'Volkswagen', 'BMW', 'Audi', 'Mercedes-Benz', 'Toyota',
+  'Ford', 'Volvo', 'Peugeot', 'Renault', 'Hyundai',
+  'Kia', 'Tesla', 'Skoda', 'Seat', 'Opel',
+];
+
 export function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [scrolled, setScrolled] = useState(false);
@@ -66,7 +72,7 @@ export function Header() {
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-72">
+          <SheetContent side="right" className="w-72 overflow-y-auto">
             <SheetHeader>
               <SheetTitle className="text-left">
                 <Logo size="md" />
@@ -90,6 +96,19 @@ export function Header() {
                     </button>
                   )}
                   <Separator className="my-2" />
+                  <p className="px-3 pb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">Populaire merken</p>
+                  <div className="grid grid-cols-2 gap-1">
+                    {POPULAR_BRANDS.map((brand) => (
+                      <button
+                        key={brand}
+                        onClick={() => handleMobileNav(`/zoeken?brand=${encodeURIComponent(brand)}`)}
+                        className="rounded-md px-3 py-2 text-left text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                      >
+                        {brand}
+                      </button>
+                    ))}
+                  </div>
+                  <Separator className="my-2" />
                   <button onClick={() => handleMobileNav('/privacy')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors">
                     <Shield className="h-4 w-4" /> Privacybeleid
                   </button>
@@ -106,6 +125,19 @@ export function Header() {
                   <button onClick={() => handleMobileNav('/auth')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
                     <User className="h-4 w-4 text-muted-foreground" /> Inloggen / Registreren
                   </button>
+                  <Separator className="my-2" />
+                  <p className="px-3 pb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">Populaire merken</p>
+                  <div className="grid grid-cols-2 gap-1">
+                    {POPULAR_BRANDS.map((brand) => (
+                      <button
+                        key={brand}
+                        onClick={() => handleMobileNav(`/zoeken?brand=${encodeURIComponent(brand)}`)}
+                        className="rounded-md px-3 py-2 text-left text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                      >
+                        {brand}
+                      </button>
+                    ))}
+                  </div>
                   <Separator className="my-2" />
                   <button onClick={() => handleMobileNav('/privacy')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors">
                     <Shield className="h-4 w-4" /> Privacybeleid
