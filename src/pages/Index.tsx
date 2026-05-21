@@ -177,7 +177,7 @@ const Index = () => {
             </div>
           </div>
 
-          <div className="mx-auto mt-6 max-w-4xl animate-fade-in-up lg:mt-10" style={{ animationDelay: '0.1s' }}>
+          <div className="mx-auto mt-4 max-w-4xl animate-fade-in-up lg:mt-10" style={{ animationDelay: '0.1s' }}>
             <HeroSearch />
           </div>
 
@@ -186,7 +186,7 @@ const Index = () => {
             <Button
               asChild
               size="lg"
-              className="w-full bg-primary text-white hover:bg-primary/90 shadow-lg text-base px-4"
+              className="w-full bg-primary text-white hover:bg-primary/90 shadow-lg text-sm lg:text-base px-4"
             >
               <Link to="/zoeken">Zoek auto's</Link>
             </Button>
@@ -194,7 +194,7 @@ const Index = () => {
               asChild
               size="lg"
               variant="outline"
-              className="w-full border-white/40 bg-white/10 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm text-base px-4"
+              className="w-full border-white/40 bg-white/10 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm text-sm lg:text-base px-4"
             >
               <Link to="/verkopen">Plaats advertentie</Link>
             </Button>
@@ -217,7 +217,7 @@ const Index = () => {
           </div>
 
           {/* Social proof */}
-          <div className="mt-4 flex items-center justify-center gap-2 text-sm text-white/70">
+          <div className="mt-3 flex items-center justify-center gap-2 text-sm text-white/70 lg:mt-4">
             <div className="flex items-center gap-0.5">
               {[...Array(5)].map((_, i) => (
                 <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
