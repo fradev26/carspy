@@ -249,7 +249,6 @@ const Index = () => {
               'Renault',
               'Hyundai',
               'Kia',
-              'Tesla',
               'Skoda',
               'Seat',
               'Opel',
