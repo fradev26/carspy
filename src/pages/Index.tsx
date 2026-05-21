@@ -353,19 +353,26 @@ const Index = () => {
               <p className="mt-2 text-muted-foreground">Alles wat je wilt weten over VATUUR.</p>
             </div>
             <Accordion type="single" collapsible className="space-y-3">
-              {faqItems.map((faq, i) => (
-                <AccordionItem
-                  key={i}
-                  value={`faq-${i}`}
-                  className="bg-card rounded-xl border border-border/60 px-6 shadow-sm data-[state=open]:shadow-md transition-shadow"
-                >
-                  <AccordionTrigger className="text-left font-medium hover:no-underline py-5">
-                    {faq.question}
-                  </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground leading-relaxed pb-5">
-                    {faq.answer}
-                  </AccordionContent>
-                </AccordionItem>
+              {faqCategories.map((cat, ci) => (
+                <div key={cat.title} className="space-y-3">
+                  <h3 className="mt-8 first:mt-0 mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                    {cat.title}
+                  </h3>
+                  {cat.items.map((faq, i) => (
+                    <AccordionItem
+                      key={`${ci}-${i}`}
+                      value={`faq-${ci}-${i}`}
+                      className="bg-card rounded-xl border border-border/60 px-6 shadow-sm data-[state=open]:shadow-md transition-shadow"
+                    >
+                      <AccordionTrigger className="text-left font-medium hover:no-underline py-5">
+                        {faq.question}
+                      </AccordionTrigger>
+                      <AccordionContent className="text-muted-foreground leading-relaxed pb-5">
+                        {faq.answer}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </div>
               ))}
             </Accordion>
           </div>
