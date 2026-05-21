@@ -68,25 +68,25 @@ const Index = () => {
         jsonLd={websiteJsonLd}
       />
       {/* Hero Section */}
-      <section className="relative overflow-hidden -mt-14 lg:-mt-16 pt-32 pb-16 lg:pt-44 lg:pb-36">
+      <section className="relative overflow-hidden -mt-14 lg:-mt-16 pt-32 pb-16 lg:pt-44 lg:pb-36 min-h-[560px] sm:min-h-[620px] lg:min-h-[720px]">
         {/* Background Image (LCP, eager + responsive) */}
         <picture>
           <source
             type="image/webp"
             srcSet="/hero-image-768.webp 768w, /hero-image-1280.webp 1280w, /hero-image-1920.webp 1920w"
-            sizes="100vw"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 100vw"
           />
           <img
             src="/hero-image-1280.jpg"
             srcSet="/hero-image-768.jpg 768w, /hero-image-1280.jpg 1280w, /hero-image-1920.jpg 1920w"
-            sizes="100vw"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 100vw"
             alt=""
             aria-hidden="true"
             decoding="async"
             fetchPriority="high"
-            width={1376}
-            height={768}
-            className="absolute inset-0 h-full w-full object-cover"
+            width={1920}
+            height={1080}
+            className="absolute inset-0 h-full w-full object-cover object-[65%_center] sm:object-[60%_center] lg:object-center"
           />
         </picture>
         {/* Dark overlay for readability */}
