@@ -11,6 +11,12 @@ import { useProfile } from '@/hooks/useProfile';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/Logo';
 
+const POPULAR_BRANDS = [
+  'Volkswagen', 'BMW', 'Audi', 'Mercedes-Benz', 'Toyota',
+  'Ford', 'Volvo', 'Peugeot', 'Renault', 'Hyundai',
+  'Kia', 'Tesla', 'Skoda', 'Seat', 'Opel',
+];
+
 export function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [scrolled, setScrolled] = useState(false);
