@@ -53,8 +53,8 @@ export function HeroSearch({ className }: Props) {
         </button>
       </div>
 
-      {/* Fixed-height container — voorkomt dat de hero van hoogte verandert tussen modi */}
-      <div className="relative w-full h-[280px] sm:h-[260px] md:h-[72px]">
+      {/* Container met vaste compacte hoogte zodat slim/klassiek dezelfde footprint hebben */}
+      <div className="relative w-full h-[72px]">
         {mode === 'smart' ? (
           <div key="smart" className="absolute inset-0 animate-fade-in">
             <SmartSearchBar variant="hero" />
@@ -65,6 +65,7 @@ export function HeroSearch({ className }: Props) {
           </div>
         )}
       </div>
+
     </div>
   );
 }
