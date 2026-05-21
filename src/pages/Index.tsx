@@ -177,7 +177,7 @@ const Index = () => {
             </div>
           </div>
 
-          <div className="mx-auto mt-4 max-w-4xl animate-fade-in-up lg:mt-10" style={{ animationDelay: '0.1s' }}>
+          <div className="mx-auto mt-3 max-w-4xl animate-fade-in-up lg:mt-10" style={{ animationDelay: '0.1s' }}>
             <HeroSearch />
           </div>
 
