@@ -1,41 +1,48 @@
-# Uniforme contentbreedte voor alle tabs
+# AI-prijsanalyse: detecteer wijzigingen en biedt reset
 
 ## Doel
-Elke pagina (tab) gebruikt exact dezelfde max-width en horizontale padding, zodat headers, lijsten en cards op alle schermen op dezelfde x-positie starten.
+In de Sell-wizard (stap 4 — Prijs & Beschrijving) moet de AI-analyse altijd matchen met de huidige voertuigdata. Wanneer een gebruiker terugkeert naar een eerdere stap en iets aanpast, moet de bestaande analyse als "verouderd" gemarkeerd worden, met een duidelijke knop om opnieuw te berekenen.
 
-## Aanpak
+## Wijzigingen — `src/pages/Sell.tsx`
 
-### 1. Eén centrale container-token
-Pas in `tailwind.config.ts` de `container`-config aan zodat álle `.container`-gebruik dezelfde grid volgt:
-- `center: true`
-- `padding: { DEFAULT: '1rem', sm: '1.25rem', lg: '2rem' }` (px-4 mobiel, px-5 sm, px-8 lg)
-- `screens: { '2xl': '1400px' }` (behouden)
+### 1. Snapshot bijhouden van velden die de analyse beïnvloeden
+De velden die de AI-analyse voeden zijn: `brand`, `model`, `year`, `mileage`, `fuelType`, `transmission`, `power`, `bodyType`, `price`.
 
-Dit harmoniseert alle pagina's die al `className="container"` gebruiken (Search, Favorites, Dashboard, Compare, Messages, ListingDetail, BusinessDashboard, DealerDashboard, AutoWaarde, Index-secties, Terms, Privacy, Sell).
+Voeg een nieuwe state toe:
+```ts
+const [analysisSnapshot, setAnalysisSnapshot] = useState<string | null>(null);
+```
 
-### 2. DealerInventory aansluiten
-`src/pages/DealerInventory.tsx` gebruikt al `container py-6` — verifieer dat de hero-header binnen dezelfde container valt en niet full-bleed gaat. Eventueel hero met `container` wrappen.
+Bij een succesvolle `fetchAnalysis()` wordt deze snapshot ingesteld op een stabiele hash/JSON van de relevante velden op het moment van de call.
 
-### 3. Sub-max-widths normaliseren
-Pagina's met smallere leesbreedte (Terms, Privacy, Sell, AutoWaarde-secties) houden hun `max-w-3xl`, maar altijd binnen `.container` zodat horizontale padding gelijk blijft.
+### 2. "Stale" detectie
+Een afgeleide waarde `isAnalysisStale` is `true` als:
+- er een `analysisResult` bestaat, én
+- de huidige snapshot afwijkt van `analysisSnapshot`.
 
-### 4. Full-bleed elementen begrenzen
-- Controleer hero-secties in `Index.tsx` en `AutoWaarde.tsx`: achtergrond mag full-bleed (buiten container), maar content móét binnen `.container` blijven. Reeds zo geïmplementeerd — bevestigen.
-- Geen `w-screen` / `100vw` op contentcomponenten.
+### 3. UI-feedback bij verouderde analyse
+Boven de bestaande analyse-card (en alleen zichtbaar wanneer `isAnalysisStale`):
 
-### 5. Layout wrapper
-`src/layouts/AppLayout.tsx` voegt geen extra horizontale padding toe — content rendert via pagina-eigen `.container`. Behouden.
+- Een waarschuwingsbanner met `AlertTriangle`-icoon: tekst "Analyse verouderd — gegevens zijn gewijzigd sinds de laatste berekening".
+- Primaire knop "Analyse opnieuw berekenen" die `fetchAnalysis()` opnieuw aanroept.
+- De bestaande resultaten worden licht gedimd (`opacity-60`) zodat duidelijk is dat ze niet meer actueel zijn.
 
-### 6. BottomNav onafhankelijk
-BottomNav is `fixed` en raakt contentbreedte niet. Behouden (alleen `pb-nav` voor clearance).
+### 4. Reset-knop altijd beschikbaar
+Naast de bestaande "Opnieuw proberen" (alleen bij error) komt er bij een succesvolle analyse altijd een subtiele tekstknop "Analyse vernieuwen" (met `RefreshCw`-icoon) in de header van de analyse-sectie. Hiermee kan de gebruiker handmatig een nieuwe berekening forceren, ook zonder wijzigingen.
 
-## Technische details
+### 5. Geen caching van verouderde data
+- Bij een nieuwe `fetchAnalysis()` wordt `analysisResult` eerst op `null` gezet (zodat de oude waarden niet kort blijven hangen) en wordt de loader getoond.
+- Update de snapshot pas ná een succesvolle response.
 
-Bestanden gewijzigd:
-- `tailwind.config.ts` — container.padding object i.p.v. enkele "2rem"
-- (Optioneel) `src/pages/DealerInventory.tsx` — hero binnen container brengen indien nodig
+### 6. Automatische trigger bij prijswijziging op stap 4
+Wanneer de gebruiker zelf de prijs aanpast op stap 4 (het veld `price` zit op deze stap), wordt de analyse als stale gemarkeerd — niet automatisch opnieuw uitgevoerd, om onnodige AI-calls te vermijden. De gebruiker beslist via de CTA.
 
-Geen wijzigingen aan business logic. Alleen presentatie/layout-tokens.
+## Technische samenvatting
+- Eén helper `getAnalysisSignature(formData)` → string met alle analyse-relevante velden.
+- `fetchAnalysis` zet `analysisSnapshot = getAnalysisSignature(formData)` na succes.
+- `isAnalysisStale = analysisResult && analysisSnapshot !== getAnalysisSignature(formData)`.
+- Nieuwe banner + reset-CTA in de bestaande step-3-render, gebruikmakend van bestaande design tokens (`bg-warning/10`, `text-warning`, `Button variant="outline"`).
+- Geen wijzigingen in edge functions of business logic.
 
 ## Resultaat
-Alle tabs lijnen exact uit op dezelfde linker- en rechterrand. Geen visuele shifts bij navigatie tussen tabs.
+De gebruiker ziet altijd direct of de getoonde AI-prijsanalyse nog overeenkomt met de huidige invoer, en kan met één klik een verse berekening triggeren.
