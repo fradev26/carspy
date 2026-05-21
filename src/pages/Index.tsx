@@ -8,13 +8,86 @@ import { SEOHead } from '@/components/SEOHead';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 
-const faqItems = [
-  { question: "Is VATUUR gratis te gebruiken?", answer: "Ja, zoeken en vergelijken op VATUUR. is volledig gratis. Ook het plaatsen van een advertentie is gratis. Premium opties zijn beschikbaar voor extra zichtbaarheid." },
-  { question: "Hoe weet ik of een dealer betrouwbaar is?", answer: "Alle dealers op VATUUR. worden geverifieerd voordat ze advertenties mogen plaatsen. We controleren KvK-registratie, reviews en handelsgeschiedenis om jouw veiligheid te waarborgen." },
-  { question: "Kan ik auto's vergelijken op VATUUR?", answer: "Ja, je kunt tot 3 auto's naast elkaar vergelijken op prijs, specificaties, uitrusting en meer. Gebruik de vergelijkknop op elke advertentie om te starten." },
-  { question: "Hoe werkt de prijsindicatie?", answer: "Onze prijsindicatie vergelijkt de vraagprijs met vergelijkbare auto's op basis van merk, model, bouwjaar en kilometerstand. Zo zie je direct of een auto scherp geprijsd is." },
-  { question: "In welke regio's is VATUUR actief?", answer: "VATUUR. is actief in heel Nederland en België. Je kunt zoeken op provincie of stad om auto's bij jou in de buurt te vinden." },
+const faqCategories = [
+  {
+    title: "Gebruik & platform",
+    items: [
+      { question: "Is VATUUR gratis te gebruiken?", answer: "Ja, zoeken, vergelijken en advertenties plaatsen op VATUUR. is volledig gratis. Premium opties zijn beschikbaar voor dealers die extra zichtbaarheid willen." },
+      { question: "Moet ik een account aanmaken om auto's te zoeken op VATUUR?", answer: "Nee, je kunt vrij door het volledige aanbod van 25.000+ occasions bladeren zonder account. Een account heb je pas nodig om favorieten op te slaan, zoekopdrachten te bewaren of contact op te nemen met dealers." },
+      { question: "Kan ik VATUUR gebruiken op mijn mobiel?", answer: "Ja, VATUUR. is volledig responsive en geoptimaliseerd voor smartphone en tablet. Je vindt onderaan een snelle navigatiebalk met directe toegang tot zoeken, AI-assistent, favorieten en je account." },
+    ],
+  },
+  {
+    title: "Zoeken naar auto's",
+    items: [
+      { question: "Hoe werkt auto zoeken op VATUUR?", answer: "Je kunt op twee manieren zoeken: klassiek met filters (merk, model, prijs, brandstof, kilometerstand) of slim via een AI-zoekbalk waar je in gewone taal beschrijft wat je zoekt. De resultaten komen uit 25.000+ occasions van geverifieerde dealers in Nederland en België." },
+      { question: "Wat is het verschil tussen klassiek zoeken en slim zoeken?", answer: "Klassiek zoeken gebruikt dropdowns en filters voor wie precies weet wat hij wil. Slim zoeken laat je vrij beschrijven wat je zoekt (bijvoorbeeld 'zuinige gezinsauto onder 15.000 euro met automaat') en VATUUR. AI vertaalt dat naar de juiste filters." },
+      { question: "Kan ik auto's zoeken met AI of natuurlijke taal?", answer: "Ja, via slim zoeken typ je gewoon wat je zoekt in een zin. De AI begrijpt budget, gebruik, voorkeuren en levert direct passende wagens met een dealscore en eerlijk advies." },
+      { question: "Kan ik mijn zoekopdracht opslaan voor later?", answer: "Ja, ingelogde gebruikers kunnen elke zoekopdracht opslaan vanuit het zoekresultaat. Je vindt je opgeslagen zoekopdrachten terug in je dashboard en kunt ze met één klik opnieuw uitvoeren." },
+      { question: "Kan ik meldingen krijgen voor nieuwe auto's die aan mijn criteria voldoen?", answer: "Ja, opgeslagen zoekopdrachten functioneren als zoekalerts. Zodra er nieuwe wagens beschikbaar komen die aan je criteria voldoen, krijg je daar bericht van in je dashboard." },
+    ],
+  },
+  {
+    title: "Auto's vergelijken & kiezen",
+    items: [
+      { question: "Hoe kan ik auto's vergelijken op VATUUR?", answer: "Klik op de vergelijkknop bij maximaal 3 advertenties. Onderaan je scherm verschijnt een vergelijkbalk waarmee je prijs, specificaties, uitrusting en kilometerstand naast elkaar bekijkt." },
+      { question: "Kan ik favoriete auto's opslaan?", answer: "Ja, klik op het hartje bij een advertentie om die toe te voegen aan je favorieten. Je vindt ze allemaal terug onder 'Mijn favorieten' in je account." },
+      { question: "Geeft VATUUR aankoopadvies bij het kiezen van een auto?", answer: "Ja, elke advertentie krijgt een AI-analyse met een dealscore (1-10), prijsindicatie ten opzichte van de markt en concrete aandachtspunten. Daarnaast kan je via de AI-assistent vragen stellen zoals 'is dit een goede deal?' of 'wat moet ik checken bij een proefrit?'." },
+    ],
+  },
+  {
+    title: "Prijs & waarde",
+    items: [
+      { question: "Hoe werkt de prijsindicatie van auto's op VATUUR?", answer: "De prijsindicatie vergelijkt de vraagprijs met vergelijkbare wagens (zelfde merk, model, bouwjaar en kilometerstand) op de markt. Je ziet direct of de prijs onder, op of boven marktwaarde ligt." },
+      { question: "Hoe weet ik of een auto een goede prijs heeft?", answer: "Naast de prijsindicatie geeft VATUUR. AI een dealscore van 1 tot 10 op basis van prijs, kilometerstand, uitrusting en marktaanbod. Een score boven 7 wijst op een scherpe deal." },
+    ],
+  },
+  {
+    title: "Betrouwbaarheid & dealers",
+    items: [
+      { question: "Hoe weet ik of een dealer betrouwbaar is?", answer: "Op VATUUR. plaatsen enkel geverifieerde dealers advertenties. Bij elke advertentie zie je het profiel van de verkoper met handelsgeschiedenis, beoordelingen en contactgegevens." },
+      { question: "Hoe controleert VATUUR dealers?", answer: "Voor activatie controleren we KvK- of BTW-registratie, bedrijfsgegevens en handelsgeschiedenis. Particuliere opkopers en anonieme advertenties worden geweerd." },
+      { question: "Wat betekent een geverifieerde dealer?", answer: "Een geverifieerde dealer is een officieel geregistreerd autobedrijf waarvan VATUUR. de gegevens heeft gecontroleerd. Zo weet je dat je met een echte professional zaken doet, niet met een anonieme tussenpersoon." },
+    ],
+  },
+  {
+    title: "Auto-informatie",
+    items: [
+      { question: "Hoe betrouwbaar zijn de voertuiggegevens op VATUUR?", answer: "Voertuiggegevens worden door de dealer aangeleverd en waar mogelijk gekoppeld aan officiële bronnen. Bij twijfel raden we altijd aan om documenten en historie tijdens een bezoek of proefrit te controleren." },
+      { question: "Worden kilometerstanden gecontroleerd?", answer: "Dealers zijn verplicht om correcte kilometerstanden door te geven. VATUUR. signaleert opvallende afwijkingen, maar we adviseren bij aankoop altijd een NAP- of Car-Pass-rapport op te vragen." },
+      { question: "Kan ik de onderhoudshistorie van een auto bekijken?", answer: "Veel advertenties vermelden onderhoudshistorie in de beschrijving. Voor het volledige boekje of de servicegeschiedenis neem je rechtstreeks contact op met de dealer via VATUUR." },
+    ],
+  },
+  {
+    title: "Kopen & contact",
+    items: [
+      { question: "Kan ik een auto kopen via VATUUR?", answer: "VATUUR. is een marktplaats die kopers en geverifieerde dealers verbindt. De effectieve verkoop, betaling en levering verlopen rechtstreeks met de dealer, niet via VATUUR. zelf." },
+      { question: "Hoe neem ik contact op met een autodealer?", answer: "Op elke advertentie vind je de contactopties van de dealer: telefonisch, via e-mail of via het ingebouwde berichtensysteem. Berichten verlopen in real-time via je VATUUR.-account." },
+      { question: "Kan ik een proefrit aanvragen via VATUUR?", answer: "Ja, je kunt rechtstreeks een proefrit voorstellen via het berichtensysteem of contactformulier op de advertentie. De dealer bevestigt het tijdstip met jou." },
+    ],
+  },
+  {
+    title: "Account & technisch",
+    items: [
+      { question: "Waarom werkt slim zoeken niet goed?", answer: "Slim zoeken werkt het best met concrete vragen ('SUV met automaat onder 20.000 euro, max 80.000 km'). Te vage of zeer specifieke termen kunnen weinig resultaten geven. Verfijn je zin of schakel terug naar klassiek zoeken met filters." },
+      { question: "Hoe verwijder of wijzig ik mijn account?", answer: "In je dashboard onder accountinstellingen kun je je profielgegevens aanpassen of je account verwijderen. Bij verwijdering worden je persoonsgegevens en favorieten definitief gewist." },
+    ],
+  },
+  {
+    title: "Privacy & veiligheid",
+    items: [
+      { question: "Is mijn data veilig bij VATUUR?", answer: "Ja, VATUUR. is volledig GDPR-conform. Je gegevens worden versleuteld opgeslagen, nooit verkocht aan derden en enkel gebruikt om het platform te laten werken. Lees ons privacybeleid voor de details." },
+    ],
+  },
+  {
+    title: "Toekomst & platform",
+    items: [
+      { question: "Komt VATUUR beschikbaar in andere landen?", answer: "VATUUR. richt zich nu op Nederland en België. Uitbreiding naar andere Europese landen staat op de roadmap, maar er is nog geen vaste datum." },
+    ],
+  },
 ];
+
+const faqItems = faqCategories.flatMap(c => c.items);
 
 const websiteJsonLd = [
   {
