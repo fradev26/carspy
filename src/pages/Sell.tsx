@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { SEOHead } from '@/components/SEOHead';
 import { useNavigate } from 'react-router-dom';
-import { Check, ChevronRight, ChevronLeft, Upload, X, Sparkles, Loader2, ShieldCheck, AlertTriangle, Wrench, Target, Euro, Clock, TrendingUp } from 'lucide-react';
+import { Check, ChevronRight, ChevronLeft, Upload, X, Sparkles, Loader2, ShieldCheck, AlertTriangle, Wrench, Target, Euro, Clock, TrendingUp, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
