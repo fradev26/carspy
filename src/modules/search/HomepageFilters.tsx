@@ -117,7 +117,15 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
   };
 
   const applyPreset = (presetFilters: Partial<SearchFilters>) => {
-    onFiltersChange({ ...filters, ...presetFilters });
+    const newFilters = { ...filters };
+    Object.entries(presetFilters).forEach(([key, value]) => {
+      if (value === undefined) {
+        delete (newFilters as Record<string, unknown>)[key];
+      } else {
+        (newFilters as Record<string, unknown>)[key] = value;
+      }
+    });
+    onFiltersChange(newFilters);
   };
 
   // Calculate counts per tab
