@@ -82,9 +82,17 @@ export default function Sell() {
   };
   const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 0));
 
+  const getAnalysisSignature = (data: typeof formData) => JSON.stringify({
+    brand: data.brand, model: data.model, year: data.year, mileage: data.mileage,
+    fuelType: data.fuelType, transmission: data.transmission, power: data.power,
+    bodyType: data.bodyType, price: data.price,
+  });
+
   const fetchAnalysis = async () => {
     setAnalysisLoading(true);
     setAnalysisError(null);
+    setAnalysisResult(null);
+    const signature = getAnalysisSignature(formData);
     try {
       const { data, error } = await supabase.functions.invoke('vehicle-analysis', {
         body: {
@@ -104,12 +112,17 @@ export default function Sell() {
       });
       if (error) throw new Error(error.message);
       setAnalysisResult(data as VehicleAnalysis);
+      setAnalysisSnapshot(signature);
     } catch (e) {
       setAnalysisError(e instanceof Error ? e.message : 'Analyse niet beschikbaar');
     } finally {
       setAnalysisLoading(false);
     }
   };
+
+  const isAnalysisStale = Boolean(
+    analysisResult && analysisSnapshot && analysisSnapshot !== getAnalysisSignature(formData)
+  );
 
   useEffect(() => {
     if (currentStep === 3 && !analysisResult && !analysisLoading) {
