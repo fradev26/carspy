@@ -157,7 +157,41 @@ const Index = () => {
 
 
 
-      {/* Latest Listings */}
+      {/* Popular Brands */}
+      <section className="border-b border-border/50 bg-background py-8 md:py-10">
+        <div className="container">
+          <p className="mb-4 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Populaire merken
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3">
+            {[
+              'Volkswagen',
+              'BMW',
+              'Audi',
+              'Mercedes-Benz',
+              'Toyota',
+              'Ford',
+              'Volvo',
+              'Peugeot',
+              'Renault',
+              'Hyundai',
+              'Kia',
+              'Tesla',
+              'Skoda',
+              'Seat',
+              'Opel',
+            ].map((brand) => (
+              <Link
+                key={brand}
+                to={`/zoeken?brand=${encodeURIComponent(brand)}`}
+                className="rounded-full border border-border/70 bg-muted/50 px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
+              >
+                {brand}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
       <section className="bg-muted/30 py-12 md:py-16">
         <div className="container">
           <div className="flex items-center justify-between mb-8">
