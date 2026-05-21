@@ -141,7 +141,7 @@ const Index = () => {
         jsonLd={websiteJsonLd}
       />
       {/* Hero Section */}
-      <section className="relative overflow-hidden -mt-14 lg:-mt-16 pt-32 pb-16 lg:pt-44 lg:pb-36 min-h-[560px] sm:min-h-[620px] lg:min-h-[720px]">
+      <section className="relative overflow-hidden -mt-14 lg:-mt-16 pt-20 pb-6 lg:pt-28 lg:pb-16 min-h-[100svh] flex flex-col">
         {/* Background Image (LCP, eager + responsive) */}
         <picture>
           <source
@@ -165,68 +165,71 @@ const Index = () => {
         {/* Dark overlay for readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/70" />
 
-        <div className="container relative z-10">
-          <div className="mx-auto max-w-3xl text-center">
-            <div className="animate-fade-in">
-              <h1 className="text-3xl font-bold text-white md:text-5xl lg:text-6xl leading-tight">
-                Vind je volgende auto in één zin.
-              </h1>
-              <p className="mt-3 text-base text-white/80 md:text-xl max-w-2xl mx-auto leading-relaxed lg:mt-5 lg:text-lg">
-                Beschrijf wat je zoekt — VATUUR. doorzoekt 25.000+ occasions van geverifieerde dealers in Nederland & België en filtert direct het beste resultaat.
-              </p>
-            </div>
+        <div className="container relative z-10 flex flex-1 flex-col justify-between gap-4">
+          {/* Top: title + description */}
+          <div className="mx-auto max-w-3xl text-center animate-fade-in">
+            <h1 className="text-3xl font-bold text-white md:text-5xl lg:text-6xl leading-tight">
+              Vind je volgende auto in één zin.
+            </h1>
+            <p className="mt-3 text-base text-white/80 md:text-xl max-w-2xl mx-auto leading-relaxed lg:mt-5 lg:text-lg">
+              Beschrijf wat je zoekt — VATUUR. doorzoekt 25.000+ occasions van geverifieerde dealers in Nederland & België en filtert direct het beste resultaat.
+            </p>
           </div>
 
-          <div className="mx-auto mt-6 max-w-4xl animate-fade-in-up lg:mt-10" style={{ animationDelay: '0.1s' }}>
+          {/* Middle: search */}
+          <div className="mx-auto w-full max-w-4xl animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
             <HeroSearch />
           </div>
 
-          {/* CTA Buttons */}
-          <div className="mt-3 grid grid-cols-2 gap-3 max-w-md mx-auto animate-fade-in-up lg:mt-5" style={{ animationDelay: '0.2s' }}>
-            <Button
-              asChild
-              size="lg"
-              className="w-full bg-primary text-white hover:bg-primary/90 shadow-lg text-base px-4"
-            >
-              <Link to="/zoeken">Zoek auto's</Link>
-            </Button>
-            <Button
-              asChild
-              size="lg"
-              variant="outline"
-              className="w-full border-white/40 bg-white/10 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm text-base px-4"
-            >
-              <Link to="/verkopen">Plaats advertentie</Link>
-            </Button>
-          </div>
+          {/* Bottom: CTAs + trust + reviews as one group */}
+          <div className="flex flex-col items-center gap-3 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <div className="grid grid-cols-2 gap-3 max-w-md w-full mx-auto">
+              <Button
+                asChild
+                size="lg"
+                className="w-full bg-primary text-white hover:bg-primary/90 shadow-lg text-base px-4"
+              >
+                <Link to="/zoeken">Zoek auto's</Link>
+              </Button>
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="w-full border-white/40 bg-white/10 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm text-base px-4"
+              >
+                <Link to="/verkopen">Plaats advertentie</Link>
+              </Button>
+            </div>
 
-          {/* Trust indicators */}
-          <div className="mt-6 hidden md:flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-white/90 lg:mt-8">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-400" />
-              <span>Alleen geverifieerde verkopers</span>
+            {/* Trust indicators (desktop only to keep mobile compact) */}
+            <div className="hidden md:flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-white/90">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-green-400" />
+                <span>Alleen geverifieerde verkopers</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-green-400" />
+                <span>25.000+ actuele occasions</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-green-400" />
+                <span>Dagelijks vers aanbod</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-400" />
-              <span>25.000+ actuele occasions</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-400" />
-              <span>Dagelijks vers aanbod</span>
-            </div>
-          </div>
 
-          {/* Social proof */}
-          <div className="mt-4 flex items-center justify-center gap-2 text-sm text-white/70">
-            <div className="flex items-center gap-0.5">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-              ))}
+            {/* Social proof */}
+            <div className="flex items-center justify-center gap-2 text-sm text-white/70">
+              <div className="flex items-center gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                ))}
+              </div>
+              <span>4.8/5 op basis van 1.200+ reviews</span>
             </div>
-            <span>4.8/5 op basis van 1.200+ reviews</span>
           </div>
         </div>
       </section>
+
 
 
 
