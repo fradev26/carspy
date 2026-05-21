@@ -94,7 +94,7 @@ export function AIFullscreenChat({ open, onClose }: Props) {
       <ScrollArea className="flex-1 p-4" ref={scrollRef as any}>
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 px-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 mb-5">
+            <div className="flex h-16 w-16 items-center justify-center rounded-md bg-primary/10 mb-5">
               <Sparkles className="h-8 w-8 text-primary" />
             </div>
             <h3 className="text-lg font-bold mb-1">Hoi! Ik ben VATUUR. AI</h3>

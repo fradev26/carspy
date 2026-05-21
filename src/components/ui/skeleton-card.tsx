@@ -10,7 +10,7 @@ interface SkeletonCardProps {
 export function SkeletonCard({ variant = "default", className, style }: SkeletonCardProps) {
   if (variant === "horizontal") {
     return (
-      <div className={cn("flex gap-4 rounded-xl border bg-card p-4", className)} style={style}>
+      <div className={cn("flex gap-4 rounded-lg border bg-card p-4", className)} style={style}>
         {/* Image skeleton */}
         <div className="relative h-32 w-48 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
           <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent bg-[length:200%_100%]" />
@@ -37,7 +37,7 @@ export function SkeletonCard({ variant = "default", className, style }: Skeleton
   }
 
   return (
-    <div className={cn("overflow-hidden rounded-xl border bg-card", className)} style={style}>
+    <div className={cn("overflow-hidden rounded-lg border bg-card", className)} style={style}>
       {/* Image skeleton */}
       <div className="relative aspect-[16/10] bg-muted">
         <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent bg-[length:200%_100%]" />

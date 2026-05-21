@@ -48,7 +48,7 @@ function ScoreRing({ score }: { score: number }) {
   const color = score >= 7 ? 'text-green-500' : score >= 5 ? 'text-amber-500' : 'text-red-500';
   const bg = score >= 7 ? 'bg-green-500/10' : score >= 5 ? 'bg-amber-500/10' : 'bg-red-500/10';
   return (
-    <div className={cn("flex items-center justify-center rounded-full h-16 w-16 border-2", bg, color, "border-current")}>
+    <div className={cn("flex items-center justify-center rounded-md h-16 w-16 border-2", bg, color, "border-current")}>
       <div className="text-center">
         <span className="text-2xl font-bold">{score}</span>
         <span className="text-[10px] block -mt-1 opacity-70">/10</span>

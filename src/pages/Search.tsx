@@ -602,7 +602,7 @@ export default function Search() {
                 </>
               ) : (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted mb-4">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-md bg-muted mb-4">
                     <Car className="h-8 w-8 text-muted-foreground" />
                   </div>
                   <h3 className="text-lg font-semibold">Geen resultaten gevonden</h3>
