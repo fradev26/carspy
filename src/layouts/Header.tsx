@@ -102,7 +102,7 @@ export function Header() {
                       <button
                         key={brand}
                         onClick={() => handleMobileNav(`/zoeken?brand=${encodeURIComponent(brand)}`)}
-                        className="rounded-md px-3 py-2 text-left text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                        className="truncate rounded-md px-2 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
                       >
                         {brand}
                       </button>
@@ -132,7 +132,7 @@ export function Header() {
                       <button
                         key={brand}
                         onClick={() => handleMobileNav(`/zoeken?brand=${encodeURIComponent(brand)}`)}
-                        className="rounded-md px-3 py-2 text-left text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                        className="truncate rounded-md px-2 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
                       >
                         {brand}
                       </button>
