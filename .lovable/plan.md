@@ -1,17 +1,20 @@
-# Hover-inversie favoriet- en vergelijk-knop op ListingCard
+# CTA-knoppen op homepage naast elkaar als één actiegroep
 
 ## Doel
-De ronde icoonknoppen rechtsboven op de listingcards (favoriet & vergelijk) zijn standaard wit met rood icoon. Bij hover worden ze geïnverteerd: rode achtergrond, wit icoon.
+De knoppen "Zoek auto's" en "Plaats advertentie" staan al onder de HeroSearch op `/`, maar gebruiken `flex-wrap` met `gap-4`, wat op smalle mobielen leidt tot stacking en ongelijke breedtes. Ze moeten op élk schermformaat naast elkaar staan, met gelijke breedte, als één duidelijke actiegroep.
 
 ## Wijziging
-Eén bestand: `src/modules/listings/ListingCard.tsx` — drie knoppen (favoriet horizontal + favoriet default + vergelijk default).
+Eén bestand: `src/pages/Index.tsx` — de container op regel 185 en de twee `Button`-componenten erbinnen.
 
-Per knop hover-classes toevoegen:
-- `hover:bg-primary` (rode achtergrond)
-- `hover:text-primary-foreground` (wit icoon)
-- `hover:border-primary` indien border zichtbaar
-- Bestaande `hover:scale-110` blijft behouden
+- Container: vervang `flex flex-wrap items-center justify-center gap-4` door een grid van 2 gelijke kolommen met `max-w-md mx-auto`, bv. `grid grid-cols-2 gap-3 max-w-md mx-auto`. Dit garandeert:
+  - Naast elkaar op alle viewports (geen stacking)
+  - Exact gelijke breedte
+  - Centrale uitlijning onder de zoekbalk
+- Beide buttons krijgen `w-full` zodat ze hun gridcel vullen.
+- Padding `px-8` vervangen door `px-4` zodat de tekst op mobiel niet overflowt.
+- Visuele hiërarchie blijft: primary (rood) voor "Zoek auto's", outline/glass voor "Plaats advertentie".
 
-Voor de active states (favoriet aangevinkt / wordt vergeleken) wordt diezelfde geïnverteerde stijl gebruikt zodat de stijl consistent blijft.
+Geen wijzigingen aan andere secties of business logic.
 
-Geen wijzigingen aan business logic of layout.
+## Resultaat
+Twee gelijke knoppen direct onder de zoekvelden, altijd naast elkaar, binnen één viewport zichtbaar.
