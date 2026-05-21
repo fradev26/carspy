@@ -15,6 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
+import { dealerSlugFor } from '@/lib/dealers';
 
 export default function ListingDetail() {
   const { id } = useParams<{ id: string }>();
@@ -366,7 +367,16 @@ export default function ListingDetail() {
                       {listing.seller.name.charAt(0)}
                     </div>
                     <div>
-                      <h3 className="font-semibold">{listing.seller.name}</h3>
+                      {listing.seller.type === 'dealer' ? (
+                        <Link
+                          to={`/dealer/${dealerSlugFor(listing.seller)}`}
+                          className="font-semibold hover:text-primary transition-colors"
+                        >
+                          {listing.seller.name}
+                        </Link>
+                      ) : (
+                        <h3 className="font-semibold">{listing.seller.name}</h3>
+                      )}
                       <div className="flex items-center gap-2">
                         <Badge variant="secondary" className="font-medium">
                           {listing.seller.type === 'dealer' ? 'Dealer' : 'Particulier'}
@@ -387,6 +397,14 @@ export default function ListingDetail() {
                       <span className="font-medium">{listing.seller.rating}</span>
                       <span className="text-sm text-muted-foreground">({listing.seller.reviewCount} reviews)</span>
                     </div>
+                  )}
+
+                  {listing.seller.type === 'dealer' && (
+                    <Button asChild variant="outline" size="sm" className="mt-3 w-full border-border/60">
+                      <Link to={`/dealer/${dealerSlugFor(listing.seller)}`}>
+                        Bekijk volledig aanbod
+                      </Link>
+                    </Button>
                   )}
                 </div>
 
