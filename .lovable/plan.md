@@ -1,20 +1,14 @@
-# CTA-knoppen op homepage naast elkaar als één actiegroep
+# CTA-knoppen visueel hoger binnen de hero
 
 ## Doel
-De knoppen "Zoek auto's" en "Plaats advertentie" staan al onder de HeroSearch op `/`, maar gebruiken `flex-wrap` met `gap-4`, wat op smalle mobielen leidt tot stacking en ongelijke breedtes. Ze moeten op élk schermformaat naast elkaar staan, met gelijke breedte, als één duidelijke actiegroep.
+De knoppen "Zoek auto's" en "Plaats advertentie" staan dichter onder het zoekveld in de hero op `/`, zodat ze sneller zichtbaar zijn zonder de hero-layout te verstoren.
 
 ## Wijziging
-Eén bestand: `src/pages/Index.tsx` — de container op regel 185 en de twee `Button`-componenten erbinnen.
+Een bestand: `src/pages/Index.tsx` — de marge boven de CTA-knoppencontainer op regel 185.
 
-- Container: vervang `flex flex-wrap items-center justify-center gap-4` door een grid van 2 gelijke kolommen met `max-w-md mx-auto`, bv. `grid grid-cols-2 gap-3 max-w-md mx-auto`. Dit garandeert:
-  - Naast elkaar op alle viewports (geen stacking)
-  - Exact gelijke breedte
-  - Centrale uitlijning onder de zoekbalk
-- Beide buttons krijgen `w-full` zodat ze hun gridcel vullen.
-- Padding `px-8` vervangen door `px-4` zodat de tekst op mobiel niet overflowt.
-- Visuele hiërarchie blijft: primary (rood) voor "Zoek auto's", outline/glass voor "Plaats advertentie".
-
-Geen wijzigingen aan andere secties of business logic.
+- Wijzig `mt-6 lg:mt-8` naar `mt-3 lg:mt-5` op de knoppencontainer.
+- Dit verkleint de verticale afstand tussen `HeroSearch` en de knoppen.
+- De rest van de hero (hoogte, padding, achtergrond, trust indicators, social proof) blijft ongewijzigd.
 
 ## Resultaat
-Twee gelijke knoppen direct onder de zoekvelden, altijd naast elkaar, binnen één viewport zichtbaar.
+Knoppen staan compacter onder het zoekveld, directer zichtbaar binnen dezelfde viewport, zonder dat de hero verschuift of andere elementen beïnvloedt.
