@@ -20,6 +20,8 @@ const PRICE_OPTIONS = [
 
 export function ClassicHeroSearch() {
   const navigate = useNavigate();
+  const [sheetOpen, setSheetOpen] = useState(false);
+
   const [brand, setBrand] = useState<string>('');
   const [model, setModel] = useState<string>('');
   const [maxPrice, setMaxPrice] = useState<string>('');
