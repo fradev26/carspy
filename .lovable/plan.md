@@ -1,32 +1,41 @@
-# Horizontaal scrollen uitschakelen op mobiel
+# Uniforme contentbreedte voor alle tabs
 
-Doel: voorkomen dat de pagina op mobiele apparaten zijwaarts kan scrollen. Alle content blijft binnen de viewport breedte.
+## Doel
+Elke pagina (tab) gebruikt exact dezelfde max-width en horizontale padding, zodat headers, lijsten en cards op alle schermen op dezelfde x-positie starten.
 
 ## Aanpak
 
-Globale CSS-fix in `src/index.css` die op kleine schermen horizontaal overflow blokkeert en breedte begrenst tot 100vw.
+### 1. Eén centrale container-token
+Pas in `tailwind.config.ts` de `container`-config aan zodat álle `.container`-gebruik dezelfde grid volgt:
+- `center: true`
+- `padding: { DEFAULT: '1rem', sm: '1.25rem', lg: '2rem' }` (px-4 mobiel, px-5 sm, px-8 lg)
+- `screens: { '2xl': '1400px' }` (behouden)
 
-```css
-@media (max-width: 768px) {
-  html, body {
-    overflow-x: hidden;
-    max-width: 100vw;
-  }
-  #root {
-    overflow-x: hidden;
-    max-width: 100vw;
-  }
-}
-```
+Dit harmoniseert alle pagina's die al `className="container"` gebruiken (Search, Favorites, Dashboard, Compare, Messages, ListingDetail, BusinessDashboard, DealerDashboard, AutoWaarde, Index-secties, Terms, Privacy, Sell).
 
-Daarnaast een algemene safeguard:
-- `img, video, table { max-width: 100%; }` toevoegen als die nog niet aanwezig is.
+### 2. DealerInventory aansluiten
+`src/pages/DealerInventory.tsx` gebruikt al `container py-6` — verifieer dat de hero-header binnen dezelfde container valt en niet full-bleed gaat. Eventueel hero met `container` wrappen.
 
-## Te wijzigen bestanden
+### 3. Sub-max-widths normaliseren
+Pagina's met smallere leesbreedte (Terms, Privacy, Sell, AutoWaarde-secties) houden hun `max-w-3xl`, maar altijd binnen `.container` zodat horizontale padding gelijk blijft.
 
-- `src/index.css` — voeg mobiele overflow-x: hidden regels toe.
+### 4. Full-bleed elementen begrenzen
+- Controleer hero-secties in `Index.tsx` en `AutoWaarde.tsx`: achtergrond mag full-bleed (buiten container), maar content móét binnen `.container` blijven. Reeds zo geïmplementeerd — bevestigen.
+- Geen `w-screen` / `100vw` op contentcomponenten.
 
-## Out of scope
+### 5. Layout wrapper
+`src/layouts/AppLayout.tsx` voegt geen extra horizontale padding toe — content rendert via pagina-eigen `.container`. Behouden.
 
-- Refactoren van individuele componenten die te brede content veroorzaken (eerst kijken of de globale fix volstaat).
-- Desktop layout blijft ongewijzigd.
+### 6. BottomNav onafhankelijk
+BottomNav is `fixed` en raakt contentbreedte niet. Behouden (alleen `pb-nav` voor clearance).
+
+## Technische details
+
+Bestanden gewijzigd:
+- `tailwind.config.ts` — container.padding object i.p.v. enkele "2rem"
+- (Optioneel) `src/pages/DealerInventory.tsx` — hero binnen container brengen indien nodig
+
+Geen wijzigingen aan business logic. Alleen presentatie/layout-tokens.
+
+## Resultaat
+Alle tabs lijnen exact uit op dezelfde linker- en rechterrand. Geen visuele shifts bij navigatie tussen tabs.
