@@ -157,6 +157,47 @@ export type Database = {
           },
         ]
       }
+      import_job_rows: {
+        Row: {
+          created_at: string
+          error: Json | null
+          id: string
+          job_id: string
+          listing_id: string | null
+          payload: Json
+          row_index: number
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          error?: Json | null
+          id?: string
+          job_id: string
+          listing_id?: string | null
+          payload?: Json
+          row_index: number
+          status: string
+        }
+        Update: {
+          created_at?: string
+          error?: Json | null
+          id?: string
+          job_id?: string
+          listing_id?: string | null
+          payload?: Json
+          row_index?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_job_rows_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "import_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       import_jobs: {
         Row: {
           created_at: string

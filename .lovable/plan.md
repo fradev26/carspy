@@ -1,50 +1,47 @@
+## Plan: Upgrade `admin-bulk-import` met per-rij tracking
 
-# Admin invite user — backend toevoegen
+Het admin-project wil per-rij feedback, auto-invite van eigenaars, image-validatie en optionele upsert. Daarvoor breiden we de backend uit.
 
-De admin app roept een edge function aan om nieuwe gebruikers (incl. dealers en admins) uit te nodigen via email. Deze function en de bijhorende audit tabel moeten in **dit** project (vatuur) staan, want de admin app deelt deze backend.
+### 1. Database migratie
 
-## 1. Migratie — `admin_actions` tabel
+**Nieuwe tabel `import_job_rows`** (per-rij resultaat):
+- `id`, `job_id` (→ import_jobs), `row_index` (int), `status` ('ok' | 'failed' | 'skipped'), `listing_id` (uuid, nullable), `error` (jsonb, nullable), `payload` (jsonb), `created_at`
+- RLS: alleen admins kunnen lezen/schrijven via `has_role(auth.uid(), 'admin')`
+- GRANTs voor `authenticated` + `service_role`
+- Index op `job_id`
 
-Nieuwe tabel voor audit logging van alle admin acties (invites, role changes, listing edits, bulk imports, etc.).
+**Optioneel (alleen op verzoek):** kolom `external_ref text` op `listings` met unieke index `(user_id, external_ref)` voor échte upsert. Standaard slaan we dit over en valt upsert terug op `(user_id, title)`-match.
 
-Kolommen:
-- `id` uuid PK
-- `admin_id` uuid — wie de actie deed
-- `action` text — bv. `user.invited`, `role.granted`, `listing.deleted`
-- `target_type` text — `user` / `listing` / `profile` / ...
-- `target_id` uuid — referentie naar het object
-- `details` jsonb — extra context (email, oude/nieuwe waarde, ...)
-- `created_at` timestamptz
+### 2. Edge function `admin-bulk-import` uitbreiden
 
-GRANTs: alleen `authenticated` + `service_role` (geen anon).
-RLS: alleen admins kunnen SELECT/INSERT via `has_role(auth.uid(), 'admin')`.
+Huidige function vervangen door versie met:
 
-## 2. Edge function `admin-invite-user`
+- **Admin-check** via `has_role` RPC op service-role client (bestaat al)
+- **Body schema** uitgebreid met:
+  - `mode`: `'insert' | 'upsert'` (default `insert`)
+  - `target_user_id` blijft, plus optioneel `target_email` + `auto_invite` (boolean)
+- **Owner-resolve met auto-invite:**
+  - Als `target_user_id` niet bestaat en `target_email` + `auto_invite=true`: roep intern dezelfde flow als `admin-invite-user` aan (`auth.admin.inviteUserByEmail` + profile upsert), gebruik nieuwe id als `user_id`
+- **Image URL HEAD-check:**
+  - Per rij: `fetch(url, { method: 'HEAD' })` op elke image, content-type moet `image/*` zijn en status 2xx; ongeldige URLs worden uit `images` gefilterd en gerapporteerd in de row-error (rij blijft 'ok' tenzij alle images falen — dan 'failed' alleen als geen geldige images en images verplicht zijn, anders 'ok' met warnings)
+- **Batches van 50** (i.p.v. 100) om HEAD-checks beheersbaar te houden
+- **Upsert-modus:** voor elke rij eerst `select id from listings where user_id=$1 and title=$2`; bij match → `update`, anders `insert`
+- **Per rij**: schrijf record in `import_job_rows` met status + listing_id of error
+- **`admin_actions`** logregel bij start en einde (`action: 'bulk_import.started' / 'bulk_import.completed'`, details met counts)
+- **Response** bevat `job_id`, `succeeded`, `failed`, `skipped`, en eerste 100 row-errors (frontend kan rest paginatie ophalen via job_id)
 
-Op basis van de code die de admin app aanlevert, met deze aanpassingen om consistent te blijven met de twee bestaande admin functions:
+### 3. `supabase/config.toml`
 
-- CORS uit `npm:@supabase/supabase-js@2/cors` (zelfde patroon als `admin-bulk-import`)
-- Zod-validatie op de request body (`email`, `full_name?`, `is_dealer?`, `dealer_name?`, `make_admin?`)
-- `getClaims(token)` ipv `getUser()` (zelfde patroon als bestaande admin functions, sneller en werkt met JWT signing keys)
-- Admin-check via `has_role` RPC op de service-role client
-- Stappen: validate → invite via `auth.admin.inviteUserByEmail` → update `profiles` (dealer info) → optioneel admin-rol toekennen → audit log naar `admin_actions`
-- `verify_jwt = false` in `supabase/config.toml` (we valideren JWT in-code, conform projectstandaard)
+`admin-bulk-import` blijft op default (`verify_jwt = false` is niet nodig — JWT wordt in code gevalideerd via `getClaims`). Geen wijziging.
 
-## 3. Frontend admin project
+### Technische details
 
-In het admin project roept de UI gewoon aan:
+- `npm:@supabase/supabase-js@2` + `npm:@supabase/supabase-js@2/cors` + `npm:zod@3`
+- HEAD-fetch met `AbortSignal.timeout(3000)` om langzame URLs niet de hele import te blokkeren
+- HEAD-failures worden parallel per rij uitgevoerd met `Promise.all`
+- Batch-insert via `admin.from('listings').insert(rows).select('id')` zodat we per rij de listing_id kunnen mappen naar `import_job_rows`
+- In upsert-modus per rij sequentieel (kan niet als batch), maar wel parallel binnen de batch via `Promise.all`
 
-```ts
-await supabase.functions.invoke('admin-invite-user', {
-  body: { email, full_name, is_dealer, dealer_name, make_admin }
-})
-```
+### Vraag aan jou
 
-Geen service-role key nodig in de admin frontend — alle privilege werk gebeurt server-side in deze function.
-
-## Wat ik nodig heb van jou
-
-Bevestiging om door te gaan, dan:
-1. Maak ik de migratie aan voor `admin_actions`
-2. Maak ik `supabase/functions/admin-invite-user/index.ts`
-3. Geef ik je de exacte prompt om in het admin project te plakken zodat het de invite-knop tegen deze function laat werken
+Wil je dat ik ook `external_ref` toevoeg aan `listings` (met unieke index op `user_id, external_ref`) voor echte upsert? Of houden we het op title-match fallback?
