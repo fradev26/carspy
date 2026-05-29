@@ -249,6 +249,7 @@ export type Database = {
           doors: number | null
           engine_size: number | null
           external_id: string | null
+          external_ref: string | null
           external_source: string | null
           features: string[] | null
           fuel_type: string
@@ -280,6 +281,7 @@ export type Database = {
           doors?: number | null
           engine_size?: number | null
           external_id?: string | null
+          external_ref?: string | null
           external_source?: string | null
           features?: string[] | null
           fuel_type: string
@@ -311,6 +313,7 @@ export type Database = {
           doors?: number | null
           engine_size?: number | null
           external_id?: string | null
+          external_ref?: string | null
           external_source?: string | null
           features?: string[] | null
           fuel_type?: string

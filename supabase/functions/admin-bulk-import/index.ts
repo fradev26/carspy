@@ -19,6 +19,7 @@ const listingSchema = z.object({
   seats: z.coerce.number().int().optional().nullable(),
   description: z.string().optional().nullable(),
   features: z.array(z.string()).optional().nullable(),
+  external_ref: z.string().max(200).optional().nullable(),
   images: z.array(z.string().url()).optional().nullable(),
   city: z.string().optional().nullable(),
   province: z.string().optional().nullable(),
@@ -184,12 +185,10 @@ Deno.serve(async (req) => {
             jobRowsToInsert.push({ job_id: job.id, row_index: p.rowIndex, status: 'failed', error: p.error, payload: p.payload });
             return;
           }
-          const { data: existing } = await admin
-            .from('listings')
-            .select('id')
-            .eq('user_id', target_user_id)
-            .eq('title', p.data.title)
-            .maybeSingle();
+          const matchQuery = admin.from('listings').select('id').eq('user_id', target_user_id);
+          const { data: existing } = p.data.external_ref
+            ? await matchQuery.eq('external_ref', p.data.external_ref).maybeSingle()
+            : await matchQuery.eq('title', p.data.title).maybeSingle();
           if (existing) {
             const { error: updErr } = await admin.from('listings').update(p.data).eq('id', existing.id);
             if (updErr) {
