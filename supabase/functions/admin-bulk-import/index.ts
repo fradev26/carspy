@@ -19,6 +19,7 @@ const listingSchema = z.object({
   seats: z.coerce.number().int().optional().nullable(),
   description: z.string().optional().nullable(),
   features: z.array(z.string()).optional().nullable(),
+  external_ref: z.string().max(200).optional().nullable(),
   images: z.array(z.string().url()).optional().nullable(),
   city: z.string().optional().nullable(),
   province: z.string().optional().nullable(),
