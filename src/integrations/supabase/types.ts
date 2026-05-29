@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      autoscout_sync_config: {
+        Row: {
+          api_key_secret_ref: string | null
+          autoscout_dealer_id: string
+          created_at: string
+          dealer_user_id: string
+          enabled: boolean
+          frequency_minutes: number
+          id: string
+          last_error: string | null
+          last_status: string | null
+          last_sync_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          api_key_secret_ref?: string | null
+          autoscout_dealer_id: string
+          created_at?: string
+          dealer_user_id: string
+          enabled?: boolean
+          frequency_minutes?: number
+          id?: string
+          last_error?: string | null
+          last_status?: string | null
+          last_sync_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          api_key_secret_ref?: string | null
+          autoscout_dealer_id?: string
+          created_at?: string
+          dealer_user_id?: string
+          enabled?: boolean
+          frequency_minutes?: number
+          id?: string
+          last_error?: string | null
+          last_status?: string | null
+          last_sync_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           buyer_id: string
@@ -85,6 +127,45 @@ export type Database = {
           },
         ]
       }
+      import_jobs: {
+        Row: {
+          created_at: string
+          error_log: Json
+          failed: number
+          id: string
+          source: string
+          status: string
+          succeeded: number
+          total: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_log?: Json
+          failed?: number
+          id?: string
+          source: string
+          status?: string
+          succeeded?: number
+          total?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error_log?: Json
+          failed?: number
+          id?: string
+          source?: string
+          status?: string
+          succeeded?: number
+          total?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       listings: {
         Row: {
           body_type: string
@@ -96,6 +177,8 @@ export type Database = {
           description: string | null
           doors: number | null
           engine_size: number | null
+          external_id: string | null
+          external_source: string | null
           features: string[] | null
           fuel_type: string
           id: string
@@ -125,6 +208,8 @@ export type Database = {
           description?: string | null
           doors?: number | null
           engine_size?: number | null
+          external_id?: string | null
+          external_source?: string | null
           features?: string[] | null
           fuel_type: string
           id?: string
@@ -154,6 +239,8 @@ export type Database = {
           description?: string | null
           doors?: number | null
           engine_size?: number | null
+          external_id?: string | null
+          external_source?: string | null
           features?: string[] | null
           fuel_type?: string
           id?: string
@@ -287,15 +374,43 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       is_listing_owner: { Args: { listing_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -422,6 +537,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator"],
+    },
   },
 } as const
