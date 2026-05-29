@@ -185,12 +185,10 @@ Deno.serve(async (req) => {
             jobRowsToInsert.push({ job_id: job.id, row_index: p.rowIndex, status: 'failed', error: p.error, payload: p.payload });
             return;
           }
-          const { data: existing } = await admin
-            .from('listings')
-            .select('id')
-            .eq('user_id', target_user_id)
-            .eq('title', p.data.title)
-            .maybeSingle();
+          const matchQuery = admin.from('listings').select('id').eq('user_id', target_user_id);
+          const { data: existing } = p.data.external_ref
+            ? await matchQuery.eq('external_ref', p.data.external_ref).maybeSingle()
+            : await matchQuery.eq('title', p.data.title).maybeSingle();
           if (existing) {
             const { error: updErr } = await admin.from('listings').update(p.data).eq('id', existing.id);
             if (updErr) {
