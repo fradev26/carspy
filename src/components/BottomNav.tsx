@@ -20,7 +20,7 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
 
   return (
     <>
-      <nav ref={ref} className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/60 bg-card/95 backdrop-blur-lg supports-[backdrop-filter]:bg-card/80 lg:hidden safe-bottom">
+      <nav ref={ref} className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/60 bg-card/95 backdrop-blur-lg supports-[backdrop-filter]:bg-card/80 lg:hidden safe-bottom safe-x">
         <div className="flex items-center justify-around h-16">
           {navItems.map((item) => {
             // AI center button
