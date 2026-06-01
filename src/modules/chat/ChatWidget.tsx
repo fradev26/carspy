@@ -52,7 +52,7 @@ export const ChatWidget = forwardRef<HTMLDivElement>(function ChatWidget(_props,
         className={cn(
           'fixed z-50 flex h-14 w-14 items-center justify-center rounded-md shadow-lg transition-all',
           'bg-primary text-primary-foreground hover:scale-105',
-          'bottom-20 right-4 md:bottom-6 md:right-6'
+          'bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 md:bottom-6 md:right-6'
         )}
         aria-label="Open chat"
       >
@@ -64,7 +64,7 @@ export const ChatWidget = forwardRef<HTMLDivElement>(function ChatWidget(_props,
         <div
           className={cn(
             'fixed z-50 flex flex-col overflow-hidden rounded-2xl border bg-background shadow-2xl',
-            'bottom-36 right-4 w-[calc(100vw-2rem)] max-w-sm',
+            'bottom-[calc(9rem+env(safe-area-inset-bottom))] right-4 w-[calc(100vw-2rem)] max-w-sm',
             'md:bottom-24 md:right-6 md:w-96',
             'h-[min(500px,70vh)]'
           )}
