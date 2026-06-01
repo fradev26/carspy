@@ -172,7 +172,7 @@ function SignupForm() {
 
 export default function Auth() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4 py-12 glow-auth">
+    <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4 py-12">
       <SEOHead title="Inloggen - VATUUR." description="Log in of maak een account aan bij VATUUR." noindex />
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
