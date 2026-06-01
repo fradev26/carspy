@@ -64,7 +64,7 @@ export const ChatWidget = forwardRef<HTMLDivElement>(function ChatWidget(_props,
         <div
           className={cn(
             'fixed z-50 flex flex-col overflow-hidden rounded-2xl border bg-background shadow-2xl',
-            'bottom-36 right-4 w-[calc(100vw-2rem)] max-w-sm',
+            'bottom-[calc(9rem+env(safe-area-inset-bottom))] right-4 w-[calc(100vw-2rem)] max-w-sm',
             'md:bottom-24 md:right-6 md:w-96',
             'h-[min(500px,70vh)]'
           )}
