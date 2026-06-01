@@ -52,7 +52,7 @@ export const ChatWidget = forwardRef<HTMLDivElement>(function ChatWidget(_props,
         className={cn(
           'fixed z-50 flex h-14 w-14 items-center justify-center rounded-md shadow-lg transition-all',
           'bg-primary text-primary-foreground hover:scale-105',
-          'bottom-20 right-4 md:bottom-6 md:right-6'
+          'bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 md:bottom-6 md:right-6'
         )}
         aria-label="Open chat"
       >
