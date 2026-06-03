@@ -535,7 +535,7 @@ export default function Search() {
 
             {/* Results */}
             <div className="mt-6">
-              {isLoading || isPending ? (
+              {isLoading || isPending || listingsLoading ? (
                 <div className={viewMode === 'grid' 
                   ? "grid gap-6 sm:grid-cols-2 lg:grid-cols-3" 
                   : "flex flex-col gap-4"
