@@ -3,9 +3,10 @@ import { ArrowRight, Shield, Zap, Users, Car, CheckCircle2, Star } from 'lucide-
 import { Button } from '@/components/ui/button';
 import { HeroSearch } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
-import { mockListings } from '@/data/mockListings';
+import { useListings } from '@/hooks/useListings';
 import { SEOHead } from '@/components/SEOHead';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 const faqCategories = [
@@ -130,7 +131,8 @@ const websiteJsonLd = [
 ];
 
 const Index = () => {
-  const latestListings = mockListings.slice(0, 6);
+  const { listings: allListings, loading: listingsLoading } = useListings();
+  const latestListings = allListings.slice(0, 6);
 
   return (
     <div className="flex flex-col">
@@ -273,11 +275,24 @@ const Index = () => {
             </div>
             <Button variant="outline" asChild className="gap-2 shadow-sm">
               <Link to="/zoeken">
-                Bekijk alle 25.000+ wagens <ArrowRight className="h-4 w-4" />
+                Bekijk alle wagens <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
           </div>
-          <ListingGrid listings={latestListings} columns={3} />
+          {listingsLoading ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="rounded-xl border bg-card p-4 space-y-3">
+                  <Skeleton className="aspect-[4/3] w-full rounded-lg" />
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-4 w-1/3" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <ListingGrid listings={latestListings} columns={3} />
+          )}
         </div>
       </section>
 
