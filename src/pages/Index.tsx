@@ -131,7 +131,8 @@ const websiteJsonLd = [
 ];
 
 const Index = () => {
-  const latestListings = mockListings.slice(0, 6);
+  const { listings: allListings, loading: listingsLoading } = useListings();
+  const latestListings = allListings.slice(0, 6);
 
   return (
     <div className="flex flex-col">
