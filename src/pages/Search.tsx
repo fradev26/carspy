@@ -325,7 +325,7 @@ export default function Search() {
     });
 
     return results;
-  }, [filters, sortBy]);
+  }, [filters, sortBy, allListings]);
 
   const handleRemoveFilter = (key: keyof SearchFilters, value?: string) => {
     const arrayKeys = ['fuelTypes', 'transmissions', 'bodyTypes', 'driveTypes', 'paintTypes', 'colors', 'interiorMaterials', 'features'];
