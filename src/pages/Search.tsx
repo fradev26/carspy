@@ -5,7 +5,7 @@ import { SEOHead } from '@/components/SEOHead';
 import { Grid, List, SlidersHorizontal, Car, Bell, Sparkles, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger, DrawerFooter, DrawerClose } from '@/components/ui/drawer';
 import { Badge } from '@/components/ui/badge';
 import { FilterPanel, FilterChips, SmartSearchBar } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
@@ -466,10 +466,13 @@ export default function Search() {
                     </Dialog>
                   )}
 
-                  {/* Mobile Filter Button */}
-                  <Sheet>
-                    <SheetTrigger asChild>
-                      <Button variant="outline" className="lg:hidden gap-2 border-border/60">
+                  {/* Mobile Filter Button - Drawer */}
+                  <Drawer>
+                    <DrawerTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="lg:hidden gap-2 border-border/60 min-h-12 px-4 text-sm font-semibold"
+                      >
                         <SlidersHorizontal className="h-4 w-4" />
                         Filters
                         {activeFilterCount > 0 && (
@@ -478,16 +481,38 @@ export default function Search() {
                           </Badge>
                         )}
                       </Button>
-                    </SheetTrigger>
-                    <SheetContent side="left" className="w-80 overflow-y-auto">
-                      <SheetHeader>
-                        <SheetTitle>Filters</SheetTitle>
-                      </SheetHeader>
-                      <div className="mt-6">
+                    </DrawerTrigger>
+                    <DrawerContent className="max-h-[90vh]">
+                      <DrawerHeader className="border-b border-border/60">
+                        <DrawerTitle className="flex items-center justify-between">
+                          <span>Filters</span>
+                          {activeFilterCount > 0 && (
+                            <Badge variant="secondary" className="bg-accent text-accent-foreground">
+                              {activeFilterCount} actief
+                            </Badge>
+                          )}
+                        </DrawerTitle>
+                      </DrawerHeader>
+                      <div className="overflow-y-auto px-4 py-4">
                         <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} />
                       </div>
-                    </SheetContent>
-                  </Sheet>
+                      <DrawerFooter className="border-t border-border/60 flex-row gap-2">
+                        <Button
+                          variant="outline"
+                          className="flex-1 min-h-12"
+                          onClick={() => handleFiltersChange({})}
+                          disabled={activeFilterCount === 0}
+                        >
+                          Wis alles
+                        </Button>
+                        <DrawerClose asChild>
+                          <Button className="flex-1 min-h-12">
+                            Toon {filteredListings.length} resultaten
+                          </Button>
+                        </DrawerClose>
+                      </DrawerFooter>
+                    </DrawerContent>
+                  </Drawer>
 
                   {/* Sort */}
                   <Select value={sortBy} onValueChange={handleSortChange}>
