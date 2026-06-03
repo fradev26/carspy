@@ -486,13 +486,27 @@ export default function Search() {
                       <DrawerHeader className="border-b border-border/60">
                         <DrawerTitle className="flex items-center justify-between">
                           <span>Filters</span>
-                          {activeFilterCount > 0 && (
-                            <Badge variant="secondary" className="bg-accent text-accent-foreground">
-                              {activeFilterCount} actief
-                            </Badge>
-                          )}
+                          <div className="flex items-center gap-2">
+                            {activeFilterCount > 0 && (
+                              <Badge variant="secondary" className="bg-accent text-accent-foreground">
+                                {activeFilterCount} actief
+                              </Badge>
+                            )}
+                          </div>
                         </DrawerTitle>
                       </DrawerHeader>
+                      {activeFilterCount > 0 && (
+                        <div className="px-4 pt-4">
+                          <Button
+                            variant="outline"
+                            className="w-full min-h-12 gap-2 border-dashed border-border/60 text-muted-foreground hover:text-foreground"
+                            onClick={() => handleFiltersChange({})}
+                          >
+                            <SlidersHorizontal className="h-4 w-4" />
+                            Wis alle filters
+                          </Button>
+                        </div>
+                      )}
                       <div className="overflow-y-auto px-4 py-4">
                         <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} />
                       </div>
