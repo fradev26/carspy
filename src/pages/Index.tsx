@@ -296,9 +296,9 @@ const Index = () => {
           <div className="mt-8 text-center">
             <Link
               to="/zoeken"
-              className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-primary/90 active:scale-95 transition-all min-h-[48px]"
             >
-              Bekijk alle advertenties <ArrowRight className="h-4 w-4" />
+              Bekijk alle advertenties <ArrowRight className="h-5 w-5" />
             </Link>
           </div>
         </div>
