@@ -9,7 +9,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Badge } from '@/components/ui/badge';
 import { FilterPanel, FilterChips, SmartSearchBar } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
-import { mockListings } from '@/data/mockListings';
+import { useListings } from '@/hooks/useListings';
 import { 
   SearchFilters, 
   SORT_OPTIONS, 
@@ -161,6 +161,7 @@ export default function Search() {
   const [searchName, setSearchName] = useState('');
   const [page, setPage] = useState(1);
   const perPage = 24;
+  const { listings: allListings, loading: listingsLoading } = useListings();
 
   // Update filters when URL params change
   useEffect(() => {
@@ -187,7 +188,7 @@ export default function Search() {
   };
 
   const filteredListings = useMemo(() => {
-    let results = [...mockListings];
+    let results = [...allListings];
 
     // Free-text query from URL (?q=...)
     const query = searchParams.get('q')?.toLowerCase().trim();
