@@ -184,16 +184,16 @@ export function FilterChips({ filters, onRemoveFilter, onClearAll, className }: 
             <Badge
               key={`${chip.key}-${chip.value || index}`}
               variant="secondary"
-              className="gap-1 pr-1 animate-fade-in bg-secondary/80 hover:bg-secondary transition-colors"
+              className="gap-1.5 pl-3 pr-1.5 py-1.5 text-sm sm:text-xs sm:py-1 sm:pl-2.5 sm:pr-1 rounded-full animate-fade-in bg-secondary/80 hover:bg-secondary transition-colors"
               style={{ animationDelay: `${(groupIndex * group.length + index) * 30}ms` } as React.CSSProperties}
             >
               {chip.label}
               <button
                 onClick={() => onRemoveFilter(chip.key, chip.value)}
-                className="ml-1 rounded-sm p-0.5 hover:bg-muted-foreground/20 transition-colors"
+                className="ml-0.5 inline-flex h-6 w-6 sm:h-5 sm:w-5 items-center justify-center rounded-full hover:bg-muted-foreground/20 transition-colors"
                 aria-label={`Verwijder filter: ${chip.label}`}
               >
-                <X className="h-3 w-3" />
+                <X className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
               </button>
             </Badge>
           ))}
@@ -203,11 +203,11 @@ export function FilterChips({ filters, onRemoveFilter, onClearAll, className }: 
         </div>
       ))}
       {chips.length > 1 && (
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={onClearAll} 
-          className="h-6 text-xs text-muted-foreground hover:text-foreground"
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onClearAll}
+          className="h-8 sm:h-6 text-sm sm:text-xs text-muted-foreground hover:text-foreground"
         >
           Wis alles
         </Button>
