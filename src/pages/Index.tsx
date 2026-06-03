@@ -3,9 +3,10 @@ import { ArrowRight, Shield, Zap, Users, Car, CheckCircle2, Star } from 'lucide-
 import { Button } from '@/components/ui/button';
 import { HeroSearch } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
-import { mockListings } from '@/data/mockListings';
+import { useListings } from '@/hooks/useListings';
 import { SEOHead } from '@/components/SEOHead';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 const faqCategories = [
