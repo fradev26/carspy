@@ -224,7 +224,7 @@ export default function MyLeadsPanel({ compact = false }: { compact?: boolean })
                     )}
 
                     {/* Active */}
-                    {listing?.status === 'active' && draftId && (
+                    {listing?.status === 'active' && draftId && lead.status !== 'sold' && lead.status !== 'offered_to_dealers' && (
                       <>
                         <Button asChild size="sm" variant="outline" className="gap-1.5">
                           <Link to={`/auto/${draftId}`}><Eye className="h-3.5 w-3.5" /> Bekijk advertentie</Link>
