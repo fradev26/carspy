@@ -16,18 +16,27 @@ vi.mock('@/hooks/useMarketingEvents', () => ({
 }));
 
 const leadsMock = vi.fn();
+const updateMock = vi.fn();
+const eqUpdateMock = vi.fn();
+const fromMock = vi.fn();
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
-    from: () => ({
-      select: () => ({
-        eq: () => ({
-          order: () => ({
-            limit: (...args: unknown[]) => leadsMock(...args),
+    from: (table: string) => {
+      fromMock(table);
+      return {
+        select: () => ({
+          eq: () => ({
+            order: () => ({
+              limit: (...args: unknown[]) => leadsMock(...args),
+            }),
           }),
         }),
-      }),
-      update: () => ({ eq: () => Promise.resolve({ error: null }) }),
-    }),
+        update: (payload: unknown) => {
+          updateMock(payload);
+          return { eq: (col: string, val: unknown) => { eqUpdateMock(col, val); return Promise.resolve({ error: null }); } };
+        },
+      };
+    },
   },
 }));
 
