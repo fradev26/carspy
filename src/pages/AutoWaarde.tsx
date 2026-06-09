@@ -681,12 +681,13 @@ export default function AutoWaarde() {
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-2xl font-bold md:text-3xl">Klaar om je auto te verkopen?</h2>
             <p className="mt-3 text-muted-foreground">Plaats je advertentie in enkele minuten en bereik duizenden kopers.</p>
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <Button onClick={handleAccountIntent} size="lg" className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold">
-                <UserPlus className="h-5 w-5" /> Maak gratis account
-              </Button>
-              <Button onClick={handleAdIntent} size="lg" variant="outline" className="border-border/60 gap-2">
-                <Megaphone className="h-5 w-5" /> Direct verkopen <ArrowRight className="h-4 w-4" />
+            <div className="mt-6 flex justify-center">
+              <Button
+                onClick={() => document.getElementById('waardetool')?.scrollIntoView({ behavior: 'smooth' })}
+                size="lg"
+                className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
+              >
+                <Calculator className="h-5 w-5" /> Start gratis met je waardebepaling <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
           </div>
