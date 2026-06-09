@@ -161,3 +161,50 @@ describe('MyLeadsPanel — contextual actions per status', () => {
     expect(screen.queryByText(/Bekijk dealerberichten/i)).not.toBeInTheDocument();
   });
 });
+
+describe('MyLeadsPanel — backend interactions on click', () => {
+  it('draft "Verder met advertentie" links to /verkopen?draftId=...&step=2', async () => {
+    await renderWith(makeLead({ status: 'listed', listing: { status: 'draft', images: [] }, listingId: 'listing-42' }));
+    const link = screen.getByRole('link', { name: /Verder met advertentie/i });
+    expect(link).toHaveAttribute('href', '/verkopen?draftId=listing-42&step=2');
+  });
+
+  it('draft "Foto\'s uploaden" links to step 3 upload', async () => {
+    await renderWith(makeLead({ status: 'listed', listing: { status: 'draft', images: [] }, listingId: 'listing-42' }));
+    const link = screen.getByRole('link', { name: /Foto's uploaden/i });
+    expect(link).toHaveAttribute('href', '/verkopen?draftId=listing-42&step=3');
+  });
+
+  it('active expired-boost click goes to boost flow', async () => {
+    const past = new Date(Date.now() - 86400000).toISOString();
+    await renderWith(makeLead({ status: 'listed', listing: { status: 'active', boost_until: past, images: ['/p.jpg'] }, listingId: 'listing-7' }));
+    const link = screen.getByRole('link', { name: /Boost opnieuw aanvragen/i });
+    expect(link).toHaveAttribute('href', '/verkopen?edit=listing-7&boost=1');
+  });
+
+  it('active no-boost "Boost activeren" links to boost flow', async () => {
+    await renderWith(makeLead({ status: 'listed', listing: { status: 'active', images: ['/p.jpg'] }, listingId: 'listing-7' }));
+    const link = screen.getByRole('link', { name: /Boost activeren/i });
+    expect(link).toHaveAttribute('href', '/verkopen?edit=listing-7&boost=1');
+  });
+
+  it('"Vraag dealer-favoriet aan" sends update to vehicle_leads with correct payload', async () => {
+    const user = userEvent.setup();
+    await renderWith(makeLead({ status: 'listed', listing: { status: 'active', images: ['/p.jpg'] }, listingId: 'listing-7' }));
+    const btn = screen.getByRole('button', { name: /Vraag dealer-favoriet aan/i });
+    await user.click(btn);
+
+    expect(fromMock).toHaveBeenCalledWith('vehicle_leads');
+    expect(updateMock).toHaveBeenCalledTimes(1);
+    const payload = updateMock.mock.calls[0][0] as { status: string; offer_eligible_at: string };
+    expect(payload.status).toBe('offered_to_dealers');
+    expect(payload.offer_eligible_at).toBeTruthy();
+    expect(eqUpdateMock).toHaveBeenCalledWith('id', 'lead-1');
+  });
+
+  it('non-active listing does NOT expose dealer-favoriet button', async () => {
+    await renderWith(makeLead({ status: 'listed', listing: { status: 'draft', images: [] } }));
+    expect(screen.queryByRole('button', { name: /Vraag dealer-favoriet aan/i })).not.toBeInTheDocument();
+    expect(updateMock).not.toHaveBeenCalled();
+  });
+});
