@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2, Car, Sparkles, Megaphone, Users, CheckCircle2, Clock, Rocket, ArrowRight, FileText } from 'lucide-react';
+import { Loader2, Car, Sparkles, Megaphone, Users, CheckCircle2, Clock, Rocket, ArrowRight, FileText, Camera, Star, Eye, MessageSquare } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { useMarketingEvents } from '@/hooks/useMarketingEvents';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -26,6 +28,7 @@ interface LeadRow {
     boost_until: string | null;
     created_at: string;
     views: number;
+    images: string[] | null;
   } | null;
 }
 
@@ -67,8 +70,28 @@ function dealerEta(lead: LeadRow) {
 
 export default function MyLeadsPanel({ compact = false }: { compact?: boolean }) {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const { trackEvent } = useMarketingEvents('my-leads');
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const requestDealerFavorite = async (lead: LeadRow) => {
+    if (!lead.listing_id) return;
+    setBusyId(lead.id);
+    const { error } = await supabase
+      .from('vehicle_leads')
+      .update({ status: 'offered_to_dealers', offer_eligible_at: new Date().toISOString() })
+      .eq('id', lead.id);
+    setBusyId(null);
+    if (error) {
+      toast({ title: 'Aanvraag mislukt', description: error.message, variant: 'destructive' });
+      return;
+    }
+    trackEvent('dealer_favorite_requested', { payload: { lead_id: lead.id, listing_id: lead.listing_id } });
+    toast({ title: 'Aangevraagd', description: 'Je auto wordt nu aangeboden aan dealers.' });
+    setLeads(prev => prev.map(l => l.id === lead.id ? { ...l, status: 'offered_to_dealers', offer_eligible_at: new Date().toISOString() } : l));
+  };
 
   useEffect(() => {
     if (!user) { setLoading(false); return; }
@@ -77,7 +100,7 @@ export default function MyLeadsPanel({ compact = false }: { compact?: boolean })
       setLoading(true);
       const { data } = await supabase
         .from('vehicle_leads')
-        .select('id, brand, model, year, mileage, estimated_price, status, created_at, offer_eligible_at, listing_id, listings:listing_id(id, status, boost_until, created_at, views)')
+        .select('id, brand, model, year, mileage, estimated_price, status, created_at, offer_eligible_at, listing_id, listings:listing_id(id, status, boost_until, created_at, views, images)')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(compact ? 3 : 20);
@@ -165,26 +188,96 @@ export default function MyLeadsPanel({ compact = false }: { compact?: boolean })
                 )}
               </div>
 
-              {/* Actions */}
-              <div className="flex flex-wrap gap-2 pt-1">
-                {lead.listings?.status === 'draft' && lead.listing_id && (
-                  <Button asChild size="sm" className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
-                    <Link to={`/verkopen?draftId=${lead.listing_id}&step=2`}>Concept afwerken <ArrowRight className="h-3.5 w-3.5" /></Link>
-                  </Button>
-                )}
-                {lead.listings?.status === 'active' && lead.listing_id && (
-                  <Button asChild size="sm" variant="outline" className="gap-1.5">
-                    <Link to={`/auto/${lead.listing_id}`}>Bekijk advertentie</Link>
-                  </Button>
-                )}
-                {!lead.listing_id && (
-                  <Button asChild size="sm" className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
-                    <Link to={`/verkopen?brand=${encodeURIComponent(lead.brand)}&model=${encodeURIComponent(lead.model ?? '')}&year=${lead.year ?? ''}&mileage=${lead.mileage ?? ''}&suggestedPrice=${lead.estimated_price ?? ''}`}>
-                      <Megaphone className="h-3.5 w-3.5" /> Plaats advertentie
-                    </Link>
-                  </Button>
-                )}
-              </div>
+              {/* Contextual actions */}
+              {(() => {
+                const listing = lead.listings;
+                const draftId = lead.listing_id;
+                const hasPhotos = (listing?.images?.length ?? 0) > 0;
+                const boostActive = !!(listing?.boost_until && new Date(listing.boost_until) > new Date());
+                const boostExpired = !!(listing?.boost_until && new Date(listing.boost_until) <= new Date());
+                const dealerEligible = !!(listing?.status === 'active' &&
+                  (Date.now() - new Date(listing.created_at).getTime()) >= 14 * 86400000);
+                const canRequestDealers = listing?.status === 'active' && lead.status !== 'offered_to_dealers' && lead.status !== 'sold';
+
+                return (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {/* No listing yet */}
+                    {!draftId && (
+                      <Button asChild size="sm" className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
+                        <Link to={`/verkopen?brand=${encodeURIComponent(lead.brand)}&model=${encodeURIComponent(lead.model ?? '')}&year=${lead.year ?? ''}&mileage=${lead.mileage ?? ''}&suggestedPrice=${lead.estimated_price ?? ''}`}
+                          onClick={() => trackEvent('ad_intent_click', { payload: { lead_id: lead.id, from: 'leads_panel' } })}>
+                          <Megaphone className="h-3.5 w-3.5" /> Plaats advertentie
+                        </Link>
+                      </Button>
+                    )}
+
+                    {/* Draft */}
+                    {listing?.status === 'draft' && draftId && (
+                      <>
+                        <Button asChild size="sm" className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
+                          <Link to={`/verkopen?draftId=${draftId}&step=2`}>Verder met advertentie <ArrowRight className="h-3.5 w-3.5" /></Link>
+                        </Button>
+                        <Button asChild size="sm" variant="outline" className="gap-1.5">
+                          <Link to={`/verkopen?draftId=${draftId}&step=3`}><Camera className="h-3.5 w-3.5" /> Foto's uploaden</Link>
+                        </Button>
+                      </>
+                    )}
+
+                    {/* Active */}
+                    {listing?.status === 'active' && draftId && (
+                      <>
+                        <Button asChild size="sm" variant="outline" className="gap-1.5">
+                          <Link to={`/auto/${draftId}`}><Eye className="h-3.5 w-3.5" /> Bekijk advertentie</Link>
+                        </Button>
+                        {!hasPhotos && (
+                          <Button asChild size="sm" className="gap-1.5 bg-accent text-accent-foreground hover:bg-accent/90">
+                            <Link to={`/verkopen?edit=${draftId}&step=3`}><Camera className="h-3.5 w-3.5" /> Foto's uploaden</Link>
+                          </Button>
+                        )}
+                        {boostExpired && (
+                          <Button asChild size="sm" className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90"
+                            onClick={() => trackEvent('boost_renew_intent', { payload: { listing_id: draftId } })}>
+                            <Link to={`/verkopen?edit=${draftId}&boost=1`}><Rocket className="h-3.5 w-3.5" /> Boost opnieuw aanvragen</Link>
+                          </Button>
+                        )}
+                        {!boostActive && !boostExpired && (
+                          <Button asChild size="sm" variant="outline" className="gap-1.5"
+                            onClick={() => trackEvent('boost_intent', { payload: { listing_id: draftId } })}>
+                            <Link to={`/verkopen?edit=${draftId}&boost=1`}><Rocket className="h-3.5 w-3.5" /> Boost activeren</Link>
+                          </Button>
+                        )}
+                        {canRequestDealers && (
+                          <Button size="sm" variant={dealerEligible ? 'default' : 'outline'}
+                            className={`gap-1.5 ${dealerEligible ? 'bg-accent text-accent-foreground hover:bg-accent/90' : ''}`}
+                            disabled={busyId === lead.id}
+                            onClick={() => requestDealerFavorite(lead)}>
+                            <Star className="h-3.5 w-3.5" /> Vraag dealer-favoriet aan
+                          </Button>
+                        )}
+                      </>
+                    )}
+
+                    {/* Offered to dealers */}
+                    {lead.status === 'offered_to_dealers' && draftId && (
+                      <>
+                        <Button asChild size="sm" variant="outline" className="gap-1.5">
+                          <Link to={`/auto/${draftId}`}><Eye className="h-3.5 w-3.5" /> Bekijk advertentie</Link>
+                        </Button>
+                        <Button asChild size="sm" className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
+                          <Link to="/berichten"><MessageSquare className="h-3.5 w-3.5" /> Bekijk dealerberichten</Link>
+                        </Button>
+                      </>
+                    )}
+
+                    {/* Sold */}
+                    {lead.status === 'sold' && (
+                      <Button asChild size="sm" variant="outline" className="gap-1.5">
+                        <Link to="/verkopen"><Megaphone className="h-3.5 w-3.5" /> Nieuwe advertentie plaatsen</Link>
+                      </Button>
+                    )}
+                  </div>
+                );
+              })()}
             </CardContent>
           </Card>
         );
