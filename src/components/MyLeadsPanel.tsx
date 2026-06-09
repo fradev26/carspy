@@ -28,6 +28,7 @@ interface LeadRow {
     boost_until: string | null;
     created_at: string;
     views: number;
+    images: string[] | null;
   } | null;
 }
 
