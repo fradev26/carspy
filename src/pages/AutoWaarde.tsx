@@ -698,8 +698,8 @@ export default function AutoWaarde() {
       <div className="fixed inset-x-0 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-30 lg:hidden">
         <div className="mx-3 rounded-xl border border-border/60 bg-card/95 backdrop-blur p-3 shadow-floating">
           {result ? (
-            <Button onClick={handleAccountIntent} className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold">
-              <UserPlus className="h-5 w-5" /> Maak gratis account
+            <Button onClick={handlePublishClick} disabled={publishing} className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold">
+              {publishing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Megaphone className="h-5 w-5" />} Plaats gratis advertentie
             </Button>
           ) : (
             <Button
