@@ -70,8 +70,28 @@ function dealerEta(lead: LeadRow) {
 
 export default function MyLeadsPanel({ compact = false }: { compact?: boolean }) {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const { trackEvent } = useMarketingEvents('my-leads');
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const requestDealerFavorite = async (lead: LeadRow) => {
+    if (!lead.listing_id) return;
+    setBusyId(lead.id);
+    const { error } = await supabase
+      .from('vehicle_leads')
+      .update({ status: 'offered_to_dealers', offer_eligible_at: new Date().toISOString() })
+      .eq('id', lead.id);
+    setBusyId(null);
+    if (error) {
+      toast({ title: 'Aanvraag mislukt', description: error.message, variant: 'destructive' });
+      return;
+    }
+    trackEvent('dealer_favorite_requested', { payload: { lead_id: lead.id, listing_id: lead.listing_id } });
+    toast({ title: 'Aangevraagd', description: 'Je auto wordt nu aangeboden aan dealers.' });
+    setLeads(prev => prev.map(l => l.id === lead.id ? { ...l, status: 'offered_to_dealers', offer_eligible_at: new Date().toISOString() } : l));
+  };
 
   useEffect(() => {
     if (!user) { setLoading(false); return; }
