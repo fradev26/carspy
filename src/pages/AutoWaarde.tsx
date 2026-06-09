@@ -15,6 +15,7 @@ import { useMarketingEvents } from '@/hooks/useMarketingEvents';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { insertVehicleLead, createDraftListing, attachListingToLead, attachUserToLead } from '@/lib/vehicleLeads';
+import MyLeadsPanel from '@/components/MyLeadsPanel';
 
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: 25 }, (_, i) => currentYear - i);
@@ -573,6 +574,12 @@ export default function AutoWaarde() {
                       </p>
                     )}
                   </div>
+                </div>
+              )}
+
+              {!loading && result && user && (
+                <div className="mt-6">
+                  <MyLeadsPanel compact />
                 </div>
               )}
             </div>
