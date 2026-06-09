@@ -285,9 +285,12 @@ export default function Sell() {
     setIsSubmitting(true);
     
     try {
-      const imageUrls = await uploadImages();
-      
-      const { error } = await supabase.from('listings').insert({
+      const newImageUrls = await uploadImages();
+      // Combine already-saved image URLs (from draft) with newly uploaded files
+      const existingUrls = imagePreviews.filter(p => p.startsWith('http'));
+      const imageUrls = [...existingUrls, ...newImageUrls];
+
+      const payload = {
         user_id: user.id,
         title: `${formData.brand} ${formData.model}`,
         brand: formData.brand,
@@ -305,7 +308,11 @@ export default function Sell() {
         city: formData.city,
         province: formData.province,
         status: 'active',
-      });
+      };
+
+      const { error } = draftId
+        ? await supabase.from('listings').update(payload).eq('id', draftId).eq('user_id', user.id)
+        : await supabase.from('listings').insert(payload);
 
       if (error) throw error;
 
