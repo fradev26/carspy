@@ -511,18 +511,49 @@ export default function AutoWaarde() {
                     </div>
                   )}
 
-                  {/* Primary CTAs */}
-                  <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                    <Button onClick={handleAccountIntent} size="lg" className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold">
-                      <UserPlus className="h-5 w-5" /> Maak gratis account
+                  {/* Primary CTA — one click to publish */}
+                  <div className="mt-6">
+                    <Button
+                      onClick={handlePublishClick}
+                      size="lg"
+                      disabled={publishing}
+                      className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-base"
+                    >
+                      {publishing ? <><Loader2 className="h-5 w-5 animate-spin" /> Bezig…</> : <><Megaphone className="h-5 w-5" /> Plaats gratis advertentie <ArrowRight className="h-4 w-4" /></>}
                     </Button>
-                    <Button onClick={handleAdIntent} size="lg" variant="outline" className="gap-2 border-primary/40">
-                      <Megaphone className="h-5 w-5" /> Plaats advertentie
-                    </Button>
+                    <p className="mt-2 text-center text-xs text-muted-foreground">
+                      {user ? 'Eén klik — je gegevens zijn al ingevuld, voeg enkel foto\'s toe.' : 'In 1 stap je account én advertentie aanmaken.'}
+                    </p>
                   </div>
+
+                  {/* Inline auth (only when not logged in & clicked CTA) */}
+                  {!user && showInlineAuth && (
+                    <form id="inline-auth" onSubmit={handleInlineAuth} className="mt-4 rounded-xl border border-primary/30 bg-card p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-semibold">{authMode === 'signup' ? 'Maak je gratis account' : 'Log in'}</p>
+                        <button
+                          type="button"
+                          onClick={() => setAuthMode(m => m === 'signup' ? 'signin' : 'signup')}
+                          className="text-xs text-primary underline"
+                        >
+                          {authMode === 'signup' ? 'Ik heb al een account' : 'Nieuw account aanmaken'}
+                        </button>
+                      </div>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <Input type="email" placeholder="E-mailadres" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} className="h-10" autoComplete="email" />
+                        <Input type="password" placeholder="Wachtwoord (min. 6)" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} className="h-10" autoComplete={authMode === 'signup' ? 'new-password' : 'current-password'} />
+                      </div>
+                      <Button type="submit" disabled={publishing} className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
+                        {publishing ? <><Loader2 className="h-4 w-4 animate-spin" /> Bezig…</> : <>{authMode === 'signup' ? <Megaphone className="h-4 w-4" /> : <LogIn className="h-4 w-4" />} {authMode === 'signup' ? 'Account aanmaken & advertentie publiceren' : 'Inloggen & publiceren'}</>}
+                      </Button>
+                      <p className="text-[11px] text-muted-foreground text-center">100% gratis. Door verder te gaan ga je akkoord met onze voorwaarden.</p>
+                    </form>
+                  )}
+
                   <button onClick={handleSearchSimilar} className="mt-3 text-xs text-muted-foreground hover:text-foreground underline">
                     Of bekijk vergelijkbare wagens op de markt →
                   </button>
+
 
                   {/* Retargeting capture */}
                   <div className="mt-6 rounded-xl border border-dashed border-border/60 bg-card/40 p-4">
