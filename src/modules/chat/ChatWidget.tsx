@@ -44,6 +44,14 @@ export const ChatWidget = forwardRef<HTMLDivElement>(function ChatWidget(_props,
   // Hide on homepage — the inline AIChatSection takes over
   if (isHomepage) return null;
 
+  const isDealersPage = location.pathname === '/dealers';
+  const mobileBottomOffset = isDealersPage
+    ? 'bottom-[calc(9rem+env(safe-area-inset-bottom))]'
+    : 'bottom-[calc(5rem+env(safe-area-inset-bottom))]';
+  const mobilePanelBottomOffset = isDealersPage
+    ? 'bottom-[calc(13rem+env(safe-area-inset-bottom))]'
+    : 'bottom-[calc(9rem+env(safe-area-inset-bottom))]';
+
   return (
     <div ref={ref}>
       {/* Floating button */}
@@ -52,7 +60,7 @@ export const ChatWidget = forwardRef<HTMLDivElement>(function ChatWidget(_props,
         className={cn(
           'fixed z-50 flex h-14 w-14 items-center justify-center rounded-md shadow-lg transition-all',
           'bg-primary text-primary-foreground hover:scale-105',
-          'bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 md:bottom-6 md:right-6'
+          mobileBottomOffset, 'right-4 md:bottom-6 md:right-6'
         )}
         aria-label="Open chat"
       >
@@ -64,7 +72,7 @@ export const ChatWidget = forwardRef<HTMLDivElement>(function ChatWidget(_props,
         <div
           className={cn(
             'fixed z-50 flex flex-col overflow-hidden rounded-2xl border bg-background shadow-2xl',
-            'bottom-[calc(9rem+env(safe-area-inset-bottom))] right-4 w-[calc(100vw-2rem)] max-w-sm',
+            mobilePanelBottomOffset, 'right-4 w-[calc(100vw-2rem)] max-w-sm',
             'md:bottom-24 md:right-6 md:w-96',
             'h-[min(500px,70vh)]'
           )}
