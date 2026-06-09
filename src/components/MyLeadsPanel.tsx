@@ -80,7 +80,7 @@ export default function MyLeadsPanel({ compact = false }: { compact?: boolean })
       setLoading(true);
       const { data } = await supabase
         .from('vehicle_leads')
-        .select('id, brand, model, year, mileage, estimated_price, status, created_at, offer_eligible_at, listing_id, listings:listing_id(id, status, boost_until, created_at, views)')
+        .select('id, brand, model, year, mileage, estimated_price, status, created_at, offer_eligible_at, listing_id, listings:listing_id(id, status, boost_until, created_at, views, images)')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(compact ? 3 : 20);
