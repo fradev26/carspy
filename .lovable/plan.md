@@ -1,77 +1,85 @@
+# Van waardebepaling → advertentie in 1 klik + dealer-pool
 
-# Plan: Conversie-landingspagina voor particulieren
+## Doel
 
-Bouw verder op de bestaande `/wat-is-mijn-auto-waard` pagina en vul de ontbrekende vereisten in: AI-gedreven prijsanalyse in de hero, sterkere conversiefunnel naar accountcreatie en advertentieplaatsing, social proof, marketing-events en retargeting-hook.
+1. Na de AI-analyse op `/wat-is-mijn-auto-waard` moet een particulier in **zo min mogelijk klikken** zijn auto online hebben.
+2. Elke geanalyseerde wagen wordt opgeslagen als **lead**, zodat we hem later (na 2 weken zonder verkoop of na een afgelopen boost) automatisch kunnen aanbieden aan dealers.
 
-## Funnel-flow
+## 1. Snelste verkoop-flow (frictie weghalen)
 
-```
-Hero (waardepropositie + analyse-form)
-  → AI-analyse loader (event: analysis_started)
-  → Resultaat-card met richtprijs, range, verkooptijd, AI-verdict (event: analysis_completed)
-       ├── Primary CTA: "Maak gratis account aan" → /auth?intent=sell&prefill=… (event: account_intent)
-       ├── Secondary CTA: "Plaats advertentie" → /verkopen?prefill=… (event: ad_intent)
-       └── Tertiary: "Bekijk vergelijkbare wagens" → /zoeken?…
-  → Exit-intent / scroll-bottom: retargeting-card "Bewaar mijn waardebepaling per e-mail" (event: retargeting_opt_in)
-```
+Vandaag stuurt de resultaten-kaart naar `/auth` of `/verkopen` met query-params. Dat zijn 2 schermen extra. Nieuwe flow:
 
-Bij elke meaningful step pushen we een rij naar `public.marketing_events` (anoniem trackbaar via een `session_id` cookie), zodat later doelgroepen te bouwen zijn (bv. "wagens > €20k waarvan eigenaar geen account heeft").
+**Eén primaire CTA in de resultaat-kaart:** `Plaats gratis advertentie →`
 
-## Wijzigingen per laag
+Gedrag afhankelijk van auth-status:
 
-### 1. UI / Page (`src/pages/AutoWaarde.tsx` — uitgebreid, route blijft)
-- Hero behoudt H1 maar krijgt vertrouwens-chips ("Gratis · Geen registratie · AI-gedreven · 2 min").
-- Waardetool-form blijft (merk/model/jaar/km), aangevuld met optionele velden brandstof + transmissie zodat `vehicle-analysis` rijkere output geeft.
-- Submit roept `vehicle-analysis` edge function aan (al bestaand) i.p.v. lokale formule. Lokale schatting blijft als fallback bij API-fout.
-- Resultaat-card toont: richtprijs (groot), prijsrange (min/max), geschatte verkooptijd, AI-verdict, betrouwbaarheidsscore. Hergebruikt visuele taal van `PriceIndicator` (zelfde range-bar, badges, kleuren).
-- Onder resultaat: 2 conversie-CTA's (account primary, advertentie secondary) + "Bewaar resultaat" e-mail capture (1 inputveld + knop) voor retargeting van afhakers.
-- Nieuwe secties tussen tool en FAQ:
-  - **Social proof**: 3 testimonials + statistieken-strip (X actieve kopers, Y wagens verkocht, gem. verkooptijd) in bestaande Card-stijl.
-  - **3-stappen-funnel**: "Analyseer → Maak account → Verkoop" met genummerde badges.
-  - **Vertrouwen**: bestaande trust-blok blijft.
-- Sticky mobile CTA-balk (`lg:hidden`) onderaan: "Bereken mijn waarde" tot er een resultaat is, daarna "Maak account aan".
+- **Ingelogd:** klik creëert direct een `listings`-rij met `status='draft'`, prijs = `suggestedPrice`, brand/model/year/mileage/fuel/transmission uit het form. Redirect naar `/verkopen?draftId=…&step=2` (foto's & beschrijving). Geen formulier-stappen meer herhalen.
+- **Niet ingelogd:** inline mini-form in dezelfde kaart (alleen e-mail + wachtwoord, geen volledige redirect naar `/auth`). Bij submit:
+  - `signUp` met meta `intent: 'sell'`
+  - direct daarna draft-listing inserten via dezelfde call
+  - redirect naar `/verkopen?draftId=…&step=2`
+  
+  Eén secundaire link "Ik heb al een account" → opent kleine login-popover die hetzelfde doet na inloggen.
 
-### 2. Tracking (nieuwe tabel + helper)
-- Migratie: `public.marketing_events` met kolommen `event_name`, `session_id`, `user_id` (nullable), `page`, `payload jsonb`, `utm_source/medium/campaign`, plus standaardvelden.
-  - GRANT INSERT op `anon` + `authenticated` (open insert want anoniem trackbaar), GRANT ALL op `service_role`, SELECT enkel voor admins via `has_role`.
-  - RLS: insert toegestaan voor iedereen, select alleen voor `admin`-role.
-- Nieuwe hook `src/hooks/useMarketingEvents.ts`:
-  - Genereert/leest `vatuur_session_id` in `localStorage`.
-  - Leest `utm_*` uit `URLSearchParams` (1× per sessie cachen).
-  - Exporteert `trackEvent(name, payload)` die naar de tabel inserted én optioneel `window.dataLayer.push` doet zodat GTM later eenvoudig aansluit.
-- Gebruikt op AutoWaarde voor: `page_view`, `analysis_started`, `analysis_completed`, `account_intent`, `ad_intent`, `retargeting_opt_in`.
+Resultaat: van resultaat naar foto-upload in **1 klik (ingelogd)** of **1 formulier-submit (nieuw account)**.
 
-### 3. Retargeting (lead capture)
-- "Bewaar mijn waardebepaling" inputveld stuurt naar bestaande `dealer-lead` patroon? Nee — particulieren. Maak nieuwe simpele edge function `consumer-lead` of hergebruik `marketing_events` met `event_name='retargeting_opt_in'` + `payload.email`. Kies de tweede optie (geen nieuwe edge function nodig, alle data in 1 tabel queryable). E-mail wordt gevalideerd met zod-achtige regex client-side.
+Bij-aanpassingen in `src/pages/Sell.tsx`:
+- Bij `?draftId=…` in URL: laad de bestaande draft, vul `formData` in, start op stap 2 (foto's).
+- Bij `Publiceren`: `update` op de draft i.p.v. `insert`, zet `status='active'`.
 
-### 4. Prefill naar volgende stap
-- Bij klik op CTA's serialiseren we wagengegevens (`brand`, `model`, `year`, `mileage`, `suggested_price`) naar query-string zodat `/auth` en `/verkopen` deze later kunnen oppikken (bestaande pagina's lezen ze nog niet — dat blijft scope voor later, parameters worden enkel meegegeven en blijven inert tot opgepikt).
+## 2. Vehicle leads opslaan (dealer-aanbod pool)
 
-### 5. SEO
-- `SEOHead` aangevuld: og:type "website", og:title/description identiek, voeg `Service` JSON-LD toe ("Gratis autotaxatie").
-- H1 blijft uniek, semantische `<section aria-labelledby>` per blok.
+Elke voltooide analyse wordt bewaard, ook als de gebruiker niets verder doet. Dit voedt de toekomstige dealer-marktplaats.
 
-## Bestanden
+Nieuwe tabel `public.vehicle_leads`:
+- `brand, model, year, mileage, fuel_type, transmission`
+- `estimated_price, price_min, price_max`
+- `email` (nullable, alleen als opt-in)
+- `user_id` (nullable, gevuld zodra account)
+- `listing_id` (nullable, gevuld zodra advertentie aangemaakt)
+- `session_id, utm_source, utm_medium, utm_campaign`
+- `status` enum: `analyzed | account_created | listed | sold | offered_to_dealers`
+- `offer_eligible_at` timestamp (= moment waarop hij naar de dealer-pool mag)
 
-**Nieuw**
-- `supabase/migrations/<ts>_marketing_events.sql` — tabel + GRANTs + RLS (insert open, select admin-only) + update-trigger.
-- `src/hooks/useMarketingEvents.ts` — session_id, utm capture, `trackEvent` helper.
+RLS:
+- `INSERT` open voor anon/authenticated (analyses moeten kunnen worden vastgelegd zonder login)
+- `SELECT` alleen voor `admin` en (later) `dealer` rol
+- `UPDATE` alleen via security definer functies / edge functions
 
-**Aangepast**
-- `src/pages/AutoWaarde.tsx` — herwerkte hero/result-card, AI-call, nieuwe secties, sticky mobile CTA, event-tracking, e-mail capture.
-- Geen wijzigingen aan `vehicle-analysis` edge function (bestaande contract volstaat).
+Hook `useMarketingEvents` blijft events loggen; daarnaast schrijft `AutoWaarde.tsx` na `analysis_completed` één rij in `vehicle_leads`.
 
-## Technische details
+## 3. Auto-promotie naar dealer-pool
 
-- `vehicle-analysis` verwacht een `listing`-object met `title/brand/model/year/mileage/fuelType/transmission/features/price`. We sturen een geconstrueerde stub mee zonder `price` zodat de functie zelf `suggestedPrice` voorstelt (dat code-pad bestaat al).
-- Loader-state: skeleton-card met shimmer in resultaatsectie tijdens AI-call (~3-6s).
-- E-mail validatie client-side met regex; server-side via `marketing_events` insert (alle velden optioneel/jsonb, dus geen DB-validatie nodig — wel max-lengte op email TEXT kolom).
-- Sticky CTA respecteert `.bottom-nav-above` utility voor safe-area + bottom-nav clearance (conform memory).
-- Geen nieuwe kleurtokens of fonts. Hergebruik `bg-primary`, `bg-accent`, `text-muted-foreground`. Geen grote rode vlakken (conform memory).
-- Geen schema-impact op `listings` of `profiles`.
+Een wagen is "dealer-eligible" als:
+- gekoppelde `listings`-rij bestaat, status nog `active`, **en**
+- `(now() - listings.created_at) > 14 days` **of** `boost_until` voorbij zonder verkoop
 
-## Out of scope
+Implementatie:
+- DB-functie `public.mark_dealer_eligible_leads()` die alle `vehicle_leads` met bijhorende listing die aan bovenstaande voldoet op `status='offered_to_dealers'` en `offer_eligible_at=now()` zet.
+- Cron-job (pg_cron) draait dagelijks en roept deze functie aan. Geen edge function nodig — pure SQL.
+- Wanneer een listing `status='sold'` krijgt, trigger zet de lead op `status='sold'` (geen aanbieding meer aan dealers).
 
-- `/auth` en `/verkopen` consumeren de nieuwe prefill-querystrings nog niet — die feature kan in een vervolgvraag indien gewenst.
-- GA4/Meta-pixel installatie — `dataLayer.push` is voorbereid, externe tags volgen later.
-- Exit-intent modal — voorlopig vervangen door e-mail capture in resultaatcard; volwaardig exit-intent kan later toegevoegd worden.
+Het dealer-marktplaats UI zelf valt buiten scope van deze taak — de pool is enkel datavoorbereiding.
+
+## Technische wijzigingen
+
+**Nieuw:**
+- `supabase/migrations/<ts>_vehicle_leads.sql` — tabel + GRANT + RLS + `mark_dealer_eligible_leads()` + trigger op `listings.status` + pg_cron schedule
+- Helper-functie in `src/lib` om een lead te inserten vanuit de browser
+
+**Aangepast:**
+- `src/pages/AutoWaarde.tsx`
+  - Schrijf `vehicle_leads`-rij bij `analysis_completed`
+  - Vervang dubbele CTA-kaart door één primaire "Plaats gratis advertentie" + inline auth/draft-creatie
+  - Verwijder/relegate de losse "Maak account" + "Plaats advertentie" knoppen
+- `src/pages/Sell.tsx`
+  - Ondersteun `?draftId=…&step=2`: bestaande draft laden, op stap 2 starten
+  - Submit doet `update` i.p.v. `insert` als er een draftId is
+- `src/hooks/useMarketingEvents.ts` — geen wijziging nodig
+
+**Niet gewijzigd:** `vehicle-analysis` edge function, dealer-pagina's, bestaande tracking-tabel.
+
+## Out of scope (later)
+- Dealer-zijde UI om de pool te bekijken / bieden
+- E-mail-notificatie naar de verkoper wanneer dealers een bod doen
+- Anonimiseren/maskering van persoonsgegevens richting dealers
