@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useSavedSearches } from '@/hooks/useSavedSearches';
 import { useProfile } from '@/hooks/useProfile';
+import MyLeadsPanel from '@/components/MyLeadsPanel';
 
 interface Listing {
   id: string;
@@ -103,6 +104,10 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       )}
+
+      <div className="mt-8">
+        <MyLeadsPanel />
+      </div>
 
       <Tabs defaultValue="listings" className="mt-8">
         <TabsList>
