@@ -188,26 +188,96 @@ export default function MyLeadsPanel({ compact = false }: { compact?: boolean })
                 )}
               </div>
 
-              {/* Actions */}
-              <div className="flex flex-wrap gap-2 pt-1">
-                {lead.listings?.status === 'draft' && lead.listing_id && (
-                  <Button asChild size="sm" className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
-                    <Link to={`/verkopen?draftId=${lead.listing_id}&step=2`}>Concept afwerken <ArrowRight className="h-3.5 w-3.5" /></Link>
-                  </Button>
-                )}
-                {lead.listings?.status === 'active' && lead.listing_id && (
-                  <Button asChild size="sm" variant="outline" className="gap-1.5">
-                    <Link to={`/auto/${lead.listing_id}`}>Bekijk advertentie</Link>
-                  </Button>
-                )}
-                {!lead.listing_id && (
-                  <Button asChild size="sm" className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
-                    <Link to={`/verkopen?brand=${encodeURIComponent(lead.brand)}&model=${encodeURIComponent(lead.model ?? '')}&year=${lead.year ?? ''}&mileage=${lead.mileage ?? ''}&suggestedPrice=${lead.estimated_price ?? ''}`}>
-                      <Megaphone className="h-3.5 w-3.5" /> Plaats advertentie
-                    </Link>
-                  </Button>
-                )}
-              </div>
+              {/* Contextual actions */}
+              {(() => {
+                const listing = lead.listings;
+                const draftId = lead.listing_id;
+                const hasPhotos = (listing?.images?.length ?? 0) > 0;
+                const boostActive = !!(listing?.boost_until && new Date(listing.boost_until) > new Date());
+                const boostExpired = !!(listing?.boost_until && new Date(listing.boost_until) <= new Date());
+                const dealerEligible = !!(listing?.status === 'active' &&
+                  (Date.now() - new Date(listing.created_at).getTime()) >= 14 * 86400000);
+                const canRequestDealers = listing?.status === 'active' && lead.status !== 'offered_to_dealers' && lead.status !== 'sold';
+
+                return (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {/* No listing yet */}
+                    {!draftId && (
+                      <Button asChild size="sm" className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
+                        <Link to={`/verkopen?brand=${encodeURIComponent(lead.brand)}&model=${encodeURIComponent(lead.model ?? '')}&year=${lead.year ?? ''}&mileage=${lead.mileage ?? ''}&suggestedPrice=${lead.estimated_price ?? ''}`}
+                          onClick={() => trackEvent('ad_intent_click', { payload: { lead_id: lead.id, from: 'leads_panel' } })}>
+                          <Megaphone className="h-3.5 w-3.5" /> Plaats advertentie
+                        </Link>
+                      </Button>
+                    )}
+
+                    {/* Draft */}
+                    {listing?.status === 'draft' && draftId && (
+                      <>
+                        <Button asChild size="sm" className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
+                          <Link to={`/verkopen?draftId=${draftId}&step=2`}>Verder met advertentie <ArrowRight className="h-3.5 w-3.5" /></Link>
+                        </Button>
+                        <Button asChild size="sm" variant="outline" className="gap-1.5">
+                          <Link to={`/verkopen?draftId=${draftId}&step=3`}><Camera className="h-3.5 w-3.5" /> Foto's uploaden</Link>
+                        </Button>
+                      </>
+                    )}
+
+                    {/* Active */}
+                    {listing?.status === 'active' && draftId && (
+                      <>
+                        <Button asChild size="sm" variant="outline" className="gap-1.5">
+                          <Link to={`/auto/${draftId}`}><Eye className="h-3.5 w-3.5" /> Bekijk advertentie</Link>
+                        </Button>
+                        {!hasPhotos && (
+                          <Button asChild size="sm" className="gap-1.5 bg-accent text-accent-foreground hover:bg-accent/90">
+                            <Link to={`/verkopen?edit=${draftId}&step=3`}><Camera className="h-3.5 w-3.5" /> Foto's uploaden</Link>
+                          </Button>
+                        )}
+                        {boostExpired && (
+                          <Button asChild size="sm" className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90"
+                            onClick={() => trackEvent('boost_renew_intent', { payload: { listing_id: draftId } })}>
+                            <Link to={`/verkopen?edit=${draftId}&boost=1`}><Rocket className="h-3.5 w-3.5" /> Boost opnieuw aanvragen</Link>
+                          </Button>
+                        )}
+                        {!boostActive && !boostExpired && (
+                          <Button asChild size="sm" variant="outline" className="gap-1.5"
+                            onClick={() => trackEvent('boost_intent', { payload: { listing_id: draftId } })}>
+                            <Link to={`/verkopen?edit=${draftId}&boost=1`}><Rocket className="h-3.5 w-3.5" /> Boost activeren</Link>
+                          </Button>
+                        )}
+                        {canRequestDealers && (
+                          <Button size="sm" variant={dealerEligible ? 'default' : 'outline'}
+                            className={`gap-1.5 ${dealerEligible ? 'bg-accent text-accent-foreground hover:bg-accent/90' : ''}`}
+                            disabled={busyId === lead.id}
+                            onClick={() => requestDealerFavorite(lead)}>
+                            <Star className="h-3.5 w-3.5" /> Vraag dealer-favoriet aan
+                          </Button>
+                        )}
+                      </>
+                    )}
+
+                    {/* Offered to dealers */}
+                    {lead.status === 'offered_to_dealers' && draftId && (
+                      <>
+                        <Button asChild size="sm" variant="outline" className="gap-1.5">
+                          <Link to={`/auto/${draftId}`}><Eye className="h-3.5 w-3.5" /> Bekijk advertentie</Link>
+                        </Button>
+                        <Button asChild size="sm" className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90">
+                          <Link to="/berichten"><MessageSquare className="h-3.5 w-3.5" /> Bekijk dealerberichten</Link>
+                        </Button>
+                      </>
+                    )}
+
+                    {/* Sold */}
+                    {lead.status === 'sold' && (
+                      <Button asChild size="sm" variant="outline" className="gap-1.5">
+                        <Link to="/verkopen"><Megaphone className="h-3.5 w-3.5" /> Nieuwe advertentie plaatsen</Link>
+                      </Button>
+                    )}
+                  </div>
+                );
+              })()}
             </CardContent>
           </Card>
         );
