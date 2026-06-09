@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Calculator, Car, Gauge, Calendar, BadgeCheck, BarChart3, ShieldCheck, Sparkles, ArrowRight,
-  CheckCircle2, Star, Clock, TrendingUp, Mail, Loader2, UserPlus, Megaphone,
+  CheckCircle2, Star, Clock, TrendingUp, Mail, Loader2, Megaphone, LogIn,
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,8 @@ import { CAR_BRANDS, CAR_MODELS } from '@/types/listing';
 import { supabase } from '@/integrations/supabase/client';
 import { useMarketingEvents } from '@/hooks/useMarketingEvents';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { insertVehicleLead, createDraftListing, attachListingToLead, attachUserToLead } from '@/lib/vehicleLeads';
 
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: 25 }, (_, i) => currentYear - i);
@@ -53,6 +55,7 @@ export default function AutoWaarde() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { trackEvent } = useMarketingEvents('autowaarde');
+  const { user } = useAuth();
 
   const [brand, setBrand] = useState('');
   const [model, setModel] = useState('');
@@ -64,6 +67,12 @@ export default function AutoWaarde() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [emailSent, setEmailSent] = useState(false);
+  const [leadId, setLeadId] = useState<string | null>(null);
+  const [publishing, setPublishing] = useState(false);
+  const [authMode, setAuthMode] = useState<'signup' | 'signin'>('signup');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [showInlineAuth, setShowInlineAuth] = useState(false);
 
   const availableModels = brand ? CAR_MODELS[brand] || [] : [];
 
@@ -118,15 +127,106 @@ export default function AutoWaarde() {
       trackEvent('analysis_completed', {
         payload: { brand, model, year, mileage, suggestedPrice: ai.suggestedPrice, source: 'ai' },
       });
+      try {
+        const id = await insertVehicleLead({
+          brand, model, year: parseInt(year), mileage: parseInt(mileage),
+          fuelType, transmission,
+          estimatedPrice: ai.suggestedPrice,
+          priceMin: ai.priceRange.min, priceMax: ai.priceRange.max,
+        }, user?.id);
+        setLeadId(id);
+      } catch (err) { console.warn('lead insert failed', err); }
     } catch {
       const fb = fallbackEstimate({ brand, year: parseInt(year), mileage: parseInt(mileage) });
       setResult(fb);
       trackEvent('analysis_completed', {
         payload: { brand, model, year, mileage, suggestedPrice: fb.suggestedPrice, source: 'fallback' },
       });
+      try {
+        const id = await insertVehicleLead({
+          brand, model, year: parseInt(year), mileage: parseInt(mileage),
+          fuelType, transmission,
+          estimatedPrice: fb.suggestedPrice,
+          priceMin: fb.priceRange.min, priceMax: fb.priceRange.max,
+        }, user?.id);
+        setLeadId(id);
+      } catch (err) { console.warn('lead insert failed', err); }
     } finally {
       setLoading(false);
       setTimeout(() => document.getElementById('resultaat')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    }
+  };
+
+  const goToDraftWizard = async (uid: string) => {
+    if (!result) return;
+    const listingId = await createDraftListing(uid, {
+      brand, model: model || brand,
+      year: parseInt(year), mileage: parseInt(mileage),
+      fuelType, transmission,
+      suggestedPrice: result.suggestedPrice,
+    });
+    if (leadId) await attachListingToLead(leadId, listingId);
+    trackEvent('ad_intent', { payload: { suggestedPrice: result.suggestedPrice, brand, model, draftId: listingId } });
+    navigate(`/verkopen?draftId=${listingId}&step=2`);
+  };
+
+  const handlePublishClick = async () => {
+    if (!result) return;
+    if (user) {
+      setPublishing(true);
+      try { await goToDraftWizard(user.id); }
+      catch (e) {
+        console.error(e);
+        toast({ title: 'Kon advertentie niet aanmaken', variant: 'destructive' });
+      } finally { setPublishing(false); }
+    } else {
+      setShowInlineAuth(true);
+      setTimeout(() => document.getElementById('inline-auth')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+    }
+  };
+
+  const handleInlineAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emailRegex.test(authEmail) || authPassword.length < 6) {
+      toast({ title: 'Vul een geldig e-mailadres en wachtwoord (≥6 tekens) in', variant: 'destructive' });
+      return;
+    }
+    setPublishing(true);
+    try {
+      if (authMode === 'signup') {
+        const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
+          email: authEmail, password: authPassword,
+          options: { emailRedirectTo: `${window.location.origin}/`, data: { full_name: authEmail.split('@')[0] } },
+        });
+        if (signUpErr) throw signUpErr;
+        let uid = signUpData.user?.id;
+        if (!signUpData.session) {
+          const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+            email: authEmail, password: authPassword,
+          });
+          if (signInErr) {
+            toast({ title: 'Bevestig je e-mail', description: 'Check je inbox om je account te activeren, en kom dan terug om je advertentie te publiceren.' });
+            setPublishing(false);
+            return;
+          }
+          uid = signInData.user?.id;
+        }
+        if (!uid) throw new Error('Geen gebruiker');
+        trackEvent('account_intent', { email: authEmail, payload: { brand, model, suggestedPrice: result?.suggestedPrice } });
+        if (leadId) await attachUserToLead(leadId, uid);
+        await goToDraftWizard(uid);
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({ email: authEmail, password: authPassword });
+        if (error) throw error;
+        const uid = data.user?.id;
+        if (!uid) throw new Error('Geen gebruiker');
+        if (leadId) await attachUserToLead(leadId, uid);
+        await goToDraftWizard(uid);
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Aanmelden mislukt';
+      toast({ title: msg, variant: 'destructive' });
+      setPublishing(false);
     }
   };
 
@@ -411,18 +511,49 @@ export default function AutoWaarde() {
                     </div>
                   )}
 
-                  {/* Primary CTAs */}
-                  <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                    <Button onClick={handleAccountIntent} size="lg" className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold">
-                      <UserPlus className="h-5 w-5" /> Maak gratis account
+                  {/* Primary CTA — one click to publish */}
+                  <div className="mt-6">
+                    <Button
+                      onClick={handlePublishClick}
+                      size="lg"
+                      disabled={publishing}
+                      className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-base"
+                    >
+                      {publishing ? <><Loader2 className="h-5 w-5 animate-spin" /> Bezig…</> : <><Megaphone className="h-5 w-5" /> Plaats gratis advertentie <ArrowRight className="h-4 w-4" /></>}
                     </Button>
-                    <Button onClick={handleAdIntent} size="lg" variant="outline" className="gap-2 border-primary/40">
-                      <Megaphone className="h-5 w-5" /> Plaats advertentie
-                    </Button>
+                    <p className="mt-2 text-center text-xs text-muted-foreground">
+                      {user ? 'Eén klik — je gegevens zijn al ingevuld, voeg enkel foto\'s toe.' : 'In 1 stap je account én advertentie aanmaken.'}
+                    </p>
                   </div>
+
+                  {/* Inline auth (only when not logged in & clicked CTA) */}
+                  {!user && showInlineAuth && (
+                    <form id="inline-auth" onSubmit={handleInlineAuth} className="mt-4 rounded-xl border border-primary/30 bg-card p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-semibold">{authMode === 'signup' ? 'Maak je gratis account' : 'Log in'}</p>
+                        <button
+                          type="button"
+                          onClick={() => setAuthMode(m => m === 'signup' ? 'signin' : 'signup')}
+                          className="text-xs text-primary underline"
+                        >
+                          {authMode === 'signup' ? 'Ik heb al een account' : 'Nieuw account aanmaken'}
+                        </button>
+                      </div>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <Input type="email" placeholder="E-mailadres" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} className="h-10" autoComplete="email" />
+                        <Input type="password" placeholder="Wachtwoord (min. 6)" value={authPassword} onChange={(e) => setAuthPassword(e.target.value)} className="h-10" autoComplete={authMode === 'signup' ? 'new-password' : 'current-password'} />
+                      </div>
+                      <Button type="submit" disabled={publishing} className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
+                        {publishing ? <><Loader2 className="h-4 w-4 animate-spin" /> Bezig…</> : <>{authMode === 'signup' ? <Megaphone className="h-4 w-4" /> : <LogIn className="h-4 w-4" />} {authMode === 'signup' ? 'Account aanmaken & advertentie publiceren' : 'Inloggen & publiceren'}</>}
+                      </Button>
+                      <p className="text-[11px] text-muted-foreground text-center">100% gratis. Door verder te gaan ga je akkoord met onze voorwaarden.</p>
+                    </form>
+                  )}
+
                   <button onClick={handleSearchSimilar} className="mt-3 text-xs text-muted-foreground hover:text-foreground underline">
                     Of bekijk vergelijkbare wagens op de markt →
                   </button>
+
 
                   {/* Retargeting capture */}
                   <div className="mt-6 rounded-xl border border-dashed border-border/60 bg-card/40 p-4">
@@ -550,12 +681,13 @@ export default function AutoWaarde() {
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-2xl font-bold md:text-3xl">Klaar om je auto te verkopen?</h2>
             <p className="mt-3 text-muted-foreground">Plaats je advertentie in enkele minuten en bereik duizenden kopers.</p>
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <Button onClick={handleAccountIntent} size="lg" className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold">
-                <UserPlus className="h-5 w-5" /> Maak gratis account
-              </Button>
-              <Button onClick={handleAdIntent} size="lg" variant="outline" className="border-border/60 gap-2">
-                <Megaphone className="h-5 w-5" /> Direct verkopen <ArrowRight className="h-4 w-4" />
+            <div className="mt-6 flex justify-center">
+              <Button
+                onClick={() => document.getElementById('waardetool')?.scrollIntoView({ behavior: 'smooth' })}
+                size="lg"
+                className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
+              >
+                <Calculator className="h-5 w-5" /> Start gratis met je waardebepaling <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -566,8 +698,8 @@ export default function AutoWaarde() {
       <div className="fixed inset-x-0 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-30 lg:hidden">
         <div className="mx-3 rounded-xl border border-border/60 bg-card/95 backdrop-blur p-3 shadow-floating">
           {result ? (
-            <Button onClick={handleAccountIntent} className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold">
-              <UserPlus className="h-5 w-5" /> Maak gratis account
+            <Button onClick={handlePublishClick} disabled={publishing} className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold">
+              {publishing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Megaphone className="h-5 w-5" />} Plaats gratis advertentie
             </Button>
           ) : (
             <Button
