@@ -24,6 +24,7 @@ const Privacy = lazy(() => import("./pages/Privacy"));
 const Terms = lazy(() => import("./pages/Terms"));
 const AutoWaarde = lazy(() => import("./pages/AutoWaarde"));
 const DealerInventory = lazy(() => import("./pages/DealerInventory"));
+const Dealers = lazy(() => import("./pages/Dealers"));
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ const App = () => (
                 <Route path="/wat-is-mijn-auto-waard" element={<AutoWaarde />} />
                 <Route path="/berichten" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
                 <Route path="/dealer/:slug" element={<DealerInventory />} />
+                <Route path="/dealers" element={<Dealers />} />
               </Route>
               <Route path="/auth" element={<Auth />} />
               <Route path="*" element={<NotFound />} />
