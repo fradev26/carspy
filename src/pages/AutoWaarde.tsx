@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Calculator, Car, Gauge, Calendar, BadgeCheck, BarChart3, ShieldCheck, Sparkles, ArrowRight,
-  CheckCircle2, Star, Clock, TrendingUp, Mail, Loader2, UserPlus, Megaphone,
+  CheckCircle2, Star, Clock, TrendingUp, Mail, Loader2, Megaphone, LogIn,
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,8 @@ import { CAR_BRANDS, CAR_MODELS } from '@/types/listing';
 import { supabase } from '@/integrations/supabase/client';
 import { useMarketingEvents } from '@/hooks/useMarketingEvents';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { insertVehicleLead, createDraftListing, attachListingToLead, attachUserToLead } from '@/lib/vehicleLeads';
 
 const currentYear = new Date().getFullYear();
 const years = Array.from({ length: 25 }, (_, i) => currentYear - i);
