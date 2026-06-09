@@ -562,6 +562,86 @@ export type Database = {
         }
         Relationships: []
       }
+      vehicle_leads: {
+        Row: {
+          brand: string
+          created_at: string
+          email: string | null
+          estimated_price: number | null
+          fuel_type: string | null
+          id: string
+          listing_id: string | null
+          mileage: number | null
+          model: string | null
+          offer_eligible_at: string | null
+          price_max: number | null
+          price_min: number | null
+          session_id: string | null
+          status: Database["public"]["Enums"]["vehicle_lead_status"]
+          transmission: string | null
+          updated_at: string
+          user_id: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          year: number | null
+        }
+        Insert: {
+          brand: string
+          created_at?: string
+          email?: string | null
+          estimated_price?: number | null
+          fuel_type?: string | null
+          id?: string
+          listing_id?: string | null
+          mileage?: number | null
+          model?: string | null
+          offer_eligible_at?: string | null
+          price_max?: number | null
+          price_min?: number | null
+          session_id?: string | null
+          status?: Database["public"]["Enums"]["vehicle_lead_status"]
+          transmission?: string | null
+          updated_at?: string
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          year?: number | null
+        }
+        Update: {
+          brand?: string
+          created_at?: string
+          email?: string | null
+          estimated_price?: number | null
+          fuel_type?: string | null
+          id?: string
+          listing_id?: string | null
+          mileage?: number | null
+          model?: string | null
+          offer_eligible_at?: string | null
+          price_max?: number | null
+          price_min?: number | null
+          session_id?: string | null
+          status?: Database["public"]["Enums"]["vehicle_lead_status"]
+          transmission?: string | null
+          updated_at?: string
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicle_leads_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -575,9 +655,16 @@ export type Database = {
         Returns: boolean
       }
       is_listing_owner: { Args: { listing_id: string }; Returns: boolean }
+      mark_dealer_eligible_leads: { Args: never; Returns: number }
     }
     Enums: {
       app_role: "admin" | "moderator"
+      vehicle_lead_status:
+        | "analyzed"
+        | "account_created"
+        | "listed"
+        | "sold"
+        | "offered_to_dealers"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -706,6 +793,13 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator"],
+      vehicle_lead_status: [
+        "analyzed",
+        "account_created",
+        "listed",
+        "sold",
+        "offered_to_dealers",
+      ],
     },
   },
 } as const
