@@ -55,6 +55,7 @@ export default function AutoWaarde() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { trackEvent } = useMarketingEvents('autowaarde');
+  const { user } = useAuth();
 
   const [brand, setBrand] = useState('');
   const [model, setModel] = useState('');
@@ -66,6 +67,12 @@ export default function AutoWaarde() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [emailSent, setEmailSent] = useState(false);
+  const [leadId, setLeadId] = useState<string | null>(null);
+  const [publishing, setPublishing] = useState(false);
+  const [authMode, setAuthMode] = useState<'signup' | 'signin'>('signup');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [showInlineAuth, setShowInlineAuth] = useState(false);
 
   const availableModels = brand ? CAR_MODELS[brand] || [] : [];
 
