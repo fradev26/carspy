@@ -1,12 +1,44 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 
 export type ChatMessage = { role: 'user' | 'assistant'; content: string };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+const LEAD_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/dealer-lead`;
 
-export function useChat() {
+const LEAD_BLOCK_RE = /```vatuur-lead\s*([\s\S]*?)```/g;
+
+type UseChatOptions = {
+  context?: 'default' | 'dealer';
+  onLeadSubmitted?: (lead: Record<string, string>) => void;
+};
+
+async function submitLead(payload: Record<string, unknown>) {
+  try {
+    const resp = await fetch(LEAD_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      },
+      body: JSON.stringify({ ...payload, source: 'dealers_page_ai' }),
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      console.warn('Lead submit failed:', resp.status, err);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.warn('Lead submit error:', e);
+    return false;
+  }
+}
+
+export function useChat(options: UseChatOptions = {}) {
+  const { context = 'default', onLeadSubmitted } = options;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const submittedLeadsRef = useRef<Set<string>>(new Set());
 
   const send = useCallback(async (input: string) => {
     const userMsg: ChatMessage = { role: 'user', content: input };
@@ -32,7 +64,7 @@ export function useChat() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ messages: [...messages, userMsg] }),
+        body: JSON.stringify({ messages: [...messages, userMsg], context }),
       });
 
       if (!resp.ok) {
@@ -88,15 +120,37 @@ export function useChat() {
           } catch { /* ignore */ }
         }
       }
+
+      // After stream completes: detect dealer-lead blocks in assistant message
+      if (context === 'dealer' && assistantSoFar) {
+        const matches = [...assistantSoFar.matchAll(LEAD_BLOCK_RE)];
+        for (const m of matches) {
+          const raw = m[1].trim();
+          if (submittedLeadsRef.current.has(raw)) continue;
+          try {
+            const lead = JSON.parse(raw) as Record<string, string>;
+            if (lead.email && lead.name) {
+              submittedLeadsRef.current.add(raw);
+              const ok = await submitLead(lead);
+              if (ok) onLeadSubmitted?.(lead);
+            }
+          } catch {
+            console.warn('Invalid lead JSON from AI:', raw);
+          }
+        }
+      }
     } catch (e) {
       console.error('Chat error:', e);
       upsertAssistant(`⚠️ ${e instanceof Error ? e.message : 'Er ging iets mis. Probeer het opnieuw.'}`);
     } finally {
       setIsLoading(false);
     }
-  }, [messages]);
+  }, [messages, context, onLeadSubmitted]);
 
-  const clear = useCallback(() => setMessages([]), []);
+  const clear = useCallback(() => {
+    setMessages([]);
+    submittedLeadsRef.current.clear();
+  }, []);
 
   return { messages, isLoading, send, clear };
 }
