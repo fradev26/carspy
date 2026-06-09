@@ -71,7 +71,7 @@ function makeLead(opts: {
 }
 
 async function renderWith(lead: ReturnType<typeof makeLead>) {
-  leadsMock.mockResolvedValueOnce({ data: [lead] });
+  leadsMock.mockResolvedValue({ data: [lead] });
   render(
     <MemoryRouter>
       <MyLeadsPanel />
