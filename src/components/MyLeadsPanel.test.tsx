@@ -4,10 +4,10 @@ import { MemoryRouter } from 'react-router-dom';
 import MyLeadsPanel from './MyLeadsPanel';
 
 // --- Mocks ---
-const USER = { id: 'user-1' };
-vi.mock('@/hooks/useAuth', () => ({
-  useAuth: () => ({ user: USER }),
-}));
+vi.mock('@/hooks/useAuth', () => {
+  const user = { id: 'user-1' };
+  return { useAuth: () => ({ user }) };
+});
 vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({ toast: vi.fn() }),
 }));
