@@ -94,6 +94,9 @@ async function renderWith(lead: ReturnType<typeof makeLead>) {
 
 beforeEach(() => {
   leadsMock.mockReset();
+  updateMock.mockReset();
+  eqUpdateMock.mockReset();
+  fromMock.mockReset();
 });
 
 describe('MyLeadsPanel — contextual actions per status', () => {
