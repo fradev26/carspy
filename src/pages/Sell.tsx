@@ -35,7 +35,10 @@ export default function Sell() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [currentStep, setCurrentStep] = useState(0);
+  const [searchParams] = useSearchParams();
+  const draftId = searchParams.get('draftId');
+  const initialStep = Math.min(parseInt(searchParams.get('step') || '0') || 0, 4);
+  const [currentStep, setCurrentStep] = useState(initialStep);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -49,6 +52,36 @@ export default function Sell() {
     brand: '', model: '', year: '', mileage: '', fuelType: '', transmission: '', 
     bodyType: '', color: '', power: '', price: '', description: '', city: '', province: '',
   });
+
+  // Load existing draft when arriving from AutoWaarde
+  useEffect(() => {
+    if (!draftId || !user) return;
+    (async () => {
+      const { data, error } = await supabase
+        .from('listings')
+        .select('*')
+        .eq('id', draftId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (error || !data) return;
+      setFormData({
+        brand: data.brand || '',
+        model: data.model || '',
+        year: data.year ? String(data.year) : '',
+        mileage: data.mileage ? String(data.mileage) : '',
+        fuelType: data.fuel_type || '',
+        transmission: data.transmission || '',
+        bodyType: data.body_type || '',
+        color: data.color || '',
+        power: data.power ? String(data.power) : '',
+        price: data.price ? String(data.price) : '',
+        description: data.description || '',
+        city: data.city || '',
+        province: data.province || '',
+      });
+      if (data.images?.length) setImagePreviews(data.images);
+    })();
+  }, [draftId, user]);
 
   const updateForm = (key: string, value: string) => setFormData(prev => ({ ...prev, [key]: value }));
   const validateStep = (step: number): string | null => {
