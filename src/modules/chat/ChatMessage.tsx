@@ -83,9 +83,21 @@ export function ChatMessage({ message }: Props) {
         {isUser ? (
           message.content
         ) : (
-          <div className="prose prose-sm dark:prose-invert max-w-none">
-            <ReactMarkdown components={markdownComponents}>{message.content}</ReactMarkdown>
-          </div>
+          (() => {
+            const leadRe = /```vatuur-lead\s*[\s\S]*?```/g;
+            const hasLead = leadRe.test(message.content);
+            const cleaned = message.content.replace(/```vatuur-lead\s*[\s\S]*?```/g, '').trim();
+            return (
+              <div className="prose prose-sm dark:prose-invert max-w-none">
+                {hasLead && (
+                  <div className="mb-2 rounded-lg border border-primary/30 bg-primary/5 px-2.5 py-1.5 text-xs font-medium text-primary not-prose">
+                    ✅ Je gegevens werden doorgestuurd naar onze accountmanager.
+                  </div>
+                )}
+                <ReactMarkdown components={markdownComponents}>{cleaned}</ReactMarkdown>
+              </div>
+            );
+          })()
         )}
       </div>
     </div>
