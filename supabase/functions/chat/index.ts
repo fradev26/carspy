@@ -185,12 +185,17 @@ serve(async (req) => {
   }
 
   try {
-    const { messages } = await req.json();
+    const { messages, context } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const listingsContext = await fetchListings();
-    const systemPrompt = SYSTEM_PROMPT_BASE + listingsContext;
+    let systemPrompt: string;
+    if (context === "dealer") {
+      systemPrompt = SYSTEM_PROMPT_DEALER;
+    } else {
+      const listingsContext = await fetchListings();
+      systemPrompt = SYSTEM_PROMPT_BASE + listingsContext;
+    }
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
