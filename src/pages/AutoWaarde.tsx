@@ -127,15 +127,106 @@ export default function AutoWaarde() {
       trackEvent('analysis_completed', {
         payload: { brand, model, year, mileage, suggestedPrice: ai.suggestedPrice, source: 'ai' },
       });
+      try {
+        const id = await insertVehicleLead({
+          brand, model, year: parseInt(year), mileage: parseInt(mileage),
+          fuelType, transmission,
+          estimatedPrice: ai.suggestedPrice,
+          priceMin: ai.priceRange.min, priceMax: ai.priceRange.max,
+        }, user?.id);
+        setLeadId(id);
+      } catch (err) { console.warn('lead insert failed', err); }
     } catch {
       const fb = fallbackEstimate({ brand, year: parseInt(year), mileage: parseInt(mileage) });
       setResult(fb);
       trackEvent('analysis_completed', {
         payload: { brand, model, year, mileage, suggestedPrice: fb.suggestedPrice, source: 'fallback' },
       });
+      try {
+        const id = await insertVehicleLead({
+          brand, model, year: parseInt(year), mileage: parseInt(mileage),
+          fuelType, transmission,
+          estimatedPrice: fb.suggestedPrice,
+          priceMin: fb.priceRange.min, priceMax: fb.priceRange.max,
+        }, user?.id);
+        setLeadId(id);
+      } catch (err) { console.warn('lead insert failed', err); }
     } finally {
       setLoading(false);
       setTimeout(() => document.getElementById('resultaat')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    }
+  };
+
+  const goToDraftWizard = async (uid: string) => {
+    if (!result) return;
+    const listingId = await createDraftListing(uid, {
+      brand, model: model || brand,
+      year: parseInt(year), mileage: parseInt(mileage),
+      fuelType, transmission,
+      suggestedPrice: result.suggestedPrice,
+    });
+    if (leadId) await attachListingToLead(leadId, listingId);
+    trackEvent('ad_intent', { payload: { suggestedPrice: result.suggestedPrice, brand, model, draftId: listingId } });
+    navigate(`/verkopen?draftId=${listingId}&step=2`);
+  };
+
+  const handlePublishClick = async () => {
+    if (!result) return;
+    if (user) {
+      setPublishing(true);
+      try { await goToDraftWizard(user.id); }
+      catch (e) {
+        console.error(e);
+        toast({ title: 'Kon advertentie niet aanmaken', variant: 'destructive' });
+      } finally { setPublishing(false); }
+    } else {
+      setShowInlineAuth(true);
+      setTimeout(() => document.getElementById('inline-auth')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+    }
+  };
+
+  const handleInlineAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emailRegex.test(authEmail) || authPassword.length < 6) {
+      toast({ title: 'Vul een geldig e-mailadres en wachtwoord (≥6 tekens) in', variant: 'destructive' });
+      return;
+    }
+    setPublishing(true);
+    try {
+      if (authMode === 'signup') {
+        const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
+          email: authEmail, password: authPassword,
+          options: { emailRedirectTo: `${window.location.origin}/`, data: { full_name: authEmail.split('@')[0] } },
+        });
+        if (signUpErr) throw signUpErr;
+        let uid = signUpData.user?.id;
+        if (!signUpData.session) {
+          const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+            email: authEmail, password: authPassword,
+          });
+          if (signInErr) {
+            toast({ title: 'Bevestig je e-mail', description: 'Check je inbox om je account te activeren, en kom dan terug om je advertentie te publiceren.' });
+            setPublishing(false);
+            return;
+          }
+          uid = signInData.user?.id;
+        }
+        if (!uid) throw new Error('Geen gebruiker');
+        trackEvent('account_intent', { email: authEmail, payload: { brand, model, suggestedPrice: result?.suggestedPrice } });
+        if (leadId) await attachUserToLead(leadId, uid);
+        await goToDraftWizard(uid);
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({ email: authEmail, password: authPassword });
+        if (error) throw error;
+        const uid = data.user?.id;
+        if (!uid) throw new Error('Geen gebruiker');
+        if (leadId) await attachUserToLead(leadId, uid);
+        await goToDraftWizard(uid);
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Aanmelden mislukt';
+      toast({ title: msg, variant: 'destructive' });
+      setPublishing(false);
     }
   };
 
