@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Shield, Zap, Users, Car, CheckCircle2, Star, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { HeroSearch } from '@/modules/search';
+import { HeroSearch, SmartSearchBar } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
 import { useListings } from '@/hooks/useListings';
 import { SEOHead } from '@/components/SEOHead';
