@@ -166,6 +166,7 @@ export default function Search() {
   const [page, setPage] = useState(1);
   const perPage = 24;
   const { listings: allListings, loading: listingsLoading } = useListings();
+  const [mobileResultsRevealed, setMobileResultsRevealed] = useState(false);
 
   // Update filters when URL params change
   useEffect(() => {
