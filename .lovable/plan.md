@@ -1,49 +1,43 @@
-# Mobiel optimaliseren — voertuig-detailpagina
+# Swipe-navigatie in voertuiggalerij (lightbox)
 
-Doel: volledige foto's tonen zonder crop, geen horizontale scroll, alles leesbaar vanaf 320px breed.
+## Doel
+In de fullscreen lightbox kan de gebruiker op mobiel horizontaal swipen om naar de vorige/volgende foto te gaan. Pijltjes blijven werken op desktop. Verticale paginascroll en lazy loading blijven intact.
 
-## 1. Foto-galerij (`src/modules/listings/ImageGallery.tsx`)
+## Aan te passen bestand
+- `src/modules/listings/ImageGallery.tsx` (enige aanpassing)
 
-- Hoofdfoto wisselt op mobiel naar `object-contain` met donkere achtergrond, zodat de volledige auto zichtbaar is (witruimte boven/onder is toegestaan).
-- Desktop blijft `object-cover` voor strakke hero-uitstraling.
-- Aspect ratio op mobiel naar `4/3` (i.p.v. `16/10`) zodat staande/liggende foto's voldoende ruimte krijgen; desktop blijft `16/9`.
-- Image-element krijgt `max-w-full` + `h-auto` semantiek binnen de aspect-container, zodat niets buiten de container valt.
-- Thumbnails-rij: `overflow-x-auto` blijft (bedoeld), maar de wrapper krijgt `max-w-full` + `min-w-0` zodat de pagina zelf niet meescrolt.
-- Lightbox-knoppen blijven, maar positionering controleren op 320px (geen overlap met counter).
+## Aanpak
 
-## 2. Detail-layout (`src/pages/ListingDetail.tsx`)
+1. **Touch handlers op het lightbox-image-container**
+   - Voeg `onTouchStart`, `onTouchMove`, `onTouchEnd` toe op de `<div>` rond de fullscreen `<img>`.
+   - Track `touchStartX`, `touchStartY`, `touchEndX`, `touchEndY` via `useRef`.
+   - In `onTouchEnd`: bereken `deltaX` en `deltaY`.
+     - Als `Math.abs(deltaX) > 50` én `Math.abs(deltaX) > Math.abs(deltaY) * 1.5` → trigger `goToNext()` (swipe links) of `goToPrevious()` (swipe rechts).
+     - Anders: niets doen (voorkomt per ongeluk wisselen bij tap/verticale gestures).
+   - Drempel 50px voorkomt accidentele triggers; ratio-check zorgt dat verticale scrolls niet als swipe tellen.
 
-- Buitenste wrapper: `min-w-0` + `overflow-x-clip` toevoegen aan grid-kolommen zodat lange tekst de grid niet oprekt.
-- Key Specs-kaarten: huidige `truncate` op de waarde wordt op mobiel afgeknipt → vervangen door `break-words` met `whitespace-normal`; bij erg lange waarden mag de kaart twee regels worden.
-- Beschrijving (`<p>`): toevoegen `break-words` + `overflow-wrap: anywhere` (via util-class) en `whitespace-pre-line` behouden — geen truncate.
-- Specificatie-`<dl>`-blokken (Verbruik & emissies, Garantie & inspectie, Verkoper, etc.): op mobiel naar één kolom met grid `grid-cols-[minmax(7rem,40%)_1fr]` zodat label/value netjes uitlijnen en lange waardes wrappen. `sm:` en hoger behoudt huidige 2/3-koloms layout.
-- `<dd>` krijgt `break-words` / `overflow-wrap-anywhere`.
-- Breadcrumb-laatste item: `truncate` blijft (bedoeld om overflow van titel te voorkomen), maar `max-w-[60vw]` zodat hij niet uit beeld valt.
+2. **Voorkom dat swipen de dialog sluit**
+   - Radix Dialog sluit niet op tap/swipe binnen content, dus standaard gedrag is OK.
+   - `e.stopPropagation()` op `onTouchStart` van de img-container, om te voorkomen dat overlay-click-to-close getriggerd wordt tijdens een swipe-gebaar.
 
-## 3. Globale utility (`src/index.css`)
+3. **Mobiel vs desktop**
+   - Pijltjes in lightbox blijven gerenderd, maar krijgen `hidden md:flex` zodat ze op mobiel verdwijnen en swipe het overneemt.
+   - Image counter (`3 / 10`) blijft ongewijzigd.
 
-- Kleine utility toevoegen:
-  ```css
-  .break-anywhere { overflow-wrap: anywhere; word-break: break-word; }
-  ```
-  Gebruikt voor beschrijving + lange spec-waarden.
-- Geen verdere globale `overflow-x: hidden`-regels; bestaande `overflow-x: clip` op `html,body` blijft.
+4. **Performance / smoothness**
+   - Geen state updates tijdens `onTouchMove` (we lezen alleen refs) → geen re-renders → vloeiend.
+   - Geen `preventDefault()` op touchmove → verticale scroll buiten de lightbox blijft mogelijk; binnen de lightbox is er toch niets te scrollen.
+   - `touch-action: pan-y` via Tailwind `touch-pan-y` op de image-container, zodat de browser horizontale gestures aan ons overlaat en verticale gestures zelf afhandelt.
 
-## 4. Sticky sidebar / overige
+5. **Edge cases**
+   - `goToNext` / `goToPrevious` zijn al circulair (wrap-around) — laatste → eerste, eerste → laatste werken automatisch.
+   - Snelle opeenvolgende swipes werken omdat we alleen `setCurrentIndex` aanroepen, geen debounce nodig.
+   - Single image: swipe-handlers blijven actief maar `validImages.length > 1` check in handler voorkomt onnodige state-updates.
 
-- Sidebar-kaart (rechterkant desktop) ongewijzigd; op mobiel staat hij al onder de content via grid-stacking.
-- Related listings grid (`ListingGrid`) ongewijzigd, maar visueel checken op 320px.
-
-## 5. Verificatie
-
-Na implementatie: preview testen op 320, 375, 414, 768 px:
-- volledige foto zichtbaar zonder crop
-- geen horizontale scrollbar
-- lange beschrijving + lange spec-waarden wrappen
-- specs-kaarten tonen volledige waarde
-
-## Bestanden die wijzigen
-
-- `src/modules/listings/ImageGallery.tsx` — object-contain op mobiel, aspect ratio, min-w-0
-- `src/pages/ListingDetail.tsx` — spec-grids, dl-layout, break-anywhere op beschrijving en dd's, min-w-0 op grid-kolommen, truncate verwijderen op Key Specs
-- `src/index.css` — `.break-anywhere` utility
+## QA-checklist (na implementatie)
+- 320 / 375 / 390 / 414 / 768 px portrait + landscape
+- Swipe links/rechts wisselt foto onmiddellijk
+- Wrap-around werkt (laatste→eerste, eerste→laatste)
+- Tap op afbeelding sluit lightbox niet onbedoeld
+- Verticale scroll op de detailpagina (buiten lightbox) blijft werken
+- Desktop: pijltjes nog steeds zichtbaar en functioneel

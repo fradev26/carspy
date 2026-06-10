@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { ChevronLeft, ChevronRight, X, ZoomIn, Expand } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogClose } from '@/components/ui/dialog';
@@ -14,6 +14,36 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [imageErrors, setImageErrors] = useState<Set<number>>(new Set());
   const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
+
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+  const touchEndX = useRef(0);
+  const touchEndY = useRef(0);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    e.stopPropagation();
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    touchEndX.current = e.touches[0].clientX;
+    touchEndY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+    touchEndY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = () => {
+    if (validImages.length <= 1) return;
+    const deltaX = touchEndX.current - touchStartX.current;
+    const deltaY = touchEndY.current - touchStartY.current;
+    if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+      if (deltaX < 0) goToNext();
+      else goToPrevious();
+    }
+  };
+
+
 
   const validImages = images.length > 0 ? images : ['/placeholder.svg'];
 
@@ -128,21 +158,27 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
       {/* Lightbox */}
       <Dialog open={isLightboxOpen} onOpenChange={setIsLightboxOpen}>
         <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-black/95 border-none">
-          <div className="relative flex items-center justify-center h-[90vh]">
+          <div
+            className="relative flex items-center justify-center h-[90vh] touch-pan-y select-none"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
             <img
               src={getImageUrl(currentIndex)}
               alt={`${alt} - Afbeelding ${currentIndex + 1}`}
-              className="max-h-full max-w-full object-contain"
+              className="max-h-full max-w-full object-contain pointer-events-none"
+              draggable={false}
               onError={() => handleImageError(currentIndex)}
             />
 
-            {/* Navigation in lightbox */}
+            {/* Navigation in lightbox - desktop only */}
             {validImages.length > 1 && (
               <>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute left-4 top-1/2 -translate-y-1/2 h-14 w-14 rounded-md bg-white/10 text-white hover:bg-white/20"
+                  className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 h-14 w-14 rounded-md bg-white/10 text-white hover:bg-white/20"
                   onClick={goToPrevious}
                 >
                   <ChevronLeft className="h-8 w-8" />
@@ -150,7 +186,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 h-14 w-14 rounded-md bg-white/10 text-white hover:bg-white/20"
+                  className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 h-14 w-14 rounded-md bg-white/10 text-white hover:bg-white/20"
                   onClick={goToNext}
                 >
                   <ChevronRight className="h-8 w-8" />
