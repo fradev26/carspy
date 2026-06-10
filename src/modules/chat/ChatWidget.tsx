@@ -27,6 +27,7 @@ export const ChatWidget = forwardRef<HTMLDivElement>(function ChatWidget(_props,
   const location = useLocation();
   const isHomepage = location.pathname === '/';
   const isDealersPage = location.pathname === '/dealers';
+  const isMobile = useIsMobile();
 
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
