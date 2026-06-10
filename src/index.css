@@ -235,20 +235,8 @@
   @apply bg-muted-foreground/30;
 }
 
-/* Disable horizontal scrolling on all viewports */
+/* Voorkom horizontale scroll zonder content te knippen of sticky te breken.
+   `overflow-x: clip` creëert geen containing block en breekt position: sticky niet. */
 html, body {
-  overflow-x: hidden;
-  max-width: 100%;
-}
-#root {
-  overflow-x: hidden;
-  max-width: 100%;
-  position: relative;
-}
-img, video {
-  max-width: 100%;
-  height: auto;
-}
-table {
-  max-width: 100%;
+  overflow-x: clip;
 }
