@@ -55,7 +55,8 @@ export const ChatWidget = forwardRef<HTMLDivElement>(function ChatWidget(_props,
   };
 
   // Hide on homepage — the inline AIChatSection takes over
-  if (isHomepage) return null;
+  // Hide on mobile — the bottom nav AI button is the single entrypoint
+  if (isHomepage || isMobile) return null;
 
   const mobileBottomOffset = isDealersPage
     ? 'bottom-[calc(9rem+env(safe-area-inset-bottom))]'
