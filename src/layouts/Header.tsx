@@ -75,9 +75,8 @@ export function Header() {
   return (
     <header className={cn(
       "fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 safe-top safe-x",
-      isTransparent
-        ? "bg-transparent"
-        : "bg-card/95 backdrop-blur-lg border-b border-border/60 shadow-sm"
+      "bg-card/95 backdrop-blur-lg border-b border-border/60 shadow-sm",
+      isTransparent && "lg:bg-transparent lg:backdrop-blur-0 lg:border-transparent lg:shadow-none"
     )}>
       {/* Mobile + Tablet Header */}
       <div className="container flex h-14 items-center justify-between gap-4 lg:hidden">
@@ -85,13 +84,14 @@ export function Header() {
 
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label={unreadCount ? `Open menu (${unreadCount} nieuwe berichten)` : 'Open menu'} className={cn("relative hover:bg-transparent", isTransparent ? "text-white" : "text-foreground hover:bg-muted")}>
+            <Button variant="ghost" size="icon" aria-label={unreadCount ? `Open menu (${unreadCount} nieuwe berichten)` : 'Open menu'} className="relative text-foreground hover:bg-muted">
               <Menu className="h-5 w-5" />
               {user && unreadCount > 0 && (
                 <span className="absolute top-1 right-1 inline-flex h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-card" />
               )}
             </Button>
           </SheetTrigger>
+
           <SheetContent side="right" className="w-80 overflow-y-auto">
             <SheetHeader>
               <SheetTitle className="text-left">
