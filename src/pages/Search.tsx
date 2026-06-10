@@ -10,17 +10,21 @@ import { Badge } from '@/components/ui/badge';
 import { FilterPanel, FilterChips, SmartSearchBar } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
 import { useListings } from '@/hooks/useListings';
-import { 
-  SearchFilters, 
-  SORT_OPTIONS, 
-  BodyType, 
-  FuelType, 
-  TransmissionType, 
+import {
+  SearchFilters,
+  SORT_OPTIONS,
+  BodyType,
+  FuelType,
+  TransmissionType,
   DriveType,
   PaintType,
   InteriorMaterial,
   OnlineSince,
   WarrantyOption,
+  CAR_BRANDS,
+  CAR_MODELS,
+  FUEL_TYPES,
+  TRANSMISSION_TYPES,
 } from '@/types/listing';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
 import { useSavedSearches } from '@/hooks/useSavedSearches';
