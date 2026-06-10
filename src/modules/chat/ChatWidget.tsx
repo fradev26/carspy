@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChatMessage } from './ChatMessage';
 import { useChat } from '@/hooks/useChat';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
 const DEFAULT_SUGGESTIONS = [
@@ -26,6 +27,7 @@ export const ChatWidget = forwardRef<HTMLDivElement>(function ChatWidget(_props,
   const location = useLocation();
   const isHomepage = location.pathname === '/';
   const isDealersPage = location.pathname === '/dealers';
+  const isMobile = useIsMobile();
 
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
@@ -53,7 +55,8 @@ export const ChatWidget = forwardRef<HTMLDivElement>(function ChatWidget(_props,
   };
 
   // Hide on homepage — the inline AIChatSection takes over
-  if (isHomepage) return null;
+  // Hide on mobile — the bottom nav AI button is the single entrypoint
+  if (isHomepage || isMobile) return null;
 
   const mobileBottomOffset = isDealersPage
     ? 'bottom-[calc(9rem+env(safe-area-inset-bottom))]'
