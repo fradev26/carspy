@@ -1,45 +1,55 @@
-## Optimalisatie mobiel accountmenu
+## Doel
 
-### Analyse
-- `POPULAR_BRANDS` (regels 30-34) wordt alleen gebruikt in de mobiele Sheet (regels 121-131 voor ingelogd, 151-161 voor uitgelogd). Geen andere afhankelijkheden.
-- `Menu` icoon van `lucide-react` wordt alleen gebruikt als hamburger-trigger (regel 88). Kan vervangen worden door bestaande `User` import.
-- Desktop-navigatie staat in een apart blok (`lg:flex`) en blijft volledig ongewijzigd.
+Op mobiel "zoeken vóór bladeren" doorvoeren, zonder de desktopervaring te wijzigen.
 
-### Wijzigingen
+## 1. Mobiele zoekpagina (`src/pages/Search.tsx`)
 
-1. **Verwijder "Populaire merken" sectie**
-   - Verwijder beide `Populaire merken` blokken uit de mobiele Sheet (ingelogd + uitgelogd pad).
-   - Verwijder de `POPULAR_BRANDS` constant (regels 30-34) — geen externe verwijzingen.
+Introduceer een **intent gate** die enkel op mobiel (`lg:hidden`) actief is. Resultaten worden alleen geladen/getoond op mobiel zodra de gebruiker een actie heeft ondernomen.
 
-2. **Vervang hamburger icoon door profiel icoon**
-   - Vervang `<Menu className="h-5 w-5" />` door `<User className="h-5 w-5" />` (al geïmporteerd).
-   - Behoud de ongelezen-indicator (rode dot) op het icoon voor ingelogde gebruikers.
-   - Pas `aria-label` aan naar profiel-gerichte tekst.
+Bepaling "heeft de gebruiker iets gedaan?" (`hasUserIntent`):
+- één of meer URL-parameters aanwezig: `q`, `aiIntent`, of een actieve filter (`activeFilterCount > 0`), OF
+- de gebruiker heeft expliciet "Bekijk alle resultaten" geklikt (lokale state `showAll`, niet gepersisteerd).
 
-3. **Herorden menu-items**
-   - Voor ingelogde gebruikers:
-     1. Mijn advertenties
-     2. Berichten (met `UnreadBadge`)
-     3. Favorieten
-     4. Zakelijk Dashboard (dealer only, indien aanwezig)
-     5. Separator
-     6. Privacybeleid
-     7. Algemene voorwaarden
-     8. Separator
-     9. Uitloggen
-   - Voor uitgelogde gebruikers: alleen "Inloggen / Registreren", separator, Privacybeleid, Algemene voorwaarden (geen merken).
+Mobiele layout vóór intent (alleen `<lg`):
+1. `SmartSearchBar variant="compact"` (AI / natuurlijke taal).
+2. Eenvoudig zoekveld voor vrije tekst (zet `?q=...` in URL bij submit) — hergebruikt bestaand `Input`.
+3. Compacte filterkaart met de belangrijkste filters: Merk, Model, Prijs (min/max), Bouwjaar (min/max), Kilometerstand (max), Brandstof, Transmissie. Gebruikt bestaande filter-controls uit `FilterPanel` of inline `Select`s gevoed met dezelfde opties; aanpassen werkt via `handleFiltersChange`.
+4. Knop "Meer filters" → opent bestaande mobiele filter-`Drawer` (volledige `FilterPanel`).
+5. Primaire CTA "Bekijk resultaten" → zet `showAll = true`, scrolt naar resultatenblok. Toont live aantal (`{filteredListings.length}`).
+6. Secundaire link "Wis alles" wanneer er filters actief zijn.
 
-4. **Badge-behoud**
-   - Ongelezen dot blijft op het `SheetTrigger` icoon.
-   - `UnreadBadge` blijft naast "Berichten" in het menu.
+Resultatensectie:
+- Op mobiel alleen renderen wanneer `hasUserIntent` true is. Anders blok volledig verbergen (geen skeletons, geen lege-state).
+- Wanneer zichtbaar: bestaande `ListingGrid` + paginering + `FilterChips` + "Bewaar zoekopdracht"-knop blijven werken.
+- Desktop (`lg:`) toont resultaten en sidebar onverkort zoals nu.
 
-5. **UX-afwerking**
-   - Verwijder overtollige separators waar de merkenlijst tussen stond.
-   - Controleer spacing zodat alle primaire acties binnen één schermhoogte passen zonder scroll.
+Bestaande URL-sync, `parseFiltersFromURL`, `useSavedSearches`, en filter-logica blijven ongewijzigd.
 
-### Niet in scope
-- Desktop navigatie, zoekbalk, transparante header-logica, bottom navigation.
-- `isDealer` conditional wordt ongewijzigd meegenomen.
+## 2. Mobiele homepage (`src/pages/Index.tsx`)
 
-### Bestand
-- `src/layouts/Header.tsx` — alleen het mobiele Sheet-blok (regels ~85-173).
+Voeg direct onder de header (boven "Uitgelichte advertenties") een **compacte AI search module** toe, alleen op mobiel (`lg:hidden`):
+- Sectie `py-4` met `container`.
+- Korte koptekst: "Wat zoek je?" (h2, klein).
+- `SmartSearchBar variant="compact"` met aangepaste placeholder: *"Ik zoek een zwarte Audi A4 automaat onder €25.000"* (placeholder via prop toevoegen aan `SmartSearchBar` — optionele `placeholder?: string`, default huidige tekst, geen breaking change).
+- Kleine tekstlink eronder: "Of blader klassiek →" naar `/zoeken`.
+
+Geen grote hero, geen achtergrondafbeelding. Desktop-hero en alle andere secties blijven ongewijzigd.
+
+Volgorde mobiel:
+1. (Header — global)
+2. Compacte AI search
+3. Uitgelichte advertenties
+4. Features / CTA / FAQ (bestaand)
+
+## Technische details
+
+- `src/pages/Search.tsx`: nieuwe state `showAll`, derived `hasUserIntent`, nieuwe mobiele "intent panel" sectie boven het bestaande resultatenblok, mobiele resultaten wikkelen in `{(hasUserIntent) && (...)}` met `lg:block` fallback zodat desktop altijd resultaten toont (`<div className="hidden lg:block">` voor desktop-altijd-zichtbaar deel + `<div className="lg:hidden">{hasUserIntent && ...}</div>` voor mobiel).
+- `src/modules/search/SmartSearchBar.tsx`: voeg optionele `placeholder` prop toe.
+- `src/pages/Index.tsx`: nieuwe `<section className="lg:hidden ...">` direct boven de bestaande "Uitgelichte advertenties" sectie.
+- Geen wijzigingen aan filterlogica, URL-sync, of desktop-layout.
+
+## Niet in scope
+
+- Geen wijzigingen aan `FilterPanel` internals.
+- Geen aanpassingen aan analytics/conversie-tracking.
+- Geen wijziging van listing-data-fetching (`useListings` blijft hetzelfde).
