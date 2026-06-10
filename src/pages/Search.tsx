@@ -358,22 +358,6 @@ export default function Search() {
     return value !== undefined && value !== '' && (!Array.isArray(value) || value.length > 0);
   }).length;
 
-  // Mobile "intent gate": only render results on mobile after a user action
-  const hasUserIntent =
-    showAllMobile ||
-    activeFilterCount > 0 ||
-    !!searchParams.get('q') ||
-    !!searchParams.get('aiIntent');
-
-  const handleMobileFreeTextSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const q = mobileQuery.trim();
-    const next = new URLSearchParams(searchParams);
-    if (q) next.set('q', q);
-    else next.delete('q');
-    setSearchParams(next);
-    setShowAllMobile(true);
-  };
 
   const updateFilterValue = (key: keyof SearchFilters, value: string | number | undefined) => {
     const next = { ...filters };
