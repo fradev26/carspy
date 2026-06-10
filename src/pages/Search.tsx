@@ -356,6 +356,44 @@ export default function Search() {
     return value !== undefined && value !== '' && (!Array.isArray(value) || value.length > 0);
   }).length;
 
+  // Mobile "intent gate": only render results on mobile after a user action
+  const hasUserIntent =
+    showAllMobile ||
+    activeFilterCount > 0 ||
+    !!searchParams.get('q') ||
+    !!searchParams.get('aiIntent');
+
+  const handleMobileFreeTextSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = mobileQuery.trim();
+    const next = new URLSearchParams(searchParams);
+    if (q) next.set('q', q);
+    else next.delete('q');
+    setSearchParams(next);
+    setShowAllMobile(true);
+  };
+
+  const updateFilterValue = (key: keyof SearchFilters, value: string | number | undefined) => {
+    const next = { ...filters };
+    if (value === undefined || value === '' || value === 'all') {
+      delete next[key];
+    } else {
+      (next as Record<string, unknown>)[key] = value;
+    }
+    handleFiltersChange(next);
+  };
+
+  const updateArrayFilter = <K extends 'fuelTypes' | 'transmissions'>(key: K, value: string) => {
+    const next = { ...filters };
+    if (!value || value === 'all') {
+      delete next[key];
+    } else {
+      (next as Record<string, unknown>)[key] = [value];
+    }
+    handleFiltersChange(next);
+  };
+
+
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
