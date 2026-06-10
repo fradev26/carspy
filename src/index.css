@@ -235,17 +235,20 @@
   @apply bg-muted-foreground/30;
 }
 
-/* Disable horizontal scrolling on mobile */
-@media (max-width: 768px) {
-  html, body {
-    overflow-x: hidden;
-    max-width: 100vw;
-  }
-  #root {
-    overflow-x: hidden;
-    max-width: 100vw;
-  }
-  img, video, table {
-    max-width: 100%;
-  }
+/* Disable horizontal scrolling on all viewports */
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+#root {
+  overflow-x: hidden;
+  max-width: 100%;
+  position: relative;
+}
+img, video {
+  max-width: 100%;
+  height: auto;
+}
+table {
+  max-width: 100%;
 }
