@@ -1,85 +1,109 @@
-# Van waardebepaling → advertentie in 1 klik + dealer-pool
 
-## Doel
+# VATUUR Listing datacontract — implementatie
 
-1. Na de AI-analyse op `/wat-is-mijn-auto-waard` moet een particulier in **zo min mogelijk klikken** zijn auto online hebben.
-2. Elke geanalyseerde wagen wordt opgeslagen als **lead**, zodat we hem later (na 2 weken zonder verkoop of na een afgelopen boost) automatisch kunnen aanbieden aan dealers.
+Het doel: één schema voor manuele én AutoScout24-listings, en een detail- + kaart- + filterweergave die de nieuwe velden + eenheden respecteert.
 
-## 1. Snelste verkoop-flow (frictie weghalen)
+## 1. Database — migratie op `public.listings`
 
-Vandaag stuurt de resultaten-kaart naar `/auth` of `/verkopen` met query-params. Dat zijn 2 schermen extra. Nieuwe flow:
+De huidige tabel mist het grootste deel van de contract-kolommen. Eén migratie voegt alles toe (allemaal nullable, geen breaking change voor bestaande rijen).
 
-**Eén primaire CTA in de resultaat-kaart:** `Plaats gratis advertentie →`
+**Nieuwe kolommen** (idempotent, `ADD COLUMN IF NOT EXISTS`):
 
-Gedrag afhankelijk van auth-status:
+- Identificatie & herkomst: `source text default 'manual'`, `as24_listing_id text`, `as24_publication_status text`, `vin text`, `licence_plate text`, `cross_reference_id text`, `offer_reference_id text`, `vehicle_type text`, `condition_type text`, `model_version text`
+- Eenheden + extra specs: `mileage_unit text default 'km'`, `power_unit text default 'kW'`, `alloy_wheel_size int`, `alloy_wheel_size_unit text default 'inch'`, `empty_weight int`, `empty_weight_unit text default 'kg'`, `door_count int`, `seat_count int`
+- Motor & aandrijving: `additional_fuel_types text[]`, `cylinder_capacity int`, `cylinder_capacity_unit text default 'ccm'`, `cylinder_count int`, `drivetrain text`, `gear_count int`
+- Verbruik & emissies: `co2_emissions numeric`, `co2_emissions_unit text default 'g/km'`, `consumption_combined numeric`, `consumption_city numeric`, `consumption_country numeric`, `combined_unit text default 'l/100km'`, `emission_class text`, `emission_sticker text`, `efficiency_class text`, `particle_filter bool`
+- Registratie & ownership: `first_registration_date date`, `previous_owner_count int`, `country_version text`
+- Prijs & btw: `price_public int`, `price_dealer int`, `price_negotiable bool`, `vat_deductible bool`, `vat_rate numeric`
+- Garantie & inspectie: `warranty_months int`, `warranty_unit text default 'months'`, `warranty_type text`, `warranty_details text`, `inspection_date date`, `next_inspection_date date`
+- Vrije lijsten: `equipment text[]`, `highlights text[]`, `included_services text[]`, `publication_channels text[]`
+- Geneste jsonb: `service_history jsonb`, `leasing_offers jsonb`, `marketing jsonb`, `publication jsonb`, `availability jsonb`, `condition jsonb`
+- Catch-all: `specs jsonb`, `raw_autoscout jsonb`
 
-- **Ingelogd:** klik creëert direct een `listings`-rij met `status='draft'`, prijs = `suggestedPrice`, brand/model/year/mileage/fuel/transmission uit het form. Redirect naar `/verkopen?draftId=…&step=2` (foto's & beschrijving). Geen formulier-stappen meer herhalen.
-- **Niet ingelogd:** inline mini-form in dezelfde kaart (alleen e-mail + wachtwoord, geen volledige redirect naar `/auth`). Bij submit:
-  - `signUp` met meta `intent: 'sell'`
-  - direct daarna draft-listing inserten via dezelfde call
-  - redirect naar `/verkopen?draftId=…&step=2`
-  
-  Eén secundaire link "Ik heb al een account" → opent kleine login-popover die hetzelfde doet na inloggen.
+**Trigger**: bij INSERT/UPDATE `price_public spiegelen naar price` (en omgekeerd als enkel `price` gezet is) zodat oude code blijft werken.
 
-Resultaat: van resultaat naar foto-upload in **1 klik (ingelogd)** of **1 formulier-submit (nieuw account)**.
+**RLS**: bestaande policies blijven. Eén extra restrictieve regel: kolom `raw_autoscout` wordt nooit naar anon gestuurd — in de client expliciet niet selecteren (RLS kan geen column-level masking voor anon zonder view; we lossen dit op door in `useListings` / detail-query enkel whitelisted kolommen te selecteren, en `raw_autoscout` enkel achter een admin-check te halen).
 
-Bij-aanpassingen in `src/pages/Sell.tsx`:
-- Bij `?draftId=…` in URL: laad de bestaande draft, vul `formData` in, start op stap 2 (foto's).
-- Bij `Publiceren`: `update` op de draft i.p.v. `insert`, zet `status='active'`.
+Indexen: `CREATE INDEX IF NOT EXISTS` op `(source)`, `(as24_listing_id)`, `(vin)`, `(brand, model)`.
 
-## 2. Vehicle leads opslaan (dealer-aanbod pool)
+## 2. Types — `src/types/listing.ts`
 
-Elke voltooide analyse wordt bewaard, ook als de gebruiker niets verder doet. Dit voedt de toekomstige dealer-marktplaats.
+Uitbreiden van de `Listing` interface met optionele velden die de UI gebruikt:
 
-Nieuwe tabel `public.vehicle_leads`:
-- `brand, model, year, mileage, fuel_type, transmission`
-- `estimated_price, price_min, price_max`
-- `email` (nullable, alleen als opt-in)
-- `user_id` (nullable, gevuld zodra account)
-- `listing_id` (nullable, gevuld zodra advertentie aangemaakt)
-- `session_id, utm_source, utm_medium, utm_campaign`
-- `status` enum: `analyzed | account_created | listed | sold | offered_to_dealers`
-- `offer_eligible_at` timestamp (= moment waarop hij naar de dealer-pool mag)
+```text
+modelVersion?, mileageUnit?, powerUnit?, source?, asPublicationStatus?,
+vin?, licencePlate?, vehicleType?, conditionType?,
+drivetrain?, cylinderCapacity?, cylinderCount?, gearCount?, additionalFuelTypes?[],
+co2Emissions?, consumptionCombined?, consumptionCity?, consumptionCountry?,
+emissionClass?, emissionSticker?, efficiencyClass?, particleFilter?,
+firstRegistrationDate?, previousOwnerCount?, countryVersion?,
+pricePublic?, priceNegotiable?, vatDeductible?, vatRate?,
+warrantyMonths?, warrantyType?, warrantyDetails?, inspectionDate?, nextInspectionDate?,
+equipment?[], highlights?[], includedServices?[],
+serviceHistory?, leasingOffers?, marketing?, availability?, condition?, specs?
+```
 
-RLS:
-- `INSERT` open voor anon/authenticated (analyses moeten kunnen worden vastgelegd zonder login)
-- `SELECT` alleen voor `admin` en (later) `dealer` rol
-- `UPDATE` alleen via security definer functies / edge functions
+`features` blijft als alias voor `equipment` (backward compat).
 
-Hook `useMarketingEvents` blijft events loggen; daarnaast schrijft `AutoWaarde.tsx` na `analysis_completed` één rij in `vehicle_leads`.
+## 3. Data-laag — `src/hooks/useListings.ts` + nieuwe `useListing(id)`
 
-## 3. Auto-promotie naar dealer-pool
+- `useListings`: blijft `status = 'active'`, maar `select(...)` met whitelist (geen `raw_autoscout`). Mapper uitbreiden zodat nieuwe kolommen → camelCase props op `Listing`. `price` valt terug op `price_public` als `price` null is.
+- Nieuwe hook `useListing(id)` (Supabase) vervangt `getListingById` uit mockdata. Filter `status = 'active'` voor anon. Haalt profiel via dezelfde fallback-join.
 
-Een wagen is "dealer-eligible" als:
-- gekoppelde `listings`-rij bestaat, status nog `active`, **en**
-- `(now() - listings.created_at) > 14 days` **of** `boost_until` voorbij zonder verkoop
+## 4. UI — `src/pages/ListingDetail.tsx`
 
-Implementatie:
-- DB-functie `public.mark_dealer_eligible_leads()` die alle `vehicle_leads` met bijhorende listing die aan bovenstaande voldoet op `status='offered_to_dealers'` en `offer_eligible_at=now()` zet.
-- Cron-job (pg_cron) draait dagelijks en roept deze functie aan. Geen edge function nodig — pure SQL.
-- Wanneer een listing `status='sold'` krijgt, trigger zet de lead op `status='sold'` (geen aanbieding meer aan dealers).
+Vervangt mock-fetch door `useListing`. Secties volgens contract:
 
-Het dealer-marktplaats UI zelf valt buiten scope van deze taak — de pool is enkel datavoorbereiding.
+1. **Hero**: `title`, `brand model modelVersion`, `pricePublic ?? price`, premium badge, badge "AutoScout24 import" als `source === 'autoscout'`, hoofdafbeelding.
+2. **Specs-grid**: bouwjaar, km (`mileage` + `mileageUnit`), brandstof, transmissie, vermogen (`kW + pk` afgeleid via `Math.round(kW * 1.36)`), carrosserie, kleur, deuren (`doorCount ?? doors`), zetels (`seatCount ?? seats`), drivetrain.
+3. **Verbruik & emissies**: alleen rendered als minstens één van `consumptionCombined/city/country`, `co2Emissions`, `emissionClass`, `efficiencyClass`, `emissionSticker`, `particleFilter` is gezet.
+4. **Uitrusting + Highlights**: chips uit `equipment` (fallback `features`) en `highlights`.
+5. **Beschrijving**: `description`, `whitespace-pre-line`.
+6. **Garantie & inspectie**: card als `warrantyMonths` / `warrantyType` / `inspectionDate` / `nextInspectionDate` ingevuld zijn.
+7. **Dealer-info** uit `profiles` (al via mapper).
+8. Badges: "Btw aftrekbaar" als `vatDeductible`, "Prijs bespreekbaar" als `priceNegotiable`.
 
-## Technische wijzigingen
+Helpers (in `src/lib/units.ts`, nieuw bestand): `formatPower(kw)`, `formatConsumption(value, unit)`, `formatNumberWithUnit(value, unit)`, `kwToPk(kw)`.
 
-**Nieuw:**
-- `supabase/migrations/<ts>_vehicle_leads.sql` — tabel + GRANT + RLS + `mark_dealer_eligible_leads()` + trigger op `listings.status` + pg_cron schedule
-- Helper-functie in `src/lib` om een lead te inserten vanuit de browser
+JSON-LD `Vehicle` aanvullen met `vehicleIdentificationNumber` (VIN), `bodyType`, `fuelConsumption`, `emissionsCO2`, `dateVehicleFirstRegistered`, `vehicleConfiguration`.
 
-**Aangepast:**
-- `src/pages/AutoWaarde.tsx`
-  - Schrijf `vehicle_leads`-rij bij `analysis_completed`
-  - Vervang dubbele CTA-kaart door één primaire "Plaats gratis advertentie" + inline auth/draft-creatie
-  - Verwijder/relegate de losse "Maak account" + "Plaats advertentie" knoppen
-- `src/pages/Sell.tsx`
-  - Ondersteun `?draftId=…&step=2`: bestaande draft laden, op stap 2 starten
-  - Submit doet `update` i.p.v. `insert` als er een draftId is
-- `src/hooks/useMarketingEvents.ts` — geen wijziging nodig
+## 5. UI — `src/modules/listings/ListingCard.tsx`
 
-**Niet gewijzigd:** `vehicle-analysis` edge function, dealer-pagina's, bestaande tracking-tabel.
+Toevoegen onder titel: `modelVersion` (klein, muted). Naast `Top`-badge:
 
-## Out of scope (later)
-- Dealer-zijde UI om de pool te bekijken / bieden
-- E-mail-notificatie naar de verkoper wanneer dealers een bod doen
-- Anonimiseren/maskering van persoonsgegevens richting dealers
+- "AutoScout24" badge bij `source === 'autoscout'`
+- "Btw aftrekbaar" badge bij `vatDeductible`
+
+Vermogen-chip met kW + pk als `power` aanwezig.
+
+## 6. Filtering — `src/pages/Search.tsx` + `FilterPanel`
+
+Bestaande filters (merk, model, brandstof, transmissie, carrosserie, prijs-, km-, jaar-range, premium-only) zijn al aanwezig. Toevoegen / verifiëren:
+
+- Premium-only checkbox (al aanwezig — alleen verifiëren dat `isPremium OR boost_until > now()`).
+- Sort default `created_at desc`, opties `price asc/desc`, `mileage asc` (al aanwezig).
+
+Geen nieuwe filters in scope tenzij gevraagd — het contract zegt "minstens", en de huidige set voldoet.
+
+## 7. Mockdata / cleanup
+
+`src/data/mockListings.ts` blijft enkel voor `getRelatedListings` op detailpagina; vervangen door Supabase-query "zelfde merk, andere id, limit 3, status=active". `getListingById` wordt verwijderd uit gebruik.
+
+## 8. Tests
+
+- Snapshot/unit voor `formatPower(120) === '120 kW · 163 pk'`.
+- Detail-pagina rendert "Verbruik & emissies"-sectie alleen als data aanwezig.
+- AS24-badge zichtbaar als `source === 'autoscout'`.
+
+## Technische details
+
+- TypeScript-types in `src/integrations/supabase/types.ts` worden door Lovable Cloud geregenereerd na de migratie — code die nieuwe kolommen leest komt pas dáárna.
+- `raw_autoscout` wordt nooit in een client-side `select('*')` opgenomen; whitelist gebruikt.
+- Eenheden komen altijd uit de bijhorende `*_unit` kolom; nooit hardcoden behalve voor de kW→pk afleiding.
+- Backward compat: oude rijen zonder `price_public` blijven werken via `price`-fallback.
+
+## Out of scope
+
+- AutoScout24 import-pipeline zelf (admin-platform schrijft direct).
+- Schrijven naar nieuwe velden via de wizard `Sell.tsx` — apart op te pakken; deze plan dekt enkel lezen/tonen.
+- Aparte view voor `raw_autoscout` admin-debug.

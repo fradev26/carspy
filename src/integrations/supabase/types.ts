@@ -284,99 +284,279 @@ export type Database = {
       }
       listings: {
         Row: {
+          additional_fuel_types: string[] | null
+          alloy_wheel_size: number | null
+          alloy_wheel_size_unit: string | null
+          as24_listing_id: string | null
+          as24_publication_status: string | null
+          availability: Json | null
           body_type: string
           boost_until: string | null
           brand: string
           city: string | null
+          co2_emissions: number | null
+          co2_emissions_unit: string | null
           color: string | null
+          combined_unit: string | null
+          condition: Json | null
+          condition_type: string | null
+          consumption_city: number | null
+          consumption_combined: number | null
+          consumption_country: number | null
+          country_version: string | null
           created_at: string
+          cross_reference_id: string | null
+          cylinder_capacity: number | null
+          cylinder_capacity_unit: string | null
+          cylinder_count: number | null
           description: string | null
+          door_count: number | null
           doors: number | null
+          drivetrain: string | null
+          efficiency_class: string | null
+          emission_class: string | null
+          emission_sticker: string | null
+          empty_weight: number | null
+          empty_weight_unit: string | null
           engine_size: number | null
+          equipment: string[] | null
           external_id: string | null
           external_ref: string | null
           external_source: string | null
           features: string[] | null
+          first_registration_date: string | null
           fuel_type: string
+          gear_count: number | null
+          highlights: string[] | null
           id: string
           images: string[] | null
+          included_services: string[] | null
+          inspection_date: string | null
           is_premium: boolean
+          leasing_offers: Json | null
+          licence_plate: string | null
+          marketing: Json | null
           mileage: number
+          mileage_unit: string | null
           model: string
+          model_version: string | null
+          next_inspection_date: string | null
+          offer_reference_id: string | null
+          particle_filter: boolean | null
           power: number | null
+          power_unit: string | null
+          previous_owner_count: number | null
           price: number
+          price_dealer: number | null
+          price_negotiable: boolean | null
+          price_public: number | null
           province: string | null
+          publication: Json | null
+          publication_channels: string[] | null
+          raw_autoscout: Json | null
+          seat_count: number | null
           seats: number | null
+          service_history: Json | null
+          source: string | null
+          specs: Json | null
           status: string
           title: string
           transmission: string
           updated_at: string
           user_id: string
+          vat_deductible: boolean | null
+          vat_rate: number | null
+          vehicle_type: string | null
           views: number
+          vin: string | null
+          warranty_details: string | null
+          warranty_months: number | null
+          warranty_type: string | null
+          warranty_unit: string | null
           year: number
         }
         Insert: {
+          additional_fuel_types?: string[] | null
+          alloy_wheel_size?: number | null
+          alloy_wheel_size_unit?: string | null
+          as24_listing_id?: string | null
+          as24_publication_status?: string | null
+          availability?: Json | null
           body_type: string
           boost_until?: string | null
           brand: string
           city?: string | null
+          co2_emissions?: number | null
+          co2_emissions_unit?: string | null
           color?: string | null
+          combined_unit?: string | null
+          condition?: Json | null
+          condition_type?: string | null
+          consumption_city?: number | null
+          consumption_combined?: number | null
+          consumption_country?: number | null
+          country_version?: string | null
           created_at?: string
+          cross_reference_id?: string | null
+          cylinder_capacity?: number | null
+          cylinder_capacity_unit?: string | null
+          cylinder_count?: number | null
           description?: string | null
+          door_count?: number | null
           doors?: number | null
+          drivetrain?: string | null
+          efficiency_class?: string | null
+          emission_class?: string | null
+          emission_sticker?: string | null
+          empty_weight?: number | null
+          empty_weight_unit?: string | null
           engine_size?: number | null
+          equipment?: string[] | null
           external_id?: string | null
           external_ref?: string | null
           external_source?: string | null
           features?: string[] | null
+          first_registration_date?: string | null
           fuel_type: string
+          gear_count?: number | null
+          highlights?: string[] | null
           id?: string
           images?: string[] | null
+          included_services?: string[] | null
+          inspection_date?: string | null
           is_premium?: boolean
+          leasing_offers?: Json | null
+          licence_plate?: string | null
+          marketing?: Json | null
           mileage: number
+          mileage_unit?: string | null
           model: string
+          model_version?: string | null
+          next_inspection_date?: string | null
+          offer_reference_id?: string | null
+          particle_filter?: boolean | null
           power?: number | null
+          power_unit?: string | null
+          previous_owner_count?: number | null
           price: number
+          price_dealer?: number | null
+          price_negotiable?: boolean | null
+          price_public?: number | null
           province?: string | null
+          publication?: Json | null
+          publication_channels?: string[] | null
+          raw_autoscout?: Json | null
+          seat_count?: number | null
           seats?: number | null
+          service_history?: Json | null
+          source?: string | null
+          specs?: Json | null
           status?: string
           title: string
           transmission: string
           updated_at?: string
           user_id: string
+          vat_deductible?: boolean | null
+          vat_rate?: number | null
+          vehicle_type?: string | null
           views?: number
+          vin?: string | null
+          warranty_details?: string | null
+          warranty_months?: number | null
+          warranty_type?: string | null
+          warranty_unit?: string | null
           year: number
         }
         Update: {
+          additional_fuel_types?: string[] | null
+          alloy_wheel_size?: number | null
+          alloy_wheel_size_unit?: string | null
+          as24_listing_id?: string | null
+          as24_publication_status?: string | null
+          availability?: Json | null
           body_type?: string
           boost_until?: string | null
           brand?: string
           city?: string | null
+          co2_emissions?: number | null
+          co2_emissions_unit?: string | null
           color?: string | null
+          combined_unit?: string | null
+          condition?: Json | null
+          condition_type?: string | null
+          consumption_city?: number | null
+          consumption_combined?: number | null
+          consumption_country?: number | null
+          country_version?: string | null
           created_at?: string
+          cross_reference_id?: string | null
+          cylinder_capacity?: number | null
+          cylinder_capacity_unit?: string | null
+          cylinder_count?: number | null
           description?: string | null
+          door_count?: number | null
           doors?: number | null
+          drivetrain?: string | null
+          efficiency_class?: string | null
+          emission_class?: string | null
+          emission_sticker?: string | null
+          empty_weight?: number | null
+          empty_weight_unit?: string | null
           engine_size?: number | null
+          equipment?: string[] | null
           external_id?: string | null
           external_ref?: string | null
           external_source?: string | null
           features?: string[] | null
+          first_registration_date?: string | null
           fuel_type?: string
+          gear_count?: number | null
+          highlights?: string[] | null
           id?: string
           images?: string[] | null
+          included_services?: string[] | null
+          inspection_date?: string | null
           is_premium?: boolean
+          leasing_offers?: Json | null
+          licence_plate?: string | null
+          marketing?: Json | null
           mileage?: number
+          mileage_unit?: string | null
           model?: string
+          model_version?: string | null
+          next_inspection_date?: string | null
+          offer_reference_id?: string | null
+          particle_filter?: boolean | null
           power?: number | null
+          power_unit?: string | null
+          previous_owner_count?: number | null
           price?: number
+          price_dealer?: number | null
+          price_negotiable?: boolean | null
+          price_public?: number | null
           province?: string | null
+          publication?: Json | null
+          publication_channels?: string[] | null
+          raw_autoscout?: Json | null
+          seat_count?: number | null
           seats?: number | null
+          service_history?: Json | null
+          source?: string | null
+          specs?: Json | null
           status?: string
           title?: string
           transmission?: string
           updated_at?: string
           user_id?: string
+          vat_deductible?: boolean | null
+          vat_rate?: number | null
+          vehicle_type?: string | null
           views?: number
+          vin?: string | null
+          warranty_details?: string | null
+          warranty_months?: number | null
+          warranty_type?: string | null
+          warranty_unit?: string | null
           year?: number
         }
         Relationships: [
