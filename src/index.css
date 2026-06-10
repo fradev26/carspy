@@ -240,3 +240,10 @@
 html, body {
   overflow-x: clip;
 }
+
+@layer utilities {
+  .break-anywhere {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}
