@@ -10,9 +10,10 @@ import { cn } from '@/lib/utils';
 interface Props {
   className?: string;
   variant?: 'hero' | 'compact';
+  placeholder?: string;
 }
 
-export function SmartSearchBar({ className, variant = 'hero' }: Props) {
+export function SmartSearchBar({ className, variant = 'hero', placeholder = 'Beschrijf je droomwagen…' }: Props) {
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
   const { search, loading } = useSmartSearch();
