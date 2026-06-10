@@ -811,14 +811,17 @@ export default function Search() {
             </div>
 
             {/* Active Filters */}
-            <FilterChips
-              filters={filters}
-              onRemoveFilter={handleRemoveFilter}
-              onClearAll={() => handleFiltersChange({})}
-            />
+            <div className={cn(!hasUserIntent && 'hidden lg:block')}>
+              <FilterChips
+                filters={filters}
+                onRemoveFilter={handleRemoveFilter}
+                onClearAll={() => handleFiltersChange({})}
+              />
+            </div>
 
             {/* Results */}
-            <div className="mt-6">
+            <div className={cn('mt-6', !hasUserIntent && 'hidden lg:block')}>
+
               {isLoading || isPending || listingsLoading ? (
                 <div className={viewMode === 'grid' 
                   ? "grid gap-6 sm:grid-cols-2 lg:grid-cols-3" 
