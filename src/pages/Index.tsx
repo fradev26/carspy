@@ -280,7 +280,7 @@ const Index = () => {
           />
           <div className="mt-2 text-right">
             <Link to="/zoeken" className="text-xs font-medium text-muted-foreground hover:text-foreground">
-              Of blader klassiek →
+              Of zoek met filters→
             </Link>
           </div>
         </div>
