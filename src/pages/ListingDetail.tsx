@@ -346,7 +346,7 @@ export default function ListingDetail() {
               <Card className="border-border/60 shadow-card">
                 <CardContent className="p-6">
                   <h2 className="text-lg font-semibold">Beschrijving</h2>
-                  <p className="mt-4 text-muted-foreground whitespace-pre-line leading-relaxed">
+                  <p className="mt-4 text-muted-foreground whitespace-pre-line leading-relaxed break-anywhere">
                     {listing.description}
                   </p>
                 </CardContent>
