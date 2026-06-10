@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useSavedSearches } from '@/hooks/useSavedSearches';
 import { useProfile } from '@/hooks/useProfile';
 import MyLeadsPanel from '@/components/MyLeadsPanel';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 
 interface Listing {
   id: string;
