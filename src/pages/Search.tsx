@@ -412,39 +412,42 @@ export default function Search() {
             <div className="mb-6">
 
 
-              {/* AI Search Bar / Intent Banner */}
-              {searchParams.get('aiIntent') ? (
-                <div className="mb-5 flex items-start gap-3 rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 to-accent/10 p-4">
-                  <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground">
-                      {searchParams.get('aiIntent')}
-                    </p>
-                    {searchParams.get('aiQuery') && (
-                      <p className="mt-0.5 text-xs text-muted-foreground italic truncate">
-                        Je vraag: "{searchParams.get('aiQuery')}"
+              {/* AI Search Bar / Intent Banner - desktop only */}
+              <div className="hidden lg:block">
+                {searchParams.get('aiIntent') ? (
+                  <div className="mb-5 flex items-start gap-3 rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 to-accent/10 p-4">
+                    <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">
+                        {searchParams.get('aiIntent')}
                       </p>
-                    )}
+                      {searchParams.get('aiQuery') && (
+                        <p className="mt-0.5 text-xs text-muted-foreground italic truncate">
+                          Je vraag: "{searchParams.get('aiQuery')}"
+                        </p>
+                      )}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        const next = new URLSearchParams(searchParams);
+                        next.delete('aiIntent');
+                        next.delete('aiQuery');
+                        navigate(`/zoeken?${next.toString()}`);
+                      }}
+                      className="shrink-0 text-muted-foreground hover:text-foreground"
+                    >
+                      Klassiek zoeken
+                    </Button>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      const next = new URLSearchParams(searchParams);
-                      next.delete('aiIntent');
-                      next.delete('aiQuery');
-                      navigate(`/zoeken?${next.toString()}`);
-                    }}
-                    className="shrink-0 text-muted-foreground hover:text-foreground"
-                  >
-                    Klassiek zoeken
-                  </Button>
-                </div>
-              ) : (
-                <div className="mb-5">
-                  <SmartSearchBar variant="compact" />
-                </div>
-              )}
+                ) : (
+                  <div className="mb-5">
+                    <SmartSearchBar variant="compact" />
+                  </div>
+                )}
+              </div>
+
 
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
