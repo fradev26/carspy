@@ -144,8 +144,26 @@ const Index = () => {
         canonical="https://vatuur.nl/"
         jsonLd={websiteJsonLd}
       />
-      {/* Hero Section */}
-      <section className="relative overflow-hidden -mt-14 lg:-mt-16 pt-32 pb-16 lg:pt-44 lg:pb-36 min-h-[560px] sm:min-h-[620px] lg:min-h-[720px]">
+      {/* Mobile-only H1 for SEO (desktop H1 lives inside hero) */}
+      <h1 className="sr-only lg:hidden">Tweedehands auto's kopen en verkopen in Nederland en België</h1>
+
+      {/* Mobile trustbar */}
+      <div className="lg:hidden border-b border-border/50 bg-muted/30">
+        <div className="container flex items-center justify-center gap-2 py-2.5 text-xs text-muted-foreground">
+          <span className="font-medium text-foreground">25.000+ auto's</span>
+          <span aria-hidden="true">·</span>
+          <span>Geverifieerde dealers</span>
+          <span aria-hidden="true">·</span>
+          <span className="flex items-center gap-1">
+            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+            <span className="font-medium text-foreground">4,8/5</span>
+          </span>
+        </div>
+      </div>
+
+      {/* Hero Section — desktop only */}
+      <section className="relative overflow-hidden -mt-14 lg:-mt-16 pt-32 pb-16 lg:pt-44 lg:pb-36 min-h-[560px] sm:min-h-[620px] lg:min-h-[720px] hidden lg:block">
+
         {/* Background Image (LCP, eager + responsive) */}
         <picture>
           <source

@@ -14,7 +14,7 @@ export function AppLayout() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className={`flex-1 pb-nav lg:pb-0 safe-x ${isHomepage ? 'pt-[env(safe-area-inset-top)] lg:pt-0' : 'pt-[calc(3.5rem+env(safe-area-inset-top))] lg:pt-16'}`}>
+      <main className={`flex-1 pb-nav lg:pb-0 safe-x ${isHomepage ? 'pt-[calc(3.5rem+env(safe-area-inset-top))] lg:pt-0' : 'pt-[calc(3.5rem+env(safe-area-inset-top))] lg:pt-16'}`}>
         <div className="animate-fade-in">
           <Outlet />
         </div>
