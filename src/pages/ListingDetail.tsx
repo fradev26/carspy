@@ -248,13 +248,13 @@ export default function ListingDetail() {
             {/* Key Specs */}
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {specs.map((spec, i) => (
-                <div key={i} className="flex items-center gap-3 rounded-xl bg-muted/50 p-4 border border-border/40">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-background">
+                <div key={i} className="flex items-center gap-3 rounded-xl bg-muted/50 p-4 border border-border/40 min-w-0">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-background flex-shrink-0">
                     <spec.icon className="h-5 w-5 text-muted-foreground" />
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="text-xs text-muted-foreground">{spec.label}</div>
-                    <div className="font-semibold capitalize truncate">{spec.value}</div>
+                    <div className="font-semibold capitalize break-anywhere">{spec.value}</div>
                   </div>
                 </div>
               ))}
