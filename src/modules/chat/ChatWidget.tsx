@@ -94,7 +94,7 @@ export const ChatWidget = forwardRef<HTMLDivElement>(function ChatWidget(_props,
         <div
           className={cn(
             'fixed z-50 flex flex-col overflow-hidden rounded-2xl border bg-background shadow-2xl',
-            mobilePanelBottomOffset, 'right-4 w-[calc(100vw-2rem)] max-w-sm',
+            mobilePanelBottomOffset, 'left-4 right-4 max-w-sm md:left-auto',
             'md:bottom-24 md:right-6 md:w-96',
             'h-[min(540px,75vh)]'
           )}
