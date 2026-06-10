@@ -8,8 +8,24 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/Logo';
+
+function UnreadBadge({ count, className }: { count: number; className?: string }) {
+  if (!count) return null;
+  return (
+    <span
+      aria-label={`${count} ongelezen ${count === 1 ? 'bericht' : 'berichten'}`}
+      className={cn(
+        'inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold leading-none text-primary-foreground',
+        className,
+      )}
+    >
+      {count > 9 ? '9+' : count}
+    </span>
+  );
+}
 
 const POPULAR_BRANDS = [
   'Volkswagen', 'BMW', 'Audi', 'Mercedes-Benz', 'Toyota',
