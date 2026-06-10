@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Heart, User, Plus, LogOut, MessageCircle, BarChart3, Menu, Shield, FileText } from 'lucide-react';
+import { Search, Heart, User, Plus, LogOut, MessageCircle, BarChart3, Shield, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -27,11 +27,6 @@ function UnreadBadge({ count, className }: { count: number; className?: string }
   );
 }
 
-const POPULAR_BRANDS = [
-  'Volkswagen', 'BMW', 'Audi', 'Mercedes-Benz', 'Toyota',
-  'Ford', 'Volvo', 'Peugeot', 'Renault', 'Hyundai',
-  'Kia', 'Skoda', 'Seat', 'Opel',
-];
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -84,8 +79,8 @@ export function Header() {
 
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label={unreadCount ? `Open menu (${unreadCount} nieuwe berichten)` : 'Open menu'} className="relative text-foreground hover:bg-muted">
-              <Menu className="h-5 w-5" />
+            <Button variant="ghost" size="icon" aria-label={unreadCount ? `Open account (${unreadCount} nieuwe berichten)` : 'Open account'} className="relative text-foreground hover:bg-muted">
+              <User className="h-5 w-5" />
               {user && unreadCount > 0 && (
                 <span className="absolute top-1 right-1 inline-flex h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-card" />
               )}
@@ -104,31 +99,18 @@ export function Header() {
                   <button onClick={() => handleMobileNav('/dashboard')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
                     <User className="h-4 w-4 text-muted-foreground" /> Mijn advertenties
                   </button>
-                  <button onClick={() => handleMobileNav('/favorieten')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
-                    <Heart className="h-4 w-4 text-muted-foreground" /> Favorieten
-                  </button>
                   <button onClick={() => handleMobileNav('/berichten')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
                     <MessageCircle className="h-4 w-4 text-muted-foreground" /> Berichten
                     <UnreadBadge count={unreadCount} className="ml-auto" />
+                  </button>
+                  <button onClick={() => handleMobileNav('/favorieten')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
+                    <Heart className="h-4 w-4 text-muted-foreground" /> Favorieten
                   </button>
                   {isDealer && (
                     <button onClick={() => handleMobileNav('/zakelijk')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
                       <BarChart3 className="h-4 w-4 text-muted-foreground" /> Zakelijk Dashboard
                     </button>
                   )}
-                  <Separator className="my-2" />
-                  <p className="px-3 pb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">Populaire merken</p>
-                  <div className="grid grid-cols-2 gap-1">
-                    {POPULAR_BRANDS.map((brand) => (
-                      <button
-                        key={brand}
-                        onClick={() => handleMobileNav(`/zoeken?brand=${encodeURIComponent(brand)}`)}
-                        className="truncate rounded-md px-2 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
-                      >
-                        {brand}
-                      </button>
-                    ))}
-                  </div>
                   <Separator className="my-2" />
                   <button onClick={() => handleMobileNav('/privacy')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors">
                     <Shield className="h-4 w-4" /> Privacybeleid
@@ -147,19 +129,6 @@ export function Header() {
                     <User className="h-4 w-4 text-muted-foreground" /> Inloggen / Registreren
                   </button>
                   <Separator className="my-2" />
-                  <p className="px-3 pb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">Populaire merken</p>
-                  <div className="grid grid-cols-2 gap-1">
-                    {POPULAR_BRANDS.map((brand) => (
-                      <button
-                        key={brand}
-                        onClick={() => handleMobileNav(`/zoeken?brand=${encodeURIComponent(brand)}`)}
-                        className="truncate rounded-md px-2 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted"
-                      >
-                        {brand}
-                      </button>
-                    ))}
-                  </div>
-                  <Separator className="my-2" />
                   <button onClick={() => handleMobileNav('/privacy')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors">
                     <Shield className="h-4 w-4" /> Privacybeleid
                   </button>
@@ -172,6 +141,7 @@ export function Header() {
           </SheetContent>
         </Sheet>
       </div>
+
 
       {/* Desktop Header */}
       <div className="container hidden h-16 items-center justify-between gap-6 lg:flex">
