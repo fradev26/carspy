@@ -1,56 +1,49 @@
-# Plan: Echte overflow-fix zonder content te knippen
+# Mobiel optimaliseren — voertuig-detailpagina
 
-## Wat is er mis gegaan
-In de vorige iteratie heb ik in `src/index.css` globaal toegevoegd:
-- `html, body { overflow-x: hidden; max-width: 100% }`
-- `#root { overflow-x: hidden; max-width: 100%; position: relative }`
-- `img, video { max-width: 100%; height: auto }`
-- `table { max-width: 100% }`
+Doel: volledige foto's tonen zonder crop, geen horizontale scroll, alles leesbaar vanaf 320px breed.
 
-`overflow-x: hidden` op `html` en `#root` creëert een nieuwe **containing block** en breekt `position: sticky` op de detail-sidebar, kan grid-/flex-tracks laten "ineenklappen" en zorgt dat content die net buiten de viewport rendert onzichtbaar is in plaats van scrollbaar. `position: relative` op `#root` versterkt dit nog. Daardoor lijken op de detailpagina (en elders) blokken niet volledig zichtbaar / niet bereikbaar.
+## 1. Foto-galerij (`src/modules/listings/ImageGallery.tsx`)
 
-## Aanpak
+- Hoofdfoto wisselt op mobiel naar `object-contain` met donkere achtergrond, zodat de volledige auto zichtbaar is (witruimte boven/onder is toegestaan).
+- Desktop blijft `object-cover` voor strakke hero-uitstraling.
+- Aspect ratio op mobiel naar `4/3` (i.p.v. `16/10`) zodat staande/liggende foto's voldoende ruimte krijgen; desktop blijft `16/9`.
+- Image-element krijgt `max-w-full` + `h-auto` semantiek binnen de aspect-container, zodat niets buiten de container valt.
+- Thumbnails-rij: `overflow-x-auto` blijft (bedoeld), maar de wrapper krijgt `max-w-full` + `min-w-0` zodat de pagina zelf niet meescrolt.
+- Lightbox-knoppen blijven, maar positionering controleren op 320px (geen overlap met counter).
 
-### Stap 1 — Revert van de te brede CSS in `src/index.css`
-Verwijder de huidige globale blokkade en vervang door één veilige regel:
+## 2. Detail-layout (`src/pages/ListingDetail.tsx`)
 
-```css
-/* Voorkom horizontale scroll zonder content te knippen of sticky te breken */
-html, body {
-  overflow-x: clip;
-}
-```
+- Buitenste wrapper: `min-w-0` + `overflow-x-clip` toevoegen aan grid-kolommen zodat lange tekst de grid niet oprekt.
+- Key Specs-kaarten: huidige `truncate` op de waarde wordt op mobiel afgeknipt → vervangen door `break-words` met `whitespace-normal`; bij erg lange waarden mag de kaart twee regels worden.
+- Beschrijving (`<p>`): toevoegen `break-words` + `overflow-wrap: anywhere` (via util-class) en `whitespace-pre-line` behouden — geen truncate.
+- Specificatie-`<dl>`-blokken (Verbruik & emissies, Garantie & inspectie, Verkoper, etc.): op mobiel naar één kolom met grid `grid-cols-[minmax(7rem,40%)_1fr]` zodat label/value netjes uitlijnen en lange waardes wrappen. `sm:` en hoger behoudt huidige 2/3-koloms layout.
+- `<dd>` krijgt `break-words` / `overflow-wrap-anywhere`.
+- Breadcrumb-laatste item: `truncate` blijft (bedoeld om overflow van titel te voorkomen), maar `max-w-[60vw]` zodat hij niet uit beeld valt.
 
-- `overflow-x: clip` (i.p.v. `hidden`) maakt **géén** nieuwe containing block aan en breekt dus `position: sticky` niet.
-- Geen `max-width: 100vw/100%` op `html`, `body` of `#root` (die voegde niets toe en kan in zeldzame gevallen tracks misrekenen).
-- Geen `position: relative` op `#root`.
-- Geen globale `img/video { height: auto }` (kan responsive height-strategieën verstoren). Beelden in dit project gebruiken al `h-full w-full object-cover` in een aspect-ratio-container; geen globale regel nodig.
-- `table { max-width: 100% }` weghalen (tabellen zitten al in eigen `overflow-x-auto` wrappers).
+## 3. Globale utility (`src/index.css`)
 
-### Stap 2 — Daadwerkelijke overflow-bronnen punctueel fixen
-Alleen wijzigen wat aantoonbaar > viewport oplevert:
+- Kleine utility toevoegen:
+  ```css
+  .break-anywhere { overflow-wrap: anywhere; word-break: break-word; }
+  ```
+  Gebruikt voor beschrijving + lange spec-waarden.
+- Geen verdere globale `overflow-x: hidden`-regels; bestaande `overflow-x: clip` op `html,body` blijft.
 
-1. **`src/modules/chat/ChatWidget.tsx`** — `w-[calc(100vw-2rem)]` is in de vorige iteratie al vervangen door `left-4 right-4 max-w-sm md:left-auto`. Behouden.
-2. **`src/components/CompareBar.tsx`** — controleren of de floating bar binnen viewport blijft (mogelijk `inset-x-4` of `max-w-[calc(100%-2rem)]` toevoegen).
-3. **`HomepageFilters` TabsList** — heeft al `flex-wrap`, geen actie.
-4. **Tabellen in `Dealers.tsx`, `BusinessDashboard.tsx`, `DealerDashboard.tsx`** — zitten al in `overflow-x-auto` wrappers, geen actie.
+## 4. Sticky sidebar / overige
 
-### Stap 3 — Verificatie (oorzaakgericht)
-- Detailpagina (`/auto/:id`) opnieuw renderen op 320, 375, 768, 1024, 1440, 2560 en controleren dat:
-  - Volledige beschrijving, foto's, specificaties zichtbaar zijn.
-  - Sticky sidebar werkt.
-  - Geen horizontale scrollbar.
-- Voor elke geteste pagina via DevTools-check: `document.documentElement.scrollWidth === document.documentElement.clientWidth`.
-- ListingCards: controleren dat hover-scale niet wordt afgekapt — de cards staan in een grid, hun ouders mogen geen `overflow-hidden` hebben tenzij de card-rand bewust gecontaind moet zijn. Hier niets wijzigen tenzij gemeten clipping.
+- Sidebar-kaart (rechterkant desktop) ongewijzigd; op mobiel staat hij al onder de content via grid-stacking.
+- Related listings grid (`ListingGrid`) ongewijzigd, maar visueel checken op 320px.
 
-## Wat er NIET wordt gewijzigd
-- Geen `overflow-x: hidden` op pagina-roots of generieke containers.
-- Geen globale `max-width`-regels.
-- Geen img/video-resets.
-- Geen wijzigingen aan Radix/shadcn-componenten.
+## 5. Verificatie
 
-## Verwacht resultaat
-- Detailpagina toont weer volledige content (beschrijving, foto's, specs).
-- Sticky elementen werken zoals voorheen.
-- Geen horizontale scrollbar op alle geteste viewports (320–2560px).
-- Geen visueel afgeknipte cards of afbeeldingen.
+Na implementatie: preview testen op 320, 375, 414, 768 px:
+- volledige foto zichtbaar zonder crop
+- geen horizontale scrollbar
+- lange beschrijving + lange spec-waarden wrappen
+- specs-kaarten tonen volledige waarde
+
+## Bestanden die wijzigen
+
+- `src/modules/listings/ImageGallery.tsx` — object-contain op mobiel, aspect ratio, min-w-0
+- `src/pages/ListingDetail.tsx` — spec-grids, dl-layout, break-anywhere op beschrijving en dd's, min-w-0 op grid-kolommen, truncate verwijderen op Key Specs
+- `src/index.css` — `.break-anywhere` utility

@@ -41,7 +41,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
     <>
       <div className="space-y-3">
         {/* Main Image */}
-        <div className="relative aspect-[16/10] md:aspect-[16/9] overflow-hidden rounded-xl bg-muted shadow-card">
+        <div className="relative aspect-[4/3] md:aspect-[16/9] overflow-hidden rounded-xl bg-black/90 shadow-card">
           {/* Loading shimmer */}
           {!loadedImages.has(currentIndex) && (
             <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent bg-[length:200%_100%]" />
@@ -51,7 +51,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
             src={getImageUrl(currentIndex)}
             alt={`${alt} - Afbeelding ${currentIndex + 1}`}
             className={cn(
-              "h-full w-full object-cover cursor-zoom-in transition-opacity duration-300",
+              "h-full w-full object-contain md:object-cover cursor-zoom-in transition-opacity duration-300",
               loadedImages.has(currentIndex) ? "opacity-100" : "opacity-0"
             )}
             onClick={() => setIsLightboxOpen(true)}

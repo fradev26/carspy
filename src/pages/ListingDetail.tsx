@@ -210,7 +210,7 @@ export default function ListingDetail() {
 
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-6 min-w-0">
             {/* Gallery */}
             <ImageGallery images={listing.images} alt={listing.title} />
 
@@ -248,13 +248,13 @@ export default function ListingDetail() {
             {/* Key Specs */}
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {specs.map((spec, i) => (
-                <div key={i} className="flex items-center gap-3 rounded-xl bg-muted/50 p-4 border border-border/40">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-background">
+                <div key={i} className="flex items-center gap-3 rounded-xl bg-muted/50 p-4 border border-border/40 min-w-0">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-background flex-shrink-0">
                     <spec.icon className="h-5 w-5 text-muted-foreground" />
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="text-xs text-muted-foreground">{spec.label}</div>
-                    <div className="font-semibold capitalize truncate">{spec.value}</div>
+                    <div className="font-semibold capitalize break-anywhere">{spec.value}</div>
                   </div>
                 </div>
               ))}
@@ -275,49 +275,49 @@ export default function ListingDetail() {
                     {listing.consumptionCombined != null && (
                       <div>
                         <dt className="text-muted-foreground">Gecombineerd</dt>
-                        <dd className="font-medium">{formatConsumption(listing.consumptionCombined, listing.combinedUnit)}</dd>
+                        <dd className="font-medium break-anywhere">{formatConsumption(listing.consumptionCombined, listing.combinedUnit)}</dd>
                       </div>
                     )}
                     {listing.consumptionCity != null && (
                       <div>
                         <dt className="text-muted-foreground">Stad</dt>
-                        <dd className="font-medium">{formatConsumption(listing.consumptionCity, listing.combinedUnit)}</dd>
+                        <dd className="font-medium break-anywhere">{formatConsumption(listing.consumptionCity, listing.combinedUnit)}</dd>
                       </div>
                     )}
                     {listing.consumptionCountry != null && (
                       <div>
                         <dt className="text-muted-foreground">Buitenweg</dt>
-                        <dd className="font-medium">{formatConsumption(listing.consumptionCountry, listing.combinedUnit)}</dd>
+                        <dd className="font-medium break-anywhere">{formatConsumption(listing.consumptionCountry, listing.combinedUnit)}</dd>
                       </div>
                     )}
                     {listing.co2Emissions != null && (
                       <div>
                         <dt className="text-muted-foreground">CO₂</dt>
-                        <dd className="font-medium">{formatNumberWithUnit(listing.co2Emissions, listing.co2EmissionsUnit ?? 'g/km')}</dd>
+                        <dd className="font-medium break-anywhere">{formatNumberWithUnit(listing.co2Emissions, listing.co2EmissionsUnit ?? 'g/km')}</dd>
                       </div>
                     )}
                     {listing.emissionClass && (
                       <div>
                         <dt className="text-muted-foreground">Emissieklasse</dt>
-                        <dd className="font-medium">{listing.emissionClass}</dd>
+                        <dd className="font-medium break-anywhere">{listing.emissionClass}</dd>
                       </div>
                     )}
                     {listing.efficiencyClass && (
                       <div>
                         <dt className="text-muted-foreground">Efficiëntieklasse</dt>
-                        <dd className="font-medium">{listing.efficiencyClass}</dd>
+                        <dd className="font-medium break-anywhere">{listing.efficiencyClass}</dd>
                       </div>
                     )}
                     {listing.emissionSticker && (
                       <div>
                         <dt className="text-muted-foreground">Milieusticker</dt>
-                        <dd className="font-medium">{listing.emissionSticker}</dd>
+                        <dd className="font-medium break-anywhere">{listing.emissionSticker}</dd>
                       </div>
                     )}
                     {listing.particleFilter != null && (
                       <div>
                         <dt className="text-muted-foreground">Roetfilter</dt>
-                        <dd className="font-medium">{listing.particleFilter ? 'Ja' : 'Nee'}</dd>
+                        <dd className="font-medium break-anywhere">{listing.particleFilter ? 'Ja' : 'Nee'}</dd>
                       </div>
                     )}
                   </dl>
@@ -346,7 +346,7 @@ export default function ListingDetail() {
               <Card className="border-border/60 shadow-card">
                 <CardContent className="p-6">
                   <h2 className="text-lg font-semibold">Beschrijving</h2>
-                  <p className="mt-4 text-muted-foreground whitespace-pre-line leading-relaxed">
+                  <p className="mt-4 text-muted-foreground whitespace-pre-line leading-relaxed break-anywhere">
                     {listing.description}
                   </p>
                 </CardContent>
@@ -382,25 +382,25 @@ export default function ListingDetail() {
                     {listing.warrantyMonths != null && (
                       <div>
                         <dt className="text-muted-foreground">Garantie</dt>
-                        <dd className="font-medium">{listing.warrantyMonths} {listing.warrantyUnit ?? 'maanden'}</dd>
+                        <dd className="font-medium break-anywhere">{listing.warrantyMonths} {listing.warrantyUnit ?? 'maanden'}</dd>
                       </div>
                     )}
                     {listing.warrantyType && (
                       <div>
                         <dt className="text-muted-foreground">Type garantie</dt>
-                        <dd className="font-medium">{listing.warrantyType}</dd>
+                        <dd className="font-medium break-anywhere">{listing.warrantyType}</dd>
                       </div>
                     )}
                     {listing.inspectionDate && (
                       <div>
                         <dt className="text-muted-foreground">Laatste keuring</dt>
-                        <dd className="font-medium">{formatDate(listing.inspectionDate)}</dd>
+                        <dd className="font-medium break-anywhere">{formatDate(listing.inspectionDate)}</dd>
                       </div>
                     )}
                     {listing.nextInspectionDate && (
                       <div>
                         <dt className="text-muted-foreground">Volgende keuring</dt>
-                        <dd className="font-medium">{formatDate(listing.nextInspectionDate)}</dd>
+                        <dd className="font-medium break-anywhere">{formatDate(listing.nextInspectionDate)}</dd>
                       </div>
                     )}
                   </dl>
