@@ -41,6 +41,71 @@ export interface Listing {
   lastMaintenance?: string;
   isPremium?: boolean;
   boostUntil?: string;
+
+  // ===== VATUUR datacontract — manual + AutoScout24 shared schema =====
+  source?: 'manual' | 'autoscout' | string;
+  as24ListingId?: string;
+  as24PublicationStatus?: string;
+  vin?: string;
+  licencePlate?: string;
+  crossReferenceId?: string;
+  offerReferenceId?: string;
+  vehicleType?: string;
+  conditionType?: string;
+  modelVersion?: string;
+
+  mileageUnit?: string;
+  powerUnit?: string;
+  alloyWheelSize?: number;
+  alloyWheelSizeUnit?: string;
+  emptyWeight?: number;
+  emptyWeightUnit?: string;
+  doorCount?: number;
+  seatCount?: number;
+
+  additionalFuelTypes?: string[];
+  cylinderCapacity?: number;
+  cylinderCapacityUnit?: string;
+  cylinderCount?: number;
+  drivetrain?: string;
+  gearCount?: number;
+
+  co2Emissions?: number;
+  co2EmissionsUnit?: string;
+  consumptionCombined?: number;
+  consumptionCity?: number;
+  consumptionCountry?: number;
+  combinedUnit?: string;
+  emissionClass?: string;
+  emissionSticker?: string;
+  efficiencyClass?: string;
+  particleFilter?: boolean;
+
+  firstRegistrationDate?: string;
+  previousOwnerCount?: number;
+  countryVersion?: string;
+
+  pricePublic?: number;
+  priceNegotiable?: boolean;
+  vatRate?: number;
+
+  warrantyUnit?: string;
+  warrantyType?: string;
+  warrantyDetails?: string;
+  inspectionDate?: string;
+  nextInspectionDate?: string;
+
+  equipment?: string[];
+  highlights?: string[];
+  includedServices?: string[];
+
+  serviceHistory?: unknown;
+  leasingOffers?: unknown;
+  marketing?: unknown;
+  publication?: unknown;
+  availability?: unknown;
+  condition?: unknown;
+  specs?: Record<string, unknown>;
 }
 
 export interface Seller {

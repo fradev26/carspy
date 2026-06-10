@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MapPin, Fuel, Gauge, Calendar, Eye, GitCompareArrows, Crown, Settings2 } from 'lucide-react';
+import { Heart, MapPin, Fuel, Gauge, Calendar, Eye, GitCompareArrows, Crown, Settings2, BadgeCheck } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -247,6 +247,9 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
           )}>
             {listing.title}
           </h3>
+          {listing.modelVersion && (
+            <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{listing.modelVersion}</p>
+          )}
 
           <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             <span className="flex items-center gap-1 rounded-md bg-muted px-2 py-1">
@@ -255,7 +258,7 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
             </span>
             <span className="flex items-center gap-1 rounded-md bg-muted px-2 py-1">
               <Gauge className="h-3 w-3" />
-              {formatMileage(listing.mileage)} km
+              {formatMileage(listing.mileage)} {listing.mileageUnit ?? 'km'}
             </span>
             <span className="flex items-center gap-1 rounded-md bg-muted px-2 py-1">
               <Fuel className="h-3 w-3" />
@@ -265,6 +268,15 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
               <Settings2 className="h-3 w-3" />
               <span className="capitalize">{listing.transmission}</span>
             </span>
+            {listing.source === 'autoscout' && (
+              <span className="flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-secondary-foreground">
+                <BadgeCheck className="h-3 w-3" />
+                AS24
+              </span>
+            )}
+            {listing.vatDeductible && (
+              <span className="rounded-md bg-secondary px-2 py-1 text-secondary-foreground">Btw aftrekbaar</span>
+            )}
           </div>
 
           <div className="mt-3 flex items-center justify-between pt-2 border-t border-border/50">
