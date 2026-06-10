@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useSavedSearches } from '@/hooks/useSavedSearches';
 import { useProfile } from '@/hooks/useProfile';
 import MyLeadsPanel from '@/components/MyLeadsPanel';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 
 interface Listing {
   id: string;
@@ -31,6 +32,7 @@ export default function Dashboard() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const { savedSearches, remove: removeSavedSearch, loading: searchesLoading } = useSavedSearches();
+  const { count: unreadCount } = useUnreadMessages();
 
   useEffect(() => {
     if (user) {
@@ -116,7 +118,14 @@ export default function Dashboard() {
             <Bell className="h-4 w-4 mr-1" />
             Zoekalerts ({savedSearches.length})
           </TabsTrigger>
-          <TabsTrigger value="messages">Berichten</TabsTrigger>
+          <TabsTrigger value="messages" className="gap-2">
+            Berichten
+            {unreadCount > 0 && (
+              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold leading-none text-primary-foreground">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="listings" className="mt-6 space-y-4">

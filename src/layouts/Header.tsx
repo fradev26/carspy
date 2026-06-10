@@ -8,8 +8,24 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/Logo';
+
+function UnreadBadge({ count, className }: { count: number; className?: string }) {
+  if (!count) return null;
+  return (
+    <span
+      aria-label={`${count} ongelezen ${count === 1 ? 'bericht' : 'berichten'}`}
+      className={cn(
+        'inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold leading-none text-primary-foreground',
+        className,
+      )}
+    >
+      {count > 9 ? '9+' : count}
+    </span>
+  );
+}
 
 const POPULAR_BRANDS = [
   'Volkswagen', 'BMW', 'Audi', 'Mercedes-Benz', 'Toyota',
@@ -25,6 +41,7 @@ export function Header() {
   const location = useLocation();
   const { user, signOut } = useAuth();
   const { isDealer } = useProfile();
+  const { count: unreadCount } = useUnreadMessages();
 
   const isHomepage = location.pathname === '/';
 
@@ -68,8 +85,11 @@ export function Header() {
 
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Open menu" className={cn("hover:bg-transparent", isTransparent ? "text-white" : "text-foreground hover:bg-muted")}>
+            <Button variant="ghost" size="icon" aria-label={unreadCount ? `Open menu (${unreadCount} nieuwe berichten)` : 'Open menu'} className={cn("relative hover:bg-transparent", isTransparent ? "text-white" : "text-foreground hover:bg-muted")}>
               <Menu className="h-5 w-5" />
+              {user && unreadCount > 0 && (
+                <span className="absolute top-1 right-1 inline-flex h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-card" />
+              )}
             </Button>
           </SheetTrigger>
           <SheetContent side="right" className="w-80 overflow-y-auto">
@@ -89,6 +109,7 @@ export function Header() {
                   </button>
                   <button onClick={() => handleMobileNav('/berichten')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
                     <MessageCircle className="h-4 w-4 text-muted-foreground" /> Berichten
+                    <UnreadBadge count={unreadCount} className="ml-auto" />
                   </button>
                   {isDealer && (
                     <button onClick={() => handleMobileNav('/zakelijk')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
@@ -185,10 +206,11 @@ export function Header() {
                   Favorieten
                 </Link>
               </Button>
-              <Button variant="ghost" asChild className={cn("gap-2 font-bold", isTransparent ? "text-white hover:bg-white/10 hover:text-white" : "text-foreground hover:bg-muted hover:text-foreground")}>
+              <Button variant="ghost" asChild className={cn("gap-2 font-bold relative", isTransparent ? "text-white hover:bg-white/10 hover:text-white" : "text-foreground hover:bg-muted hover:text-foreground")}>
                 <Link to="/berichten">
                   <MessageCircle className="h-4 w-4" />
                   Berichten
+                  <UnreadBadge count={unreadCount} />
                 </Link>
               </Button>
               
