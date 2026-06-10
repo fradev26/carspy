@@ -32,6 +32,7 @@ export default function Dashboard() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const { savedSearches, remove: removeSavedSearch, loading: searchesLoading } = useSavedSearches();
+  const { count: unreadCount } = useUnreadMessages();
 
   useEffect(() => {
     if (user) {
