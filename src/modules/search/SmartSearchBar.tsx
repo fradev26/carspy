@@ -43,7 +43,7 @@ export function SmartSearchBar({ className, variant = 'hero', placeholder = 'Bes
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Beschrijf je droomwagen…"
+            placeholder={placeholder}
             disabled={loading}
             className="flex-1 border-0 bg-transparent text-base shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
             aria-label="Slim zoeken"
