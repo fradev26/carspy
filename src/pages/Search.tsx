@@ -359,6 +359,15 @@ export default function Search() {
     return value !== undefined && value !== '' && (!Array.isArray(value) || value.length > 0);
   }).length;
 
+  // Mobile filter-first gate: show fullscreen filters until user reveals results
+  const hasIncomingIntent =
+    !!searchParams.get('q') ||
+    !!searchParams.get('aiIntent') ||
+    activeFilterCount > 0;
+  const showMobileResults = mobileResultsRevealed || hasIncomingIntent;
+
+
+
 
   const updateFilterValue = (key: keyof SearchFilters, value: string | number | undefined) => {
     const next = { ...filters };
