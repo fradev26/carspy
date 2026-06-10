@@ -1,12 +1,16 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Phone, Mail, MapPin, Calendar, Gauge, Fuel, Settings, Star, Heart, Share2, Shield, Check, GitCompareArrows, Home, Sparkles, Loader2, Lightbulb, Wrench, AlertTriangle, Users } from 'lucide-react';
+import {
+  ArrowLeft, Phone, Mail, MapPin, Calendar, Gauge, Fuel, Settings, Star, Heart, Share2,
+  Shield, Check, GitCompareArrows, Home, Sparkles, Loader2, Wrench, AlertTriangle, Users,
+  Cog, Leaf, BadgeCheck,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ImageGallery, ListingGrid, PriceIndicator } from '@/modules/listings';
 import { useCompare } from '@/hooks/useCompare';
-import { getListingById, getRelatedListings } from '@/data/mockListings';
+import { useListing, useRelatedListings } from '@/hooks/useListings';
 import { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { FEATURE_OPTIONS } from '@/types/listing';
@@ -16,10 +20,13 @@ import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { dealerSlugFor } from '@/lib/dealers';
+import {
+  formatPrice, formatMileage, formatPower, formatConsumption, formatNumberWithUnit, formatDate,
+} from '@/lib/units';
 
 export default function ListingDetail() {
   const { id } = useParams<{ id: string }>();
-  const listing = getListingById(id || '');
+  const { listing, loading } = useListing(id);
   const [isFavorite, setIsFavorite] = useState(false);
   const [vehicleAnalysis, setVehicleAnalysis] = useState<any>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
@@ -29,13 +36,14 @@ export default function ListingDetail() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const relatedListings = useRelatedListings(listing, 3);
 
-  const formatPrice = (price: number) => new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(price);
-  const formatMileage = (mileage: number) => new Intl.NumberFormat('nl-NL').format(mileage);
+  const displayPrice = listing?.pricePublic ?? listing?.price;
+  const isAS24 = listing?.source === 'autoscout';
 
   const jsonLdSchemas = useMemo(() => {
     if (!listing) return undefined;
-    const vehicle = {
+    const vehicle: Record<string, unknown> = {
       "@context": "https://schema.org",
       "@type": "Vehicle",
       "name": listing.title,
@@ -45,13 +53,14 @@ export default function ListingDetail() {
       "mileageFromOdometer": { "@type": "QuantitativeValue", "value": listing.mileage, "unitCode": "KMT" },
       "fuelType": listing.fuelType,
       "vehicleTransmission": listing.transmission,
+      "bodyType": listing.bodyType,
       "color": listing.color,
-      "numberOfDoors": listing.doors,
+      "numberOfDoors": listing.doorCount ?? listing.doors,
       "image": listing.images[0],
       "description": listing.description,
       "offers": {
         "@type": "Offer",
-        "price": listing.price,
+        "price": displayPrice,
         "priceCurrency": "EUR",
         "availability": "https://schema.org/InStock",
         "seller": {
@@ -60,6 +69,13 @@ export default function ListingDetail() {
         }
       }
     };
+    if (listing.vin) vehicle.vehicleIdentificationNumber = listing.vin;
+    if (listing.firstRegistrationDate) vehicle.dateVehicleFirstRegistered = listing.firstRegistrationDate;
+    if (listing.consumptionCombined) {
+      vehicle.fuelConsumption = { "@type": "QuantitativeValue", value: listing.consumptionCombined, unitText: listing.combinedUnit ?? 'l/100km' };
+    }
+    if (listing.co2Emissions) vehicle.emissionsCO2 = listing.co2Emissions;
+
     const breadcrumb = {
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
@@ -70,7 +86,7 @@ export default function ListingDetail() {
       ]
     };
     return [vehicle, breadcrumb];
-  }, [listing]);
+  }, [listing, displayPrice]);
 
   const handleSendMessage = async () => {
     if (!user) {
@@ -114,6 +130,15 @@ export default function ListingDetail() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="container py-20 text-center">
+        <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
+        <p className="mt-4 text-muted-foreground">Advertentie laden...</p>
+      </div>
+    );
+  }
+
   if (!listing) {
     return (
       <div className="container py-20 text-center">
@@ -126,20 +151,37 @@ export default function ListingDetail() {
     );
   }
 
-  const relatedListings = getRelatedListings(listing, 3);
-
   const specs = [
     { icon: Calendar, label: 'Bouwjaar', value: listing.year.toString() },
-    { icon: Gauge, label: 'Km-stand', value: `${formatMileage(listing.mileage)} km` },
+    { icon: Gauge, label: 'Km-stand', value: formatMileage(listing.mileage, listing.mileageUnit) ?? '—' },
     { icon: Fuel, label: 'Brandstof', value: listing.fuelType },
     { icon: Settings, label: 'Transmissie', value: listing.transmission },
-  ];
+    listing.power ? { icon: Cog, label: 'Vermogen', value: formatPower(listing.power, listing.powerUnit) ?? '—' } : null,
+    { icon: Settings, label: 'Carrosserie', value: listing.bodyType },
+    listing.color ? { icon: Settings, label: 'Kleur', value: listing.color } : null,
+    { icon: Settings, label: 'Deuren', value: String(listing.doorCount ?? listing.doors) },
+    { icon: Users, label: 'Zetels', value: String(listing.seatCount ?? listing.seats) },
+    listing.drivetrain ? { icon: Cog, label: 'Aandrijving', value: listing.drivetrain.toUpperCase() } : null,
+  ].filter(Boolean) as { icon: typeof Calendar; label: string; value: string }[];
+
+  const hasEmissions =
+    listing.consumptionCombined != null || listing.consumptionCity != null ||
+    listing.consumptionCountry != null || listing.co2Emissions != null ||
+    !!listing.emissionClass || !!listing.efficiencyClass ||
+    !!listing.emissionSticker || listing.particleFilter != null;
+
+  const hasWarrantyInfo =
+    listing.warrantyMonths != null || !!listing.warrantyType ||
+    !!listing.warrantyDetails || !!listing.inspectionDate || !!listing.nextInspectionDate;
+
+  const highlights = listing.highlights ?? [];
+  const equipment = listing.equipment ?? listing.features ?? [];
 
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
         title={`${listing.title} - VATUUR.`}
-        description={`${listing.title} - ${formatPrice(listing.price)} - ${formatMileage(listing.mileage)} km - Bouwjaar ${listing.year} - ${listing.fuelType} - ${listing.transmission}`}
+        description={`${listing.title} - ${formatPrice(displayPrice)} - ${formatMileage(listing.mileage, listing.mileageUnit)} - Bouwjaar ${listing.year} - ${listing.fuelType} - ${listing.transmission}`}
         canonical={`https://vatuur.nl/auto/${listing.id}`}
         ogImage={listing.images[0]}
         jsonLd={jsonLdSchemas}
@@ -177,11 +219,19 @@ export default function ListingDetail() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h1 className="text-2xl font-bold">{listing.title}</h1>
-                  <p className="mt-1 text-3xl font-bold text-accent">{formatPrice(listing.price)}</p>
+                  {listing.modelVersion && (
+                    <p className="text-sm text-muted-foreground mt-0.5">{listing.brand} {listing.model} {listing.modelVersion}</p>
+                  )}
+                  <p className="mt-1 text-3xl font-bold text-accent">{formatPrice(displayPrice)}</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {isAS24 && <Badge variant="secondary" className="gap-1"><BadgeCheck className="h-3 w-3" />AutoScout24 import</Badge>}
+                    {listing.vatDeductible && <Badge variant="secondary">Btw aftrekbaar</Badge>}
+                    {listing.priceNegotiable && <Badge variant="outline">Prijs bespreekbaar</Badge>}
+                  </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="icon"
                     className={cn("border-border/60", isFavorite && "text-accent")}
                     onClick={() => setIsFavorite(!isFavorite)}
@@ -197,14 +247,14 @@ export default function ListingDetail() {
 
             {/* Key Specs */}
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {specs.map((spec) => (
-                <div key={spec.label} className="flex items-center gap-3 rounded-xl bg-muted/50 p-4 border border-border/40">
+              {specs.map((spec, i) => (
+                <div key={i} className="flex items-center gap-3 rounded-xl bg-muted/50 p-4 border border-border/40">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-background">
                     <spec.icon className="h-5 w-5 text-muted-foreground" />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <div className="text-xs text-muted-foreground">{spec.label}</div>
-                    <div className="font-semibold capitalize">{spec.value}</div>
+                    <div className="font-semibold capitalize truncate">{spec.value}</div>
                   </div>
                 </div>
               ))}
@@ -213,30 +263,153 @@ export default function ListingDetail() {
             {/* Price Indicator */}
             <PriceIndicator listing={listing} />
 
-            {/* Description */}
-            <Card className="border-border/60 shadow-card">
-              <CardContent className="p-6">
-                <h2 className="text-lg font-semibold">Beschrijving</h2>
-                <p className="mt-4 text-muted-foreground whitespace-pre-line leading-relaxed">
-                  {listing.description}
-                </p>
-              </CardContent>
-            </Card>
+            {/* Verbruik & emissies */}
+            {hasEmissions && (
+              <Card className="border-border/60 shadow-card">
+                <CardContent className="p-6">
+                  <h2 className="text-lg font-semibold flex items-center gap-2">
+                    <Leaf className="h-5 w-5 text-success" />
+                    Verbruik & emissies
+                  </h2>
+                  <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
+                    {listing.consumptionCombined != null && (
+                      <div>
+                        <dt className="text-muted-foreground">Gecombineerd</dt>
+                        <dd className="font-medium">{formatConsumption(listing.consumptionCombined, listing.combinedUnit)}</dd>
+                      </div>
+                    )}
+                    {listing.consumptionCity != null && (
+                      <div>
+                        <dt className="text-muted-foreground">Stad</dt>
+                        <dd className="font-medium">{formatConsumption(listing.consumptionCity, listing.combinedUnit)}</dd>
+                      </div>
+                    )}
+                    {listing.consumptionCountry != null && (
+                      <div>
+                        <dt className="text-muted-foreground">Buitenweg</dt>
+                        <dd className="font-medium">{formatConsumption(listing.consumptionCountry, listing.combinedUnit)}</dd>
+                      </div>
+                    )}
+                    {listing.co2Emissions != null && (
+                      <div>
+                        <dt className="text-muted-foreground">CO₂</dt>
+                        <dd className="font-medium">{formatNumberWithUnit(listing.co2Emissions, listing.co2EmissionsUnit ?? 'g/km')}</dd>
+                      </div>
+                    )}
+                    {listing.emissionClass && (
+                      <div>
+                        <dt className="text-muted-foreground">Emissieklasse</dt>
+                        <dd className="font-medium">{listing.emissionClass}</dd>
+                      </div>
+                    )}
+                    {listing.efficiencyClass && (
+                      <div>
+                        <dt className="text-muted-foreground">Efficiëntieklasse</dt>
+                        <dd className="font-medium">{listing.efficiencyClass}</dd>
+                      </div>
+                    )}
+                    {listing.emissionSticker && (
+                      <div>
+                        <dt className="text-muted-foreground">Milieusticker</dt>
+                        <dd className="font-medium">{listing.emissionSticker}</dd>
+                      </div>
+                    )}
+                    {listing.particleFilter != null && (
+                      <div>
+                        <dt className="text-muted-foreground">Roetfilter</dt>
+                        <dd className="font-medium">{listing.particleFilter ? 'Ja' : 'Nee'}</dd>
+                      </div>
+                    )}
+                  </dl>
+                </CardContent>
+              </Card>
+            )}
 
-            {/* Features */}
-            <Card className="border-border/60 shadow-card">
-              <CardContent className="p-6">
-                <h2 className="text-lg font-semibold">Uitrusting</h2>
-                <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {listing.features.map((feature) => (
-                    <div key={feature} className="flex items-center gap-2 text-sm">
-                      <Check className="h-4 w-4 text-success flex-shrink-0" />
-                      <span className="text-foreground/80">{FEATURE_OPTIONS.find(f => f.value === feature)?.label || feature}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            {/* Highlights */}
+            {highlights.length > 0 && (
+              <Card className="border-border/60 shadow-card">
+                <CardContent className="p-6">
+                  <h2 className="text-lg font-semibold">Highlights</h2>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {highlights.map((h) => (
+                      <Badge key={h} variant="secondary" className="gap-1">
+                        <Star className="h-3 w-3" /> {h}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Description */}
+            {listing.description && (
+              <Card className="border-border/60 shadow-card">
+                <CardContent className="p-6">
+                  <h2 className="text-lg font-semibold">Beschrijving</h2>
+                  <p className="mt-4 text-muted-foreground whitespace-pre-line leading-relaxed">
+                    {listing.description}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Equipment */}
+            {equipment.length > 0 && (
+              <Card className="border-border/60 shadow-card">
+                <CardContent className="p-6">
+                  <h2 className="text-lg font-semibold">Uitrusting</h2>
+                  <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {equipment.map((feature) => (
+                      <div key={feature} className="flex items-center gap-2 text-sm">
+                        <Check className="h-4 w-4 text-success flex-shrink-0" />
+                        <span className="text-foreground/80">{FEATURE_OPTIONS.find(f => f.value === feature)?.label || feature}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Garantie & inspectie */}
+            {hasWarrantyInfo && (
+              <Card className="border-border/60 shadow-card">
+                <CardContent className="p-6">
+                  <h2 className="text-lg font-semibold flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-primary" />
+                    Garantie & inspectie
+                  </h2>
+                  <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                    {listing.warrantyMonths != null && (
+                      <div>
+                        <dt className="text-muted-foreground">Garantie</dt>
+                        <dd className="font-medium">{listing.warrantyMonths} {listing.warrantyUnit ?? 'maanden'}</dd>
+                      </div>
+                    )}
+                    {listing.warrantyType && (
+                      <div>
+                        <dt className="text-muted-foreground">Type garantie</dt>
+                        <dd className="font-medium">{listing.warrantyType}</dd>
+                      </div>
+                    )}
+                    {listing.inspectionDate && (
+                      <div>
+                        <dt className="text-muted-foreground">Laatste keuring</dt>
+                        <dd className="font-medium">{formatDate(listing.inspectionDate)}</dd>
+                      </div>
+                    )}
+                    {listing.nextInspectionDate && (
+                      <div>
+                        <dt className="text-muted-foreground">Volgende keuring</dt>
+                        <dd className="font-medium">{formatDate(listing.nextInspectionDate)}</dd>
+                      </div>
+                    )}
+                  </dl>
+                  {listing.warrantyDetails && (
+                    <p className="mt-3 text-sm text-muted-foreground whitespace-pre-line">{listing.warrantyDetails}</p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -331,13 +504,21 @@ export default function ListingDetail() {
                 {/* Title & Price */}
                 <div>
                   <h1 className="text-xl font-bold">{listing.title}</h1>
-                  <p className="mt-2 text-3xl font-bold text-accent">{formatPrice(listing.price)}</p>
+                  {listing.modelVersion && (
+                    <p className="text-sm text-muted-foreground mt-0.5">{listing.brand} {listing.model} {listing.modelVersion}</p>
+                  )}
+                  <p className="mt-2 text-3xl font-bold text-accent">{formatPrice(displayPrice)}</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {isAS24 && <Badge variant="secondary" className="gap-1"><BadgeCheck className="h-3 w-3" />AutoScout24</Badge>}
+                    {listing.vatDeductible && <Badge variant="secondary">Btw aftrekbaar</Badge>}
+                    {listing.priceNegotiable && <Badge variant="outline">Bespreekbaar</Badge>}
+                  </div>
                 </div>
 
                 {/* Actions */}
                 <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="icon"
                     className={cn("border-border/60 flex-shrink-0", isFavorite && "text-accent border-accent")}
                     onClick={() => setIsFavorite(!isFavorite)}
@@ -412,7 +593,7 @@ export default function ListingDetail() {
 
                 {/* Contact Buttons */}
                 <div className="space-y-3">
-                {listing.seller.phone && (
+                  {listing.seller.phone && (
                     <Button asChild className="w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90 h-12 text-base shadow-sm">
                       <a href={`tel:${listing.seller.phone.replace(/\s/g, '')}`}>
                         <Phone className="h-5 w-5" />
@@ -429,7 +610,7 @@ export default function ListingDetail() {
                 {/* Location */}
                 <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
                   <MapPin className="h-4 w-4" />
-                  {listing.location.city}, {listing.location.province}
+                  {listing.location.city}{listing.location.province ? `, ${listing.location.province}` : ''}
                 </div>
               </CardContent>
             </Card>
