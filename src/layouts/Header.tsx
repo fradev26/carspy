@@ -85,8 +85,11 @@ export function Header() {
 
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Open menu" className={cn("hover:bg-transparent", isTransparent ? "text-white" : "text-foreground hover:bg-muted")}>
+            <Button variant="ghost" size="icon" aria-label={unreadCount ? `Open menu (${unreadCount} nieuwe berichten)` : 'Open menu'} className={cn("relative hover:bg-transparent", isTransparent ? "text-white" : "text-foreground hover:bg-muted")}>
               <Menu className="h-5 w-5" />
+              {user && unreadCount > 0 && (
+                <span className="absolute top-1 right-1 inline-flex h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-card" />
+              )}
             </Button>
           </SheetTrigger>
           <SheetContent side="right" className="w-80 overflow-y-auto">
