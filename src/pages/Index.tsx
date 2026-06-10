@@ -376,29 +376,41 @@ const Index = () => {
               <h2 className="text-2xl font-semibold md:text-3xl">Veelgestelde vragen</h2>
               <p className="mt-2 text-muted-foreground">Alles wat je wilt weten over VATUUR.</p>
             </div>
-            <Accordion type="single" collapsible className="space-y-3">
-              {faqCategories.map((cat, ci) => (
-                <div key={cat.title} className="space-y-3">
-                  <h3 className="mt-8 first:mt-0 mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                    {cat.title}
-                  </h3>
-                  {cat.items.map((faq, i) => (
-                    <AccordionItem
-                      key={`${ci}-${i}`}
-                      value={`faq-${ci}-${i}`}
-                      className="bg-card rounded-xl border border-border/60 px-6 shadow-sm data-[state=open]:shadow-md transition-shadow"
-                    >
-                      <AccordionTrigger className="text-left font-medium hover:no-underline py-5">
-                        {faq.question}
-                      </AccordionTrigger>
-                      <AccordionContent className="text-muted-foreground leading-relaxed pb-5">
-                        {faq.answer}
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </div>
-              ))}
-            </Accordion>
+
+            {/* Mobile toggle */}
+            <button
+              onClick={() => setFaqExpanded((v) => !v)}
+              className="lg:hidden flex items-center justify-center gap-2 w-full rounded-xl border border-border/60 bg-card px-6 py-4 text-sm font-medium shadow-sm transition-all active:scale-[0.98]"
+            >
+              {faqExpanded ? 'Minder vragen' : 'Meer vragen?'}
+              <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${faqExpanded ? 'rotate-180' : ''}`} />
+            </button>
+
+            <div className={`${!faqExpanded ? 'hidden' : ''} lg:block`}>
+              <Accordion type="single" collapsible className="space-y-3 mt-4 lg:mt-0">
+                {faqCategories.map((cat, ci) => (
+                  <div key={cat.title} className="space-y-3">
+                    <h3 className="mt-8 first:mt-0 mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                      {cat.title}
+                    </h3>
+                    {cat.items.map((faq, i) => (
+                      <AccordionItem
+                        key={`${ci}-${i}`}
+                        value={`faq-${ci}-${i}`}
+                        className="bg-card rounded-xl border border-border/60 px-6 shadow-sm data-[state=open]:shadow-md transition-shadow"
+                      >
+                        <AccordionTrigger className="text-left font-medium hover:no-underline py-5">
+                          {faq.question}
+                        </AccordionTrigger>
+                        <AccordionContent className="text-muted-foreground leading-relaxed pb-5">
+                          {faq.answer}
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </div>
+                ))}
+              </Accordion>
+            </div>
           </div>
         </div>
       </section>
