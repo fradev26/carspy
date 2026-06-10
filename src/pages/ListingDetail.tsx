@@ -210,7 +210,7 @@ export default function ListingDetail() {
 
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-6 min-w-0">
             {/* Gallery */}
             <ImageGallery images={listing.images} alt={listing.title} />
 
