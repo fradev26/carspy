@@ -166,6 +166,7 @@ export default function Search() {
   const [page, setPage] = useState(1);
   const perPage = 24;
   const { listings: allListings, loading: listingsLoading } = useListings();
+  const [mobileResultsRevealed, setMobileResultsRevealed] = useState(false);
 
   // Update filters when URL params change
   useEffect(() => {
@@ -358,6 +359,15 @@ export default function Search() {
     return value !== undefined && value !== '' && (!Array.isArray(value) || value.length > 0);
   }).length;
 
+  // Mobile filter-first gate: show fullscreen filters until user reveals results
+  const hasIncomingIntent =
+    !!searchParams.get('q') ||
+    !!searchParams.get('aiIntent') ||
+    activeFilterCount > 0;
+  const showMobileResults = mobileResultsRevealed || hasIncomingIntent;
+
+
+
 
   const updateFilterValue = (key: keyof SearchFilters, value: string | number | undefined) => {
     const next = { ...filters };
@@ -406,10 +416,43 @@ export default function Search() {
             </div>
           </aside>
 
+          {/* Mobile fullscreen filter gate */}
+          {!showMobileResults && (
+            <div className="lg:hidden w-full">
+              <div className="mb-4">
+                <h1 className="text-2xl font-bold">Auto's zoeken</h1>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Stel je filters in om het aanbod te ontdekken.
+                </p>
+              </div>
+              <div className="rounded-xl border border-border/60 bg-card p-4 shadow-sm">
+                <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} />
+              </div>
+              <div className="sticky bottom-20 mt-4 pb-2 bg-gradient-to-t from-background via-background to-transparent pt-4 flex flex-col gap-2">
+                <Button
+                  onClick={() => setMobileResultsRevealed(true)}
+                  className="w-full min-h-12 text-base font-semibold"
+                >
+                  Toon {activeFilterCount > 0 ? `${filteredListings.length} resultaten` : 'alle resultaten'}
+                </Button>
+                {activeFilterCount > 0 && (
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleFiltersChange({})}
+                    className="w-full min-h-11 text-sm text-muted-foreground"
+                  >
+                    Wis alle filters
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Main Content */}
-          <div className="flex-1">
+          <div className={cn('flex-1', !showMobileResults && 'hidden lg:block')}>
             {/* Header */}
             <div className="mb-6">
+
 
 
               {/* AI Search Bar / Intent Banner - desktop only */}
