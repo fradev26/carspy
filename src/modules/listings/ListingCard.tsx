@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MapPin, Fuel, Gauge, Calendar, Eye, GitCompareArrows, Crown, Settings2 } from 'lucide-react';
+import { Heart, MapPin, Fuel, Gauge, Calendar, Eye, GitCompareArrows, Crown, Settings2, BadgeCheck } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
