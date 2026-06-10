@@ -10,17 +10,21 @@ import { Badge } from '@/components/ui/badge';
 import { FilterPanel, FilterChips, SmartSearchBar } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
 import { useListings } from '@/hooks/useListings';
-import { 
-  SearchFilters, 
-  SORT_OPTIONS, 
-  BodyType, 
-  FuelType, 
-  TransmissionType, 
+import {
+  SearchFilters,
+  SORT_OPTIONS,
+  BodyType,
+  FuelType,
+  TransmissionType,
   DriveType,
   PaintType,
   InteriorMaterial,
   OnlineSince,
   WarrantyOption,
+  CAR_BRANDS,
+  CAR_MODELS,
+  FUEL_TYPES,
+  TRANSMISSION_TYPES,
 } from '@/types/listing';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
 import { useSavedSearches } from '@/hooks/useSavedSearches';
@@ -162,6 +166,8 @@ export default function Search() {
   const [page, setPage] = useState(1);
   const perPage = 24;
   const { listings: allListings, loading: listingsLoading } = useListings();
+  const [showAllMobile, setShowAllMobile] = useState(false);
+  const [mobileQuery, setMobileQuery] = useState(() => searchParams.get('q') ?? '');
 
   // Update filters when URL params change
   useEffect(() => {
@@ -354,6 +360,44 @@ export default function Search() {
     return value !== undefined && value !== '' && (!Array.isArray(value) || value.length > 0);
   }).length;
 
+  // Mobile "intent gate": only render results on mobile after a user action
+  const hasUserIntent =
+    showAllMobile ||
+    activeFilterCount > 0 ||
+    !!searchParams.get('q') ||
+    !!searchParams.get('aiIntent');
+
+  const handleMobileFreeTextSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = mobileQuery.trim();
+    const next = new URLSearchParams(searchParams);
+    if (q) next.set('q', q);
+    else next.delete('q');
+    setSearchParams(next);
+    setShowAllMobile(true);
+  };
+
+  const updateFilterValue = (key: keyof SearchFilters, value: string | number | undefined) => {
+    const next = { ...filters };
+    if (value === undefined || value === '' || value === 'all') {
+      delete next[key];
+    } else {
+      (next as Record<string, unknown>)[key] = value;
+    }
+    handleFiltersChange(next);
+  };
+
+  const updateArrayFilter = <K extends 'fuelTypes' | 'transmissions'>(key: K, value: string) => {
+    const next = { ...filters };
+    if (!value || value === 'all') {
+      delete next[key];
+    } else {
+      (next as Record<string, unknown>)[key] = [value];
+    }
+    handleFiltersChange(next);
+  };
+
+
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
@@ -382,8 +426,209 @@ export default function Search() {
 
           {/* Main Content */}
           <div className="flex-1">
+            {/* Mobile intent panel: shown until the user searches or filters */}
+            {!hasUserIntent && (
+              <div className="lg:hidden space-y-4 mb-2">
+                <div>
+                  <h1 className="text-2xl font-bold">Auto's zoeken</h1>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Zoek slim of stel filters in om het aanbod te bekijken.
+                  </p>
+                </div>
+
+                <SmartSearchBar variant="compact" placeholder="Ik zoek een zwarte Audi A4 automaat onder €25.000" />
+
+                <form onSubmit={handleMobileFreeTextSubmit} className="flex gap-2">
+                  <Input
+                    value={mobileQuery}
+                    onChange={(e) => setMobileQuery(e.target.value)}
+                    placeholder="Zoek op merk, model of trefwoord"
+                    className="flex-1 min-h-12"
+                    aria-label="Vrije zoekterm"
+                  />
+                  <Button type="submit" variant="outline" className="min-h-12">
+                    Zoek
+                  </Button>
+                </form>
+
+                <div className="rounded-xl border border-border/60 bg-card p-4 shadow-sm space-y-3">
+                  <h2 className="text-sm font-semibold">Belangrijkste filters</h2>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="col-span-2">
+                      <Label className="text-xs text-muted-foreground">Merk</Label>
+                      <Select
+                        value={filters.brand ?? 'all'}
+                        onValueChange={(v) => {
+                          updateFilterValue('brand', v);
+                          // Clear model when brand changes
+                          if (filters.model) updateFilterValue('model', undefined);
+                        }}
+                      >
+                        <SelectTrigger className="mt-1 min-h-11"><SelectValue placeholder="Alle merken" /></SelectTrigger>
+                        <SelectContent className="bg-card max-h-64">
+                          <SelectItem value="all">Alle merken</SelectItem>
+                          {CAR_BRANDS.map((b) => (
+                            <SelectItem key={b} value={b}>{b}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {filters.brand && CAR_MODELS[filters.brand] && (
+                      <div className="col-span-2">
+                        <Label className="text-xs text-muted-foreground">Model</Label>
+                        <Select
+                          value={filters.model ?? 'all'}
+                          onValueChange={(v) => updateFilterValue('model', v)}
+                        >
+                          <SelectTrigger className="mt-1 min-h-11"><SelectValue placeholder="Alle modellen" /></SelectTrigger>
+                          <SelectContent className="bg-card max-h-64">
+                            <SelectItem value="all">Alle modellen</SelectItem>
+                            {CAR_MODELS[filters.brand].map((m) => (
+                              <SelectItem key={m} value={m}>{m}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Prijs vanaf</Label>
+                      <Input
+                        type="number"
+                        inputMode="numeric"
+                        value={filters.minPrice ?? ''}
+                        onChange={(e) => updateFilterValue('minPrice', e.target.value ? parseInt(e.target.value) : undefined)}
+                        placeholder="€ min"
+                        className="mt-1 min-h-11"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Prijs tot</Label>
+                      <Input
+                        type="number"
+                        inputMode="numeric"
+                        value={filters.maxPrice ?? ''}
+                        onChange={(e) => updateFilterValue('maxPrice', e.target.value ? parseInt(e.target.value) : undefined)}
+                        placeholder="€ max"
+                        className="mt-1 min-h-11"
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Bouwjaar vanaf</Label>
+                      <Input
+                        type="number"
+                        inputMode="numeric"
+                        value={filters.minYear ?? ''}
+                        onChange={(e) => updateFilterValue('minYear', e.target.value ? parseInt(e.target.value) : undefined)}
+                        placeholder="bv. 2018"
+                        className="mt-1 min-h-11"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Bouwjaar tot</Label>
+                      <Input
+                        type="number"
+                        inputMode="numeric"
+                        value={filters.maxYear ?? ''}
+                        onChange={(e) => updateFilterValue('maxYear', e.target.value ? parseInt(e.target.value) : undefined)}
+                        placeholder="bv. 2024"
+                        className="mt-1 min-h-11"
+                      />
+                    </div>
+
+                    <div className="col-span-2">
+                      <Label className="text-xs text-muted-foreground">Km-stand max</Label>
+                      <Input
+                        type="number"
+                        inputMode="numeric"
+                        value={filters.maxMileage ?? ''}
+                        onChange={(e) => updateFilterValue('maxMileage', e.target.value ? parseInt(e.target.value) : undefined)}
+                        placeholder="bv. 100000"
+                        className="mt-1 min-h-11"
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Brandstof</Label>
+                      <Select
+                        value={filters.fuelTypes?.[0] ?? 'all'}
+                        onValueChange={(v) => updateArrayFilter('fuelTypes', v)}
+                      >
+                        <SelectTrigger className="mt-1 min-h-11"><SelectValue placeholder="Alle" /></SelectTrigger>
+                        <SelectContent className="bg-card">
+                          <SelectItem value="all">Alle</SelectItem>
+                          {FUEL_TYPES.map((f) => (
+                            <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Transmissie</Label>
+                      <Select
+                        value={filters.transmissions?.[0] ?? 'all'}
+                        onValueChange={(v) => updateArrayFilter('transmissions', v)}
+                      >
+                        <SelectTrigger className="mt-1 min-h-11"><SelectValue placeholder="Alle" /></SelectTrigger>
+                        <SelectContent className="bg-card">
+                          <SelectItem value="all">Alle</SelectItem>
+                          {TRANSMISSION_TYPES.map((t) => (
+                            <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <Drawer>
+                    <DrawerTrigger asChild>
+                      <Button variant="outline" className="w-full min-h-12 gap-2 border-dashed">
+                        <SlidersHorizontal className="h-4 w-4" />
+                        Meer filters
+                      </Button>
+                    </DrawerTrigger>
+                    <DrawerContent className="max-h-[90vh]">
+                      <DrawerHeader className="border-b border-border/60">
+                        <DrawerTitle>Alle filters</DrawerTitle>
+                      </DrawerHeader>
+                      <div className="overflow-y-auto px-4 py-4">
+                        <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} />
+                      </div>
+                      <DrawerFooter className="border-t border-border/60">
+                        <DrawerClose asChild>
+                          <Button className="w-full min-h-12">Toepassen</Button>
+                        </DrawerClose>
+                      </DrawerFooter>
+                    </DrawerContent>
+                  </Drawer>
+                </div>
+
+                <div className="flex flex-col gap-2 pb-4">
+                  <Button
+                    onClick={() => setShowAllMobile(true)}
+                    className="w-full min-h-12 text-base font-semibold"
+                  >
+                    Bekijk {activeFilterCount > 0 ? `${filteredListings.length} resultaten` : 'alle resultaten'}
+                  </Button>
+                  {activeFilterCount > 0 && (
+                    <Button
+                      variant="ghost"
+                      onClick={() => handleFiltersChange({})}
+                      className="w-full min-h-11 text-sm text-muted-foreground"
+                    >
+                      Wis alles
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Header */}
-            <div className="mb-6">
+            <div className={cn('mb-6', !hasUserIntent && 'hidden lg:block')}>
+
               {/* AI Search Bar / Intent Banner */}
               {searchParams.get('aiIntent') ? (
                 <div className="mb-5 flex items-start gap-3 rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 to-accent/10 p-4">
@@ -566,14 +811,17 @@ export default function Search() {
             </div>
 
             {/* Active Filters */}
-            <FilterChips
-              filters={filters}
-              onRemoveFilter={handleRemoveFilter}
-              onClearAll={() => handleFiltersChange({})}
-            />
+            <div className={cn(!hasUserIntent && 'hidden lg:block')}>
+              <FilterChips
+                filters={filters}
+                onRemoveFilter={handleRemoveFilter}
+                onClearAll={() => handleFiltersChange({})}
+              />
+            </div>
 
             {/* Results */}
-            <div className="mt-6">
+            <div className={cn('mt-6', !hasUserIntent && 'hidden lg:block')}>
+
               {isLoading || isPending || listingsLoading ? (
                 <div className={viewMode === 'grid' 
                   ? "grid gap-6 sm:grid-cols-2 lg:grid-cols-3" 

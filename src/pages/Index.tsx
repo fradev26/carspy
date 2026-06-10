@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Shield, Zap, Users, Car, CheckCircle2, Star, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { HeroSearch } from '@/modules/search';
+import { HeroSearch, SmartSearchBar } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
 import { useListings } from '@/hooks/useListings';
 import { SEOHead } from '@/components/SEOHead';
@@ -270,7 +270,23 @@ const Index = () => {
           </div>
         </div>
       </section>
+      {/* Mobile compact AI search — primary action on mobile homepage */}
+      <section className="lg:hidden bg-background pt-4 pb-2">
+        <div className="container">
+          <h2 className="mb-2 text-sm font-semibold text-foreground">Wat zoek je?</h2>
+          <SmartSearchBar
+            variant="compact"
+            placeholder="Ik zoek een zwarte Audi A4 automaat onder €25.000"
+          />
+          <div className="mt-2 text-right">
+            <Link to="/zoeken" className="text-xs font-medium text-muted-foreground hover:text-foreground">
+              Of blader klassiek →
+            </Link>
+          </div>
+        </div>
+      </section>
       <section className="bg-muted/30 py-12 md:py-16">
+
         <div className="container">
           <div className="flex items-center justify-between mb-8">
             <div>

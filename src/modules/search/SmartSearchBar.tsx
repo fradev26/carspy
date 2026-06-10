@@ -10,9 +10,10 @@ import { cn } from '@/lib/utils';
 interface Props {
   className?: string;
   variant?: 'hero' | 'compact';
+  placeholder?: string;
 }
 
-export function SmartSearchBar({ className, variant = 'hero' }: Props) {
+export function SmartSearchBar({ className, variant = 'hero', placeholder = 'Beschrijf je droomwagen…' }: Props) {
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
   const { search, loading } = useSmartSearch();
@@ -42,7 +43,7 @@ export function SmartSearchBar({ className, variant = 'hero' }: Props) {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Beschrijf je droomwagen…"
+            placeholder={placeholder}
             disabled={loading}
             className="flex-1 border-0 bg-transparent text-base shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
             aria-label="Slim zoeken"
