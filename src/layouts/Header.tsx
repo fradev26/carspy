@@ -41,6 +41,7 @@ export function Header() {
   const location = useLocation();
   const { user, signOut } = useAuth();
   const { isDealer } = useProfile();
+  const { count: unreadCount } = useUnreadMessages();
 
   const isHomepage = location.pathname === '/';
 
