@@ -3,84 +3,74 @@ import { Heart } from 'lucide-react';
 import { ListingGrid } from '@/modules/listings';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useFavorites } from '@/hooks/useFavorites';
 import { Listing } from '@/types/listing';
 import { SEOHead } from '@/components/SEOHead';
 
 export default function Favorites() {
   const { user } = useAuth();
-  const [favorites, setFavorites] = useState<string[]>([]);
+  const { favorites, toggle } = useFavorites();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      fetchFavorites();
+    if (!user) {
+      setListings([]);
+      setLoading(false);
+      return;
     }
-  }, [user]);
-
-  const fetchFavorites = async () => {
-    // Get favorite listing IDs
-    const { data: favData } = await supabase
-      .from('favorites')
-      .select('listing_id')
-      .eq('user_id', user?.id);
-
-    if (favData && favData.length > 0) {
-      const listingIds = favData.map(f => f.listing_id);
-      setFavorites(listingIds);
-
-      // Get listing details
-      const { data: listingsData } = await supabase
-        .from('listings')
-        .select('*')
-        .in('id', listingIds);
-
-      if (listingsData) {
-        // Transform DB format to UI format
-        const transformed = listingsData.map(l => ({
-          id: l.id,
-          title: l.title,
-          brand: l.brand,
-          model: l.model,
-          year: l.year,
-          price: l.price,
-          mileage: l.mileage,
-          fuelType: l.fuel_type as Listing['fuelType'],
-          transmission: l.transmission as Listing['transmission'],
-          bodyType: l.body_type as Listing['bodyType'],
-          color: l.color || '',
-          power: l.power || 0,
-          engineSize: l.engine_size || 0,
-          doors: l.doors || 5,
-          seats: l.seats || 5,
-          images: l.images || [],
-          description: l.description || '',
-          features: l.features || [],
-          location: { city: l.city || '', province: l.province || '' },
-          seller: { id: l.user_id, name: 'Verkoper', type: 'private' as const, memberSince: '' },
-          createdAt: l.created_at,
-          updatedAt: l.updated_at,
-          views: l.views,
-          status: l.status as Listing['status'],
-        }));
-        setListings(transformed);
-      }
+    const ids = Array.from(favorites);
+    if (ids.length === 0) {
+      setListings([]);
+      setLoading(false);
+      return;
     }
-    setLoading(false);
-  };
+    let cancelled = false;
+    setLoading(true);
+    supabase
+      .from('listings')
+      .select('*')
+      .in('id', ids)
+      .then(({ data }) => {
+        if (cancelled) return;
+        if (data) {
+          const transformed = data.map((l) => ({
+            id: l.id,
+            title: l.title,
+            brand: l.brand,
+            model: l.model,
+            year: l.year,
+            price: l.price,
+            mileage: l.mileage,
+            fuelType: l.fuel_type as Listing['fuelType'],
+            transmission: l.transmission as Listing['transmission'],
+            bodyType: l.body_type as Listing['bodyType'],
+            color: l.color || '',
+            power: l.power || 0,
+            engineSize: l.engine_size || 0,
+            doors: l.doors || 5,
+            seats: l.seats || 5,
+            images: l.images || [],
+            description: l.description || '',
+            features: l.features || [],
+            location: { city: l.city || '', province: l.province || '' },
+            seller: { id: l.user_id, name: 'Verkoper', type: 'private' as const, memberSince: '' },
+            createdAt: l.created_at,
+            updatedAt: l.updated_at,
+            views: l.views,
+            status: l.status as Listing['status'],
+          }));
+          setListings(transformed);
+        }
+        setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user, favorites]);
 
-  const handleFavoriteToggle = async (listingId: string, isFavorite: boolean) => {
-    if (!isFavorite) {
-      // Remove from favorites
-      await supabase
-        .from('favorites')
-        .delete()
-        .eq('user_id', user?.id)
-        .eq('listing_id', listingId);
-      
-      setFavorites(favorites.filter(id => id !== listingId));
-      setListings(listings.filter(l => l.id !== listingId));
-    }
+  const handleFavoriteToggle = async (listingId: string) => {
+    await toggle(listingId);
   };
 
   if (loading) {
@@ -105,10 +95,10 @@ export default function Favorites() {
         </div>
       ) : (
         <div className="mt-8">
-          <ListingGrid 
-            listings={listings} 
-            columns={3} 
-            favorites={favorites} 
+          <ListingGrid
+            listings={listings}
+            columns={3}
+            favorites={Array.from(favorites)}
             onFavoriteToggle={handleFavoriteToggle}
           />
         </div>
