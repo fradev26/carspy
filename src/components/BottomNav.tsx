@@ -42,8 +42,10 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
               );
             }
 
-            const path = item.authPath && !user ? item.authPath : item.path!;
-            const isActive = location.pathname === item.path || (item.authPath && location.pathname === item.authPath);
+            const path = item.authPath && !user
+              ? item.authPath
+              : (item.dealerPath && user && isDealer ? item.dealerPath : item.path!);
+            const isActive = location.pathname === path || location.pathname === item.path || (item.authPath && location.pathname === item.authPath);
             
             return (
               <Link
