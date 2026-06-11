@@ -239,7 +239,7 @@ export default function ListingDetail() {
                     variant="outline"
                     size="icon"
                     className={cn("border-border/60", isFavorite && "text-accent")}
-                    onClick={() => setIsFavorite(!isFavorite)}
+                    onClick={handleFavoriteToggle}
                   >
                     <Heart className={cn("h-5 w-5", isFavorite && "fill-current")} />
                   </Button>
@@ -532,7 +532,7 @@ export default function ListingDetail() {
                     variant="outline"
                     size="icon"
                     className={cn("border-border/60 flex-shrink-0", isFavorite && "text-accent border-accent")}
-                    onClick={() => setIsFavorite(!isFavorite)}
+                    onClick={handleFavoriteToggle}
                   >
                     <Heart className={cn("h-5 w-5", isFavorite && "fill-current")} />
                   </Button>
