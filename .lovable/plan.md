@@ -1,11 +1,14 @@
-Optimaliseer de mobiele headeruitlijning in `src/layouts/Header.tsx` zodat de iconen dichter bij het gecentreerde logo staan.
+### Doel
+De profiel- en berichteniconen in de mobiele header staan momenteel te dicht bij het gecentreerde VATUUR-logo. Ze worden subtiel naar de schermranden verplaatst om een rustiger, premium driedelingsbeeld te creëren.
 
-**Wat er gebeurt**
-- Profielicoon (links) en berichtenicoon (rechts) worden absoluut gepositioneerd op een vaste, identieke afstand van de zijkanten (`left-3` / `right-3` binnen de `safe-x` container).
-- Het VATUUR-logo blijft exact gecentreerd via `absolute left-1/2 -translate-x-1/2`.
-- `ml-auto` op de berichten-container verdwijnt, zodat de iconen nooit visueel verschuiven door badges of contentbreedtes.
-- Touch targets blijven `h-11 w-11` (44 px).
-- iOS-safe areas blijven behouden via de bestaande `safe-x` op de container.
+### Wijziging
+- **Bestand:** `src/layouts/Header.tsx`
+- **Aanpassing:** Wijzig de absolute horizontale offset van beide iconen van `left-8` / `right-8` naar `left-6` / `right-6`.
+- Het logo blijft onveranderd absoluut gecentreerd (`left-1/2 -translate-x-1/2`).
+- Badges, notificaties en touch-targets (44×44 px) blijven intact.
 
-**Controle**
-- Preview op mobiel bekijken om symmetrie en spacing te verifiëren.
+### Visueel resultaat
+```text
+[Profiel]        VATUUR        [Berichten]
+```
+De iconen schuiven ~8 px per kant naar buiten, wat ongeveer een derde terug is richting de oorspronkelijke randpositie. Dit geeft een betere visuele balans zonder uitgestreken of samengedrukt te ogen.

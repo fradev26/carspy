@@ -77,7 +77,7 @@ export function Header() {
       <div className="container relative flex h-14 items-center safe-x lg:hidden">
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Open account" className="absolute left-8 top-1/2 -translate-y-1/2 h-11 w-11 text-foreground hover:bg-muted">
+            <Button variant="ghost" size="icon" aria-label="Open account" className="absolute left-6 top-1/2 -translate-y-1/2 h-11 w-11 text-foreground hover:bg-muted">
               <User className="h-5 w-5" />
             </Button>
           </SheetTrigger>
@@ -139,7 +139,7 @@ export function Header() {
           </div>
         </div>
 
-        <div className="absolute right-8 top-1/2 -translate-y-1/2">
+        <div className="absolute right-6 top-1/2 -translate-y-1/2">
           {user ? (
             <Button
               variant="ghost"
