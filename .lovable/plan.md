@@ -1,43 +1,47 @@
-# Swipe-navigatie in voertuiggalerij (lightbox)
 
 ## Doel
-In de fullscreen lightbox kan de gebruiker op mobiel horizontaal swipen om naar de vorige/volgende foto te gaan. Pijltjes blijven werken op desktop. Verticale paginascroll en lazy loading blijven intact.
+"Zetels" weghalen uit de Key Specs op de voertuig-detailpagina en de volledige uitrusting verplaatsen naar een aparte "Volledige optielijst bekijken" CTA, die op mobiel een bottom sheet en op desktop een modal opent.
 
-## Aan te passen bestand
-- `src/modules/listings/ImageGallery.tsx` (enige aanpassing)
+## Wijzigingen in `src/pages/ListingDetail.tsx`
 
-## Aanpak
+### 1. Key Specs opschonen
+- Verwijder het `Zetels`-item uit de `specs`-array (regel 163).
+- `Users` import uit `lucide-react` verwijderen als die nergens anders gebruikt wordt.
+- Grid-classes (`grid-cols-2 sm:grid-cols-4`) blijven ongewijzigd — wrap-gedrag werkt automatisch met minder items.
 
-1. **Touch handlers op het lightbox-image-container**
-   - Voeg `onTouchStart`, `onTouchMove`, `onTouchEnd` toe op de `<div>` rond de fullscreen `<img>`.
-   - Track `touchStartX`, `touchStartY`, `touchEndX`, `touchEndY` via `useRef`.
-   - In `onTouchEnd`: bereken `deltaX` en `deltaY`.
-     - Als `Math.abs(deltaX) > 50` én `Math.abs(deltaX) > Math.abs(deltaY) * 1.5` → trigger `goToNext()` (swipe links) of `goToPrevious()` (swipe rechts).
-     - Anders: niets doen (voorkomt per ongeluk wisselen bij tap/verticale gestures).
-   - Drempel 50px voorkomt accidentele triggers; ratio-check zorgt dat verticale scrolls niet als swipe tellen.
+### 2. Equipment-kaart vervangen door CTA
+De huidige "Uitrusting" kaart (regels 357–371) wordt vervangen door één CTA-knop direct onder de "Beschrijving" kaart:
 
-2. **Voorkom dat swipen de dialog sluit**
-   - Radix Dialog sluit niet op tap/swipe binnen content, dus standaard gedrag is OK.
-   - `e.stopPropagation()` op `onTouchStart` van de img-container, om te voorkomen dat overlay-click-to-close getriggerd wordt tijdens een swipe-gebaar.
+- Visueel: full-width `Card`-achtige knop met label "Volledige optielijst bekijken", subtekst aantal opties (`{equipment.length} opties`), en een `ChevronRight` icoon rechts.
+- VATUUR-styling: `border-border/60 shadow-card`, hover `bg-muted/40`, primary accent text, `focus-ring`, geschikt voor touch (min-h ~64px).
+- Alleen renderen wanneer `equipment.length > 0`. Geen CTA = geen modal.
 
-3. **Mobiel vs desktop**
-   - Pijltjes in lightbox blijven gerenderd, maar krijgen `hidden md:flex` zodat ze op mobiel verdwijnen en swipe het overneemt.
-   - Image counter (`3 / 10`) blijft ongewijzigd.
+### 3. Nieuw component `EquipmentDialog`
+Nieuw bestand `src/modules/listings/EquipmentDialog.tsx`:
 
-4. **Performance / smoothness**
-   - Geen state updates tijdens `onTouchMove` (we lezen alleen refs) → geen re-renders → vloeiend.
-   - Geen `preventDefault()` op touchmove → verticale scroll buiten de lightbox blijft mogelijk; binnen de lightbox is er toch niets te scrollen.
-   - `touch-action: pan-y` via Tailwind `touch-pan-y` op de image-container, zodat de browser horizontale gestures aan ons overlaat en verticale gestures zelf afhandelt.
+- Props: `open`, `onOpenChange`, `equipment: string[]`, `title?: string`.
+- Detecteert viewport met bestaande `useIsMobile()` hook.
+  - Mobiel → shadcn `Sheet` met `side="bottom"`, `max-h-[85vh]`, scrollbare body.
+  - Tablet/desktop (≥ md) → shadcn `Dialog`, `max-w-2xl`, `max-h-[80vh]`, scrollbare body.
+- Header: titel "Volledige uitrusting" + sluitknop (ingebakken in Sheet/Dialog).
+- Body: groepeert equipment per `category` uit `FEATURE_OPTIONS` (`comfort`, `safety`, `multimedia`, `exterior`, plus afgeleide `interior`, `rijhulpsystemen` indien aanwezig in dataset).
+  - Mapping naar Nederlandse koppen: Comfort, Veiligheid, Multimedia, Exterieur, Interieur, Rijhulpsystemen, Overige.
+  - Onbekende values (niet in `FEATURE_OPTIONS`) belanden in "Overige" en tonen de raw string.
+  - Per groep: kopje + `grid grid-cols-1 sm:grid-cols-2` lijst met `Check` icoon, `break-anywhere` zodat lange labels wrappen. Geen horizontale scroll.
+- Toegankelijkheid: `DialogTitle`/`SheetTitle` voor screen readers, ESC sluit (default Radix), focus trap (default).
 
-5. **Edge cases**
-   - `goToNext` / `goToPrevious` zijn al circulair (wrap-around) — laatste → eerste, eerste → laatste werken automatisch.
-   - Snelle opeenvolgende swipes werken omdat we alleen `setCurrentIndex` aanroepen, geen debounce nodig.
-   - Single image: swipe-handlers blijven actief maar `validImages.length > 1` check in handler voorkomt onnodige state-updates.
+### 4. State in `ListingDetail`
+- `const [equipmentOpen, setEquipmentOpen] = useState(false);`
+- CTA-knop opent dialog; component rendert dialog alleen als `equipment.length > 0`.
 
-## QA-checklist (na implementatie)
-- 320 / 375 / 390 / 414 / 768 px portrait + landscape
-- Swipe links/rechts wisselt foto onmiddellijk
-- Wrap-around werkt (laatste→eerste, eerste→laatste)
-- Tap op afbeelding sluit lightbox niet onbedoeld
-- Verticale scroll op de detailpagina (buiten lightbox) blijft werken
-- Desktop: pijltjes nog steeds zichtbaar en functioneel
+## Datacontract
+- Bron blijft `listing.equipment ?? listing.features ?? []` (geen hardcoded data, geen schema-wijziging).
+- Groepering puur client-side op basis van bestaande `FEATURE_OPTIONS.category`.
+
+## QA
+- 320 / 375 / 768 / 1280 px: geen horizontale scroll, key specs uitlijning correct, CTA klikbaar, sheet/dialog opent en sluit, lange labels wrappen.
+- Listing zonder equipment: CTA niet zichtbaar.
+- Toetsenbord: Tab focust CTA, Enter opent, Esc sluit.
+
+## Geen wijzigingen aan
+Backend, types, andere pagina's, listing card grid.
