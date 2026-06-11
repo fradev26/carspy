@@ -150,17 +150,16 @@ export function Header() {
             <Button
               variant="ghost"
               size="icon"
-              asChild
+              aria-label={unreadCount ? `Berichten (${unreadCount} ongelezen)` : 'Berichten'}
+              onClick={() => navigate('/berichten')}
               className="relative h-10 w-10 rounded-full bg-muted/60 text-foreground hover:bg-muted active:bg-muted/80 transition-colors before:absolute before:inset-[-2px] before:content-['']"
             >
-              <Link to="/berichten" aria-label={unreadCount ? `Berichten (${unreadCount} ongelezen)` : 'Berichten'}>
-                <MessageCircle className="h-[18px] w-[18px]" strokeWidth={1.75} />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ring-2 ring-background">
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </span>
-                )}
-              </Link>
+              <MessageCircle className="h-[18px] w-[18px]" strokeWidth={1.75} />
+              {unreadCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ring-2 ring-background">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
             </Button>
           ) : (
             <div className="h-10 w-10" aria-hidden="true" />
