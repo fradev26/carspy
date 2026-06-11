@@ -313,7 +313,12 @@ const Index = () => {
               ))}
             </div>
           ) : (
-            <ListingGrid listings={latestListings} columns={3} />
+            <ListingGrid
+              listings={latestListings}
+              columns={3}
+              favorites={Array.from(favorites)}
+              onFavoriteToggle={(id, isFav) => toggle(id)}
+            />
           )}
           <div className="mt-8 text-center">
             <Link
