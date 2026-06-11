@@ -82,7 +82,7 @@ export function Header() {
                 variant="ghost"
                 size="icon"
                 aria-label="Open account"
-                className="relative h-10 w-10 rounded-full bg-muted/60 text-foreground hover:bg-muted active:bg-muted/80 transition-colors before:absolute before:inset-[-2px] before:content-['']"
+                className="relative h-10 w-10 rounded-xl bg-muted/60 text-foreground hover:bg-muted active:bg-muted/80 transition-colors before:absolute before:inset-[-2px] before:content-['']"
               >
                 <User className="h-[18px] w-[18px]" strokeWidth={1.75} />
               </Button>
