@@ -184,10 +184,14 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
     <Link to={`/auto/${listing.id}`} className="block" aria-label={`${listing.title} - ${formatPrice(listing.price)}`}>
       <Card className={cn(
         "group overflow-hidden transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1 border-border/60",
-        isPremium && "border-premium/50 shadow-glow-premium ring-1 ring-premium/20"
+        isPremium && "border-premium/50 shadow-glow-premium ring-1 ring-premium/20",
+        favorite && "bg-primary/[0.03] ring-1 ring-primary/25"
       )}>
         {/* Image Container */}
-        <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+        <div className={cn(
+          "relative aspect-[16/10] overflow-hidden bg-muted",
+          favorite && "border-t-2 border-primary"
+        )}>
           {!imageLoaded && (
             <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent bg-[length:200%_100%]" />
           )}
@@ -210,20 +214,32 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
           <div className="absolute left-3 top-3 rounded-lg bg-card/95 px-2.5 py-1 shadow-elevated backdrop-blur-sm">
             <span className="text-base font-bold text-accent">{formatPrice(listing.price)}</span>
           </div>
-          
+
+          {/* Favoriet badge */}
+          {favorite && (
+            <Badge className="absolute left-3 top-11 bg-primary text-primary-foreground font-medium gap-1 px-2 py-0.5 text-xs shadow-md">
+              <Heart className="h-3 w-3 fill-current" />
+              Favoriet
+            </Badge>
+          )}
+
           {/* Favorite Button */}
           <Button
             variant="ghost"
             size="icon"
             aria-label={favorite ? 'Verwijder uit favorieten' : 'Toevoegen aan favorieten'}
+            aria-pressed={favorite}
             className={cn(
               'absolute right-3 top-3 h-9 w-9 rounded-md backdrop-blur-sm shadow-md transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground',
-              favorite ? 'bg-primary text-primary-foreground' : 'bg-card/90 text-accent'
+              favorite
+                ? 'bg-primary text-primary-foreground ring-2 ring-primary/40 ring-offset-1 ring-offset-background'
+                : 'bg-card/90 text-accent'
             )}
             onClick={handleFavoriteClick}
           >
-            <Heart className={cn('h-4 w-4 transition-transform', favorite && 'fill-current scale-110')} />
+            <Heart className={cn('h-4 w-4 transition-transform', favorite && 'fill-current scale-110', justLiked && 'animate-heart-pop')} />
           </Button>
+
 
           {/* Compare Button */}
           <Button
