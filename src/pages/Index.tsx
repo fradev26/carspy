@@ -136,6 +136,7 @@ const Index = () => {
   const { listings: allListings, loading: listingsLoading } = useListings();
   const latestListings = allListings.slice(0, 6);
   const [faqExpanded, setFaqExpanded] = useState(false);
+  const { favorites, toggle } = useFavorites();
 
   return (
     <div className="flex flex-col">
