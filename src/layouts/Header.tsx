@@ -74,20 +74,15 @@ export function Header() {
       isTransparent && "lg:bg-transparent lg:backdrop-blur-0 lg:border-transparent lg:shadow-none"
     )}>
       {/* Mobile + Tablet Header */}
-      <div className="container flex h-14 items-center justify-between gap-4 lg:hidden">
-        <Logo size="lg" asLink />
-
+      <div className="container relative flex h-14 items-center safe-x lg:hidden">
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label={unreadCount ? `Open account (${unreadCount} nieuwe berichten)` : 'Open account'} className="relative text-foreground hover:bg-muted">
+            <Button variant="ghost" size="icon" aria-label="Open account" className="h-11 w-11 text-foreground hover:bg-muted">
               <User className="h-5 w-5" />
-              {user && unreadCount > 0 && (
-                <span className="absolute top-1 right-1 inline-flex h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-card" />
-              )}
             </Button>
           </SheetTrigger>
 
-          <SheetContent side="right" className="w-80 overflow-y-auto">
+          <SheetContent side="left" className="w-80 overflow-y-auto">
             <SheetHeader>
               <SheetTitle className="text-left">
                 <Logo size="md" />
@@ -98,10 +93,6 @@ export function Header() {
                 <>
                   <button onClick={() => handleMobileNav('/dashboard')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
                     <User className="h-4 w-4 text-muted-foreground" /> Mijn advertenties
-                  </button>
-                  <button onClick={() => handleMobileNav('/berichten')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
-                    <MessageCircle className="h-4 w-4 text-muted-foreground" /> Berichten
-                    <UnreadBadge count={unreadCount} className="ml-auto" />
                   </button>
                   <button onClick={() => handleMobileNav('/favorieten')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
                     <Heart className="h-4 w-4 text-muted-foreground" /> Favorieten
@@ -140,7 +131,37 @@ export function Header() {
             </nav>
           </SheetContent>
         </Sheet>
+
+        {/* Centered logo (absolute so badges/icons cannot shift it) */}
+        <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div className="pointer-events-auto">
+            <Logo size="lg" asLink />
+          </div>
+        </div>
+
+        <div className="ml-auto">
+          {user ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              asChild
+              className="relative h-11 w-11 text-foreground hover:bg-muted"
+            >
+              <Link to="/berichten" aria-label={unreadCount ? `Berichten (${unreadCount} ongelezen)` : 'Berichten'}>
+                <MessageCircle className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ring-2 ring-card">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </Link>
+            </Button>
+          ) : (
+            <div className="h-11 w-11" aria-hidden="true" />
+          )}
+        </div>
       </div>
+
 
 
       {/* Desktop Header */}
