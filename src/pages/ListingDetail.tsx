@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { FEATURE_OPTIONS } from '@/types/listing';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useFavorites } from '@/hooks/useFavorites';
 import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
@@ -28,7 +29,9 @@ import {
 export default function ListingDetail() {
   const { id } = useParams<{ id: string }>();
   const { listing, loading } = useListing(id);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const { isFavorite: isFavCheck, toggle: toggleFav } = useFavorites();
+  const isFavorite = listing ? isFavCheck(listing.id) : false;
+  const handleFavoriteToggle = () => { if (listing) toggleFav(listing.id); };
   const [equipmentOpen, setEquipmentOpen] = useState(false);
   const [vehicleAnalysis, setVehicleAnalysis] = useState<any>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);

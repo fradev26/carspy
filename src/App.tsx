@@ -8,6 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "./layouts/AppLayout";
 import { CompareProvider } from "./hooks/useCompare";
+import { FavoritesProvider } from "./hooks/useFavorites";
 import Index from "./pages/Index";
 
 const Search = lazy(() => import("./pages/Search"));
@@ -36,6 +37,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <FavoritesProvider>
           <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>}>
             <Routes>
               <Route element={<AppLayout />}>
@@ -59,6 +61,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
+          </FavoritesProvider>
         </BrowserRouter>
       </TooltipProvider>
       </CompareProvider>
