@@ -139,7 +139,7 @@ export function Header() {
           </div>
         </div>
 
-        <div className="ml-auto">
+        <div className="absolute right-8 top-1/2 -translate-y-1/2">
           {user ? (
             <Button
               variant="ghost"
