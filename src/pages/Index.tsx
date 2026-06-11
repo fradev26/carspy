@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { HeroSearch, SmartSearchBar } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
 import { useListings } from '@/hooks/useListings';
+import { useFavorites } from '@/hooks/useFavorites';
 import { SEOHead } from '@/components/SEOHead';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -135,6 +136,7 @@ const Index = () => {
   const { listings: allListings, loading: listingsLoading } = useListings();
   const latestListings = allListings.slice(0, 6);
   const [faqExpanded, setFaqExpanded] = useState(false);
+  const { favorites, toggle } = useFavorites();
 
   return (
     <div className="flex flex-col">
@@ -311,7 +313,12 @@ const Index = () => {
               ))}
             </div>
           ) : (
-            <ListingGrid listings={latestListings} columns={3} />
+            <ListingGrid
+              listings={latestListings}
+              columns={3}
+              favorites={Array.from(favorites)}
+              onFavoriteToggle={(id, isFav) => toggle(id)}
+            />
           )}
           <div className="mt-8 text-center">
             <Link
