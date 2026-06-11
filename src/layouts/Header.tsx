@@ -77,10 +77,16 @@ export function Header() {
       <div className="container relative flex h-14 items-center safe-x lg:hidden">
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Open account" className="absolute left-6 top-1/2 -translate-y-1/2 h-11 w-11 text-foreground hover:bg-muted">
-              <User className="h-5 w-5" />
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Open account"
+              className="absolute left-6 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-muted/60 text-foreground hover:bg-muted active:bg-muted/80 transition-colors relative before:absolute before:inset-[-2px] before:content-['']"
+            >
+              <User className="h-[18px] w-[18px]" strokeWidth={1.75} />
             </Button>
           </SheetTrigger>
+
 
           <SheetContent side="left" className="w-80 overflow-y-auto">
             <SheetHeader>
@@ -145,19 +151,19 @@ export function Header() {
               variant="ghost"
               size="icon"
               asChild
-              className="relative h-11 w-11 text-foreground hover:bg-muted"
+              className="relative h-10 w-10 rounded-full bg-muted/60 text-foreground hover:bg-muted active:bg-muted/80 transition-colors before:absolute before:inset-[-2px] before:content-['']"
             >
               <Link to="/berichten" aria-label={unreadCount ? `Berichten (${unreadCount} ongelezen)` : 'Berichten'}>
-                <MessageCircle className="h-5 w-5" />
+                <MessageCircle className="h-[18px] w-[18px]" strokeWidth={1.75} />
                 {unreadCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ring-2 ring-card">
+                  <span className="absolute -top-0.5 -right-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ring-2 ring-background">
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
               </Link>
             </Button>
           ) : (
-            <div className="h-11 w-11" aria-hidden="true" />
+            <div className="h-10 w-10" aria-hidden="true" />
           )}
         </div>
       </div>
