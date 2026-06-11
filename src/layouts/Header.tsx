@@ -215,7 +215,7 @@ export function Header() {
               </DropdownMenu>
               
               <Button asChild className="ml-2 gap-2 font-bold shadow-sm bg-primary text-primary-foreground hover:bg-primary/90">
-                <Link to="/verkopen">
+                <Link to={isDealer ? '/zakelijk' : '/verkopen'}>
                   <Plus className="h-4 w-4" />
                   Auto verkopen
                 </Link>
