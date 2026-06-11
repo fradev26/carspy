@@ -2,8 +2,9 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Phone, Mail, MapPin, Calendar, Gauge, Fuel, Settings, Star, Heart, Share2,
   Shield, Check, GitCompareArrows, Home, Sparkles, Loader2, Wrench, AlertTriangle, Users,
-  Cog, Leaf, BadgeCheck,
+  Cog, Leaf, BadgeCheck, ChevronRight,
 } from 'lucide-react';
+import { EquipmentDialog } from '@/modules/listings/EquipmentDialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +29,7 @@ export default function ListingDetail() {
   const { id } = useParams<{ id: string }>();
   const { listing, loading } = useListing(id);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [equipmentOpen, setEquipmentOpen] = useState(false);
   const [vehicleAnalysis, setVehicleAnalysis] = useState<any>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
@@ -160,7 +162,7 @@ export default function ListingDetail() {
     { icon: Settings, label: 'Carrosserie', value: listing.bodyType },
     listing.color ? { icon: Settings, label: 'Kleur', value: listing.color } : null,
     { icon: Settings, label: 'Deuren', value: String(listing.doorCount ?? listing.doors) },
-    { icon: Users, label: 'Zetels', value: String(listing.seatCount ?? listing.seats) },
+    
     listing.drivetrain ? { icon: Cog, label: 'Aandrijving', value: listing.drivetrain.toUpperCase() } : null,
   ].filter(Boolean) as { icon: typeof Calendar; label: string; value: string }[];
 
@@ -353,21 +355,27 @@ export default function ListingDetail() {
               </Card>
             )}
 
-            {/* Equipment */}
+            {/* Full options CTA */}
             {equipment.length > 0 && (
-              <Card className="border-border/60 shadow-card">
-                <CardContent className="p-6">
-                  <h2 className="text-lg font-semibold">Uitrusting</h2>
-                  <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                    {equipment.map((feature) => (
-                      <div key={feature} className="flex items-center gap-2 text-sm">
-                        <Check className="h-4 w-4 text-success flex-shrink-0" />
-                        <span className="text-foreground/80">{FEATURE_OPTIONS.find(f => f.value === feature)?.label || feature}</span>
-                      </div>
-                    ))}
+              <>
+                <button
+                  type="button"
+                  onClick={() => setEquipmentOpen(true)}
+                  className="focus-ring group flex w-full items-center justify-between gap-4 rounded-xl border border-border/60 bg-card p-5 text-left shadow-card transition-colors hover:bg-muted/40 active:bg-muted/60 min-h-[64px]"
+                  aria-label="Volledige optielijst bekijken"
+                >
+                  <div className="min-w-0">
+                    <div className="font-semibold text-foreground">Volledige optielijst bekijken</div>
+                    <div className="text-sm text-muted-foreground">{equipment.length} opties &amp; uitrusting</div>
                   </div>
-                </CardContent>
-              </Card>
+                  <ChevronRight className="h-5 w-5 text-accent flex-shrink-0 transition-transform group-hover:translate-x-0.5" />
+                </button>
+                <EquipmentDialog
+                  open={equipmentOpen}
+                  onOpenChange={setEquipmentOpen}
+                  equipment={equipment}
+                />
+              </>
             )}
 
             {/* Garantie & inspectie */}
