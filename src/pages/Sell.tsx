@@ -38,16 +38,17 @@ export default function Sell() {
   const { isDealer, loading: profileLoading } = useProfile();
   const { toast } = useToast();
 
-  // Dealers gebruiken de zakelijke flow, niet de particuliere
-  useEffect(() => {
-    if (!profileLoading && user && isDealer) {
-      navigate('/zakelijk', { replace: true });
-    }
-  }, [user, isDealer, profileLoading, navigate]);
-
   const [searchParams] = useSearchParams();
   const draftId = searchParams.get('draftId');
+  const dealerOverride = searchParams.get('dealer') === '1';
   const initialStep = Math.min(parseInt(searchParams.get('step') || '0') || 0, 4);
+
+  // Dealers gebruiken normaal de zakelijke flow; alleen omleiden als geen expliciete dealer-intent
+  useEffect(() => {
+    if (!profileLoading && user && isDealer && !dealerOverride) {
+      navigate('/zakelijk', { replace: true });
+    }
+  }, [user, isDealer, profileLoading, navigate, dealerOverride]);
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);

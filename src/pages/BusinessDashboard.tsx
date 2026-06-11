@@ -417,7 +417,7 @@ export default function BusinessDashboard() {
               {listings.length === 0 ? (
                 <div className="py-12 text-center text-muted-foreground">
                   <p>Nog geen advertenties</p>
-                  <Button asChild className="mt-4"><Link to="/verkopen">Plaats advertentie</Link></Button>
+                  <Button asChild className="mt-4"><Link to="/verkopen?dealer=1">Plaats advertentie</Link></Button>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
