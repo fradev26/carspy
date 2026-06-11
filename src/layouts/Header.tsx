@@ -77,7 +77,7 @@ export function Header() {
       <div className="container relative flex h-14 items-center safe-x lg:hidden">
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Open account" className="h-11 w-11 text-foreground hover:bg-muted">
+            <Button variant="ghost" size="icon" aria-label="Open account" className="absolute left-8 top-1/2 -translate-y-1/2 h-11 w-11 text-foreground hover:bg-muted">
               <User className="h-5 w-5" />
             </Button>
           </SheetTrigger>
