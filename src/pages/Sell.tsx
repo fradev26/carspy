@@ -12,6 +12,7 @@ import { Progress } from '@/components/ui/progress';
 import { CAR_BRANDS, FUEL_TYPES, TRANSMISSION_TYPES, BODY_TYPES } from '@/types/listing';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
