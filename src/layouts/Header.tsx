@@ -154,7 +154,7 @@ export function Header() {
               size="icon"
               aria-label={unreadCount ? `Berichten (${unreadCount} ongelezen)` : 'Berichten'}
               onClick={() => navigate('/berichten')}
-              className="relative h-10 w-10 rounded-full bg-muted/60 text-foreground hover:bg-muted active:bg-muted/80 transition-colors before:absolute before:inset-[-2px] before:content-['']"
+              className="relative h-10 w-10 rounded-xl bg-muted/60 text-foreground hover:bg-muted active:bg-muted/80 transition-colors before:absolute before:inset-[-2px] before:content-['']"
             >
               <MessageCircle className="h-[18px] w-[18px]" strokeWidth={1.75} />
               {unreadCount > 0 && (
@@ -164,7 +164,7 @@ export function Header() {
               )}
             </Button>
           ) : (
-            <div className="h-10 w-10" aria-hidden="true" />
+            <div className="h-10 w-10 rounded-xl" aria-hidden="true" />
           )}
         </div>
       </div>
