@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Listing } from '@/types/listing';
 import { cn } from '@/lib/utils';
 import { useCompare } from '@/hooks/useCompare';
+import { useFavorites } from '@/hooks/useFavorites';
 
 
 interface ListingCardProps {
@@ -16,11 +17,13 @@ interface ListingCardProps {
   isFavorite?: boolean;
 }
 
-export function ListingCard({ listing, variant = 'default', onFavoriteToggle, isFavorite = false }: ListingCardProps) {
-  const [favorite, setFavorite] = useState(isFavorite);
+export function ListingCard({ listing, variant = 'default', onFavoriteToggle, isFavorite }: ListingCardProps) {
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
-  
+
+  const { isFavorite: isFavGlobal, toggle: toggleFavGlobal } = useFavorites();
+  const favorite = isFavorite ?? isFavGlobal(listing.id);
+
   const { add, has } = useCompare();
   const isComparing = has(listing.id);
   const isPremium = listing.isPremium || (listing.boostUntil && new Date(listing.boostUntil) > new Date());
@@ -34,9 +37,11 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const newFavorite = !favorite;
-    setFavorite(newFavorite);
-    onFavoriteToggle?.(listing.id, newFavorite);
+    if (onFavoriteToggle) {
+      onFavoriteToggle(listing.id, !favorite);
+    } else {
+      toggleFavGlobal(listing.id);
+    }
   };
 
   const formatPrice = (price: number) => {
