@@ -20,6 +20,7 @@ interface ListingCardProps {
 export function ListingCard({ listing, variant = 'default', onFavoriteToggle, isFavorite }: ListingCardProps) {
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [justLiked, setJustLiked] = useState(false);
 
   const { isFavorite: isFavGlobal, toggle: toggleFavGlobal } = useFavorites();
   const favorite = isFavorite ?? isFavGlobal(listing.id);
@@ -37,12 +38,17 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!favorite) {
+      setJustLiked(true);
+      window.setTimeout(() => setJustLiked(false), 420);
+    }
     if (onFavoriteToggle) {
       onFavoriteToggle(listing.id, !favorite);
     } else {
       toggleFavGlobal(listing.id);
     }
   };
+
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('nl-NL', {
