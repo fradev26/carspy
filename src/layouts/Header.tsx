@@ -138,6 +138,7 @@ export function Header() {
             </nav>
           </SheetContent>
         </Sheet>
+        </div>
 
         {/* Centered logo (absolute so badges/icons cannot shift it) */}
         <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
