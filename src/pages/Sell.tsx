@@ -35,7 +35,16 @@ const steps = ['Basisgegevens', 'Details', "Foto's", 'Prijs & Beschrijving', 'Ov
 export default function Sell() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isDealer, loading: profileLoading } = useProfile();
   const { toast } = useToast();
+
+  // Dealers gebruiken de zakelijke flow, niet de particuliere
+  useEffect(() => {
+    if (!profileLoading && user && isDealer) {
+      navigate('/zakelijk', { replace: true });
+    }
+  }, [user, isDealer, profileLoading, navigate]);
+
   const [searchParams] = useSearchParams();
   const draftId = searchParams.get('draftId');
   const initialStep = Math.min(parseInt(searchParams.get('step') || '0') || 0, 4);
