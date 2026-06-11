@@ -72,7 +72,8 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
       <Link to={`/auto/${listing.id}`} className="block" aria-label={`${listing.title} - ${formatPrice(listing.price)}`}>
         <Card className={cn(
           "group overflow-hidden transition-all duration-300 hover:shadow-card-hover hover:-translate-y-0.5 border-border/60",
-          isPremium && "border-premium/50 shadow-glow-premium ring-1 ring-premium/20"
+          isPremium && "border-premium/50 shadow-glow-premium ring-1 ring-premium/20",
+          favorite && "bg-primary/[0.03] border-l-2 border-l-primary ring-1 ring-primary/20"
         )}>
           <div className="flex flex-col sm:flex-row">
             {/* Image Container */}
@@ -95,21 +96,32 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
               <div className="absolute left-3 top-3 rounded-lg bg-card/95 px-3 py-1.5 shadow-elevated backdrop-blur-sm">
                 <span className="text-lg font-bold text-accent">{formatPrice(listing.price)}</span>
               </div>
-              
+
+              {/* Favoriet badge */}
+              {favorite && (
+                <Badge className="absolute left-3 top-12 bg-primary text-primary-foreground font-medium gap-1 px-2 py-0.5 text-xs shadow-md">
+                  <Heart className="h-3 w-3 fill-current" />
+                  Favoriet
+                </Badge>
+              )}
+
               {/* Favorite Button */}
           <Button
             variant="ghost"
             size="icon"
             aria-label={favorite ? 'Verwijder uit favorieten' : 'Toevoegen aan favorieten'}
+            aria-pressed={favorite}
             className={cn(
               'absolute right-3 top-3 h-9 w-9 rounded-md backdrop-blur-sm shadow-md transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground',
-              favorite ? 'bg-primary text-primary-foreground' : 'bg-card/90 text-accent'
+              favorite
+                ? 'bg-primary text-primary-foreground ring-2 ring-primary/40 ring-offset-1 ring-offset-background'
+                : 'bg-card/90 text-accent'
             )}
             onClick={handleFavoriteClick}
           >
-            <Heart className={cn('h-4 w-4 transition-transform', favorite && 'fill-current scale-110')} />
+            <Heart className={cn('h-4 w-4 transition-transform', favorite && 'fill-current scale-110', justLiked && 'animate-heart-pop')} />
           </Button>
-              
+
               {/* Status / Premium Badges */}
               {isPremium && (
                 <Badge className="absolute left-3 bottom-3 bg-premium text-premium-foreground font-semibold gap-1">
@@ -126,6 +138,7 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
 
             {/* Content */}
             <CardContent className="flex flex-1 flex-col justify-between p-5">
+
               <div className="space-y-3">
                 <h3 className="text-lg font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
                   {listing.title}
