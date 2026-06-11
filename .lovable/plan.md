@@ -1,47 +1,24 @@
+## Probleem
+Op mobiel staat de "Bericht/Bellen" CTA `fixed bottom-16` (boven de BottomNav). De main content gebruikt enkel `pb-nav` (≈ 4rem van de BottomNav) als bodemruimte, maar houdt geen rekening met deze extra contact-bar (~80px). Daardoor schuift de "VATUUR. AI Analyse" kaart (en de "Stuur bericht" knop in de prijskaart) onder de sticky CTA — niet meer volledig zichtbaar of klikbaar.
 
-## Doel
-"Zetels" weghalen uit de Key Specs op de voertuig-detailpagina en de volledige uitrusting verplaatsen naar een aparte "Volledige optielijst bekijken" CTA, die op mobiel een bottom sheet en op desktop een modal opent.
+## Oplossing
+Eén gerichte CSS/spacing-fix in `src/pages/ListingDetail.tsx` — geen wijziging aan navigatie, BottomNav, of desktoplayout.
 
-## Wijzigingen in `src/pages/ListingDetail.tsx`
+### Wijziging in `src/pages/ListingDetail.tsx`
+1. Op de container `<div className="container py-6">` (regel 191): vervang door
+   `<div className="container py-6 pb-[7rem] lg:pb-6">`.
+   - Mobiel: ~112px extra bodemruimte = hoogte sticky contact-bar (p-4 + h-12 button ≈ 80px) + buffer + `safe-area-inset-bottom` wordt al door de bar zelf afgehandeld.
+   - `lg:pb-6` herstelt de originele desktop-padding (geen sticky bar daar).
+2. Geef de sticky contact-bar (regel 627) een subtiele top-schaduw/border zodat de scheiding visueel duidelijk blijft: `shadow-[0_-4px_12px_-4px_rgba(0,0,0,0.08)]` toegevoegd naast bestaande classes. Geen layout-impact.
 
-### 1. Key Specs opschonen
-- Verwijder het `Zetels`-item uit de `specs`-array (regel 163).
-- `Users` import uit `lucide-react` verwijderen als die nergens anders gebruikt wordt.
-- Grid-classes (`grid-cols-2 sm:grid-cols-4`) blijven ongewijzigd — wrap-gedrag werkt automatisch met minder items.
+Geen wijziging aan `AppLayout` (`pb-nav` blijft) — anders krijgen andere pagina's onnodige bodemruimte.
 
-### 2. Equipment-kaart vervangen door CTA
-De huidige "Uitrusting" kaart (regels 357–371) wordt vervangen door één CTA-knop direct onder de "Beschrijving" kaart:
+## QA checklist
+- 320 / 375 / 390 / 414 px: AI Analyse-kaart en "AI analyse starten" knop volledig zichtbaar en klikbaar bovenaan de sticky CTA; geen overlap met "Stuur bericht" knop in prijskaart.
+- 768 px (tablet, `lg:hidden` actief tot 1024): zelfde gedrag, geen overlap.
+- ≥ 1024 px (`lg`): sticky CTA verdwijnt, padding terug naar `py-6`, geen lege ruimte onderaan.
+- BottomNav blijft op zijn plek, gerelateerde auto's-sectie blijft scrolbaar zonder afsnijding.
+- Safe-area (iPhone notch/home-indicator) blijft correct via bestaande `safe-bottom` op de contact-bar en BottomNav.
 
-- Visueel: full-width `Card`-achtige knop met label "Volledige optielijst bekijken", subtekst aantal opties (`{equipment.length} opties`), en een `ChevronRight` icoon rechts.
-- VATUUR-styling: `border-border/60 shadow-card`, hover `bg-muted/40`, primary accent text, `focus-ring`, geschikt voor touch (min-h ~64px).
-- Alleen renderen wanneer `equipment.length > 0`. Geen CTA = geen modal.
-
-### 3. Nieuw component `EquipmentDialog`
-Nieuw bestand `src/modules/listings/EquipmentDialog.tsx`:
-
-- Props: `open`, `onOpenChange`, `equipment: string[]`, `title?: string`.
-- Detecteert viewport met bestaande `useIsMobile()` hook.
-  - Mobiel → shadcn `Sheet` met `side="bottom"`, `max-h-[85vh]`, scrollbare body.
-  - Tablet/desktop (≥ md) → shadcn `Dialog`, `max-w-2xl`, `max-h-[80vh]`, scrollbare body.
-- Header: titel "Volledige uitrusting" + sluitknop (ingebakken in Sheet/Dialog).
-- Body: groepeert equipment per `category` uit `FEATURE_OPTIONS` (`comfort`, `safety`, `multimedia`, `exterior`, plus afgeleide `interior`, `rijhulpsystemen` indien aanwezig in dataset).
-  - Mapping naar Nederlandse koppen: Comfort, Veiligheid, Multimedia, Exterieur, Interieur, Rijhulpsystemen, Overige.
-  - Onbekende values (niet in `FEATURE_OPTIONS`) belanden in "Overige" en tonen de raw string.
-  - Per groep: kopje + `grid grid-cols-1 sm:grid-cols-2` lijst met `Check` icoon, `break-anywhere` zodat lange labels wrappen. Geen horizontale scroll.
-- Toegankelijkheid: `DialogTitle`/`SheetTitle` voor screen readers, ESC sluit (default Radix), focus trap (default).
-
-### 4. State in `ListingDetail`
-- `const [equipmentOpen, setEquipmentOpen] = useState(false);`
-- CTA-knop opent dialog; component rendert dialog alleen als `equipment.length > 0`.
-
-## Datacontract
-- Bron blijft `listing.equipment ?? listing.features ?? []` (geen hardcoded data, geen schema-wijziging).
-- Groepering puur client-side op basis van bestaande `FEATURE_OPTIONS.category`.
-
-## QA
-- 320 / 375 / 768 / 1280 px: geen horizontale scroll, key specs uitlijning correct, CTA klikbaar, sheet/dialog opent en sluit, lange labels wrappen.
-- Listing zonder equipment: CTA niet zichtbaar.
-- Toetsenbord: Tab focust CTA, Enter opent, Esc sluit.
-
-## Geen wijzigingen aan
-Backend, types, andere pagina's, listing card grid.
+## Buiten scope
+Backend, types, andere pagina's, ImageGallery, EquipmentDialog.

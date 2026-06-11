@@ -188,7 +188,7 @@ export default function ListingDetail() {
         ogImage={listing.images[0]}
         jsonLd={jsonLdSchemas}
       />
-      <div className="container py-6">
+      <div className="container py-6 pb-[7rem] lg:pb-6">
         {/* Breadcrumbs */}
         <Breadcrumb className="mb-4">
           <BreadcrumbList>
@@ -624,7 +624,7 @@ export default function ListingDetail() {
             </Card>
 
             {/* Mobile Contact Bar */}
-            <div className="lg:hidden fixed bottom-16 left-0 right-0 z-40 border-t bg-card/95 backdrop-blur-lg p-4 safe-bottom">
+            <div className="lg:hidden fixed bottom-16 left-0 right-0 z-40 border-t bg-card/95 backdrop-blur-lg p-4 safe-bottom shadow-[0_-4px_12px_-4px_rgba(0,0,0,0.08)]">
               <div className="flex gap-3">
                 {listing.seller.phone && (
                   <Button asChild className="flex-1 gap-2 bg-accent text-accent-foreground hover:bg-accent/90 h-12 shadow-sm">
