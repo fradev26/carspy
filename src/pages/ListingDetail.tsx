@@ -2,18 +2,19 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   Phone, Mail, MapPin, Calendar, Gauge, Fuel, Settings, Star, Heart, Share2,
   Shield, ShieldCheck, GitCompareArrows, Home, Sparkles, Loader2, Wrench, AlertTriangle, Users,
-  Cog, Leaf, BadgeCheck, ChevronRight, Calculator, History, Crown, CheckCircle2, Car,
+  Cog, Leaf, BadgeCheck, ChevronRight, ChevronDown, Calculator, History, Crown, CheckCircle2, Car,
 } from 'lucide-react';
 import { EquipmentDialog } from '@/modules/listings/EquipmentDialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { ImageGallery, ListingGrid, PriceIndicator } from '@/modules/listings';
 import { ListingCard } from '@/modules/listings/ListingCard';
 import { useCompare } from '@/hooks/useCompare';
 import { useListing, useRelatedListings } from '@/hooks/useListings';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -26,6 +27,9 @@ import type { Listing } from '@/types/listing';
 import {
   formatPrice, formatMileage, formatPower, formatConsumption, formatNumberWithUnit, formatDate,
 } from '@/lib/units';
+import {
+  FEATURE_CATALOG, FEATURE_CATEGORY_ORDER, VEHICLE_INFO_ITEMS, labelForFeature, type FeatureCategory,
+} from '@/modules/sell/featureCatalog';
 
 const PREMIUM_OPTION_PATTERNS: { match: string; label: string }[] = [
   { match: 'panorama', label: 'Panoramadak' },
