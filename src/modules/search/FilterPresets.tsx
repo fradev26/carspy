@@ -1,4 +1,4 @@
-import { Users, Building2, Zap, Gauge, Briefcase, Heart } from 'lucide-react';
+import { Users, Building2, Zap, Gauge, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SearchFilters, BodyType, FuelType } from '@/types/listing';
 import { cn } from '@/lib/utils';
@@ -53,17 +53,6 @@ const FILTER_PRESETS: FilterPreset[] = [
     },
   },
   {
-    id: 'business',
-    label: 'Zakelijk',
-    icon: Briefcase,
-    description: 'Comfort & representatief',
-    filters: {
-      bodyTypes: ['sedan', 'stationwagon'] as BodyType[],
-      sellerType: 'dealer',
-      vatDeductible: true,
-    },
-  },
-  {
     id: 'first-car',
     label: 'Eerste auto',
     icon: Heart,
@@ -108,7 +97,7 @@ export function FilterPresets({ onApplyPreset, activeFilters, className }: Filte
       <div className="flex items-center gap-2">
         <h3 className="text-sm font-medium text-muted-foreground">Snelle selectie</h3>
       </div>
-      <div className="flex flex-wrap gap-2">
+      <div className="grid grid-cols-5 gap-2">
         {FILTER_PRESETS.map((preset) => {
           const Icon = preset.icon;
           const isActive = isPresetActive(preset);
@@ -119,7 +108,7 @@ export function FilterPresets({ onApplyPreset, activeFilters, className }: Filte
               variant={isActive ? 'default' : 'outline'}
               size="sm"
               className={cn(
-                'gap-1.5 h-9 px-3 transition-all',
+                'w-full gap-1.5 h-9 px-2 transition-all',
                 isActive 
                   ? 'bg-primary text-primary-foreground shadow-md' 
                   : 'border-border/60 hover:bg-accent hover:border-accent'
@@ -136,8 +125,8 @@ export function FilterPresets({ onApplyPreset, activeFilters, className }: Filte
                 }
               }}
             >
-              <Icon className="h-3.5 w-3.5" />
-              <span>{preset.label}</span>
+              <Icon className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{preset.label}</span>
             </Button>
           );
         })}
