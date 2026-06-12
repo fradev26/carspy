@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import MyLeadsPanel from '@/components/MyLeadsPanel';
 import {
   Eye, Heart, MessageCircle, TrendingUp, Car, BarChart3, Crown, Rocket,
   DollarSign, Clock, Brain, Search as SearchIcon, Pencil, CheckCircle2
