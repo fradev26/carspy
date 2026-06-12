@@ -52,27 +52,31 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
                 key={item.label}
                 to={path}
                 className={cn(
-                  'flex flex-col items-center justify-center gap-1 w-full h-full transition-all duration-200',
+                  'flex flex-col items-center justify-center gap-0.5 w-full h-full transition-all duration-200',
                   isActive ? 'text-primary' : 'text-muted-foreground active:scale-95'
                 )}
               >
-                <div className="flex flex-col items-center gap-1">
-                  <item.icon className={cn(
-                    'h-5 w-5 transition-colors duration-200',
-                    isActive && 'text-primary'
-                  )} />
-                  <span className={cn(
-                    "text-[10px] font-medium transition-colors duration-200",
-                    isActive && "text-primary"
-                  )}>
-                    {item.label}
-                  </span>
-                  {isActive && (
-                    <div className="absolute bottom-1 h-1 w-1 rounded-full bg-primary animate-scale-in" />
-                  )}
+                <item.icon className={cn(
+                  'h-5 w-5 transition-colors duration-200',
+                  isActive && 'text-primary'
+                )} />
+                <div className={cn(
+                  'h-1.5 w-4 rounded-md flex items-center justify-center transition-all duration-200 ease-out',
+                  isActive
+                    ? 'opacity-100 scale-100 bg-white/40 dark:bg-white/10 backdrop-blur-md border border-white/60 dark:border-white/15 shadow-sm shadow-primary/20'
+                    : 'opacity-0 scale-75'
+                )}>
+                  <span className="h-1 w-1 rounded-full bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.6)]" />
                 </div>
+                <span className={cn(
+                  "text-[10px] font-medium transition-colors duration-200 leading-none",
+                  isActive && "text-primary"
+                )}>
+                  {item.label}
+                </span>
               </Link>
             );
+
           })}
         </div>
       </nav>
