@@ -162,10 +162,7 @@ export function Header() {
               {user ? (
                 <>
                   <SectionHeader>Mijn account</SectionHeader>
-                  <SheetLink onClick={() => handleMobileNav('/account/profiel')} icon={UserCircle2} label="Profiel" />
-                  <SheetLink onClick={() => handleMobileNav('/account/profiel')} icon={Phone} label="Contactgegevens" />
-                  <SheetLink onClick={() => handleMobileNav('/account/meldingen')} icon={Bell} label="Meldingen" />
-                  <SheetLink onClick={() => handleMobileNav('/account/privacy')} icon={Lock} label="Privacy" />
+                  <SheetLink onClick={() => handleMobileNav('/account/instellingen')} icon={Settings} label="Accountinstellingen" />
 
                   <SectionHeader>Mijn activiteiten</SectionHeader>
                   <SheetLink onClick={() => handleMobileNav('/account/advertenties')} icon={Megaphone} label="Mijn advertenties" />
@@ -181,10 +178,7 @@ export function Header() {
                   {isDealer && (
                     <>
                       <SectionHeader>Dealerfuncties</SectionHeader>
-                      <SheetLink onClick={() => handleMobileNav('/zakelijk?tab=overzicht')} icon={Briefcase} label="Zakelijk Dashboard" />
-                      <SheetLink onClick={() => handleMobileNav('/zakelijk?tab=leads')} icon={UsersIcon} label="Leads" />
-                      <SheetLink onClick={() => handleMobileNav('/zakelijk?tab=voorraad')} icon={Package} label="Voorraadbeheer" />
-                      <SheetLink onClick={() => handleMobileNav('/zakelijk?tab=statistieken')} icon={LineChart} label="Statistieken" />
+                      <SheetLink onClick={() => handleMobileNav('/zakelijk')} icon={Briefcase} label="Zakelijk Dashboard" />
                     </>
                   )}
 
