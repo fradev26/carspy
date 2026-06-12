@@ -296,6 +296,27 @@ export default function ListingDetail() {
   const whyBuy = buildWhyBuy(listing);
   const timeline = buildTimeline(listing);
 
+  // Categorized feature list — built from specs.vehicle_features (new wizard) with fallback to equipment[]
+  const vehicleFeatures = (listing.specs?.vehicle_features as Partial<Record<FeatureCategory | 'vehicle_information', string[]>> | undefined) ?? null;
+  const categorizedSections: { key: string; title: string; labels: string[] }[] = [];
+  if (vehicleFeatures) {
+    for (const cat of FEATURE_CATEGORY_ORDER) {
+      const vals = vehicleFeatures[cat] ?? [];
+      if (vals.length) categorizedSections.push({ key: cat, title: FEATURE_CATALOG[cat].title, labels: vals.map(labelForFeature) });
+    }
+    const info = vehicleFeatures.vehicle_information ?? [];
+    if (info.length) categorizedSections.push({ key: 'vehicle_information', title: 'Voertuiginformatie', labels: info.map(labelForFeature) });
+  } else if (equipment.length) {
+    categorizedSections.push({ key: 'all', title: 'Opties & uitrusting', labels: equipment });
+  }
+  const totalOptionCount = categorizedSections.reduce((sum, s) => sum + s.labels.length, 0);
+
+  const scrollToOptions = () => {
+    setOptionAccordion('options');
+    setTimeout(() => optionListRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  };
+
+
   const hasTrustData =
     listing.warrantyMonths != null || !!listing.warrantyType || !!listing.inspectionDate ||
     !!listing.nextInspectionDate || listing.previousOwnerCount != null ||
