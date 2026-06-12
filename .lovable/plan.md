@@ -1,33 +1,42 @@
-Voeg een "Ontdek op categorie" sectie toe op de homepage, tussen de mobile AI search en "Uitgelichte advertenties".
+# Plan: Categorie-secties met uitgelichte advertenties
 
-## Implementatie
+## Doel
+Vervang de huidige icon-grid `CategoryGrid` door meerdere "Uitgelichte advertenties"-secties, één per categorie. Elke sectie heeft dezelfde stijl en layout als de bestaande "Uitgelichte advertenties" sectie (titel + subtitel links, "Bekijk alle" knop rechts, `ListingGrid` met 3 kolommen).
 
-1. Nieuw component `src/components/home/CategoryGrid.tsx` met 8 categorieën die elk linken naar `/zoeken` met de juiste query params:
-   - Hatchbacks → `?bodyType=hatchback`
-   - SUV's → `?bodyType=suv`
-   - Sedans → `?bodyType=sedan`
-   - Elektrisch → `?fuelType=elektrisch`
-   - Budget < €10.000 → `?maxPrice=10000`
-   - Nieuw aanbod → `?sort=newest`
-   - Populair → `?sort=popular`
-   - Sportief → `?bodyType=coupe`
-   
-   Elke categorie gebruikt een Lucide icoon (Car, Truck, CarFront, Zap, PiggyBank, Sparkles, Flame, Gauge) — geen emoji's, conform design system.
+## Categorieën (4 secties, 3 cards elk)
+Beperk tot 4 secties om de homepage niet te overladen:
 
-2. Layout:
-   - Mobile: `grid grid-cols-2 gap-3` (4 rijen × 2 kolommen)
-   - Desktop: `grid grid-cols-4 gap-4` (2 rijen × 4 kolommen)
-   - Kleine intro tekst boven de grid: "Of ontdek snel op categorie"
+1. **SUV's** — filter `bodyType === 'suv'` → "Bekijk alle SUV's" → `/zoeken?bodyTypes=suv`
+2. **Elektrisch** — filter `fuelType === 'elektrisch'` → "Bekijk alle elektrische auto's" → `/zoeken?fuelTypes=elektrisch`
+3. **Budget onder €10.000** — filter `price <= 10000 && price > 0` → "Bekijk budgetauto's" → `/zoeken?maxPrice=10000`
+4. **Sportief** — filter `bodyType === 'coupe'` → "Bekijk sportieve auto's" → `/zoeken?bodyTypes=coupe`
 
-3. Card-styling (liquid-glass, matching listing buttons):
-   - `bg-card/80 backdrop-blur-sm border border-border/60`
-   - `rounded-xl p-4 flex flex-col items-center gap-2`
-   - Icoon `h-6 w-6 text-primary` boven label
-   - Hover: `hover:scale-[1.02] hover:border-primary/40 hover:shadow-md transition-all`
-   - `active:scale-95`
+Elke sectie toont max 3 recente listings (slice 0–3) van die categorie via de bestaande `useListings()` data (client-side filter).
 
-4. Integratie in `src/pages/Index.tsx`: rendert tussen de mobile AI search sectie (~line 289) en de "Uitgelichte advertenties" sectie. Wrap in een eigen `<section className="bg-background py-6 md:py-10">` met container.
+## Wijzigingen
 
-## Visueel resultaat
+### 1. Vervang `src/components/home/CategoryGrid.tsx`
+Maak hier een nieuw component `CategorySections` dat de `allListings` array (en `favorites`, `toggle`) als props ontvangt. Per categorie:
+- Hetzelfde frame als de bestaande "Uitgelichte advertenties" sectie in `Index.tsx` (lines 292–334), inclusief:
+  - `<section className="bg-muted/30 py-12 md:py-16">` (afwisselend `bg-background` voor visuele rust — zie hieronder)
+  - Header: titel `text-2xl font-semibold` + subtitel `text-sm text-muted-foreground` + "Bekijk alle" outline button
+  - `ListingGrid` met `columns={3}`
+  - Skeleton fallback wanneer `loading`
+  - Wanneer er minder dan 1 listing in die categorie is, verberg de sectie
 
-Een compacte, premium category-grid die gebruikers zonder concrete zoekintentie direct laat starten, met liquid-glass cards die aansluiten op de rest van het design system.
+Wissel achtergrond af tussen `bg-background` en `bg-muted/30` per sectie zodat ze visueel gescheiden zijn van elkaar én van de echte "Uitgelichte advertenties".
+
+### 2. `src/pages/Index.tsx`
+- Verwijder de huidige `<CategoryGrid />` op regel 291.
+- Plaats `<CategorySections allListings={allListings} loading={listingsLoading} favorites={favorites} onToggle={toggle} />` **onder** de bestaande "Uitgelichte advertenties" sectie (na regel 334).
+- Werk de import bij.
+
+## Technische details
+- Filtering gebeurt client-side op de al opgehaalde `allListings` (geen extra queries).
+- Hergebruik `<ListingGrid>` en de bestaande skeleton block exact zoals in `Index.tsx`.
+- Geen wijzigingen aan `ListingCard`, `useListings`, of backend.
+- Behoud SEO/accessibility: elke sectie krijgt een eigen `<h2>`.
+
+## Niet in scope
+- De andere 4 categorieën (Hatchbacks, Sedans, Nieuw aanbod, Populair) komen niet als sectie — anders wordt de homepage te lang. Kan later toegevoegd worden indien gewenst.
+- Geen aanpassing aan filter-URL semantiek of bottomnav.

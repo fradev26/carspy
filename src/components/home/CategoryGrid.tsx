@@ -1,39 +1,114 @@
 import { Link } from 'react-router-dom';
-import { Car, Truck, CarFront, Zap, PiggyBank, Sparkles, Flame, Gauge } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ListingGrid } from '@/modules/listings';
+import type { Listing } from '@/types/listing';
+import { cn } from '@/lib/utils';
 
-const categories = [
-  { label: 'Hatchbacks', icon: Car, to: '/zoeken?bodyTypes=hatchback' },
-  { label: "SUV's", icon: Truck, to: '/zoeken?bodyTypes=suv' },
-  { label: 'Sedans', icon: CarFront, to: '/zoeken?bodyTypes=sedan' },
-  { label: 'Elektrisch', icon: Zap, to: '/zoeken?fuelTypes=elektrisch' },
-  { label: 'Budget < €10.000', icon: PiggyBank, to: '/zoeken?maxPrice=10000' },
-  { label: 'Nieuw aanbod', icon: Sparkles, to: '/zoeken?sort=newest' },
-  { label: 'Populair', icon: Flame, to: '/zoeken?sort=popular' },
-  { label: 'Sportief', icon: Gauge, to: '/zoeken?bodyTypes=coupe' },
+interface CategorySectionsProps {
+  allListings: Listing[];
+  loading: boolean;
+  favorites: Set<string>;
+  onToggle: (id: string) => void;
+}
+
+interface CategoryDef {
+  key: string;
+  title: string;
+  subtitle: string;
+  ctaLabel: string;
+  to: string;
+  filter: (l: Listing) => boolean;
+}
+
+const categories: CategoryDef[] = [
+  {
+    key: 'suv',
+    title: "Uitgelichte SUV's",
+    subtitle: 'Ruim, hoog en veelzijdig',
+    ctaLabel: "Bekijk alle SUV's",
+    to: '/zoeken?bodyTypes=suv',
+    filter: (l) => l.bodyType === 'suv',
+  },
+  {
+    key: 'elektrisch',
+    title: 'Uitgelichte elektrische auto’s',
+    subtitle: 'Stil, schoon en zuinig',
+    ctaLabel: 'Bekijk alle elektrische auto’s',
+    to: '/zoeken?fuelTypes=elektrisch',
+    filter: (l) => l.fuelType === 'elektrisch',
+  },
+  {
+    key: 'budget',
+    title: 'Budget onder €10.000',
+    subtitle: 'Betaalbare occasions',
+    ctaLabel: 'Bekijk budgetauto’s',
+    to: '/zoeken?maxPrice=10000',
+    filter: (l) => l.price > 0 && l.price <= 10000,
+  },
+  {
+    key: 'sportief',
+    title: 'Sportieve auto’s',
+    subtitle: 'Coupé’s met karakter',
+    ctaLabel: 'Bekijk sportieve auto’s',
+    to: '/zoeken?bodyTypes=coupe',
+    filter: (l) => l.bodyType === 'coupe',
+  },
 ];
 
-export function CategoryGrid() {
+export function CategorySections({ allListings, loading, favorites, onToggle }: CategorySectionsProps) {
   return (
-    <section className="bg-background py-6 md:py-10">
-      <div className="container">
-        <p className="mb-3 text-sm font-medium text-muted-foreground md:text-base">
-          Of ontdek snel op categorie
-        </p>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-          {categories.map(({ label, icon: Icon, to }) => (
-            <Link
-              key={label}
-              to={to}
-              className="group flex flex-col items-center justify-center gap-2 rounded-xl border border-border/60 bg-card/80 p-4 backdrop-blur-sm transition-all hover:scale-[1.02] hover:border-primary/40 hover:shadow-md active:scale-95 focus-ring"
-            >
-              <Icon className="h-6 w-6 text-primary transition-transform group-hover:scale-110" />
-              <span className="text-center text-sm font-medium text-foreground">
-                {label}
-              </span>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </section>
+    <>
+      {categories.map((cat, idx) => {
+        const items = allListings.filter(cat.filter).slice(0, 3);
+        if (!loading && items.length === 0) return null;
+
+        const alt = idx % 2 === 0;
+        return (
+          <section
+            key={cat.key}
+            className={cn('py-12 md:py-16', alt ? 'bg-background' : 'bg-muted/30')}
+          >
+            <div className="container">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="text-2xl font-semibold">{cat.title}</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">{cat.subtitle}</p>
+                </div>
+                <Button variant="outline" asChild className="gap-2 shadow-sm">
+                  <Link to={cat.to}>
+                    {cat.ctaLabel} <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+
+              {loading ? (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="rounded-xl border bg-card p-4 space-y-3">
+                      <Skeleton className="aspect-[4/3] w-full rounded-lg" />
+                      <Skeleton className="h-5 w-3/4" />
+                      <Skeleton className="h-4 w-1/2" />
+                      <Skeleton className="h-4 w-1/3" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <ListingGrid
+                  listings={items}
+                  columns={3}
+                  favorites={Array.from(favorites)}
+                  onFavoriteToggle={(id) => onToggle(id)}
+                />
+              )}
+            </div>
+          </section>
+        );
+      })}
+    </>
   );
 }
+
+// Backwards-compatible export name in case of stale imports
+export const CategoryGrid = () => null;
