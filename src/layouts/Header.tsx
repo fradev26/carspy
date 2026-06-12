@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Heart, User, Plus, LogOut, MessageCircle, BarChart3, Shield, FileText, UserCircle2, Phone, Bell, Lock, Megaphone, Clock, Briefcase, Users as UsersIcon, Package, LineChart, HelpCircle, Mail } from 'lucide-react';
+import { Search, Heart, User, Plus, LogOut, MessageCircle, BarChart3, Shield, FileText, Settings, Bell, Megaphone, Clock, Briefcase, HelpCircle, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -162,10 +162,7 @@ export function Header() {
               {user ? (
                 <>
                   <SectionHeader>Mijn account</SectionHeader>
-                  <SheetLink onClick={() => handleMobileNav('/account/profiel')} icon={UserCircle2} label="Profiel" />
-                  <SheetLink onClick={() => handleMobileNav('/account/profiel')} icon={Phone} label="Contactgegevens" />
-                  <SheetLink onClick={() => handleMobileNav('/account/meldingen')} icon={Bell} label="Meldingen" />
-                  <SheetLink onClick={() => handleMobileNav('/account/privacy')} icon={Lock} label="Privacy" />
+                  <SheetLink onClick={() => handleMobileNav('/account/instellingen')} icon={Settings} label="Accountinstellingen" />
 
                   <SectionHeader>Mijn activiteiten</SectionHeader>
                   <SheetLink onClick={() => handleMobileNav('/account/advertenties')} icon={Megaphone} label="Mijn advertenties" />
@@ -181,10 +178,7 @@ export function Header() {
                   {isDealer && (
                     <>
                       <SectionHeader>Dealerfuncties</SectionHeader>
-                      <SheetLink onClick={() => handleMobileNav('/zakelijk?tab=overzicht')} icon={Briefcase} label="Zakelijk Dashboard" />
-                      <SheetLink onClick={() => handleMobileNav('/zakelijk?tab=leads')} icon={UsersIcon} label="Leads" />
-                      <SheetLink onClick={() => handleMobileNav('/zakelijk?tab=voorraad')} icon={Package} label="Voorraadbeheer" />
-                      <SheetLink onClick={() => handleMobileNav('/zakelijk?tab=statistieken')} icon={LineChart} label="Statistieken" />
+                      <SheetLink onClick={() => handleMobileNav('/zakelijk')} icon={Briefcase} label="Zakelijk Dashboard" />
                     </>
                   )}
 
@@ -296,11 +290,10 @@ export function Header() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem asChild><Link to="/account/profiel" className="cursor-pointer">Profiel</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to="/account/instellingen" className="cursor-pointer">Accountinstellingen</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link to="/account/advertenties" className="cursor-pointer">Mijn advertenties</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link to="/account/zoekalerts" className="cursor-pointer">Zoekalerts</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link to="/account/recent" className="cursor-pointer">Recent bekeken</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild><Link to="/account/meldingen" className="cursor-pointer">Meldingen</Link></DropdownMenuItem>
                   {isDealer && (
                     <DropdownMenuItem asChild>
                       <Link to="/zakelijk" className="cursor-pointer flex items-center gap-2">
