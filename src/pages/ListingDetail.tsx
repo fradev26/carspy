@@ -1,8 +1,8 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft, Phone, Mail, MapPin, Calendar, Gauge, Fuel, Settings, Star, Heart, Share2,
-  Shield, Check, GitCompareArrows, Home, Sparkles, Loader2, Wrench, AlertTriangle, Users,
-  Cog, Leaf, BadgeCheck, ChevronRight,
+  Phone, Mail, MapPin, Calendar, Gauge, Fuel, Settings, Star, Heart, Share2,
+  Shield, ShieldCheck, GitCompareArrows, Home, Sparkles, Loader2, Wrench, AlertTriangle, Users,
+  Cog, Leaf, BadgeCheck, ChevronRight, Calculator, History, Crown, CheckCircle2, Car,
 } from 'lucide-react';
 import { EquipmentDialog } from '@/modules/listings/EquipmentDialog';
 import { Button } from '@/components/ui/button';
@@ -10,11 +10,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ImageGallery, ListingGrid, PriceIndicator } from '@/modules/listings';
+import { ListingCard } from '@/modules/listings/ListingCard';
 import { useCompare } from '@/hooks/useCompare';
 import { useListing, useRelatedListings } from '@/hooks/useListings';
 import { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { FEATURE_OPTIONS } from '@/types/listing';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -22,9 +22,133 @@ import { useToast } from '@/hooks/use-toast';
 import { SEOHead } from '@/components/SEOHead';
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { dealerSlugFor } from '@/lib/dealers';
+import type { Listing } from '@/types/listing';
 import {
   formatPrice, formatMileage, formatPower, formatConsumption, formatNumberWithUnit, formatDate,
 } from '@/lib/units';
+
+const PREMIUM_OPTION_PATTERNS: { match: string; label: string }[] = [
+  { match: 'panorama', label: 'Panoramadak' },
+  { match: 'schuifdak', label: 'Schuifdak' },
+  { match: 'adaptive cruise', label: 'Adaptive Cruise Control' },
+  { match: 'adaptieve cruise', label: 'Adaptive Cruise Control' },
+  { match: 'head-up', label: 'Head-up Display' },
+  { match: 'head up', label: 'Head-up Display' },
+  { match: 'stoelverwarming', label: 'Stoelverwarming' },
+  { match: 'verwarmde stoel', label: 'Verwarmde stoelen' },
+  { match: 'ventilatie', label: 'Stoelventilatie' },
+  { match: 'massage', label: 'Massagestoelen' },
+  { match: 'leder', label: 'Lederen bekleding' },
+  { match: 'leather', label: 'Lederen bekleding' },
+  { match: '360', label: '360° camera' },
+  { match: 'achteruitrijcamera', label: 'Achteruitrijcamera' },
+  { match: 'camera', label: 'Camera' },
+  { match: 'matrix', label: 'Matrix LED' },
+  { match: 'led', label: 'LED-verlichting' },
+  { match: 'xenon', label: 'Xenon' },
+  { match: 'bang', label: 'Bang & Olufsen audio' },
+  { match: 'harman', label: 'Harman Kardon audio' },
+  { match: 'bose', label: 'Bose audio' },
+  { match: 'burmester', label: 'Burmester audio' },
+  { match: 'navigatie', label: 'Navigatie' },
+  { match: 'apple carplay', label: 'Apple CarPlay' },
+  { match: 'android auto', label: 'Android Auto' },
+  { match: 'trekhaak', label: 'Trekhaak' },
+  { match: 'keyless', label: 'Keyless entry' },
+  { match: 'elektrische klep', label: 'Elektrische achterklep' },
+  { match: 'lane assist', label: 'Lane Assist' },
+  { match: 'dodehoek', label: 'Dodehoekdetectie' },
+  { match: 'blind spot', label: 'Dodehoekdetectie' },
+  { match: 'sportstoel', label: 'Sportstoelen' },
+  { match: 'sfeerverlichting', label: 'Sfeerverlichting' },
+  { match: 'virtual cockpit', label: 'Virtual Cockpit' },
+];
+
+function pickPremiumOptions(equipment: string[]): string[] {
+  const lower = equipment.map((e) => e.toLowerCase());
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const { match, label } of PREMIUM_OPTION_PATTERNS) {
+    if (seen.has(label)) continue;
+    if (lower.some((e) => e.includes(match))) {
+      seen.add(label);
+      result.push(label);
+    }
+    if (result.length >= 8) break;
+  }
+  return result;
+}
+
+function buildWhyBuy(listing: Listing): string[] {
+  const points: string[] = [];
+  const currentYear = new Date().getFullYear();
+  const age = currentYear - listing.year;
+
+  if (listing.mileage && age > 0 && listing.mileage / age < 12000) {
+    points.push(`Lage kilometerstand: ${formatMileage(listing.mileage, listing.mileageUnit)} (${Math.round(listing.mileage / age).toLocaleString('nl-NL')} km/jaar)`);
+  }
+  if (listing.previousOwnerCount === 1) {
+    points.push('Slechts één eigenaar — volledig herleidbare historie');
+  } else if (listing.previousOwnerCount === 0) {
+    points.push('Nieuwe wagen, nog geen eerdere eigenaars');
+  }
+  if (listing.warrantyMonths && listing.warrantyMonths > 0) {
+    points.push(`${listing.warrantyMonths} ${listing.warrantyUnit ?? 'maanden'} garantie inbegrepen${listing.warrantyType ? ` (${listing.warrantyType})` : ''}`);
+  }
+  if (listing.power && listing.power >= 150) {
+    points.push(`Sterk vermogen: ${formatPower(listing.power, listing.powerUnit)}`);
+  }
+  const premium = pickPremiumOptions(listing.equipment ?? listing.features ?? []);
+  if (premium.length >= 3) {
+    points.push(`Rijk uitgerust met ${premium.slice(0, 3).join(', ')}`);
+  } else if (premium.length > 0) {
+    points.push(`Premium uitrusting: ${premium.join(', ')}`);
+  }
+  if (listing.nextInspectionDate) {
+    const next = new Date(listing.nextInspectionDate);
+    if (!isNaN(next.getTime()) && next > new Date()) {
+      points.push(`Recent gekeurd — volgende keuring ${formatDate(listing.nextInspectionDate)}`);
+    }
+  }
+  if (listing.vatDeductible) {
+    points.push('Btw aftrekbaar — interessant voor zelfstandigen en bedrijven');
+  }
+  return points.slice(0, 5);
+}
+
+type TimelineItem = { date: string; sortKey: number; title: string; description?: string };
+
+function buildTimeline(listing: Listing): TimelineItem[] {
+  const items: TimelineItem[] = [];
+  const push = (dateStr: string | undefined | null, title: string, description?: string) => {
+    if (!dateStr) return;
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return;
+    items.push({ date: formatDate(dateStr) ?? dateStr, sortKey: d.getTime(), title, description });
+  };
+  push(listing.firstRegistrationDate, 'Eerste inschrijving', `${listing.brand} ${listing.model}`);
+  if (listing.previousOwnerCount != null) {
+    items.push({
+      date: '—',
+      sortKey: (listing.firstRegistrationDate ? new Date(listing.firstRegistrationDate).getTime() : 0) + 1,
+      title: `${listing.previousOwnerCount} ${listing.previousOwnerCount === 1 ? 'eigenaar' : 'eigenaars'}`,
+      description: listing.previousOwnerCount === 1 ? 'Eén zorgvuldige eigenaar' : undefined,
+    });
+  }
+  push(listing.inspectionDate, 'Laatste keuring uitgevoerd');
+  // Service history
+  const sh = listing.serviceHistory;
+  if (Array.isArray(sh)) {
+    for (const entry of sh as Array<Record<string, unknown>>) {
+      const dateStr = (entry?.date as string) ?? (entry?.performed_at as string);
+      const title = (entry?.title as string) ?? (entry?.type as string) ?? 'Onderhoud';
+      const desc = (entry?.description as string) ?? (entry?.notes as string);
+      push(dateStr, title, desc);
+    }
+  }
+  push(listing.nextInspectionDate, 'Volgende keuring gepland');
+  return items.sort((a, b) => a.sortKey - b.sortKey);
+}
 
 export default function ListingDetail() {
   const { id } = useParams<{ id: string }>();
@@ -41,7 +165,7 @@ export default function ListingDetail() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const relatedListings = useRelatedListings(listing, 3);
+  const relatedListings = useRelatedListings(listing, 6);
 
   const displayPrice = listing?.pricePublic ?? listing?.price;
   const isAS24 = listing?.source === 'autoscout';
@@ -94,10 +218,7 @@ export default function ListingDetail() {
   }, [listing, displayPrice]);
 
   const handleSendMessage = async () => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
+    if (!user) { navigate('/auth'); return; }
     if (!listing) return;
     toast({ title: 'Bericht verzenden', description: 'De berichtenfunctie wordt binnenkort gelanceerd.' });
   };
@@ -107,15 +228,12 @@ export default function ListingDetail() {
     const url = `${window.location.origin}/auto/${listing.id}`;
     const shareData = { title: listing.title, text: `Bekijk ${listing.title} op VATUUR.`, url };
     try {
-      if (navigator.share) {
-        await navigator.share(shareData);
-      } else {
+      if (navigator.share) await navigator.share(shareData);
+      else {
         await navigator.clipboard.writeText(url);
         toast({ title: 'Link gekopieerd', description: 'De link is naar je klembord gekopieerd.' });
       }
-    } catch {
-      // User cancelled share
-    }
+    } catch { /* cancelled */ }
   };
 
   const handleVehicleAnalysis = async () => {
@@ -156,18 +274,29 @@ export default function ListingDetail() {
     );
   }
 
-  const specs = [
+  // Key specs — exactly the 6 prescribed, always in this order
+  const keySpecs = [
     { icon: Calendar, label: 'Bouwjaar', value: listing.year.toString() },
     { icon: Gauge, label: 'Km-stand', value: formatMileage(listing.mileage, listing.mileageUnit) ?? '—' },
     { icon: Fuel, label: 'Brandstof', value: listing.fuelType },
     { icon: Settings, label: 'Transmissie', value: listing.transmission },
-    listing.power ? { icon: Cog, label: 'Vermogen', value: formatPower(listing.power, listing.powerUnit) ?? '—' } : null,
-    { icon: Settings, label: 'Carrosserie', value: listing.bodyType },
-    listing.color ? { icon: Settings, label: 'Kleur', value: listing.color } : null,
-    { icon: Settings, label: 'Deuren', value: String(listing.doorCount ?? listing.doors) },
-    
-    listing.drivetrain ? { icon: Cog, label: 'Aandrijving', value: listing.drivetrain.toUpperCase() } : null,
-  ].filter(Boolean) as { icon: typeof Calendar; label: string; value: string }[];
+    { icon: Cog, label: 'Vermogen', value: listing.power ? (formatPower(listing.power, listing.powerUnit) ?? '—') : '—' },
+    { icon: Car, label: 'Carrosserie', value: listing.bodyType },
+  ];
+
+  const equipment = listing.equipment ?? listing.features ?? [];
+  const highlights = listing.highlights ?? [];
+  const premiumOptions = pickPremiumOptions(equipment);
+  const whyBuy = buildWhyBuy(listing);
+  const timeline = buildTimeline(listing);
+
+  const hasTrustData =
+    listing.warrantyMonths != null || !!listing.warrantyType || !!listing.inspectionDate ||
+    !!listing.nextInspectionDate || listing.previousOwnerCount != null ||
+    (listing.seller.type === 'dealer') ||
+    (listing.includedServices && listing.includedServices.length > 0);
+
+  const monthlyEstimate = displayPrice ? Math.round(displayPrice * 0.0185) : null;
 
   const hasEmissions =
     listing.consumptionCombined != null || listing.consumptionCity != null ||
@@ -175,12 +304,29 @@ export default function ListingDetail() {
     !!listing.emissionClass || !!listing.efficiencyClass ||
     !!listing.emissionSticker || listing.particleFilter != null;
 
-  const hasWarrantyInfo =
-    listing.warrantyMonths != null || !!listing.warrantyType ||
-    !!listing.warrantyDetails || !!listing.inspectionDate || !!listing.nextInspectionDate;
+  const engineSpecs = [
+    listing.power && { label: 'Vermogen', value: formatPower(listing.power, listing.powerUnit) },
+    listing.engineSize && { label: 'Cilinderinhoud', value: formatNumberWithUnit(listing.cylinderCapacity ?? listing.engineSize, listing.cylinderCapacityUnit ?? 'cc') },
+    listing.cylinderCount && { label: 'Cilinders', value: String(listing.cylinderCount) },
+    listing.gearCount && { label: 'Versnellingen', value: String(listing.gearCount) },
+    listing.drivetrain && { label: 'Aandrijving', value: listing.drivetrain.toUpperCase() },
+    listing.transmission && { label: 'Transmissie', value: listing.transmission },
+  ].filter(Boolean) as { label: string; value: string }[];
 
-  const highlights = listing.highlights ?? [];
-  const equipment = listing.equipment ?? listing.features ?? [];
+  const dimensionsSpecs = [
+    listing.doorCount && { label: 'Deuren', value: String(listing.doorCount ?? listing.doors) },
+    listing.seatCount && { label: 'Zitplaatsen', value: String(listing.seatCount ?? listing.seats) },
+    listing.color && { label: 'Kleur', value: listing.color },
+    listing.alloyWheelSize && { label: 'Velgmaat', value: formatNumberWithUnit(listing.alloyWheelSize, listing.alloyWheelSizeUnit ?? 'inch') },
+    listing.emptyWeight && { label: 'Leeggewicht', value: formatNumberWithUnit(listing.emptyWeight, listing.emptyWeightUnit ?? 'kg') },
+  ].filter(Boolean) as { label: string; value: string }[];
+
+  const identitySpecs = [
+    listing.vin && { label: 'VIN', value: listing.vin },
+    listing.licencePlate && { label: 'Kenteken', value: listing.licencePlate },
+    listing.countryVersion && { label: 'Landuitvoering', value: listing.countryVersion },
+    listing.modelVersion && { label: 'Uitvoering', value: listing.modelVersion },
+  ].filter(Boolean) as { label: string; value: string }[];
 
   return (
     <div className="min-h-screen bg-background">
@@ -196,15 +342,11 @@ export default function ListingDetail() {
         <Breadcrumb className="mb-4">
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link to="/"><Home className="h-4 w-4" /></Link>
-              </BreadcrumbLink>
+              <BreadcrumbLink asChild><Link to="/"><Home className="h-4 w-4" /></Link></BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link to="/zoeken">Zoeken</Link>
-              </BreadcrumbLink>
+              <BreadcrumbLink asChild><Link to="/zoeken">Zoeken</Link></BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
@@ -216,10 +358,10 @@ export default function ListingDetail() {
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6 min-w-0">
-            {/* Gallery */}
+            {/* 1. Gallery */}
             <ImageGallery images={listing.images} alt={listing.title} />
 
-            {/* Title & Price - Mobile */}
+            {/* 2. Title & Price - Mobile */}
             <div className="lg:hidden">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -235,12 +377,7 @@ export default function ListingDetail() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className={cn("border-border/60", isFavorite && "text-accent")}
-                    onClick={handleFavoriteToggle}
-                  >
+                  <Button variant="outline" size="icon" className={cn("border-border/60", isFavorite && "text-accent")} onClick={handleFavoriteToggle}>
                     <Heart className={cn("h-5 w-5", isFavorite && "fill-current")} />
                   </Button>
                   <Button variant="outline" size="icon" className="border-border/60" onClick={handleShare}>
@@ -250,9 +387,9 @@ export default function ListingDetail() {
               </div>
             </div>
 
-            {/* Key Specs */}
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {specs.map((spec, i) => (
+            {/* 3. Key Specs - exactly 6 */}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {keySpecs.map((spec, i) => (
                 <div key={i} className="flex items-center gap-3 rounded-xl bg-muted/50 p-4 border border-border/40 min-w-0">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-background flex-shrink-0">
                     <spec.icon className="h-5 w-5 text-muted-foreground" />
@@ -265,162 +402,309 @@ export default function ListingDetail() {
               ))}
             </div>
 
-            {/* Price Indicator */}
-            <PriceIndicator listing={listing} />
-
-            {/* Verbruik & emissies */}
-            {hasEmissions && (
+            {/* 4. Why this car */}
+            {whyBuy.length > 0 && (
               <Card className="border-border/60 shadow-card">
                 <CardContent className="p-6">
                   <h2 className="text-lg font-semibold flex items-center gap-2">
-                    <Leaf className="h-5 w-5 text-success" />
-                    Verbruik & emissies
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    Waarom deze auto interessant is
                   </h2>
-                  <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm sm:grid-cols-3">
-                    {listing.consumptionCombined != null && (
-                      <div>
-                        <dt className="text-muted-foreground">Gecombineerd</dt>
-                        <dd className="font-medium break-anywhere">{formatConsumption(listing.consumptionCombined, listing.combinedUnit)}</dd>
+                  <ul className="mt-4 space-y-2.5">
+                    {whyBuy.map((point, i) => (
+                      <li key={i} className="flex items-start gap-3 text-sm">
+                        <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
+                        <span className="text-foreground/85 leading-relaxed">{point}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* 5. Trust block */}
+            {hasTrustData && (
+              <Card className="border-border/60 shadow-card overflow-hidden">
+                <div className="bg-gradient-to-r from-success/10 to-success/5 px-6 py-3 border-b border-success/20">
+                  <h2 className="text-base font-semibold flex items-center gap-2">
+                    <ShieldCheck className="h-5 w-5 text-success" />
+                    Vertrouwen & zekerheid
+                  </h2>
+                </div>
+                <CardContent className="p-6 space-y-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {listing.seller.type === 'dealer' && (
+                      <div className="flex items-start gap-3">
+                        <BadgeCheck className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                        <div>
+                          <div className="text-xs text-muted-foreground">Verkoper</div>
+                          <div className="font-medium">Geverifieerde dealer</div>
+                        </div>
                       </div>
                     )}
-                    {listing.consumptionCity != null && (
-                      <div>
-                        <dt className="text-muted-foreground">Stad</dt>
-                        <dd className="font-medium break-anywhere">{formatConsumption(listing.consumptionCity, listing.combinedUnit)}</dd>
+                    {listing.previousOwnerCount != null && (
+                      <div className="flex items-start gap-3">
+                        <Users className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <div>
+                          <div className="text-xs text-muted-foreground">Aantal eigenaren</div>
+                          <div className="font-medium">{listing.previousOwnerCount}</div>
+                        </div>
                       </div>
                     )}
-                    {listing.consumptionCountry != null && (
-                      <div>
-                        <dt className="text-muted-foreground">Buitenweg</dt>
-                        <dd className="font-medium break-anywhere">{formatConsumption(listing.consumptionCountry, listing.combinedUnit)}</dd>
+                    {listing.warrantyMonths != null && (
+                      <div className="flex items-start gap-3">
+                        <Shield className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                        <div>
+                          <div className="text-xs text-muted-foreground">Garantie</div>
+                          <div className="font-medium">{listing.warrantyMonths} {listing.warrantyUnit ?? 'maanden'}{listing.warrantyType ? ` · ${listing.warrantyType}` : ''}</div>
+                        </div>
                       </div>
                     )}
-                    {listing.co2Emissions != null && (
-                      <div>
-                        <dt className="text-muted-foreground">CO₂</dt>
-                        <dd className="font-medium break-anywhere">{formatNumberWithUnit(listing.co2Emissions, listing.co2EmissionsUnit ?? 'g/km')}</dd>
+                    {listing.inspectionDate && (
+                      <div className="flex items-start gap-3">
+                        <CheckCircle2 className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                        <div>
+                          <div className="text-xs text-muted-foreground">Laatste keuring</div>
+                          <div className="font-medium">{formatDate(listing.inspectionDate)}</div>
+                        </div>
                       </div>
                     )}
-                    {listing.emissionClass && (
-                      <div>
-                        <dt className="text-muted-foreground">Emissieklasse</dt>
-                        <dd className="font-medium break-anywhere">{listing.emissionClass}</dd>
+                    {listing.nextInspectionDate && (
+                      <div className="flex items-start gap-3">
+                        <Calendar className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <div>
+                          <div className="text-xs text-muted-foreground">Volgende keuring</div>
+                          <div className="font-medium">{formatDate(listing.nextInspectionDate)}</div>
+                        </div>
                       </div>
                     )}
-                    {listing.efficiencyClass && (
-                      <div>
-                        <dt className="text-muted-foreground">Efficiëntieklasse</dt>
-                        <dd className="font-medium break-anywhere">{listing.efficiencyClass}</dd>
+                    {listing.includedServices && listing.includedServices.length > 0 && (
+                      <div className="flex items-start gap-3 sm:col-span-2">
+                        <Wrench className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <div className="min-w-0">
+                          <div className="text-xs text-muted-foreground">Inbegrepen diensten</div>
+                          <div className="font-medium break-anywhere">{listing.includedServices.join(' · ')}</div>
+                        </div>
                       </div>
                     )}
-                    {listing.emissionSticker && (
-                      <div>
-                        <dt className="text-muted-foreground">Milieusticker</dt>
-                        <dd className="font-medium break-anywhere">{listing.emissionSticker}</dd>
-                      </div>
-                    )}
-                    {listing.particleFilter != null && (
-                      <div>
-                        <dt className="text-muted-foreground">Roetfilter</dt>
-                        <dd className="font-medium break-anywhere">{listing.particleFilter ? 'Ja' : 'Nee'}</dd>
+                  </div>
+                  {listing.warrantyDetails && (
+                    <p className="text-sm text-muted-foreground whitespace-pre-line border-t border-border/40 pt-3">{listing.warrantyDetails}</p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* 6. Price Indicator */}
+            <PriceIndicator listing={listing} />
+
+            {/* 7. Total cost */}
+            {displayPrice != null && (
+              <Card className="border-border/60 shadow-card">
+                <CardContent className="p-6">
+                  <h2 className="text-lg font-semibold flex items-center gap-2">
+                    <Calculator className="h-5 w-5 text-primary" />
+                    Totale kostprijs
+                  </h2>
+                  <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-lg bg-muted/40 border border-border/40 p-4">
+                      <dt className="text-xs text-muted-foreground">Vraagprijs</dt>
+                      <dd className="text-2xl font-bold text-accent mt-1">{formatPrice(displayPrice)}</dd>
+                      {listing.priceNegotiable && (
+                        <p className="text-xs text-muted-foreground mt-1">Prijs bespreekbaar</p>
+                      )}
+                    </div>
+                    {monthlyEstimate && (
+                      <div className="rounded-lg bg-muted/40 border border-border/40 p-4">
+                        <dt className="text-xs text-muted-foreground">Geschatte maandlast</dt>
+                        <dd className="text-2xl font-bold mt-1">{formatPrice(monthlyEstimate)}<span className="text-sm font-normal text-muted-foreground">/mnd</span></dd>
+                        <p className="text-xs text-muted-foreground mt-1">Indicatief · 60 mnd · 5% rente</p>
                       </div>
                     )}
                   </dl>
+                  {(listing.vatDeductible != null || listing.vatRate != null) && (
+                    <div className="mt-4 flex items-start gap-3 rounded-lg border border-border/40 p-3 text-sm">
+                      <BadgeCheck className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <div>
+                        <div className="font-medium">Btw-informatie</div>
+                        <div className="text-muted-foreground">
+                          {listing.vatDeductible ? 'Btw aftrekbaar' : 'Marge-regeling — geen btw aftrekbaar'}
+                          {listing.vatRate != null && ` · ${listing.vatRate}% btw`}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    Bijkomende kosten zoals registratie, verzekering en transport zijn niet inbegrepen.
+                  </p>
                 </CardContent>
               </Card>
             )}
 
-            {/* Highlights */}
-            {highlights.length > 0 && (
+            {/* 8. Highlights / Premium equipment */}
+            {(highlights.length > 0 || premiumOptions.length > 0 || equipment.length > 0) && (
               <Card className="border-border/60 shadow-card">
                 <CardContent className="p-6">
-                  <h2 className="text-lg font-semibold">Highlights</h2>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {highlights.map((h) => (
-                      <Badge key={h} variant="secondary" className="gap-1">
-                        <Star className="h-3 w-3" /> {h}
-                      </Badge>
-                    ))}
-                  </div>
+                  <h2 className="text-lg font-semibold flex items-center gap-2">
+                    <Crown className="h-5 w-5 text-primary" />
+                    Hoogtepunten uitrusting
+                  </h2>
+                  {highlights.length > 0 && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {highlights.map((h) => (
+                        <Badge key={h} variant="secondary" className="gap-1">
+                          <Star className="h-3 w-3" /> {h}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                  {premiumOptions.length > 0 && (
+                    <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      {premiumOptions.map((opt) => (
+                        <div key={opt} className="flex items-center gap-2 rounded-lg border border-border/40 bg-muted/30 px-3 py-2 text-sm">
+                          <CheckCircle2 className="h-4 w-4 text-success flex-shrink-0" />
+                          <span className="truncate">{opt}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {equipment.length > 0 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setEquipmentOpen(true)}
+                        className="focus-ring group mt-4 flex w-full items-center justify-between gap-4 rounded-xl border border-border/60 bg-card p-4 text-left transition-colors hover:bg-muted/40 active:bg-muted/60 min-h-[56px]"
+                        aria-label="Volledige optielijst bekijken"
+                      >
+                        <div className="min-w-0">
+                          <div className="font-semibold text-foreground">Toon alle opties</div>
+                          <div className="text-sm text-muted-foreground">{equipment.length} opties &amp; uitrusting</div>
+                        </div>
+                        <ChevronRight className="h-5 w-5 text-accent flex-shrink-0 transition-transform group-hover:translate-x-0.5" />
+                      </button>
+                      <EquipmentDialog
+                        open={equipmentOpen}
+                        onOpenChange={setEquipmentOpen}
+                        equipment={equipment}
+                      />
+                    </>
+                  )}
                 </CardContent>
               </Card>
             )}
 
-            {/* Description */}
+            {/* 9. Vehicle history timeline */}
+            {timeline.length >= 2 && (
+              <Card className="border-border/60 shadow-card">
+                <CardContent className="p-6">
+                  <h2 className="text-lg font-semibold flex items-center gap-2">
+                    <History className="h-5 w-5 text-primary" />
+                    Voertuiggeschiedenis
+                  </h2>
+                  <ol className="mt-5 space-y-5 border-l border-border/60 pl-5">
+                    {timeline.map((item, i) => (
+                      <li key={i} className="relative">
+                        <span className="absolute -left-[26px] top-1.5 h-2.5 w-2.5 rounded-full bg-primary ring-4 ring-background" />
+                        <div className="text-xs text-muted-foreground">{item.date}</div>
+                        <div className="font-medium text-foreground">{item.title}</div>
+                        {item.description && (
+                          <div className="text-sm text-muted-foreground mt-0.5">{item.description}</div>
+                        )}
+                      </li>
+                    ))}
+                  </ol>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* 10/11. Detailed specifications (incl. emissions) */}
+            {(engineSpecs.length > 0 || dimensionsSpecs.length > 0 || hasEmissions || identitySpecs.length > 0) && (
+              <Card className="border-border/60 shadow-card">
+                <CardContent className="p-6">
+                  <h2 className="text-lg font-semibold flex items-center gap-2">
+                    <Cog className="h-5 w-5 text-primary" />
+                    Gedetailleerde specificaties
+                  </h2>
+
+                  {engineSpecs.length > 0 && (
+                    <SpecGroup title="Motor & prestaties" items={engineSpecs} />
+                  )}
+                  {dimensionsSpecs.length > 0 && (
+                    <SpecGroup title="Afmetingen & comfort" items={dimensionsSpecs} />
+                  )}
+                  {hasEmissions && (
+                    <SpecGroup
+                      title="Verbruik & emissies"
+                      icon={<Leaf className="h-4 w-4 text-success" />}
+                      items={[
+                        listing.consumptionCombined != null && { label: 'Gecombineerd', value: formatConsumption(listing.consumptionCombined, listing.combinedUnit) ?? '—' },
+                        listing.consumptionCity != null && { label: 'Stad', value: formatConsumption(listing.consumptionCity, listing.combinedUnit) ?? '—' },
+                        listing.consumptionCountry != null && { label: 'Buitenweg', value: formatConsumption(listing.consumptionCountry, listing.combinedUnit) ?? '—' },
+                        listing.co2Emissions != null && { label: 'CO₂', value: formatNumberWithUnit(listing.co2Emissions, listing.co2EmissionsUnit ?? 'g/km') ?? '—' },
+                        listing.emissionClass && { label: 'Emissieklasse', value: listing.emissionClass },
+                        listing.efficiencyClass && { label: 'Efficiëntieklasse', value: listing.efficiencyClass },
+                        listing.emissionSticker && { label: 'Milieusticker', value: listing.emissionSticker },
+                        listing.particleFilter != null && { label: 'Roetfilter', value: listing.particleFilter ? 'Ja' : 'Nee' },
+                      ].filter(Boolean) as { label: string; value: string }[]}
+                    />
+                  )}
+                  {identitySpecs.length > 0 && (
+                    <SpecGroup title="Identificatie" items={identitySpecs} />
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* 12. Seller description */}
             {listing.description && (
               <Card className="border-border/60 shadow-card">
                 <CardContent className="p-6">
-                  <h2 className="text-lg font-semibold">Beschrijving</h2>
-                  <p className="mt-4 text-muted-foreground whitespace-pre-line leading-relaxed break-anywhere">
+                  <h2 className="text-lg font-semibold">Beschrijving van de verkoper</h2>
+                  <p className="mt-4 max-w-prose text-muted-foreground whitespace-pre-line leading-relaxed break-anywhere">
                     {listing.description}
                   </p>
                 </CardContent>
               </Card>
             )}
 
-            {/* Full options CTA */}
-            {equipment.length > 0 && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setEquipmentOpen(true)}
-                  className="focus-ring group flex w-full items-center justify-between gap-4 rounded-xl border border-border/60 bg-card p-5 text-left shadow-card transition-colors hover:bg-muted/40 active:bg-muted/60 min-h-[64px]"
-                  aria-label="Volledige optielijst bekijken"
-                >
-                  <div className="min-w-0">
-                    <div className="font-semibold text-foreground">Volledige optielijst bekijken</div>
-                    <div className="text-sm text-muted-foreground">{equipment.length} opties &amp; uitrusting</div>
+            {/* 13. Dealer info (mobile only — desktop sidebar already shows it) */}
+            <Card className="lg:hidden border-border/60 shadow-card">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary font-bold text-lg">
+                    {listing.seller.name.charAt(0)}
                   </div>
-                  <ChevronRight className="h-5 w-5 text-accent flex-shrink-0 transition-transform group-hover:translate-x-0.5" />
-                </button>
-                <EquipmentDialog
-                  open={equipmentOpen}
-                  onOpenChange={setEquipmentOpen}
-                  equipment={equipment}
-                />
-              </>
-            )}
-
-            {/* Garantie & inspectie */}
-            {hasWarrantyInfo && (
-              <Card className="border-border/60 shadow-card">
-                <CardContent className="p-6">
-                  <h2 className="text-lg font-semibold flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-primary" />
-                    Garantie & inspectie
-                  </h2>
-                  <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-                    {listing.warrantyMonths != null && (
-                      <div>
-                        <dt className="text-muted-foreground">Garantie</dt>
-                        <dd className="font-medium break-anywhere">{listing.warrantyMonths} {listing.warrantyUnit ?? 'maanden'}</dd>
-                      </div>
+                  <div className="min-w-0">
+                    {listing.seller.type === 'dealer' ? (
+                      <Link to={`/dealer/${dealerSlugFor(listing.seller)}`} className="font-semibold hover:text-primary transition-colors block truncate">
+                        {listing.seller.name}
+                      </Link>
+                    ) : (
+                      <h3 className="font-semibold truncate">{listing.seller.name}</h3>
                     )}
-                    {listing.warrantyType && (
-                      <div>
-                        <dt className="text-muted-foreground">Type garantie</dt>
-                        <dd className="font-medium break-anywhere">{listing.warrantyType}</dd>
-                      </div>
-                    )}
-                    {listing.inspectionDate && (
-                      <div>
-                        <dt className="text-muted-foreground">Laatste keuring</dt>
-                        <dd className="font-medium break-anywhere">{formatDate(listing.inspectionDate)}</dd>
-                      </div>
-                    )}
-                    {listing.nextInspectionDate && (
-                      <div>
-                        <dt className="text-muted-foreground">Volgende keuring</dt>
-                        <dd className="font-medium break-anywhere">{formatDate(listing.nextInspectionDate)}</dd>
-                      </div>
-                    )}
-                  </dl>
-                  {listing.warrantyDetails && (
-                    <p className="mt-3 text-sm text-muted-foreground whitespace-pre-line">{listing.warrantyDetails}</p>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                      <Badge variant="secondary" className="font-medium">
+                        {listing.seller.type === 'dealer' ? 'Dealer' : 'Particulier'}
+                      </Badge>
+                      {listing.seller.type === 'dealer' && (
+                        <span className="flex items-center gap-1 text-xs text-success">
+                          <Shield className="h-3 w-3" /> Geverifieerd
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+                  <MapPin className="h-4 w-4" />
+                  {listing.location.city}{listing.location.province ? `, ${listing.location.province}` : ''}
+                </div>
+                {listing.seller.type === 'dealer' && (
+                  <Button asChild variant="outline" size="sm" className="mt-3 w-full border-border/60">
+                    <Link to={`/dealer/${dealerSlugFor(listing.seller)}`}>Bekijk volledig aanbod</Link>
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
           {/* Sidebar */}
@@ -437,8 +721,7 @@ export default function ListingDetail() {
               <CardContent className="p-5">
                 {!vehicleAnalysis && !analysisLoading && !analysisError && (
                   <Button onClick={handleVehicleAnalysis} className="w-full gap-2">
-                    <Sparkles className="h-4 w-4" />
-                    AI-analyse starten
+                    <Sparkles className="h-4 w-4" /> AI-analyse starten
                   </Button>
                 )}
                 {analysisLoading && (
@@ -512,7 +795,6 @@ export default function ListingDetail() {
             {/* Price Card - Desktop */}
             <Card className="hidden lg:block sticky top-20 border-border/60 shadow-elevated">
               <CardContent className="p-6 space-y-6">
-                {/* Title & Price */}
                 <div>
                   <h1 className="text-xl font-bold">{listing.title}</h1>
                   {listing.modelVersion && (
@@ -526,33 +808,20 @@ export default function ListingDetail() {
                   </div>
                 </div>
 
-                {/* Actions */}
                 <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className={cn("border-border/60 flex-shrink-0", isFavorite && "text-accent border-accent")}
-                    onClick={handleFavoriteToggle}
-                  >
+                  <Button variant="outline" size="icon" className={cn("border-border/60 flex-shrink-0", isFavorite && "text-accent border-accent")} onClick={handleFavoriteToggle}>
                     <Heart className={cn("h-5 w-5", isFavorite && "fill-current")} />
                   </Button>
                   <Button variant="outline" size="icon" className="border-border/60 flex-shrink-0" onClick={handleShare}>
                     <Share2 className="h-5 w-5" />
                   </Button>
-                  <Button
-                    variant={isComparing ? "default" : "outline"}
-                    size="icon"
-                    className={cn("flex-shrink-0", !isComparing && "border-border/60")}
-                    onClick={() => listing && add(listing)}
-                    disabled={isComparing}
-                  >
+                  <Button variant={isComparing ? "default" : "outline"} size="icon" className={cn("flex-shrink-0", !isComparing && "border-border/60")} onClick={() => listing && add(listing)} disabled={isComparing}>
                     <GitCompareArrows className="h-5 w-5" />
                   </Button>
                 </div>
 
                 <Separator />
 
-                {/* Seller Info */}
                 <div>
                   <div className="flex items-center gap-3">
                     <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary font-bold text-lg">
@@ -560,10 +829,7 @@ export default function ListingDetail() {
                     </div>
                     <div>
                       {listing.seller.type === 'dealer' ? (
-                        <Link
-                          to={`/dealer/${dealerSlugFor(listing.seller)}`}
-                          className="font-semibold hover:text-primary transition-colors"
-                        >
+                        <Link to={`/dealer/${dealerSlugFor(listing.seller)}`} className="font-semibold hover:text-primary transition-colors">
                           {listing.seller.name}
                         </Link>
                       ) : (
@@ -575,8 +841,7 @@ export default function ListingDetail() {
                         </Badge>
                         {listing.seller.type === 'dealer' && (
                           <div className="flex items-center gap-1 text-xs text-success">
-                            <Shield className="h-3 w-3" />
-                            Geverifieerd
+                            <Shield className="h-3 w-3" /> Geverifieerd
                           </div>
                         )}
                       </div>
@@ -593,32 +858,26 @@ export default function ListingDetail() {
 
                   {listing.seller.type === 'dealer' && (
                     <Button asChild variant="outline" size="sm" className="mt-3 w-full border-border/60">
-                      <Link to={`/dealer/${dealerSlugFor(listing.seller)}`}>
-                        Bekijk volledig aanbod
-                      </Link>
+                      <Link to={`/dealer/${dealerSlugFor(listing.seller)}`}>Bekijk volledig aanbod</Link>
                     </Button>
                   )}
                 </div>
 
                 <Separator />
 
-                {/* Contact Buttons */}
                 <div className="space-y-3">
                   {listing.seller.phone && (
                     <Button asChild className="w-full gap-2 bg-accent text-accent-foreground hover:bg-accent/90 h-12 text-base shadow-sm">
                       <a href={`tel:${listing.seller.phone.replace(/\s/g, '')}`}>
-                        <Phone className="h-5 w-5" />
-                        {listing.seller.phone}
+                        <Phone className="h-5 w-5" /> {listing.seller.phone}
                       </a>
                     </Button>
                   )}
                   <Button variant="outline" className="w-full gap-2 h-12 text-base border-border/60" onClick={handleSendMessage}>
-                    <Mail className="h-5 w-5" />
-                    Stuur bericht
+                    <Mail className="h-5 w-5" /> Stuur bericht
                   </Button>
                 </div>
 
-                {/* Location */}
                 <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
                   <MapPin className="h-4 w-4" />
                   {listing.location.city}{listing.location.province ? `, ${listing.location.province}` : ''}
@@ -632,28 +891,57 @@ export default function ListingDetail() {
                 {listing.seller.phone && (
                   <Button asChild className="flex-1 gap-2 bg-accent text-accent-foreground hover:bg-accent/90 h-12 shadow-sm">
                     <a href={`tel:${listing.seller.phone.replace(/\s/g, '')}`}>
-                      <Phone className="h-5 w-5" />
-                      Bellen
+                      <Phone className="h-5 w-5" /> Bellen
                     </a>
                   </Button>
                 )}
                 <Button variant="outline" className="flex-1 gap-2 h-12 border-border/60" onClick={handleSendMessage}>
-                  <Mail className="h-5 w-5" />
-                  Bericht
+                  <Mail className="h-5 w-5" /> Bericht
                 </Button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Related Listings */}
+        {/* 14. Related Listings */}
         {relatedListings.length > 0 && (
           <section className="mt-16">
             <h2 className="text-xl font-semibold mb-6">Vergelijkbare auto's</h2>
-            <ListingGrid listings={relatedListings} columns={3} />
+            {/* Mobile: horizontal scroll */}
+            <div className="lg:hidden -mx-4 px-4 flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {relatedListings.map((rl) => (
+                <div key={rl.id} className="snap-start flex-shrink-0 w-[80%] max-w-[320px]">
+                  <ListingCard listing={rl} />
+                </div>
+              ))}
+            </div>
+            {/* Desktop: grid */}
+            <div className="hidden lg:block">
+              <ListingGrid listings={relatedListings.slice(0, 3)} columns={3} />
+            </div>
           </section>
         )}
       </div>
+    </div>
+  );
+}
+
+function SpecGroup({ title, items, icon }: { title: string; items: { label: string; value: string }[]; icon?: React.ReactNode }) {
+  if (items.length === 0) return null;
+  return (
+    <div className="mt-5 first:mt-4">
+      <h3 className="text-sm font-semibold text-foreground/80 uppercase tracking-wide flex items-center gap-2">
+        {icon}
+        {title}
+      </h3>
+      <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2.5 text-sm sm:grid-cols-3">
+        {items.map((item, i) => (
+          <div key={i}>
+            <dt className="text-muted-foreground text-xs">{item.label}</dt>
+            <dd className="font-medium break-anywhere">{item.value}</dd>
+          </div>
+        ))}
+      </dl>
     </div>
   );
 }
