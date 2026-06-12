@@ -295,10 +295,12 @@ export function Header() {
                     Account
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem asChild>
-                    <Link to="/dashboard" className="cursor-pointer">Mijn advertenties</Link>
-                  </DropdownMenuItem>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem asChild><Link to="/account/profiel" className="cursor-pointer">Profiel</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to="/account/advertenties" className="cursor-pointer">Mijn advertenties</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to="/account/zoekalerts" className="cursor-pointer">Zoekalerts</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to="/account/recent" className="cursor-pointer">Recent bekeken</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to="/account/meldingen" className="cursor-pointer">Meldingen</Link></DropdownMenuItem>
                   {isDealer && (
                     <DropdownMenuItem asChild>
                       <Link to="/zakelijk" className="cursor-pointer flex items-center gap-2">
