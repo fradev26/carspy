@@ -1,16 +1,23 @@
 ## Doel
-Het AI-centrumknopje in de bottom navigation van een cirkel (`rounded-full`) omzetten naar dezelfde afgeronde rechthoek/pill-vorm (`rounded-xl`) als de actieve navigatietabs.
+Maak de profiel- (linksboven) en berichten- (rechtsboven) iconen in de mobiele header visueel en interactief gelijk aan de favoriet- en vergelijk-knoppen op de listingcards.
 
 ## Huidige situatie
-- Het AI-knopje gebruikt een cirkelvormige container: `w-12 h-12 -mt-2 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30`
-- De actieve tabs gebruiken een pill-vormige container: `rounded-xl` met liquid-glass styling
+**Header-iconen** (mobiel):
+`h-10 w-10 rounded-xl bg-muted/60 text-foreground hover:bg-muted active:bg-muted/80 transition-colors`
 
-## Wijziging
-In `src/components/BottomNav.tsx`, aanpassen van de AI-knop container:
-- Vervang `rounded-full` door `rounded-xl`
-- Behoud `bg-primary`, `text-primary-foreground` en de schaduw
-- Behoud bestaande afmetingen (`w-12 h-12`) en `-mt-2` offset
-- Behoud icoon (`Sparkles`), label en klikgedrag
+**Listingcard knoppen**:
+`h-9 w-9 rounded-md bg-card/90 text-accent (of text-primary) backdrop-blur-sm shadow-md transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground`
+
+## Wijziging in `src/layouts/Header.tsx`
+Vervang de className van beide mobiele header-iconen (Sheet trigger met `User` + berichten-button met `MessageCircle`) door dezelfde stijl als de listingcard buttons:
+
+```
+h-9 w-9 rounded-md bg-card/90 text-accent backdrop-blur-sm shadow-md transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95
+```
+
+- Behoud `relative` + de bestaande badge-positionering voor `unreadCount` (mogelijk badge-positie iets aanpassen ivm `h-9 w-9` ipv `h-10 w-10`).
+- Behoud iconen, aria-labels, klikgedrag en sheet/navigate-logica.
+- Pas eveneens het `h-10 w-10` placeholder-blokje aan naar `h-9 w-9` zodat het centrale logo niet verschuift.
 
 ## Resultaat
-Het AI-knopje staat visueel in lijn met de vormtaal van de actieve bottomnav-tabs, zonder dat de herkenbare primaire kleur en het accentvermogen verloren gaan.
+Profiel- en berichteniconen voelen als dezelfde premium "floating button" als favoriet/vergelijk: lichte kaartachtergrond, blur, schaduw, en bij hover schalen ze naar 110% met primary fill — consistente vormtaal door de hele app.
