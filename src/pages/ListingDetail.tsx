@@ -174,6 +174,17 @@ export default function ListingDetail() {
   const { toast } = useToast();
   const relatedListings = useRelatedListings(listing, 6);
 
+  useEffect(() => {
+    if (!listing) return;
+    pushRecentListing({
+      id: listing.id,
+      title: listing.title,
+      price: listing.pricePublic ?? listing.price ?? null,
+      image: listing.images?.[0] ?? null,
+      city: listing.location?.city ?? null,
+    });
+  }, [listing]);
+
   const displayPrice = listing?.pricePublic ?? listing?.price;
   const isAS24 = listing?.source === 'autoscout';
 
