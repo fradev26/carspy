@@ -126,9 +126,9 @@ export function Header() {
                 variant="ghost"
                 size="icon"
                 aria-label="Open account"
-                className="relative h-10 w-10 rounded-xl bg-muted/60 text-foreground hover:bg-muted active:bg-muted/80 transition-colors before:absolute before:inset-[-2px] before:content-['']"
+                className="relative h-9 w-9 rounded-md bg-card/90 text-accent backdrop-blur-sm shadow-md transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95"
               >
-                <User className="h-[18px] w-[18px]" strokeWidth={1.75} />
+                <User className="h-4 w-4" strokeWidth={1.75} />
               </Button>
             </SheetTrigger>
 
