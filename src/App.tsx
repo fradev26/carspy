@@ -62,7 +62,15 @@ const App = () => (
                 <Route path="/berichten" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
                 <Route path="/dealer/:slug" element={<DealerInventory />} />
                 <Route path="/dealers" element={<Dealers />} />
-              </Route>
+                <Route path="/account/advertenties" element={<ProtectedRoute><MyListings /></ProtectedRoute>} />
+                <Route path="/account/zoekalerts" element={<ProtectedRoute><SearchAlerts /></ProtectedRoute>} />
+                <Route path="/account/recent" element={<RecentlyViewed />} />
+                <Route path="/account/profiel" element={<ProtectedRoute><AccountSettings defaultTab="profiel" /></ProtectedRoute>} />
+                <Route path="/account/meldingen" element={<ProtectedRoute><AccountSettings defaultTab="meldingen" /></ProtectedRoute>} />
+                <Route path="/account/privacy" element={<ProtectedRoute><AccountSettings defaultTab="privacy" /></ProtectedRoute>} />
+                <Route path="/account/instellingen" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
+                <Route path="/help" element={<Help />} />
+                <Route path="/contact" element={<Contact />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
