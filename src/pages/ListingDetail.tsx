@@ -2,18 +2,19 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   Phone, Mail, MapPin, Calendar, Gauge, Fuel, Settings, Star, Heart, Share2,
   Shield, ShieldCheck, GitCompareArrows, Home, Sparkles, Loader2, Wrench, AlertTriangle, Users,
-  Cog, Leaf, BadgeCheck, ChevronRight, Calculator, History, Crown, CheckCircle2, Car,
+  Cog, Leaf, BadgeCheck, ChevronRight, ChevronDown, Calculator, History, Crown, CheckCircle2, Car,
 } from 'lucide-react';
 import { EquipmentDialog } from '@/modules/listings/EquipmentDialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { ImageGallery, ListingGrid, PriceIndicator } from '@/modules/listings';
 import { ListingCard } from '@/modules/listings/ListingCard';
 import { useCompare } from '@/hooks/useCompare';
 import { useListing, useRelatedListings } from '@/hooks/useListings';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -26,6 +27,9 @@ import type { Listing } from '@/types/listing';
 import {
   formatPrice, formatMileage, formatPower, formatConsumption, formatNumberWithUnit, formatDate,
 } from '@/lib/units';
+import {
+  FEATURE_CATALOG, FEATURE_CATEGORY_ORDER, VEHICLE_INFO_ITEMS, labelForFeature, type FeatureCategory,
+} from '@/modules/sell/featureCatalog';
 
 const PREMIUM_OPTION_PATTERNS: { match: string; label: string }[] = [
   { match: 'panorama', label: 'Panoramadak' },
@@ -157,6 +161,8 @@ export default function ListingDetail() {
   const isFavorite = listing ? isFavCheck(listing.id) : false;
   const handleFavoriteToggle = () => { if (listing) toggleFav(listing.id); };
   const [equipmentOpen, setEquipmentOpen] = useState(false);
+  const [optionAccordion, setOptionAccordion] = useState<string>('');
+  const optionListRef = useRef<HTMLDivElement | null>(null);
   const [vehicleAnalysis, setVehicleAnalysis] = useState<any>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
@@ -290,6 +296,27 @@ export default function ListingDetail() {
   const whyBuy = buildWhyBuy(listing);
   const timeline = buildTimeline(listing);
 
+  // Categorized feature list — built from specs.vehicle_features (new wizard) with fallback to equipment[]
+  const vehicleFeatures = (listing.specs?.vehicle_features as Partial<Record<FeatureCategory | 'vehicle_information', string[]>> | undefined) ?? null;
+  const categorizedSections: { key: string; title: string; labels: string[] }[] = [];
+  if (vehicleFeatures) {
+    for (const cat of FEATURE_CATEGORY_ORDER) {
+      const vals = vehicleFeatures[cat] ?? [];
+      if (vals.length) categorizedSections.push({ key: cat, title: FEATURE_CATALOG[cat].title, labels: vals.map(labelForFeature) });
+    }
+    const info = vehicleFeatures.vehicle_information ?? [];
+    if (info.length) categorizedSections.push({ key: 'vehicle_information', title: 'Voertuiginformatie', labels: info.map(labelForFeature) });
+  } else if (equipment.length) {
+    categorizedSections.push({ key: 'all', title: 'Opties & uitrusting', labels: equipment });
+  }
+  const totalOptionCount = categorizedSections.reduce((sum, s) => sum + s.labels.length, 0);
+
+  const scrollToOptions = () => {
+    setOptionAccordion('options');
+    setTimeout(() => optionListRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  };
+
+
   const hasTrustData =
     listing.warrantyMonths != null || !!listing.warrantyType || !!listing.inspectionDate ||
     !!listing.nextInspectionDate || listing.previousOwnerCount != null ||
@@ -401,6 +428,20 @@ export default function ListingDetail() {
                 </div>
               ))}
             </div>
+
+            {/* 3b. Quick action — jump to full option list */}
+            {totalOptionCount > 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={scrollToOptions}
+                className="w-full justify-between border-border/60 bg-card hover:bg-muted/40"
+              >
+                <span className="font-medium">Bekijk volledige optielijst ({totalOptionCount})</span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            )}
+
 
             {/* 4. Why this car */}
             {whyBuy.length > 0 && (
@@ -568,27 +609,46 @@ export default function ListingDetail() {
                       ))}
                     </div>
                   )}
-                  {equipment.length > 0 && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => setEquipmentOpen(true)}
-                        className="focus-ring group mt-4 flex w-full items-center justify-between gap-4 rounded-xl border border-border/60 bg-card p-4 text-left transition-colors hover:bg-muted/40 active:bg-muted/60 min-h-[56px]"
-                        aria-label="Volledige optielijst bekijken"
+                  {totalOptionCount > 0 && (
+                    <div ref={optionListRef} className="mt-4 scroll-mt-24">
+                      <Accordion
+                        type="single"
+                        collapsible
+                        value={optionAccordion}
+                        onValueChange={setOptionAccordion}
                       >
-                        <div className="min-w-0">
-                          <div className="font-semibold text-foreground">Toon alle opties</div>
-                          <div className="text-sm text-muted-foreground">{equipment.length} opties &amp; uitrusting</div>
-                        </div>
-                        <ChevronRight className="h-5 w-5 text-accent flex-shrink-0 transition-transform group-hover:translate-x-0.5" />
-                      </button>
-                      <EquipmentDialog
-                        open={equipmentOpen}
-                        onOpenChange={setEquipmentOpen}
-                        equipment={equipment}
-                      />
-                    </>
+                        <AccordionItem value="options" className="rounded-xl border border-border/60 bg-card px-4">
+                          <AccordionTrigger className="hover:no-underline">
+                            <span className="font-semibold text-foreground">
+                              Bekijk optielijst ({totalOptionCount})
+                            </span>
+                          </AccordionTrigger>
+                          <AccordionContent>
+                            <div className="space-y-5 pb-2">
+                              {categorizedSections.map((section) => (
+                                <div key={section.key}>
+                                  <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+                                    {section.title}
+                                  </h3>
+                                  <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                                    {section.labels.map((label) => (
+                                      <li key={label} className="flex items-start gap-2 text-sm text-foreground/85">
+                                        <CheckCircle2 className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
+                                        <span className="break-anywhere">{label}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              ))}
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
+                      {/* Behouden voor backwards-compat / interne triggers — niet meer primair zichtbaar */}
+                      <EquipmentDialog open={equipmentOpen} onOpenChange={setEquipmentOpen} equipment={equipment} />
+                    </div>
                   )}
+
                 </CardContent>
               </Card>
             )}

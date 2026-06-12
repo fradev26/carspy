@@ -1,39 +1,57 @@
-# Plan: ListingDetail herstructureren
+# Optimalisatie verkoopproces & listingdetail
 
-Doel: bestaande VATUUR-styling behouden, maar de detailpagina herordenen en 3 nieuwe secties toevoegen om vertrouwen en conversie te verhogen. Alle wijzigingen gebeuren in `src/pages/ListingDetail.tsx`. Geen nieuwe data, alleen bestaande velden uit `Listing`.
+## Doel
+Vervang het huidige 5-staps verkoopformulier (`src/pages/Sell.tsx`) door een conversiegerichte 6-staps wizard met rijkere voertuiginformatie, en toon die nieuwe data op de listingdetailpagina als een ingeklapte gecategoriseerde optielijst — zonder de bestaande VATUUR-stijl, componenten of detailpagina-architectuur te breken.
 
-## Wat blijft ongewijzigd
-- `ImageGallery`, mobiele titel/prijs-blok, KeySpecs-grid, `PriceIndicator`, `EquipmentDialog`, AI-analyse card, sticky desktop price/seller card, mobile contact bar, breadcrumbs, SEO/JSON-LD, related listings.
-- Alle huidige tokens, cards (`border-border/60 shadow-card`), spacing, iconen, kleuren.
+## 1. Verkoopwizard — `src/pages/Sell.tsx`
 
-## Nieuwe volgorde main-column (mobiel = primair)
+Herstructureren naar 6 stappen met behoud van: bestaande progress-strip (cirkels + check), Card-wrapper, Vorige/Volgende-knoppen, draftId-flow, AI-analyse op prijsstap, foto-upload-pipeline en submit-logica.
 
-1. Gallery *(bestaand)*
-2. Mobiele titel + prijs + badges *(bestaand)*
-3. KeySpecs grid — uitbreiden zodat verplichte 6 altijd eerst staan: Bouwjaar · Km-stand · Brandstof · Transmissie · Vermogen · Carrosserie. Kleur/Deuren/Aandrijving schuiven naar de detail-specs sectie.
-4. **NIEUW – "Waarom deze auto"** (`Sparkles` icoon). Compacte card met 3–5 bullets, automatisch afgeleid uit beschikbare data (hp+jaar, lage km, garantie, premium opties uit `highlights`/`equipment`, eerste eigenaar, recent gekeurd). Geen extra API-call; pure client-side samenvatting met fallback naar bestaande AI-analyse-bullets als die geladen is.
-5. **NIEUW – Vertrouwensblok** (`ShieldCheck`). Eén card die bundelt: dealer-verificatie, aantal eigenaren, laatste/volgende keuring, garantie (maanden + type), onderhoudshistorie-indicator (uit `serviceHistory` jsonb of `included_services`). Vervangt de losse "Garantie & inspectie"-card.
-6. `PriceIndicator` *(bestaand, verplaatst hierheen)*
-7. **NIEUW – Totale kostprijs** card: vraagprijs, geschatte maandlast (eenvoudige formule: prijs × 0.0185 over 60 mnd, label "indicatief"), BTW-indicatie (`vatDeductible`/`vatRate`), eventuele transportkost-placeholder weggelaten als data ontbreekt.
-8. **Hoogtepunten uitrusting** — bestaande highlights-badges blijven; daaronder een gecureerde "premium options"-strip die uit `equipment` matcht op een whitelist (panoramadak, adaptive cruise, head-up, stoelverwarming, 360-camera, premium audio, matrix LED, …). "Toon meer" opent bestaande `EquipmentDialog`.
-9. **NIEUW – Voertuiggeschiedenis** als verticale tijdlijn. Items uit: `firstRegistrationDate`, `previousOwnerCount`, `inspectionDate`, `nextInspectionDate`, `serviceHistory` (jsonb mappen indien array). Skip als <2 items.
-10. **Verbruik & emissies** *(bestaand)* — verplaatst naar gedetailleerde specs-groep.
-11. **Gedetailleerde specificaties** — bestaande dl-velden hergroeperen in subsecties: Motor & Prestaties · Afmetingen & Gewicht · Verbruik & Emissies · Identificatie. Eén card, accordeon-stijl groepen via `<details>` of statische headers.
-12. **Beschrijving verkoper** *(bestaand)* — alleen lichte typografische opschoning (max-w, leading), tekst onaangetast.
-13. **Dealerinformatie** (alleen mobiel; desktop heeft sticky sidebar). Compacte card met dealernaam, locatie, "Bekijk volledig aanbod", verificatiebadge.
-14. **Vergelijkbare auto's** *(bestaand)* — mobiel: horizontale scroll (`flex overflow-x-auto snap-x`) i.p.v. grid; desktop blijft grid.
+**Stap 1 – Basisgegevens**: merk (zoekbare dropdown via Command/Popover), model (dynamisch obv merk uit `CAR_BRANDS`), eerste registratie (jaar + maand → `first_registration_date`), carrosserie, brandstof, transmissie, vermogen (pk/kW toggle → `power` + `power_unit`), uitvoering (`model_version`), kilometerstand.
 
-## Code-aanpak
+**Stap 2 – Uitrusting & extra's**: vier categorieën (veiligheid, comfort, multimedia, exterieur) + blok "Voertuiginformatie" (onderhoudsboekje, eerste eigenaar, niet-roker, btw aftrekbaar, ongevalvrij, dealer-onderhouden, Car-Pass, keuringsattest, reserve sleutel). Renderen als responsive checkbox-cards (bestaande Card + Check-icoon, grid `sm:grid-cols-2 lg:grid-cols-3`). State in één geneste structuur (zie §4).
 
-- Refactor in dezelfde file (`src/pages/ListingDetail.tsx`). Geen nieuwe componenten extracten tenzij nodig voor leesbaarheid; lokale helpers `WhyBuy`, `TrustBlock`, `TotalCost`, `VehicleTimeline`, `SpecsGrouped` als kleine functies binnen het bestand.
-- Hergebruik `Card`/`CardContent`, `Badge`, `Separator`, lucide-iconen (`ShieldCheck`, `Wrench`, `History`, `Calculator`, `Sparkles`, `Crown`).
-- Helpers: `formatPrice`, `formatDate`, `formatNumberWithUnit` zijn al beschikbaar.
-- Maandlast-formule: const monthlyEstimate = Math.round(price * 0.0185); — label expliciet "indicatief, 60 mnd".
-- Premium-options whitelist als constante array van lowercase substrings; match case-insensitive tegen `equipment`.
-- Tijdlijn: simpele `<ol>` met `border-l border-border/60 pl-4` + dot-marker per item.
+**Stap 3 – Staat van het voertuig**: radiogroep algemene staat → `condition_type`. Conditionele velden voor schade en technische problemen (alleen tonen bij "Ja"). Opgeslagen in `condition` jsonb.
 
-## Niet in scope
-- Geen nieuwe API/edge-function.
-- Geen DB-wijzigingen.
-- Geen aanpassingen aan sidebar, header, of andere pagina's.
-- Geen redesign van bestaande componenten.
+**Stap 4 – Foto's**: drag-and-drop (HTML5 `onDrop`), suggestiechecklist met aanbevolen shots, sorteerbare thumbnails (pijltjes links/rechts), eerste foto = hoofdfoto met badge, client-side compressie via canvas (max 1920px, jpeg q=0.82), max 20, per-bestand progressbar.
+
+**Stap 5 – Verkoopinformatie**: prijs (`price` + `price_public`), onderhandelbaar radio (`price_negotiable`), beschikbaar vanaf (date → `availability` jsonb), opmerkingen, behoud AI-marktwaarde-card.
+
+**Stap 6 – Contactgegevens**: naam, e-mail, telefoon, postcode, gemeente (prefill uit profiel). Twee verplichte checkboxen (correctheid + privacy) — Volgende disabled tot beide aangevinkt.
+
+**Samenvatting**: na stap 6 een review-scherm met secties + "Bewerken" knoppen die `setCurrentStep(n)` aanroepen. "Definitief verzenden" triggert bestaande submit.
+
+**Algemeen**: progress-tekst "Stap X van 6", autosave naar `localStorage` (key per `draftId`/user) bij elke wijziging + "Concept opslaan" knop die naar `listings` schrijft met `status='draft'`, per-stap validatie behouden via uitgebreide `validateStep`.
+
+## 2. Listingdetail — `src/pages/ListingDetail.tsx`
+
+- **Quick action** onder Kerngegevens-grid: full-width subtiele `Button variant="outline"` met ChevronDown — "Bekijk volledige optielijst (N)". Klik → smooth scroll naar accordion en open hem (state lift).
+- **Vervang** de huidige "Gedetailleerde specificaties"-kaart-titel niet, maar **vervang de huidige "Hoogtepunten uitrusting → EquipmentDialog"-trigger** door een echte `Accordion` (shadcn, single, collapsible, default closed) met titel `Bekijk optielijst (N)`. Binnen de accordion vier subsecties (Veiligheid / Comfort / Multimedia / Exterieur) + Voertuiginformatie, gerenderd uit `listing.specs.vehicle_features` met fallback naar de platte `equipment[]` array onder "Overig" voor oude listings. `EquipmentDialog` blijft beschikbaar maar wordt niet meer als primaire entry getoond.
+- Gedetailleerde technische specs-kaart (motor/afmetingen/emissies/identiteit) blijft ongewijzigd.
+
+## 3. Na verzending
+Bestaand bevestigingsscherm + toast behouden. Toevoegen: invoke bestaande edge function voor bevestigingsmail (`send-transactional-email`, template `listing-submitted` — nieuw template aanmaken in `supabase/functions/_shared/transactional-email-templates/`). AI-marktwaarde uit stap 5 wegschrijven naar `specs.estimated_market_value`.
+
+## 4. Datamodel
+Geen nieuwe kolommen nodig — gebruik bestaande `specs jsonb` met sleutel `vehicle_features`:
+```json
+{
+  "vehicle_features": {
+    "safety": ["ABS","ESP",...],
+    "comfort": [...],
+    "multimedia": [...],
+    "exterior": [...],
+    "vehicle_information": ["onderhoudsboekje","eerste_eigenaar",...]
+  }
+}
+```
+Bestaande `equipment[]` blijft gevuld als platte unie (voor zoek/AS24-compat). `condition` jsonb krijgt `{ overall, damage: {present, description}, technical: {present, description} }`. Geen migratie vereist.
+
+## 5. Bestanden
+- Edit: `src/pages/Sell.tsx` (volledige refactor wizard)
+- Edit: `src/pages/ListingDetail.tsx` (quick-action knop + accordion-optielijst met categorieën)
+- Nieuw: `src/modules/sell/` helpers — `BrandModelPicker.tsx`, `FeatureCheckboxGrid.tsx`, `PhotoUploader.tsx`, `SummaryReview.tsx`, `featureCatalog.ts` (categorieën + labels)
+- Nieuw (optioneel email): `supabase/functions/_shared/transactional-email-templates/listing-submitted.tsx` + registry-entry
+
+## Buiten scope
+Header, bottom-nav, breadcrumbs, AI-chat, related-listings layout, kerngegevens-grid, prijsindicator, vertrouwensblok, totale-kostprijs-kaart, voertuiggeschiedenis-timeline, dealerinformatie — allemaal ongewijzigd.
