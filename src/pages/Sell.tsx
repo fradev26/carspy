@@ -1,7 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { SEOHead } from '@/components/SEOHead';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Check, ChevronRight, ChevronLeft, Upload, X, Sparkles, Loader2, ShieldCheck, AlertTriangle, Wrench, Target, Euro, Clock, TrendingUp, RefreshCw } from 'lucide-react';
+import {
+  Check,
+  ChevronRight,
+  ChevronLeft,
+  Sparkles,
+  Loader2,
+  ShieldCheck,
+  AlertTriangle,
+  Wrench,
+  Target,
+  Euro,
+  Clock,
+  TrendingUp,
+  RefreshCw,
+  Edit3,
+  Save,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,7 +25,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { CAR_BRANDS, FUEL_TYPES, TRANSMISSION_TYPES, BODY_TYPES } from '@/types/listing';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Checkbox } from '@/components/ui/checkbox';
+import { FUEL_TYPES, TRANSMISSION_TYPES, BODY_TYPES } from '@/types/listing';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -17,6 +35,16 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { BrandModelPicker } from '@/modules/sell/BrandModelPicker';
+import { FeatureCheckboxGrid } from '@/modules/sell/FeatureCheckboxGrid';
+import { PhotoUploader, type PhotoItem } from '@/modules/sell/PhotoUploader';
+import {
+  FEATURE_CATALOG,
+  FEATURE_CATEGORY_ORDER,
+  VEHICLE_INFO_ITEMS,
+  flattenFeatures,
+  type FeatureCategory,
+} from '@/modules/sell/featureCatalog';
 
 interface VehicleAnalysis {
   reliability: string;
@@ -30,7 +58,80 @@ interface VehicleAnalysis {
   estimatedSellTime: string;
 }
 
-const steps = ['Basisgegevens', 'Details', "Foto's", 'Prijs & Beschrijving', 'Overzicht'];
+const STEP_LABELS = [
+  'Basisgegevens',
+  "Uitrusting & extra's",
+  'Staat',
+  "Foto's",
+  'Verkoopinfo',
+  'Contact',
+];
+const TOTAL_STEPS = STEP_LABELS.length;
+const REVIEW_STEP = TOTAL_STEPS;
+
+const BODY_FORM_OPTIONS = BODY_TYPES;
+const MONTHS = [
+  '01','02','03','04','05','06','07','08','09','10','11','12',
+];
+const CURRENT_YEAR = new Date().getFullYear();
+const YEAR_OPTIONS = Array.from({ length: 40 }, (_, i) => CURRENT_YEAR - i);
+
+type FeaturesState = Record<FeatureCategory | 'vehicle_information', string[]>;
+
+interface FormState {
+  // step 1
+  brand: string;
+  model: string;
+  year: string;
+  month: string;
+  bodyType: string;
+  fuelType: string;
+  transmission: string;
+  power: string;
+  powerUnit: 'pk' | 'kW';
+  modelVersion: string;
+  mileage: string;
+  // step 2
+  features: FeaturesState;
+  // step 3
+  conditionOverall: 'excellent' | 'good' | 'fair' | 'repairs_needed' | '';
+  damagePresent: 'yes' | 'no' | '';
+  damageDescription: string;
+  technicalPresent: 'yes' | 'no' | '';
+  technicalDescription: string;
+  // step 5
+  price: string;
+  priceNegotiable: 'yes' | 'no' | '';
+  availableFrom: string;
+  description: string;
+  // step 6
+  name: string;
+  email: string;
+  phone: string;
+  postalCode: string;
+  city: string;
+  confirmCorrect: boolean;
+  acceptPrivacy: boolean;
+}
+
+const EMPTY_FEATURES: FeaturesState = {
+  safety: [],
+  comfort: [],
+  multimedia: [],
+  exterior: [],
+  vehicle_information: [],
+};
+
+const EMPTY_FORM: FormState = {
+  brand: '', model: '', year: '', month: '', bodyType: '', fuelType: '',
+  transmission: '', power: '', powerUnit: 'pk', modelVersion: '', mileage: '',
+  features: EMPTY_FEATURES,
+  conditionOverall: '', damagePresent: '', damageDescription: '',
+  technicalPresent: '', technicalDescription: '',
+  price: '', priceNegotiable: '', availableFrom: '', description: '',
+  name: '', email: '', phone: '', postalCode: '', city: '',
+  confirmCorrect: false, acceptPrivacy: false,
+};
 
 export default function Sell() {
   const navigate = useNavigate();
@@ -41,30 +142,50 @@ export default function Sell() {
   const [searchParams] = useSearchParams();
   const draftId = searchParams.get('draftId');
   const dealerOverride = searchParams.get('dealer') === '1';
-  const initialStep = Math.min(parseInt(searchParams.get('step') || '0') || 0, 4);
+  const initialStep = Math.min(parseInt(searchParams.get('step') || '0') || 0, REVIEW_STEP);
 
-  // Dealers gebruiken normaal de zakelijke flow; alleen omleiden als geen expliciete dealer-intent
   useEffect(() => {
     if (!profileLoading && user && isDealer && !dealerOverride) {
       navigate('/zakelijk', { replace: true });
     }
   }, [user, isDealer, profileLoading, navigate, dealerOverride]);
+
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [analysisResult, setAnalysisResult] = useState<VehicleAnalysis | null>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [analysisSnapshot, setAnalysisSnapshot] = useState<string | null>(null);
-  
-  const [formData, setFormData] = useState({
-    brand: '', model: '', year: '', mileage: '', fuelType: '', transmission: '', 
-    bodyType: '', color: '', power: '', price: '', description: '', city: '', province: '',
-  });
 
-  // Load existing draft when arriving from AutoWaarde
+  const [formData, setFormData] = useState<FormState>(EMPTY_FORM);
+
+  const autosaveKey = useMemo(() => (user ? `vatuur:sell-draft:${user.id}:${draftId ?? 'new'}` : null), [user, draftId]);
+
+  // Autosave -> localStorage
+  useEffect(() => {
+    if (!autosaveKey) return;
+    try {
+      localStorage.setItem(autosaveKey, JSON.stringify(formData));
+    } catch {}
+  }, [autosaveKey, formData]);
+
+  // Restore from localStorage when no draftId
+  useEffect(() => {
+    if (!autosaveKey || draftId) return;
+    try {
+      const raw = localStorage.getItem(autosaveKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        setFormData((prev) => ({ ...prev, ...parsed, features: { ...EMPTY_FEATURES, ...(parsed.features ?? {}) } }));
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autosaveKey]);
+
+  // Load existing draft
   useEffect(() => {
     if (!draftId || !user) return;
     (async () => {
@@ -75,62 +196,101 @@ export default function Sell() {
         .eq('user_id', user.id)
         .maybeSingle();
       if (error || !data) return;
-      setFormData({
+      const specs = (data.specs as Record<string, unknown> | null) ?? {};
+      const featuresFromSpecs = (specs.vehicle_features as Partial<FeaturesState> | undefined) ?? {};
+      const condition = (data.condition as Record<string, any> | null) ?? {};
+      setFormData((prev) => ({
+        ...prev,
         brand: data.brand || '',
         model: data.model || '',
         year: data.year ? String(data.year) : '',
+        month: data.first_registration_date ? data.first_registration_date.slice(5, 7) : '',
         mileage: data.mileage ? String(data.mileage) : '',
         fuelType: data.fuel_type || '',
         transmission: data.transmission || '',
         bodyType: data.body_type || '',
-        color: data.color || '',
         power: data.power ? String(data.power) : '',
+        powerUnit: (data.power_unit === 'kW' ? 'kW' : 'pk') as 'pk' | 'kW',
+        modelVersion: data.model_version || '',
         price: data.price ? String(data.price) : '',
+        priceNegotiable: data.price_negotiable === true ? 'yes' : data.price_negotiable === false ? 'no' : '',
         description: data.description || '',
         city: data.city || '',
-        province: data.province || '',
-      });
-      if (data.images?.length) setImagePreviews(data.images);
+        features: { ...EMPTY_FEATURES, ...featuresFromSpecs },
+        conditionOverall: (condition.overall as FormState['conditionOverall']) || '',
+        damagePresent: condition.damage?.present === true ? 'yes' : condition.damage?.present === false ? 'no' : '',
+        damageDescription: condition.damage?.description || '',
+        technicalPresent: condition.technical?.present === true ? 'yes' : condition.technical?.present === false ? 'no' : '',
+        technicalDescription: condition.technical?.description || '',
+      }));
+      if (data.images?.length) {
+        setPhotos(data.images.map((url: string) => ({ preview: url })));
+      }
     })();
   }, [draftId, user]);
 
-  const updateForm = (key: string, value: string) => setFormData(prev => ({ ...prev, [key]: value }));
+  const update = <K extends keyof FormState>(key: K, value: FormState[K]) =>
+    setFormData((prev) => ({ ...prev, [key]: value }));
+
+  const toggleFeature = (cat: FeatureCategory | 'vehicle_information', value: string) =>
+    setFormData((prev) => {
+      const current = prev.features[cat];
+      const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
+      return { ...prev, features: { ...prev.features, [cat]: next } };
+    });
+
   const validateStep = (step: number): string | null => {
     switch (step) {
       case 0:
         if (!formData.brand) return 'Selecteer een merk';
-        if (!formData.model) return 'Vul het model in';
-        if (!formData.year) return 'Vul het bouwjaar in';
-        if (!formData.mileage) return 'Vul de kilometerstand in';
-        return null;
-      case 1:
+        if (!formData.model) return 'Selecteer of vul het model in';
+        if (!formData.year) return 'Selecteer het jaar van eerste registratie';
+        if (!formData.bodyType) return 'Selecteer de carrosserievorm';
         if (!formData.fuelType) return 'Selecteer het brandstoftype';
         if (!formData.transmission) return 'Selecteer de transmissie';
-        if (!formData.bodyType) return 'Selecteer het carrosserietype';
+        if (!formData.mileage) return 'Vul de kilometerstand in';
         return null;
-      case 3:
-        if (!formData.price) return 'Vul de vraagprijs in';
+      case 2:
+        if (!formData.conditionOverall) return 'Geef de algemene staat aan';
+        if (!formData.damagePresent) return 'Geef aan of er schade is';
+        if (formData.damagePresent === 'yes' && !formData.damageDescription.trim()) return 'Omschrijf de schade';
+        if (!formData.technicalPresent) return 'Geef aan of er technische problemen zijn';
+        if (formData.technicalPresent === 'yes' && !formData.technicalDescription.trim()) return 'Omschrijf het technisch probleem';
+        return null;
+      case 4:
+        if (!formData.price) return 'Vul een vraagprijs in';
+        if (!formData.priceNegotiable) return 'Geef aan of de prijs onderhandelbaar is';
+        return null;
+      case 5:
+        if (!formData.name.trim()) return 'Vul je naam in';
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) return 'Vul een geldig e-mailadres in';
+        if (!formData.phone.trim()) return 'Vul een telefoonnummer in';
+        if (!formData.postalCode.trim()) return 'Vul de postcode in';
+        if (!formData.city.trim()) return 'Vul de gemeente in';
+        if (!formData.confirmCorrect || !formData.acceptPrivacy) return 'Bevestig beide checkboxen';
         return null;
       default:
         return null;
     }
   };
 
-  const nextStep = () => {
-    const error = validateStep(currentStep);
-    if (error) {
-      toast({ title: error, variant: 'destructive' });
+  const goNext = () => {
+    const err = validateStep(currentStep);
+    if (err) {
+      toast({ title: err, variant: 'destructive' });
       return;
     }
-    setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
+    setCurrentStep((s) => Math.min(s + 1, REVIEW_STEP));
   };
-  const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 0));
+  const goPrev = () => setCurrentStep((s) => Math.max(s - 1, 0));
 
-  const getAnalysisSignature = (data: typeof formData) => JSON.stringify({
-    brand: data.brand, model: data.model, year: data.year, mileage: data.mileage,
-    fuelType: data.fuelType, transmission: data.transmission, power: data.power,
-    bodyType: data.bodyType, price: data.price,
-  });
+  // ---------- AI analyse (stap 5) ----------
+  const getAnalysisSignature = (d: FormState) =>
+    JSON.stringify({
+      brand: d.brand, model: d.model, year: d.year, mileage: d.mileage,
+      fuelType: d.fuelType, transmission: d.transmission, power: d.power,
+      bodyType: d.bodyType, price: d.price,
+    });
 
   const fetchAnalysis = async () => {
     setAnalysisLoading(true);
@@ -142,15 +302,10 @@ export default function Sell() {
         body: {
           listing: {
             title: `${formData.brand} ${formData.model}`,
-            brand: formData.brand,
-            model: formData.model,
-            year: formData.year,
-            mileage: formData.mileage,
-            fuelType: formData.fuelType,
-            transmission: formData.transmission,
-            power: formData.power,
-            bodyType: formData.bodyType,
-            price: formData.price || undefined,
+            brand: formData.brand, model: formData.model, year: formData.year,
+            mileage: formData.mileage, fuelType: formData.fuelType,
+            transmission: formData.transmission, power: formData.power,
+            bodyType: formData.bodyType, price: formData.price || undefined,
           },
         },
       });
@@ -169,44 +324,28 @@ export default function Sell() {
   );
 
   useEffect(() => {
-    if (currentStep === 3 && !analysisResult && !analysisLoading) {
+    if (currentStep === 4 && !analysisResult && !analysisLoading && formData.brand && formData.model) {
       fetchAnalysis();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep]);
-
-  const applySuggestedPrice = () => {
-    if (analysisResult?.suggestedPrice) {
-      updateForm('price', String(analysisResult.suggestedPrice));
-    }
-  };
 
   const parseSellTimeScore = (estimatedTime: string): { score: number; speed: 'snel' | 'gemiddeld' | 'langzaam' } => {
     const text = estimatedTime.toLowerCase();
-    
-    // Parse days
-    const daysMatch = text.match(/(\d+)-(\d+)\s*dag/);
-    if (daysMatch) {
-      const maxDays = parseInt(daysMatch[2]);
-      return { score: 90, speed: 'snel' };
-    }
-    
-    // Parse weeks
-    const weeksMatch = text.match(/(\d+)-(\d+)\s*week/);
-    if (weeksMatch) {
-      const maxWeeks = parseInt(weeksMatch[2]);
-      if (maxWeeks <= 2) return { score: 75, speed: 'snel' };
-      if (maxWeeks <= 4) return { score: 50, speed: 'gemiddeld' };
+    if (/dag/.test(text)) return { score: 90, speed: 'snel' };
+    const weeks = text.match(/(\d+)-(\d+)\s*week/);
+    if (weeks) {
+      const max = parseInt(weeks[2]);
+      if (max <= 2) return { score: 75, speed: 'snel' };
+      if (max <= 4) return { score: 50, speed: 'gemiddeld' };
       return { score: 25, speed: 'langzaam' };
     }
-    
-    // Parse months
-    const monthsMatch = text.match(/(\d+)-(\d+)\s*maand/);
-    if (monthsMatch) {
-      const maxMonths = parseInt(monthsMatch[2]);
-      if (maxMonths <= 1) return { score: 40, speed: 'gemiddeld' };
+    const months = text.match(/(\d+)-(\d+)\s*maand/);
+    if (months) {
+      const max = parseInt(months[2]);
+      if (max <= 1) return { score: 40, speed: 'gemiddeld' };
       return { score: 15, speed: 'langzaam' };
     }
-    
     return { score: 50, speed: 'gemiddeld' };
   };
 
@@ -227,7 +366,7 @@ export default function Sell() {
           brand: formData.brand, model: formData.model, year: formData.year,
           mileage: formData.mileage, fuelType: formData.fuelType,
           transmission: formData.transmission, bodyType: formData.bodyType,
-          color: formData.color, power: formData.power,
+          power: formData.power,
         }),
       });
       if (!resp.ok) {
@@ -235,212 +374,359 @@ export default function Sell() {
         throw new Error(err.error || 'Genereren mislukt');
       }
       const { description } = await resp.json();
-      updateForm('description', description);
-      toast({ title: 'Beschrijving gegenereerd! ✨' });
+      update('description', description);
+      toast({ title: 'Beschrijving gegenereerd ✨' });
     } catch (e) {
-      console.error(e);
       toast({ title: e instanceof Error ? e.message : 'Er ging iets mis', variant: 'destructive' });
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length + imageFiles.length > 10) {
-      toast({ title: 'Maximaal 10 foto\'s', variant: 'destructive' });
-      return;
-    }
-    
-    setImageFiles(prev => [...prev, ...files]);
-    
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreviews(prev => [...prev, reader.result as string]);
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
-  const removeImage = (index: number) => {
-    setImageFiles(prev => prev.filter((_, i) => i !== index));
-    setImagePreviews(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const uploadImages = async (): Promise<string[]> => {
-    const urls: string[] = [];
-    
-    for (const file of imageFiles) {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user?.id}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
-      
-      const { error } = await supabase.storage
-        .from('listing-images')
-        .upload(fileName, file);
-      
+  // ---------- Upload + submit ----------
+  const uploadNewPhotos = async (): Promise<string[]> => {
+    const existing = photos.filter((p) => !p.file).map((p) => p.preview);
+    const toUpload = photos.filter((p) => p.file);
+    const uploaded: string[] = [];
+    for (let i = 0; i < photos.length; i++) {
+      const p = photos[i];
+      if (!p.file) {
+        uploaded.push(p.preview);
+        continue;
+      }
+      const ext = p.file.name.split('.').pop() || 'jpg';
+      const name = `${user?.id}/${Date.now()}-${Math.random().toString(36).slice(2, 9)}.${ext}`;
+      const { error } = await supabase.storage.from('listing-images').upload(name, p.file);
       if (!error) {
-        const { data: { publicUrl } } = supabase.storage
-          .from('listing-images')
-          .getPublicUrl(fileName);
-        urls.push(publicUrl);
+        const { data: { publicUrl } } = supabase.storage.from('listing-images').getPublicUrl(name);
+        uploaded.push(publicUrl);
       }
     }
-    
-    return urls;
+    void existing;
+    return uploaded;
+  };
+
+  const buildPayload = (status: 'active' | 'draft', imageUrls: string[]) => {
+    const powerKW = formData.power
+      ? formData.powerUnit === 'kW'
+        ? parseInt(formData.power)
+        : Math.round(parseInt(formData.power) * 0.7355)
+      : null;
+    const firstReg = formData.year && formData.month ? `${formData.year}-${formData.month}-01` : null;
+    return {
+      user_id: user!.id,
+      title: `${formData.brand} ${formData.model}`.trim(),
+      brand: formData.brand,
+      model: formData.model,
+      model_version: formData.modelVersion || null,
+      year: formData.year ? parseInt(formData.year) : 0,
+      mileage: formData.mileage ? parseInt(formData.mileage) : 0,
+      price: formData.price ? parseInt(formData.price) : 0,
+      price_public: formData.price ? parseInt(formData.price) : null,
+      price_negotiable: formData.priceNegotiable === 'yes' ? true : formData.priceNegotiable === 'no' ? false : null,
+      fuel_type: formData.fuelType,
+      transmission: formData.transmission,
+      body_type: formData.bodyType,
+      power: powerKW,
+      power_unit: 'kW',
+      first_registration_date: firstReg,
+      condition_type: formData.conditionOverall || null,
+      description: formData.description || null,
+      images: imageUrls,
+      city: formData.city,
+      equipment: flattenFeatures(formData.features),
+      condition: {
+        overall: formData.conditionOverall,
+        damage: {
+          present: formData.damagePresent === 'yes',
+          description: formData.damagePresent === 'yes' ? formData.damageDescription : null,
+        },
+        technical: {
+          present: formData.technicalPresent === 'yes',
+          description: formData.technicalPresent === 'yes' ? formData.technicalDescription : null,
+        },
+      },
+      availability: formData.availableFrom ? { available_from: formData.availableFrom } : null,
+      specs: {
+        vehicle_features: formData.features,
+        power_input: { value: formData.power, unit: formData.powerUnit },
+        contact: {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          postal_code: formData.postalCode,
+        },
+        ...(analysisResult?.suggestedPrice ? { estimated_market_value: analysisResult.suggestedPrice } : {}),
+      },
+      status,
+    };
+  };
+
+  const saveDraft = async () => {
+    if (!user) return;
+    setIsSavingDraft(true);
+    try {
+      const imageUrls = photos.filter((p) => !p.file).map((p) => p.preview);
+      const payload = buildPayload('draft', imageUrls);
+      if (draftId) {
+        await supabase.from('listings').update(payload).eq('id', draftId).eq('user_id', user.id);
+      } else {
+        await supabase.from('listings').insert(payload);
+      }
+      toast({ title: 'Concept opgeslagen' });
+    } catch {
+      toast({ title: 'Concept opslaan mislukt', variant: 'destructive' });
+    } finally {
+      setIsSavingDraft(false);
+    }
   };
 
   const handleSubmit = async () => {
     if (!user) return;
-    
     setIsSubmitting(true);
-    
     try {
-      const newImageUrls = await uploadImages();
-      // Combine already-saved image URLs (from draft) with newly uploaded files
-      const existingUrls = imagePreviews.filter(p => p.startsWith('http'));
-      const imageUrls = [...existingUrls, ...newImageUrls];
-
-      const payload = {
-        user_id: user.id,
-        title: `${formData.brand} ${formData.model}`,
-        brand: formData.brand,
-        model: formData.model,
-        year: parseInt(formData.year),
-        mileage: parseInt(formData.mileage),
-        price: parseInt(formData.price),
-        fuel_type: formData.fuelType,
-        transmission: formData.transmission,
-        body_type: formData.bodyType,
-        color: formData.color,
-        power: formData.power ? parseInt(formData.power) : null,
-        description: formData.description,
-        images: imageUrls,
-        city: formData.city,
-        province: formData.province,
-        status: 'active',
-      };
-
+      const imageUrls = await uploadNewPhotos();
+      const payload = buildPayload('active', imageUrls);
       const { error } = draftId
         ? await supabase.from('listings').update(payload).eq('id', draftId).eq('user_id', user.id)
         : await supabase.from('listings').insert(payload);
-
       if (error) throw error;
-
+      if (autosaveKey) localStorage.removeItem(autosaveKey);
       toast({ title: 'Advertentie geplaatst!' });
       navigate('/dashboard');
-    } catch (error) {
-      console.error('Error creating listing:', error);
+    } catch (e) {
+      console.error(e);
       toast({ title: 'Er ging iets mis', variant: 'destructive' });
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // ---------- Render ----------
+  const progress = Math.round(((currentStep + (currentStep === REVIEW_STEP ? 0 : 0)) / TOTAL_STEPS) * 100);
+  const displayStep = Math.min(currentStep + 1, TOTAL_STEPS);
+
   return (
     <div className="container max-w-3xl py-8">
       <SEOHead
         title="Auto verkopen - VATUUR."
         description="Plaats gratis je advertentie en bereik duizenden kopers. Verkoop je auto snel en eenvoudig via VATUUR."
-        canonical="https://vatuur.nl/verkopen"
+        canonical="https://vatuur.be/verkopen"
       />
       <h1 className="text-2xl font-bold text-center">Auto verkopen</h1>
 
       {/* Progress */}
-      <div className="mt-8 flex items-center justify-between">
-        {steps.map((step, index) => (
-          <div key={step} className="flex items-center">
-            <div className={cn(
-              'flex h-8 w-8 items-center justify-center rounded-md text-sm font-medium',
-              index < currentStep ? 'bg-success text-success-foreground' : index === currentStep ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-            )}>
-              {index < currentStep ? <Check className="h-4 w-4" /> : index + 1}
+      <div className="mt-6 space-y-3">
+        <div className="flex items-center justify-between text-sm">
+          <span className="font-medium">
+            {currentStep === REVIEW_STEP ? 'Overzicht' : `Stap ${displayStep} van ${TOTAL_STEPS}`}
+          </span>
+          <span className="text-muted-foreground">
+            {currentStep === REVIEW_STEP ? 'Controleer je advertentie' : STEP_LABELS[currentStep]}
+          </span>
+        </div>
+        <Progress value={currentStep === REVIEW_STEP ? 100 : progress} className="h-2" />
+        <div className="hidden sm:flex items-center justify-between">
+          {STEP_LABELS.map((label, index) => (
+            <div key={label} className="flex flex-col items-center gap-1 flex-1">
+              <div
+                className={cn(
+                  'flex h-7 w-7 items-center justify-center rounded-md text-xs font-medium',
+                  index < currentStep
+                    ? 'bg-success text-success-foreground'
+                    : index === currentStep
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground'
+                )}
+              >
+                {index < currentStep ? <Check className="h-3.5 w-3.5" /> : index + 1}
+              </div>
+              <span className="text-[10px] text-muted-foreground text-center leading-tight">{label}</span>
             </div>
-            {index < steps.length - 1 && <div className={cn('ml-2 h-0.5 w-8 md:w-16', index < currentStep ? 'bg-success' : 'bg-muted')} />}
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-      <p className="mt-4 text-center font-medium">{steps[currentStep]}</p>
 
-      {/* Form Steps */}
-      <Card className="mt-8">
-        <CardContent className="p-6">
+      <Card className="mt-6">
+        <CardContent className="p-6 space-y-6">
+          {/* STEP 1 — Basisgegevens */}
           {currentStep === 0 && (
             <div className="grid gap-4 sm:grid-cols-2">
+              <BrandModelPicker
+                brand={formData.brand}
+                model={formData.model}
+                onBrandChange={(v) => update('brand', v)}
+                onModelChange={(v) => update('model', v)}
+              />
               <div className="space-y-2">
-                <Label>Merk *</Label>
-                <Select value={formData.brand} onValueChange={(v) => updateForm('brand', v)}>
-                  <SelectTrigger><SelectValue placeholder="Selecteer merk" /></SelectTrigger>
-                  <SelectContent>{CAR_BRANDS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
+                <Label>Jaar eerste registratie *</Label>
+                <Select value={formData.year} onValueChange={(v) => update('year', v)}>
+                  <SelectTrigger><SelectValue placeholder="Selecteer jaar" /></SelectTrigger>
+                  <SelectContent>
+                    {YEAR_OPTIONS.map((y) => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
+                  </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2"><Label>Model *</Label><Input value={formData.model} onChange={(e) => updateForm('model', e.target.value)} placeholder="Bijv. Golf" /></div>
-              <div className="space-y-2"><Label>Bouwjaar *</Label><Input type="number" value={formData.year} onChange={(e) => updateForm('year', e.target.value)} placeholder="2020" /></div>
-              <div className="space-y-2"><Label>Kilometerstand *</Label><Input type="number" value={formData.mileage} onChange={(e) => updateForm('mileage', e.target.value)} placeholder="50000" /></div>
-            </div>
-          )}
-
-          {currentStep === 1 && (
-            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Maand</Label>
+                <Select value={formData.month} onValueChange={(v) => update('month', v)}>
+                  <SelectTrigger><SelectValue placeholder="Selecteer maand" /></SelectTrigger>
+                  <SelectContent>
+                    {MONTHS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Carrosserievorm *</Label>
+                <Select value={formData.bodyType} onValueChange={(v) => update('bodyType', v)}>
+                  <SelectTrigger><SelectValue placeholder="Selecteer" /></SelectTrigger>
+                  <SelectContent>
+                    {BODY_FORM_OPTIONS.map((b) => <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="space-y-2">
                 <Label>Brandstof *</Label>
-                <Select value={formData.fuelType} onValueChange={(v) => updateForm('fuelType', v)}>
+                <Select value={formData.fuelType} onValueChange={(v) => update('fuelType', v)}>
                   <SelectTrigger><SelectValue placeholder="Selecteer" /></SelectTrigger>
-                  <SelectContent>{FUEL_TYPES.map(f => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}</SelectContent>
+                  <SelectContent>
+                    {FUEL_TYPES.map((f) => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}
+                  </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label>Transmissie *</Label>
-                <Select value={formData.transmission} onValueChange={(v) => updateForm('transmission', v)}>
+                <Select value={formData.transmission} onValueChange={(v) => update('transmission', v)}>
                   <SelectTrigger><SelectValue placeholder="Selecteer" /></SelectTrigger>
-                  <SelectContent>{TRANSMISSION_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent>
+                  <SelectContent>
+                    {TRANSMISSION_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                  </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Carrosserie *</Label>
-                <Select value={formData.bodyType} onValueChange={(v) => updateForm('bodyType', v)}>
-                  <SelectTrigger><SelectValue placeholder="Selecteer" /></SelectTrigger>
-                  <SelectContent>{BODY_TYPES.map(b => <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2"><Label>Kleur</Label><Input value={formData.color} onChange={(e) => updateForm('color', e.target.value)} placeholder="Zwart metallic" /></div>
-              <div className="space-y-2"><Label>Vermogen (pk)</Label><Input type="number" value={formData.power} onChange={(e) => updateForm('power', e.target.value)} placeholder="150" /></div>
-            </div>
-          )}
-
-          {currentStep === 2 && (
-            <div className="space-y-4">
-              <div className="text-center">
-                <label className="cursor-pointer">
-                  <input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" />
-                  <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-md bg-muted hover:bg-muted/80 transition-colors">
-                    <Upload className="h-10 w-10 text-muted-foreground" />
-                  </div>
-                  <p className="mt-2 text-sm text-muted-foreground">Klik om foto's te uploaden (max 10)</p>
-                </label>
-              </div>
-              
-              {imagePreviews.length > 0 && (
-                <div className="grid grid-cols-3 gap-2 mt-4">
-                  {imagePreviews.map((preview, index) => (
-                    <div key={index} className="relative aspect-video">
-                      <img src={preview} alt={`Preview ${index + 1}`} className="h-full w-full object-cover rounded-lg" />
-                      <button
-                        onClick={() => removeImage(index)}
-                        className="absolute -right-2 -top-2 rounded-md bg-destructive p-1 text-destructive-foreground"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
+                <Label>Vermogen</Label>
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    value={formData.power}
+                    onChange={(e) => update('power', e.target.value)}
+                    placeholder="150"
+                  />
+                  <Select value={formData.powerUnit} onValueChange={(v) => update('powerUnit', v as 'pk' | 'kW')}>
+                    <SelectTrigger className="w-24"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pk">pk</SelectItem>
+                      <SelectItem value="kW">kW</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              )}
+              </div>
+              <div className="space-y-2">
+                <Label>Uitvoering / versie</Label>
+                <Input
+                  value={formData.modelVersion}
+                  onChange={(e) => update('modelVersion', e.target.value)}
+                  placeholder="Bijv. 2.0 TDI Highline"
+                />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label>Kilometerstand *</Label>
+                <Input
+                  type="number"
+                  value={formData.mileage}
+                  onChange={(e) => update('mileage', e.target.value)}
+                  placeholder="50000"
+                />
+              </div>
             </div>
           )}
 
-          {currentStep === 3 && (
+          {/* STEP 2 — Uitrusting */}
+          {currentStep === 1 && (
             <div className="space-y-6">
-              {/* AI Analyse - Prijsvoorstel */}
+              <section className="space-y-3">
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Voertuiginformatie</h3>
+                <FeatureCheckboxGrid
+                  items={VEHICLE_INFO_ITEMS}
+                  selected={formData.features.vehicle_information}
+                  onToggle={(v) => toggleFeature('vehicle_information', v)}
+                />
+              </section>
+              {FEATURE_CATEGORY_ORDER.map((cat) => (
+                <section key={cat} className="space-y-3">
+                  <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                    {FEATURE_CATALOG[cat].title}
+                  </h3>
+                  <FeatureCheckboxGrid
+                    items={FEATURE_CATALOG[cat].items}
+                    selected={formData.features[cat]}
+                    onToggle={(v) => toggleFeature(cat, v)}
+                  />
+                </section>
+              ))}
+            </div>
+          )}
+
+          {/* STEP 3 — Staat */}
+          {currentStep === 2 && (
+            <div className="space-y-6">
+              <section className="space-y-3">
+                <Label>Algemene staat *</Label>
+                <RadioGroup
+                  value={formData.conditionOverall}
+                  onValueChange={(v) => update('conditionOverall', v as FormState['conditionOverall'])}
+                  className="grid gap-2 sm:grid-cols-2"
+                >
+                  {[
+                    { v: 'excellent', l: 'Uitstekend' },
+                    { v: 'good', l: 'Goed' },
+                    { v: 'fair', l: 'Redelijk' },
+                    { v: 'repairs_needed', l: 'Herstellingen nodig' },
+                  ].map((opt) => (
+                    <label
+                      key={opt.v}
+                      htmlFor={`cond-${opt.v}`}
+                      className={cn(
+                        'flex items-center gap-3 rounded-xl border px-3 py-3 cursor-pointer transition-colors',
+                        formData.conditionOverall === opt.v
+                          ? 'border-primary/40 bg-primary/5'
+                          : 'border-border/60 hover:bg-muted/40'
+                      )}
+                    >
+                      <RadioGroupItem value={opt.v} id={`cond-${opt.v}`} />
+                      <span className="text-sm font-medium">{opt.l}</span>
+                    </label>
+                  ))}
+                </RadioGroup>
+              </section>
+
+              <YesNoBlock
+                label="Schade aanwezig? *"
+                value={formData.damagePresent}
+                onChange={(v) => update('damagePresent', v)}
+                detailLabel="Beschrijving schade"
+                detailValue={formData.damageDescription}
+                onDetailChange={(v) => update('damageDescription', v)}
+              />
+
+              <YesNoBlock
+                label="Technische problemen? *"
+                value={formData.technicalPresent}
+                onChange={(v) => update('technicalPresent', v)}
+                detailLabel="Beschrijving probleem"
+                detailValue={formData.technicalDescription}
+                onDetailChange={(v) => update('technicalDescription', v)}
+              />
+            </div>
+          )}
+
+          {/* STEP 4 — Foto's */}
+          {currentStep === 3 && <PhotoUploader photos={photos} onChange={setPhotos} />}
+
+          {/* STEP 5 — Verkoopinfo */}
+          {currentStep === 4 && (
+            <div className="space-y-6">
+              {/* AI Analyse */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="font-semibold flex items-center gap-2">
@@ -449,8 +735,7 @@ export default function Sell() {
                   </h3>
                   {analysisResult && !analysisLoading && (
                     <Button variant="ghost" size="sm" className="gap-1.5 text-xs text-muted-foreground" onClick={fetchAnalysis}>
-                      <RefreshCw className="h-3.5 w-3.5" />
-                      Vernieuwen
+                      <RefreshCw className="h-3.5 w-3.5" /> Vernieuwen
                     </Button>
                   )}
                 </div>
@@ -465,8 +750,7 @@ export default function Sell() {
                       </div>
                     </div>
                     <Button size="sm" className="w-full gap-1.5" onClick={fetchAnalysis}>
-                      <RefreshCw className="h-3.5 w-3.5" />
-                      Analyse opnieuw berekenen
+                      <RefreshCw className="h-3.5 w-3.5" /> Analyse opnieuw berekenen
                     </Button>
                   </div>
                 )}
@@ -488,8 +772,7 @@ export default function Sell() {
                 )}
 
                 {analysisResult && (
-                  <div className={cn("space-y-4", isAnalysisStale && "opacity-60")}>
-                    {/* Prijsvoorstel */}
+                  <div className={cn('space-y-4', isAnalysisStale && 'opacity-60')}>
                     {analysisResult.suggestedPrice > 0 && (
                       <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 space-y-3">
                         <div className="flex items-center gap-2">
@@ -507,32 +790,16 @@ export default function Sell() {
                         {analysisResult.priceExplanation && (
                           <p className="text-sm text-foreground/80">{analysisResult.priceExplanation}</p>
                         )}
-                        <Button variant="outline" size="sm" className="gap-1.5" onClick={applySuggestedPrice}>
-                          <TrendingUp className="h-3.5 w-3.5" />
-                          Gebruik dit prijsvoorstel
+                        <Button variant="outline" size="sm" className="gap-1.5" onClick={() => update('price', String(analysisResult.suggestedPrice))}>
+                          <TrendingUp className="h-3.5 w-3.5" /> Gebruik dit prijsvoorstel
                         </Button>
                       </div>
                     )}
 
-                    {/* Geschatte verkooptijd */}
                     {analysisResult.estimatedSellTime && (() => {
                       const { score, speed } = parseSellTimeScore(analysisResult.estimatedSellTime);
-                      const speedColors = {
-                        snel: 'text-green-600',
-                        gemiddeld: 'text-amber-600',
-                        langzaam: 'text-orange-600'
-                      };
-                      const speedBgColors = {
-                        snel: '[&>div]:bg-green-500',
-                        gemiddeld: '[&>div]:bg-amber-500',
-                        langzaam: '[&>div]:bg-orange-500'
-                      };
-                      const speedLabelBg = {
-                        snel: 'bg-green-50',
-                        gemiddeld: 'bg-amber-50',
-                        langzaam: 'bg-orange-50'
-                      };
-                      
+                      const speedColors = { snel: 'text-green-600', gemiddeld: 'text-amber-600', langzaam: 'text-orange-600' } as const;
+                      const speedBgColors = { snel: '[&>div]:bg-green-500', gemiddeld: '[&>div]:bg-amber-500', langzaam: '[&>div]:bg-orange-500' } as const;
                       return (
                         <div className="rounded-lg bg-accent/5 border border-accent/20 p-4 space-y-3">
                           <div className="flex items-center justify-between gap-2">
@@ -545,18 +812,11 @@ export default function Sell() {
                             </Badge>
                           </div>
                           <p className="text-sm text-foreground/80">{analysisResult.estimatedSellTime}</p>
-                          <div className={`space-y-1.5 ${speedBgColors[speed]}`}>
-                            <Progress value={score} className="h-2" />
-                            <div className="flex justify-between text-xs text-muted-foreground px-0.5">
-                              <span>Langzaam</span>
-                              <span>Snel</span>
-                            </div>
-                          </div>
+                          <Progress value={score} className={`h-2 ${speedBgColors[speed]}`} />
                         </div>
                       );
                     })()}
 
-                    {/* Betrouwbaarheid */}
                     <div className="flex items-start gap-3 rounded-lg bg-primary/5 border border-primary/20 p-4">
                       <ShieldCheck className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                       <div>
@@ -565,12 +825,10 @@ export default function Sell() {
                       </div>
                     </div>
 
-                    {/* Aandachtspunten */}
                     {analysisResult.commonIssues?.length > 0 && (
                       <div className="space-y-2">
                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
-                          <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-                          Aandachtspunten
+                          <AlertTriangle className="h-3.5 w-3.5 text-amber-500" /> Aandachtspunten
                         </p>
                         {analysisResult.commonIssues.map((issue, i) => (
                           <div key={i} className="flex items-start gap-2 text-sm">
@@ -581,7 +839,6 @@ export default function Sell() {
                       </div>
                     )}
 
-                    {/* Onderhoud */}
                     <div className="flex items-start gap-3">
                       <Wrench className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
                       <div>
@@ -590,12 +847,10 @@ export default function Sell() {
                       </div>
                     </div>
 
-                    {/* Geschikt voor */}
                     {analysisResult.suitability?.length > 0 && (
                       <div className="space-y-2">
                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
-                          <Target className="h-3.5 w-3.5" />
-                          Geschikt voor
+                          <Target className="h-3.5 w-3.5" /> Geschikt voor
                         </p>
                         <div className="flex flex-wrap gap-2">
                           {analysisResult.suitability.map((s, i) => (
@@ -606,8 +861,6 @@ export default function Sell() {
                     )}
 
                     <Separator />
-
-                    {/* Samenvatting */}
                     <p className="text-sm text-foreground/80 italic">{analysisResult.verdict}</p>
                   </div>
                 )}
@@ -615,14 +868,44 @@ export default function Sell() {
 
               <Separator />
 
-              {/* Prijs & beschrijving formulier */}
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2"><Label>Vraagprijs *</Label><Input type="number" value={formData.price} onChange={(e) => updateForm('price', e.target.value)} placeholder="25000" /></div>
-                <div className="space-y-2"><Label>Stad</Label><Input value={formData.city} onChange={(e) => updateForm('city', e.target.value)} placeholder="Amsterdam" /></div>
+                <div className="space-y-2">
+                  <Label>Vraagprijs (€) *</Label>
+                  <Input
+                    type="number"
+                    value={formData.price}
+                    onChange={(e) => update('price', e.target.value)}
+                    placeholder="25000"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Onderhandelbaar? *</Label>
+                  <RadioGroup
+                    value={formData.priceNegotiable}
+                    onValueChange={(v) => update('priceNegotiable', v as 'yes' | 'no')}
+                    className="flex gap-3 pt-1"
+                  >
+                    <label className="flex items-center gap-2 text-sm">
+                      <RadioGroupItem value="yes" id="neg-yes" /> Ja
+                    </label>
+                    <label className="flex items-center gap-2 text-sm">
+                      <RadioGroupItem value="no" id="neg-no" /> Nee
+                    </label>
+                  </RadioGroup>
+                </div>
+                <div className="space-y-2">
+                  <Label>Beschikbaar vanaf</Label>
+                  <Input
+                    type="date"
+                    value={formData.availableFrom}
+                    onChange={(e) => update('availableFrom', e.target.value)}
+                  />
+                </div>
               </div>
+
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label>Beschrijving</Label>
+                  <Label>Opmerkingen / beschrijving</Label>
                   <Button
                     type="button"
                     variant="outline"
@@ -635,43 +918,208 @@ export default function Sell() {
                     {isGenerating ? 'Bezig...' : 'Genereer met AI'}
                   </Button>
                 </div>
-                <Textarea value={formData.description} onChange={(e) => updateForm('description', e.target.value)} placeholder="Beschrijf je auto..." rows={6} />
+                <Textarea
+                  value={formData.description}
+                  onChange={(e) => update('description', e.target.value)}
+                  placeholder="Vertel iets extra over je auto..."
+                  rows={6}
+                />
               </div>
             </div>
           )}
 
-          {currentStep === 4 && (
-            <div className="space-y-6">
-              <h3 className="font-semibold">Controleer je gegevens</h3>
-              <div className="grid gap-2 text-sm">
-                <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Auto</span><span className="font-medium">{formData.brand} {formData.model}</span></div>
-                <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Bouwjaar</span><span className="font-medium">{formData.year}</span></div>
-                <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Km-stand</span><span className="font-medium">{formData.mileage} km</span></div>
-                <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Brandstof</span><span className="font-medium">{formData.fuelType}</span></div>
-                <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Transmissie</span><span className="font-medium">{formData.transmission}</span></div>
-                <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Foto's</span><span className="font-medium">{imagePreviews.length} foto's</span></div>
-                <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Vraagprijs</span><span className="font-medium text-accent">€ {formData.price}</span></div>
+          {/* STEP 6 — Contact */}
+          {currentStep === 5 && (
+            <div className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2"><Label>Naam *</Label><Input value={formData.name} onChange={(e) => update('name', e.target.value)} /></div>
+                <div className="space-y-2"><Label>E-mail *</Label><Input type="email" value={formData.email} onChange={(e) => update('email', e.target.value)} /></div>
+                <div className="space-y-2"><Label>Telefoon *</Label><Input value={formData.phone} onChange={(e) => update('phone', e.target.value)} /></div>
+                <div className="space-y-2"><Label>Postcode *</Label><Input value={formData.postalCode} onChange={(e) => update('postalCode', e.target.value)} /></div>
+                <div className="space-y-2 sm:col-span-2"><Label>Gemeente *</Label><Input value={formData.city} onChange={(e) => update('city', e.target.value)} /></div>
+              </div>
+              <div className="space-y-3 rounded-xl border border-border/60 bg-muted/20 p-4">
+                <label className="flex items-start gap-3 text-sm cursor-pointer">
+                  <Checkbox checked={formData.confirmCorrect} onCheckedChange={(v) => update('confirmCorrect', Boolean(v))} className="mt-0.5" />
+                  <span>Ik bevestig dat bovenstaande gegevens correct zijn.</span>
+                </label>
+                <label className="flex items-start gap-3 text-sm cursor-pointer">
+                  <Checkbox checked={formData.acceptPrivacy} onCheckedChange={(v) => update('acceptPrivacy', Boolean(v))} className="mt-0.5" />
+                  <span>Ik ga akkoord met de <a href="/privacy" className="text-primary underline">privacyvoorwaarden</a>.</span>
+                </label>
               </div>
             </div>
+          )}
+
+          {/* REVIEW */}
+          {currentStep === REVIEW_STEP && (
+            <SummaryReview
+              data={formData}
+              photos={photos}
+              onEdit={(step) => setCurrentStep(step)}
+            />
           )}
         </CardContent>
       </Card>
 
       {/* Navigation */}
-      <div className="mt-6 flex justify-between">
-        <Button variant="outline" onClick={prevStep} disabled={currentStep === 0}><ChevronLeft className="mr-2 h-4 w-4" />Vorige</Button>
-        {currentStep === steps.length - 1 ? (
-          <Button 
-            onClick={handleSubmit} 
-            disabled={isSubmitting}
-            className="bg-accent text-accent-foreground hover:bg-accent/90"
-          >
-            {isSubmitting ? 'Bezig...' : 'Advertentie plaatsen'}
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+        <Button variant="outline" onClick={goPrev} disabled={currentStep === 0}>
+          <ChevronLeft className="mr-2 h-4 w-4" /> Vorige
+        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={saveDraft} disabled={isSavingDraft || !user}>
+            <Save className="mr-1.5 h-4 w-4" />
+            {isSavingDraft ? 'Bezig...' : 'Concept opslaan'}
           </Button>
-        ) : (
-          <Button onClick={nextStep}>Volgende<ChevronRight className="ml-2 h-4 w-4" /></Button>
-        )}
+          {currentStep === REVIEW_STEP ? (
+            <Button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              {isSubmitting ? 'Bezig...' : 'Definitief verzenden'}
+            </Button>
+          ) : (
+            <Button onClick={goNext}>
+              {currentStep === TOTAL_STEPS - 1 ? 'Naar overzicht' : 'Volgende'}
+              <ChevronRight className="ml-2 h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────
+// Helpers
+// ────────────────────────────────────────────────────────────
+
+function YesNoBlock({
+  label,
+  value,
+  onChange,
+  detailLabel,
+  detailValue,
+  onDetailChange,
+}: {
+  label: string;
+  value: 'yes' | 'no' | '';
+  onChange: (v: 'yes' | 'no') => void;
+  detailLabel: string;
+  detailValue: string;
+  onDetailChange: (v: string) => void;
+}) {
+  return (
+    <section className="space-y-3">
+      <Label>{label}</Label>
+      <RadioGroup value={value} onValueChange={(v) => onChange(v as 'yes' | 'no')} className="flex gap-3">
+        {(['yes', 'no'] as const).map((opt) => (
+          <label
+            key={opt}
+            className={cn(
+              'flex items-center gap-2 rounded-xl border px-4 py-2 text-sm cursor-pointer',
+              value === opt ? 'border-primary/40 bg-primary/5' : 'border-border/60 hover:bg-muted/40'
+            )}
+          >
+            <RadioGroupItem value={opt} />
+            {opt === 'yes' ? 'Ja' : 'Nee'}
+          </label>
+        ))}
+      </RadioGroup>
+      {value === 'yes' && (
+        <div className="space-y-2">
+          <Label className="text-sm text-muted-foreground">{detailLabel}</Label>
+          <Textarea value={detailValue} onChange={(e) => onDetailChange(e.target.value)} rows={3} />
+        </div>
+      )}
+    </section>
+  );
+}
+
+function SummaryReview({
+  data,
+  photos,
+  onEdit,
+}: {
+  data: FormState;
+  photos: PhotoItem[];
+  onEdit: (step: number) => void;
+}) {
+  const Section = ({ title, step, children }: { title: string; step: number; children: React.ReactNode }) => (
+    <div className="rounded-xl border border-border/60 p-4">
+      <div className="flex items-center justify-between">
+        <h4 className="font-semibold">{title}</h4>
+        <Button variant="ghost" size="sm" onClick={() => onEdit(step)}>
+          <Edit3 className="mr-1.5 h-3.5 w-3.5" /> Bewerken
+        </Button>
+      </div>
+      <div className="mt-3 space-y-1 text-sm">{children}</div>
+    </div>
+  );
+
+  const row = (label: string, value: string | number | null | undefined) =>
+    value ? (
+      <div className="flex justify-between gap-3">
+        <span className="text-muted-foreground">{label}</span>
+        <span className="font-medium text-right break-anywhere">{value}</span>
+      </div>
+    ) : null;
+
+  const featuresCount = Object.values(data.features).reduce((sum, arr) => sum + arr.length, 0);
+
+  return (
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold">Controleer je advertentie</h3>
+
+      <Section title="Voertuig" step={0}>
+        {row('Auto', `${data.brand} ${data.model} ${data.modelVersion}`.trim())}
+        {row('Eerste registratie', data.year ? `${data.month ? data.month + '/' : ''}${data.year}` : null)}
+        {row('Carrosserie', data.bodyType)}
+        {row('Brandstof', data.fuelType)}
+        {row('Transmissie', data.transmission)}
+        {row('Vermogen', data.power ? `${data.power} ${data.powerUnit}` : null)}
+        {row('Kilometerstand', data.mileage ? `${parseInt(data.mileage).toLocaleString('nl-BE')} km` : null)}
+      </Section>
+
+      <Section title="Uitrusting & extra's" step={1}>
+        <p className="text-muted-foreground">{featuresCount} opties geselecteerd</p>
+      </Section>
+
+      <Section title="Staat" step={2}>
+        {row('Algemeen', data.conditionOverall)}
+        {row('Schade', data.damagePresent === 'yes' ? 'Ja' : data.damagePresent === 'no' ? 'Nee' : null)}
+        {data.damagePresent === 'yes' && row('Beschrijving', data.damageDescription)}
+        {row('Technische problemen', data.technicalPresent === 'yes' ? 'Ja' : data.technicalPresent === 'no' ? 'Nee' : null)}
+        {data.technicalPresent === 'yes' && row('Beschrijving', data.technicalDescription)}
+      </Section>
+
+      <Section title="Foto's" step={3}>
+        {photos.length > 0 ? (
+          <div className="grid grid-cols-4 gap-2">
+            {photos.slice(0, 8).map((p, i) => (
+              <img key={i} src={p.preview} alt={`Foto ${i + 1}`} className="aspect-square w-full rounded-md object-cover" />
+            ))}
+          </div>
+        ) : (
+          <p className="text-muted-foreground">Geen foto's geüpload</p>
+        )}
+      </Section>
+
+      <Section title="Verkoopinformatie" step={4}>
+        {row('Vraagprijs', data.price ? `€ ${parseInt(data.price).toLocaleString('nl-BE')}` : null)}
+        {row('Onderhandelbaar', data.priceNegotiable === 'yes' ? 'Ja' : data.priceNegotiable === 'no' ? 'Nee' : null)}
+        {row('Beschikbaar vanaf', data.availableFrom)}
+      </Section>
+
+      <Section title="Contactgegevens" step={5}>
+        {row('Naam', data.name)}
+        {row('E-mail', data.email)}
+        {row('Telefoon', data.phone)}
+        {row('Postcode', data.postalCode)}
+        {row('Gemeente', data.city)}
+      </Section>
     </div>
   );
 }
