@@ -34,7 +34,7 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
                   aria-label="Open AI assistent"
                   className="flex flex-col items-center justify-center w-full h-full relative"
                 >
-                  <div className="flex items-center justify-center w-12 h-12 -mt-5 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-transform active:scale-95">
+                  <div className="flex items-center justify-center w-12 h-12 -mt-2 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-transform active:scale-95">
                     <Sparkles className="h-6 w-6" />
                   </div>
                   <span className="text-[10px] font-semibold text-primary -mt-0.5">AI</span>
