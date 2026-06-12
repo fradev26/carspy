@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Heart, User, Plus, LogOut, MessageCircle, BarChart3, Shield, FileText } from 'lucide-react';
+import { Search, Heart, User, Plus, LogOut, MessageCircle, BarChart3, Shield, FileText, UserCircle2, Phone, Bell, Lock, Megaphone, Clock, Briefcase, Users as UsersIcon, Package, LineChart, HelpCircle, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { useFavorites } from '@/hooks/useFavorites';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/Logo';
@@ -28,6 +31,46 @@ function UnreadBadge({ count, className }: { count: number; className?: string }
 }
 
 
+function SectionHeader({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="px-3 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+      {children}
+    </p>
+  );
+}
+
+function SheetLink({
+  onClick,
+  icon: Icon,
+  label,
+  trailing,
+  muted,
+}: {
+  onClick: () => void;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  trailing?: string;
+  muted?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        'flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted',
+        muted ? 'text-muted-foreground' : 'text-foreground',
+      )}
+    >
+      <Icon className={cn('h-4 w-4', muted ? '' : 'text-muted-foreground')} />
+      <span className="flex-1 text-left">{label}</span>
+      {trailing && (
+        <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-muted px-1.5 text-[10px] font-semibold text-foreground">
+          {trailing}
+        </span>
+      )}
+    </button>
+  );
+}
+
 export function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [scrolled, setScrolled] = useState(false);
@@ -35,7 +78,8 @@ export function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signOut } = useAuth();
-  const { isDealer } = useProfile();
+  const { isDealer, profile } = useProfile();
+  const { favorites } = useFavorites();
   const { count: unreadCount } = useUnreadMessages();
 
   const isHomepage = location.pathname === '/';
@@ -89,34 +133,70 @@ export function Header() {
             </SheetTrigger>
 
 
-          <SheetContent side="left" className="w-80 overflow-y-auto">
-            <SheetHeader>
+          <SheetContent side="left" className="w-80 overflow-y-auto p-0">
+            <SheetHeader className="px-6 pt-6 pb-4">
               <SheetTitle className="text-left">
-                <Logo size="md" />
+                {user ? (
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-12 w-12">
+                      <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                        {(profile?.full_name || user.email || '?').slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-foreground">
+                        {profile?.full_name || user.email}
+                      </p>
+                      <Badge variant="secondary" className="mt-1 text-[10px] font-medium">
+                        {isDealer ? 'Dealer' : 'Particulier'}
+                      </Badge>
+                    </div>
+                  </div>
+                ) : (
+                  <Logo size="md" />
+                )}
               </SheetTitle>
             </SheetHeader>
-            <nav className="mt-6 flex flex-col gap-1">
+
+            <nav className="flex flex-col gap-1 px-3 pb-6">
               {user ? (
                 <>
-                  <button onClick={() => handleMobileNav('/dashboard')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
-                    <User className="h-4 w-4 text-muted-foreground" /> Mijn advertenties
-                  </button>
-                  <button onClick={() => handleMobileNav('/favorieten')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
-                    <Heart className="h-4 w-4 text-muted-foreground" /> Favorieten
-                  </button>
+                  <SectionHeader>Mijn account</SectionHeader>
+                  <SheetLink onClick={() => handleMobileNav('/dashboard')} icon={UserCircle2} label="Profiel" />
+                  <SheetLink onClick={() => handleMobileNav('/dashboard')} icon={Phone} label="Contactgegevens" />
+                  <SheetLink onClick={() => handleMobileNav('/dashboard')} icon={Bell} label="Meldingen" />
+                  <SheetLink onClick={() => handleMobileNav('/dashboard')} icon={Lock} label="Privacy" />
+
+                  <SectionHeader>Mijn activiteiten</SectionHeader>
+                  <SheetLink onClick={() => handleMobileNav('/dashboard')} icon={Megaphone} label="Mijn advertenties" />
+                  <SheetLink onClick={() => handleMobileNav('/dashboard')} icon={Bell} label="Zoekalerts" />
+                  <SheetLink onClick={() => handleMobileNav('/dashboard')} icon={Clock} label="Recent bekeken" />
+                  <SheetLink
+                    onClick={() => handleMobileNav('/favorieten')}
+                    icon={Heart}
+                    label="Favorieten"
+                    trailing={favorites.size > 0 ? String(favorites.size) : undefined}
+                  />
+
                   {isDealer && (
-                    <button onClick={() => handleMobileNav('/zakelijk')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
-                      <BarChart3 className="h-4 w-4 text-muted-foreground" /> Zakelijk Dashboard
-                    </button>
+                    <>
+                      <SectionHeader>Dealerfuncties</SectionHeader>
+                      <SheetLink onClick={() => handleMobileNav('/zakelijk')} icon={Briefcase} label="Zakelijk Dashboard" />
+                      <SheetLink onClick={() => handleMobileNav('/zakelijk')} icon={UsersIcon} label="Leads" />
+                      <SheetLink onClick={() => handleMobileNav('/zakelijk')} icon={Package} label="Voorraadbeheer" />
+                      <SheetLink onClick={() => handleMobileNav('/zakelijk')} icon={LineChart} label="Statistieken" />
+                    </>
                   )}
-                  <Separator className="my-2" />
-                  <button onClick={() => handleMobileNav('/privacy')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors">
-                    <Shield className="h-4 w-4" /> Privacybeleid
-                  </button>
-                  <button onClick={() => handleMobileNav('/voorwaarden')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors">
-                    <FileText className="h-4 w-4" /> Algemene voorwaarden
-                  </button>
-                  <Separator className="my-2" />
+
+                  <SectionHeader>Juridisch</SectionHeader>
+                  <SheetLink onClick={() => handleMobileNav('/privacy')} icon={Shield} label="Privacybeleid" muted />
+                  <SheetLink onClick={() => handleMobileNav('/voorwaarden')} icon={FileText} label="Algemene voorwaarden" muted />
+
+                  <SectionHeader>Support</SectionHeader>
+                  <SheetLink onClick={() => { setMobileMenuOpen(false); window.location.href = '#'; }} icon={HelpCircle} label="Helpcentrum" muted />
+                  <SheetLink onClick={() => { setMobileMenuOpen(false); window.location.href = 'mailto:info@vatuur.nl'; }} icon={Mail} label="Contact" muted />
+
+                  <Separator className="my-3" />
                   <button onClick={handleSignOut} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors">
                     <LogOut className="h-4 w-4" /> Uitloggen
                   </button>
@@ -126,13 +206,9 @@ export function Header() {
                   <button onClick={() => handleMobileNav('/auth')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground hover:bg-muted transition-colors">
                     <User className="h-4 w-4 text-muted-foreground" /> Inloggen / Registreren
                   </button>
-                  <Separator className="my-2" />
-                  <button onClick={() => handleMobileNav('/privacy')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors">
-                    <Shield className="h-4 w-4" /> Privacybeleid
-                  </button>
-                  <button onClick={() => handleMobileNav('/voorwaarden')} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors">
-                    <FileText className="h-4 w-4" /> Algemene voorwaarden
-                  </button>
+                  <SectionHeader>Juridisch</SectionHeader>
+                  <SheetLink onClick={() => handleMobileNav('/privacy')} icon={Shield} label="Privacybeleid" muted />
+                  <SheetLink onClick={() => handleMobileNav('/voorwaarden')} icon={FileText} label="Algemene voorwaarden" muted />
                 </>
               )}
             </nav>
@@ -231,9 +307,6 @@ export function Header() {
                       </Link>
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem asChild>
-                    <Link to="/favorieten" className="cursor-pointer">Favorieten</Link>
-                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive focus:text-destructive">
                     <LogOut className="mr-2 h-4 w-4" />
