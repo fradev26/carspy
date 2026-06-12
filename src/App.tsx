@@ -26,6 +26,12 @@ const Terms = lazy(() => import("./pages/Terms"));
 const AutoWaarde = lazy(() => import("./pages/AutoWaarde"));
 const DealerInventory = lazy(() => import("./pages/DealerInventory"));
 const Dealers = lazy(() => import("./pages/Dealers"));
+const MyListings = lazy(() => import("./pages/account/MyListings"));
+const SearchAlerts = lazy(() => import("./pages/account/SearchAlerts"));
+const RecentlyViewed = lazy(() => import("./pages/account/RecentlyViewed"));
+const AccountSettings = lazy(() => import("./pages/account/AccountSettings"));
+const Help = lazy(() => import("./pages/Help"));
+const Contact = lazy(() => import("./pages/Contact"));
 
 const queryClient = new QueryClient();
 
