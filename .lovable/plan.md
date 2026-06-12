@@ -1,57 +1,81 @@
-# Optimalisatie verkoopproces & listingdetail
-
 ## Doel
-Vervang het huidige 5-staps verkoopformulier (`src/pages/Sell.tsx`) door een conversiegerichte 6-staps wizard met rijkere voertuiginformatie, en toon die nieuwe data op de listingdetailpagina als een ingeklapte gecategoriseerde optielijst — zonder de bestaande VATUUR-stijl, componenten of detailpagina-architectuur te breken.
 
-## 1. Verkoopwizard — `src/pages/Sell.tsx`
+Mobiele navigatie dedupliceren zonder nieuwe patronen. Bottom nav blijft Home/Zoeken/AI/Favorieten/Verkopen. Account-knop (linksboven) wordt de persoonlijke hub. Berichten blijft rechtsboven. Geen visuele redesign.
 
-Herstructureren naar 6 stappen met behoud van: bestaande progress-strip (cirkels + check), Card-wrapper, Vorige/Volgende-knoppen, draftId-flow, AI-analyse op prijsstap, foto-upload-pipeline en submit-logica.
+## 1. Bottom Navigation (`src/components/BottomNav.tsx`)
 
-**Stap 1 – Basisgegevens**: merk (zoekbare dropdown via Command/Popover), model (dynamisch obv merk uit `CAR_BRANDS`), eerste registratie (jaar + maand → `first_registration_date`), carrosserie, brandstof, transmissie, vermogen (pk/kW toggle → `power` + `power_unit`), uitvoering (`model_version`), kilometerstand.
+Geen wijziging aan structuur of styling. Bevestigen: Home, Zoeken, AI (center), Favorieten, Verkopen. ✓ reeds zo.
 
-**Stap 2 – Uitrusting & extra's**: vier categorieën (veiligheid, comfort, multimedia, exterieur) + blok "Voertuiginformatie" (onderhoudsboekje, eerste eigenaar, niet-roker, btw aftrekbaar, ongevalvrij, dealer-onderhouden, Car-Pass, keuringsattest, reserve sleutel). Renderen als responsive checkbox-cards (bestaande Card + Check-icoon, grid `sm:grid-cols-2 lg:grid-cols-3`). State in één geneste structuur (zie §4).
+## 2. Header — Account Sheet wordt hub (`src/layouts/Header.tsx`)
 
-**Stap 3 – Staat van het voertuig**: radiogroep algemene staat → `condition_type`. Conditionele velden voor schade en technische problemen (alleen tonen bij "Ja"). Opgeslagen in `condition` jsonb.
+De bestaande `Sheet` (User-icoon linksboven) blijft de toegangspoort. We herstructureren alleen de inhoud tot een overzichtelijke hub met gegroepeerde secties. Gebruik bestaande `Separator`, knop-styling en spacing — geen nieuwe tokens.
 
-**Stap 4 – Foto's**: drag-and-drop (HTML5 `onDrop`), suggestiechecklist met aanbevolen shots, sorteerbare thumbnails (pijltjes links/rechts), eerste foto = hoofdfoto met badge, client-side compressie via canvas (max 1920px, jpeg q=0.82), max 20, per-bestand progressbar.
+Nieuwe sectiestructuur (zelfde knop-stijl als nu, met kleine sectie-headers in `text-xs uppercase text-muted-foreground`):
 
-**Stap 5 – Verkoopinformatie**: prijs (`price` + `price_public`), onderhandelbaar radio (`price_negotiable`), beschikbaar vanaf (date → `availability` jsonb), opmerkingen, behoud AI-marktwaarde-card.
+**Profielheader** (bovenaan, vervangt huidige SheetTitle-logo voor ingelogde users)
+- Avatar/initialen, naam, badge accounttype (Particulier / Dealer).
+- Uitgelogd: behoudt logo + "Inloggen / Registreren" knop.
 
-**Stap 6 – Contactgegevens**: naam, e-mail, telefoon, postcode, gemeente (prefill uit profiel). Twee verplichte checkboxen (correctheid + privacy) — Volgende disabled tot beide aangevinkt.
+**Mijn account**
+- Profiel → `/dashboard` (placeholder voor nieuwe profielpagina later)
+- Contactgegevens → `/dashboard`
+- Meldingen → `/dashboard`
+- Privacy → `/dashboard`
 
-**Samenvatting**: na stap 6 een review-scherm met secties + "Bewerken" knoppen die `setCurrentStep(n)` aanroepen. "Definitief verzenden" triggert bestaande submit.
+**Mijn activiteiten**
+- Mijn advertenties → `/dashboard`
+- Zoekalerts → `/dashboard` (tab searches)
+- Recent bekeken → `/dashboard`
+- Favorieten (teller via `useFavorites`) → `/favorieten` — getoond als reminder/teller, niet als afzonderlijke primaire bestemming
 
-**Algemeen**: progress-tekst "Stap X van 6", autosave naar `localStorage` (key per `draftId`/user) bij elke wijziging + "Concept opslaan" knop die naar `listings` schrijft met `status='draft'`, per-stap validatie behouden via uitgebreide `validateStep`.
+**Dealerfuncties** (alleen `isDealer`)
+- Zakelijk Dashboard → `/zakelijk`
+- Leads → `/zakelijk`
+- Voorraadbeheer → `/zakelijk`
+- Statistieken → `/zakelijk`
 
-## 2. Listingdetail — `src/pages/ListingDetail.tsx`
+**Juridisch**
+- Privacybeleid → `/privacy`
+- Algemene voorwaarden → `/voorwaarden`
 
-- **Quick action** onder Kerngegevens-grid: full-width subtiele `Button variant="outline"` met ChevronDown — "Bekijk volledige optielijst (N)". Klik → smooth scroll naar accordion en open hem (state lift).
-- **Vervang** de huidige "Gedetailleerde specificaties"-kaart-titel niet, maar **vervang de huidige "Hoogtepunten uitrusting → EquipmentDialog"-trigger** door een echte `Accordion` (shadcn, single, collapsible, default closed) met titel `Bekijk optielijst (N)`. Binnen de accordion vier subsecties (Veiligheid / Comfort / Multimedia / Exterieur) + Voertuiginformatie, gerenderd uit `listing.specs.vehicle_features` met fallback naar de platte `equipment[]` array onder "Overig" voor oude listings. `EquipmentDialog` blijft beschikbaar maar wordt niet meer als primaire entry getoond.
-- Gedetailleerde technische specs-kaart (motor/afmetingen/emissies/identiteit) blijft ongewijzigd.
+**Support**
+- Helpcentrum → `#` (placeholder)
+- Contact → `mailto:info@vatuur.nl`
 
-## 3. Na verzending
-Bestaand bevestigingsscherm + toast behouden. Toevoegen: invoke bestaande edge function voor bevestigingsmail (`send-transactional-email`, template `listing-submitted` — nieuw template aanmaken in `supabase/functions/_shared/transactional-email-templates/`). AI-marktwaarde uit stap 5 wegschrijven naar `specs.estimated_market_value`.
+**Accountacties** (met `Separator` ervoor)
+- Uitloggen (destructive)
 
-## 4. Datamodel
-Geen nieuwe kolommen nodig — gebruik bestaande `specs jsonb` met sleutel `vehicle_features`:
-```json
-{
-  "vehicle_features": {
-    "safety": ["ABS","ESP",...],
-    "comfort": [...],
-    "multimedia": [...],
-    "exterior": [...],
-    "vehicle_information": ["onderhoudsboekje","eerste_eigenaar",...]
-  }
-}
-```
-Bestaande `equipment[]` blijft gevuld als platte unie (voor zoek/AS24-compat). `condition` jsonb krijgt `{ overall, damage: {present, description}, technical: {present, description} }`. Geen migratie vereist.
+Voor secties zonder dedicated pagina (Profiel/Meldingen/etc.) voorlopig naar `/dashboard` linken — geen nieuwe pagina's in dit plan.
 
-## 5. Bestanden
-- Edit: `src/pages/Sell.tsx` (volledige refactor wizard)
-- Edit: `src/pages/ListingDetail.tsx` (quick-action knop + accordion-optielijst met categorieën)
-- Nieuw: `src/modules/sell/` helpers — `BrandModelPicker.tsx`, `FeatureCheckboxGrid.tsx`, `PhotoUploader.tsx`, `SummaryReview.tsx`, `featureCatalog.ts` (categorieën + labels)
-- Nieuw (optioneel email): `supabase/functions/_shared/transactional-email-templates/listing-submitted.tsx` + registry-entry
+## 3. Deduplicatie
 
-## Buiten scope
-Header, bottom-nav, breadcrumbs, AI-chat, related-listings layout, kerngegevens-grid, prijsindicator, vertrouwensblok, totale-kostprijs-kaart, voertuiggeschiedenis-timeline, dealerinformatie — allemaal ongewijzigd.
+Te verwijderen uit hamburger/Sheet (al deels aanwezig — herschikken telt mee):
+- Losse "Mijn advertenties", "Favorieten", "Privacybeleid", "Algemene voorwaarden" als top-level items (gaan op in gegroepeerde secties; Favorieten alleen als teller-link)
+
+Te verwijderen uit Desktop header dropdown (`src/layouts/Header.tsx`):
+- "Favorieten" item uit Account DropdownMenu (Favorieten heeft al eigen header-knop links ervan = duplicatie)
+- "Mijn advertenties" blijft in dropdown (enige toegang op desktop)
+- "Zakelijk Dashboard" blijft in dropdown voor dealers
+
+Bottom nav: niets te verwijderen — al gededupliceerd.
+
+## 4. Geen wijzigingen aan
+- `BottomNav.tsx` (styling/structuur ongewijzigd)
+- Routing in `App.tsx` (geen nieuwe routes)
+- Berichten-knop rechtsboven (blijft)
+- Dashboard / BusinessDashboard pagina's
+- Design tokens, kleuren, animaties
+
+## Technische details
+
+- Files gewijzigd: `src/layouts/Header.tsx` (alleen Sheet-inhoud + één DropdownMenuItem verwijderen)
+- Geen nieuwe files, geen DB-werk, geen nieuwe hooks (hergebruik `useFavorites`, `useProfile`)
+- Sectie-headers: kleine `<p className="px-3 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">` boven elke groep — past binnen bestaand design system
+
+## Acceptatiecriteria
+
+- Bottom nav onveranderd: Home, Zoeken, AI, Favorieten, Verkopen
+- Account-sheet linksboven toont gegroepeerde hub met alle genoemde secties
+- Berichten-knop blijft rechtsboven
+- Geen item heeft nog twee primaire toegangswegen (Favorieten = bottom nav, Mijn advertenties = Account, Privacy/Voorwaarden = Account, Berichten = header, Dealer Dashboard = Account)
+- Bestaande styling, spacing en animaties intact
