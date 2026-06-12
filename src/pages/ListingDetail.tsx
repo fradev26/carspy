@@ -946,7 +946,7 @@ export default function ListingDetail() {
             </Card>
 
             {/* Mobile Contact Bar */}
-            <div className="lg:hidden fixed bottom-16 left-0 right-0 z-40 border-t bg-card/95 backdrop-blur-lg p-4 safe-bottom shadow-[0_-4px_12px_-4px_rgba(0,0,0,0.08)]">
+            <div className="lg:hidden fixed left-0 right-0 z-40 border-t bg-card/95 backdrop-blur-lg p-4 shadow-[0_-4px_12px_-4px_rgba(0,0,0,0.08)]" style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px) + 0.75rem)' }}>
               <div className="flex gap-3">
                 {listing.seller.phone && (
                   <Button asChild className="flex-1 gap-2 bg-accent text-accent-foreground hover:bg-accent/90 h-12 shadow-sm">
