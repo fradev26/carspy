@@ -22,7 +22,16 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
 
   return (
     <>
-      <nav ref={ref} className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/60 bg-card/95 backdrop-blur-lg supports-[backdrop-filter]:bg-card/80 lg:hidden safe-bottom safe-x">
+      {/* Gradient fade above nav for smooth blend into content */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed bottom-16 left-0 right-0 z-40 h-6 bg-gradient-to-t from-background/70 to-transparent lg:hidden safe-x"
+        style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
+      />
+      <nav
+        ref={ref}
+        className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 dark:border-white/[0.06] bg-background/60 backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-background/50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] lg:hidden safe-bottom safe-x"
+      >
         <div className="flex items-center justify-around h-16">
           {navItems.map((item) => {
             // AI center button
