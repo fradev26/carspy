@@ -652,6 +652,60 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          listing_status: boolean
+          marketing: boolean
+          new_messages: boolean
+          search_alerts: boolean
+          system: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          listing_status?: boolean
+          marketing?: boolean
+          new_messages?: boolean
+          search_alerts?: boolean
+          system?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          listing_status?: boolean
+          marketing?: boolean
+          new_messages?: boolean
+          search_alerts?: boolean
+          system?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      privacy_preferences: {
+        Row: {
+          marketing_consent: boolean
+          profile_public: boolean
+          show_contact: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          marketing_consent?: boolean
+          profile_public?: boolean
+          show_contact?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          marketing_consent?: boolean
+          profile_public?: boolean
+          show_contact?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -662,6 +716,7 @@ export type Database = {
           full_name: string | null
           id: string
           is_dealer: boolean
+          location: string | null
           phone: string | null
           updated_at: string
           vat_number: string | null
@@ -675,6 +730,7 @@ export type Database = {
           full_name?: string | null
           id: string
           is_dealer?: boolean
+          location?: string | null
           phone?: string | null
           updated_at?: string
           vat_number?: string | null
@@ -688,6 +744,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           is_dealer?: boolean
+          location?: string | null
           phone?: string | null
           updated_at?: string
           vat_number?: string | null
@@ -698,26 +755,62 @@ export type Database = {
         Row: {
           created_at: string
           filters: Json
+          frequency: string
           id: string
           last_notified_at: string | null
           name: string
+          paused: boolean
           user_id: string
         }
         Insert: {
           created_at?: string
           filters?: Json
+          frequency?: string
           id?: string
           last_notified_at?: string | null
           name: string
+          paused?: boolean
           user_id: string
         }
         Update: {
           created_at?: string
           filters?: Json
+          frequency?: string
           id?: string
           last_notified_at?: string | null
           name?: string
+          paused?: boolean
           user_id?: string
+        }
+        Relationships: []
+      }
+      support_messages: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          subject: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          subject: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          subject?: string
+          user_id?: string | null
         }
         Relationships: []
       }

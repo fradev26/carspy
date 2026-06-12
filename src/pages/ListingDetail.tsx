@@ -14,7 +14,8 @@ import { ImageGallery, ListingGrid, PriceIndicator } from '@/modules/listings';
 import { ListingCard } from '@/modules/listings/ListingCard';
 import { useCompare } from '@/hooks/useCompare';
 import { useListing, useRelatedListings } from '@/hooks/useListings';
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
+import { pushRecentListing } from '@/hooks/useRecentlyViewedListings';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -172,6 +173,17 @@ export default function ListingDetail() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const relatedListings = useRelatedListings(listing, 6);
+
+  useEffect(() => {
+    if (!listing) return;
+    pushRecentListing({
+      id: listing.id,
+      title: listing.title,
+      price: listing.pricePublic ?? listing.price ?? null,
+      image: listing.images?.[0] ?? null,
+      city: listing.location?.city ?? null,
+    });
+  }, [listing]);
 
   const displayPrice = listing?.pricePublic ?? listing?.price;
   const isAS24 = listing?.source === 'autoscout';

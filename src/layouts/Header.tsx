@@ -162,15 +162,15 @@ export function Header() {
               {user ? (
                 <>
                   <SectionHeader>Mijn account</SectionHeader>
-                  <SheetLink onClick={() => handleMobileNav('/dashboard')} icon={UserCircle2} label="Profiel" />
-                  <SheetLink onClick={() => handleMobileNav('/dashboard')} icon={Phone} label="Contactgegevens" />
-                  <SheetLink onClick={() => handleMobileNav('/dashboard')} icon={Bell} label="Meldingen" />
-                  <SheetLink onClick={() => handleMobileNav('/dashboard')} icon={Lock} label="Privacy" />
+                  <SheetLink onClick={() => handleMobileNav('/account/profiel')} icon={UserCircle2} label="Profiel" />
+                  <SheetLink onClick={() => handleMobileNav('/account/profiel')} icon={Phone} label="Contactgegevens" />
+                  <SheetLink onClick={() => handleMobileNav('/account/meldingen')} icon={Bell} label="Meldingen" />
+                  <SheetLink onClick={() => handleMobileNav('/account/privacy')} icon={Lock} label="Privacy" />
 
                   <SectionHeader>Mijn activiteiten</SectionHeader>
-                  <SheetLink onClick={() => handleMobileNav('/dashboard')} icon={Megaphone} label="Mijn advertenties" />
-                  <SheetLink onClick={() => handleMobileNav('/dashboard')} icon={Bell} label="Zoekalerts" />
-                  <SheetLink onClick={() => handleMobileNav('/dashboard')} icon={Clock} label="Recent bekeken" />
+                  <SheetLink onClick={() => handleMobileNav('/account/advertenties')} icon={Megaphone} label="Mijn advertenties" />
+                  <SheetLink onClick={() => handleMobileNav('/account/zoekalerts')} icon={Bell} label="Zoekalerts" />
+                  <SheetLink onClick={() => handleMobileNav('/account/recent')} icon={Clock} label="Recent bekeken" />
                   <SheetLink
                     onClick={() => handleMobileNav('/favorieten')}
                     icon={Heart}
@@ -181,10 +181,10 @@ export function Header() {
                   {isDealer && (
                     <>
                       <SectionHeader>Dealerfuncties</SectionHeader>
-                      <SheetLink onClick={() => handleMobileNav('/zakelijk')} icon={Briefcase} label="Zakelijk Dashboard" />
-                      <SheetLink onClick={() => handleMobileNav('/zakelijk')} icon={UsersIcon} label="Leads" />
-                      <SheetLink onClick={() => handleMobileNav('/zakelijk')} icon={Package} label="Voorraadbeheer" />
-                      <SheetLink onClick={() => handleMobileNav('/zakelijk')} icon={LineChart} label="Statistieken" />
+                      <SheetLink onClick={() => handleMobileNav('/zakelijk?tab=overzicht')} icon={Briefcase} label="Zakelijk Dashboard" />
+                      <SheetLink onClick={() => handleMobileNav('/zakelijk?tab=leads')} icon={UsersIcon} label="Leads" />
+                      <SheetLink onClick={() => handleMobileNav('/zakelijk?tab=voorraad')} icon={Package} label="Voorraadbeheer" />
+                      <SheetLink onClick={() => handleMobileNav('/zakelijk?tab=statistieken')} icon={LineChart} label="Statistieken" />
                     </>
                   )}
 
@@ -193,8 +193,8 @@ export function Header() {
                   <SheetLink onClick={() => handleMobileNav('/voorwaarden')} icon={FileText} label="Algemene voorwaarden" muted />
 
                   <SectionHeader>Support</SectionHeader>
-                  <SheetLink onClick={() => { setMobileMenuOpen(false); window.location.href = '#'; }} icon={HelpCircle} label="Helpcentrum" muted />
-                  <SheetLink onClick={() => { setMobileMenuOpen(false); window.location.href = 'mailto:info@vatuur.nl'; }} icon={Mail} label="Contact" muted />
+                  <SheetLink onClick={() => handleMobileNav('/help')} icon={HelpCircle} label="Helpcentrum" muted />
+                  <SheetLink onClick={() => handleMobileNav('/contact')} icon={Mail} label="Contact" muted />
 
                   <Separator className="my-3" />
                   <button onClick={handleSignOut} className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors">
@@ -295,10 +295,12 @@ export function Header() {
                     Account
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem asChild>
-                    <Link to="/dashboard" className="cursor-pointer">Mijn advertenties</Link>
-                  </DropdownMenuItem>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem asChild><Link to="/account/profiel" className="cursor-pointer">Profiel</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to="/account/advertenties" className="cursor-pointer">Mijn advertenties</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to="/account/zoekalerts" className="cursor-pointer">Zoekalerts</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to="/account/recent" className="cursor-pointer">Recent bekeken</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to="/account/meldingen" className="cursor-pointer">Meldingen</Link></DropdownMenuItem>
                   {isDealer && (
                     <DropdownMenuItem asChild>
                       <Link to="/zakelijk" className="cursor-pointer flex items-center gap-2">

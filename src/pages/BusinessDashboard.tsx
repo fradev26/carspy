@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import MyLeadsPanel from '@/components/MyLeadsPanel';
 import {
   Eye, Heart, MessageCircle, TrendingUp, Car, BarChart3, Crown, Rocket,
   DollarSign, Clock, Brain, Search as SearchIcon, Pencil, CheckCircle2
@@ -249,6 +250,15 @@ function MarketExplorer() {
 export default function BusinessDashboard() {
   const { user } = useAuth();
   const { profile, isDealer } = useProfile();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabAlias: Record<string, string> = {
+    overzicht: 'inventory',
+    voorraad: 'inventory',
+    statistieken: 'performance',
+    leads: 'leads',
+    marktverkenner: 'explorer',
+  };
+  const initialTab = tabAlias[searchParams.get('tab') ?? ''] ?? 'inventory';
   const [overview, setOverview] = useState<Overview | null>(null);
   const [listings, setListings] = useState<ListingAnalytics[]>([]);
   const [loading, setLoading] = useState(true);
@@ -390,12 +400,21 @@ export default function BusinessDashboard() {
         ))}
       </div>
 
-      <Tabs defaultValue="inventory" className="space-y-6">
+      <Tabs defaultValue={initialTab} className="space-y-6" onValueChange={(v) => {
+        const sp = new URLSearchParams(searchParams);
+        sp.set('tab', v);
+        setSearchParams(sp, { replace: true });
+      }}>
         <TabsList>
           <TabsTrigger value="inventory">Voorraad</TabsTrigger>
-          <TabsTrigger value="performance">Prestaties</TabsTrigger>
+          <TabsTrigger value="leads">Leads</TabsTrigger>
+          <TabsTrigger value="performance">Statistieken</TabsTrigger>
           <TabsTrigger value="explorer">Marktverkenner</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="leads">
+          <MyLeadsPanel />
+        </TabsContent>
 
         {/* Inventory Tab */}
         <TabsContent value="inventory" className="space-y-4">
