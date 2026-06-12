@@ -1,42 +1,21 @@
-# Plan: Categorie-secties met uitgelichte advertenties
+# Plan: Mock-voertuigen toevoegen voor categorie-secties
 
 ## Doel
-Vervang de huidige icon-grid `CategoryGrid` door meerdere "Uitgelichte advertenties"-secties, één per categorie. Elke sectie heeft dezelfde stijl en layout als de bestaande "Uitgelichte advertenties" sectie (titel + subtitel links, "Bekijk alle" knop rechts, `ListingGrid` met 3 kolommen).
+12 mock-listings invoegen (3 per categorie) zodat de 4 nieuwe categorie-secties op de homepage zichtbaar zijn.
 
-## Categorieën (4 secties, 3 cards elk)
-Beperk tot 4 secties om de homepage niet te overladen:
+## Aanpak
+Eén `INSERT` in `public.listings` met `status='active'`, gekoppeld aan de bestaande gebruiker `40ff791c-9dc7-44c1-bd31-3bd02ebeb456` (eigenaar van de huidige actieve Golf GTI).
 
-1. **SUV's** — filter `bodyType === 'suv'` → "Bekijk alle SUV's" → `/zoeken?bodyTypes=suv`
-2. **Elektrisch** — filter `fuelType === 'elektrisch'` → "Bekijk alle elektrische auto's" → `/zoeken?fuelTypes=elektrisch`
-3. **Budget onder €10.000** — filter `price <= 10000 && price > 0` → "Bekijk budgetauto's" → `/zoeken?maxPrice=10000`
-4. **Sportief** — filter `bodyType === 'coupe'` → "Bekijk sportieve auto's" → `/zoeken?bodyTypes=coupe`
+## Categorieën
+- **SUV's** (`body_type='suv'`): Volvo XC60, Audi Q5, Toyota RAV4
+- **Elektrisch** (`fuel_type='elektrisch'`): Tesla Model 3, Hyundai Kona Electric, Volkswagen ID.4
+- **Budget < €10.000**: Opel Corsa (€7.950), Peugeot 208 (€8.500), Renault Clio (€9.250)
+- **Sportief** (`body_type='coupe'`): BMW 4-serie, Audi A5, Ford Mustang
 
-Elke sectie toont max 3 recente listings (slice 0–3) van die categorie via de bestaande `useListings()` data (client-side filter).
-
-## Wijzigingen
-
-### 1. Vervang `src/components/home/CategoryGrid.tsx`
-Maak hier een nieuw component `CategorySections` dat de `allListings` array (en `favorites`, `toggle`) als props ontvangt. Per categorie:
-- Hetzelfde frame als de bestaande "Uitgelichte advertenties" sectie in `Index.tsx` (lines 292–334), inclusief:
-  - `<section className="bg-muted/30 py-12 md:py-16">` (afwisselend `bg-background` voor visuele rust — zie hieronder)
-  - Header: titel `text-2xl font-semibold` + subtitel `text-sm text-muted-foreground` + "Bekijk alle" outline button
-  - `ListingGrid` met `columns={3}`
-  - Skeleton fallback wanneer `loading`
-  - Wanneer er minder dan 1 listing in die categorie is, verberg de sectie
-
-Wissel achtergrond af tussen `bg-background` en `bg-muted/30` per sectie zodat ze visueel gescheiden zijn van elkaar én van de echte "Uitgelichte advertenties".
-
-### 2. `src/pages/Index.tsx`
-- Verwijder de huidige `<CategoryGrid />` op regel 291.
-- Plaats `<CategorySections allListings={allListings} loading={listingsLoading} favorites={favorites} onToggle={toggle} />` **onder** de bestaande "Uitgelichte advertenties" sectie (na regel 334).
-- Werk de import bij.
-
-## Technische details
-- Filtering gebeurt client-side op de al opgehaalde `allListings` (geen extra queries).
-- Hergebruik `<ListingGrid>` en de bestaande skeleton block exact zoals in `Index.tsx`.
-- Geen wijzigingen aan `ListingCard`, `useListings`, of backend.
-- Behoud SEO/accessibility: elke sectie krijgt een eigen `<h2>`.
+## Velden per listing
+`title, brand, model, year, price, mileage, fuel_type, transmission, body_type, color, power, images, city, province, status='active'`. Voor `images` gebruiken we `/placeholder.svg` (al door `ListingCard` afgehandeld), zodat we geen externe hosts hoeven te raken.
 
 ## Niet in scope
-- De andere 4 categorieën (Hatchbacks, Sedans, Nieuw aanbod, Populair) komen niet als sectie — anders wordt de homepage te lang. Kan later toegevoegd worden indien gewenst.
-- Geen aanpassing aan filter-URL semantiek of bottomnav.
+- Geen schema-wijzigingen.
+- Geen aanpassingen aan frontend code.
+- Echte afbeeldingen — placeholders zijn voldoende voor zichtbaarheidstest.
