@@ -250,6 +250,15 @@ function MarketExplorer() {
 export default function BusinessDashboard() {
   const { user } = useAuth();
   const { profile, isDealer } = useProfile();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabAlias: Record<string, string> = {
+    overzicht: 'inventory',
+    voorraad: 'inventory',
+    statistieken: 'performance',
+    leads: 'leads',
+    marktverkenner: 'explorer',
+  };
+  const initialTab = tabAlias[searchParams.get('tab') ?? ''] ?? 'inventory';
   const [overview, setOverview] = useState<Overview | null>(null);
   const [listings, setListings] = useState<ListingAnalytics[]>([]);
   const [loading, setLoading] = useState(true);
