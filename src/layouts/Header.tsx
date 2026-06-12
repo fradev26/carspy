@@ -31,6 +31,46 @@ function UnreadBadge({ count, className }: { count: number; className?: string }
 }
 
 
+function SectionHeader({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="px-3 pt-4 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+      {children}
+    </p>
+  );
+}
+
+function SheetLink({
+  onClick,
+  icon: Icon,
+  label,
+  trailing,
+  muted,
+}: {
+  onClick: () => void;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  trailing?: string;
+  muted?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        'flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors hover:bg-muted',
+        muted ? 'text-muted-foreground' : 'text-foreground',
+      )}
+    >
+      <Icon className={cn('h-4 w-4', muted ? '' : 'text-muted-foreground')} />
+      <span className="flex-1 text-left">{label}</span>
+      {trailing && (
+        <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-muted px-1.5 text-[10px] font-semibold text-foreground">
+          {trailing}
+        </span>
+      )}
+    </button>
+  );
+}
+
 export function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [scrolled, setScrolled] = useState(false);
