@@ -30,7 +30,7 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
       />
       <nav
         ref={ref}
-        className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 dark:border-white/[0.06] bg-background/60 backdrop-blur-xl backdrop-saturate-150 supports-[backdrop-filter]:bg-background/50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] lg:hidden safe-bottom safe-x"
+        className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 dark:border-white/[0.06] bg-card shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] lg:hidden safe-bottom safe-x"
       >
         <div className="flex items-center justify-around h-16">
           {navItems.map((item) => {
