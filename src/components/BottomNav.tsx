@@ -52,19 +52,24 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
                 key={item.label}
                 to={path}
                 aria-current={isActive ? 'page' : undefined}
-                className={cn(
-                  'flex flex-1 mx-1 my-2 h-12 flex-col items-center justify-center gap-0.5 px-2 rounded-xl transition-all duration-200 ease-out',
-                  isActive
-                    ? 'bg-white/55 dark:bg-white/10 backdrop-blur-md border border-white/60 dark:border-white/15 shadow-sm shadow-primary/15 text-primary'
-                    : 'text-muted-foreground active:scale-[0.97]'
-                )}
+                className="flex flex-col items-center justify-center w-full h-full"
               >
-                <item.icon className="h-5 w-5" />
-                <span className="text-[10px] font-medium leading-none">
-                  {item.label}
-                </span>
+                <div
+                  className={cn(
+                    'flex flex-col items-center justify-center gap-1 px-3 py-1.5 rounded-xl transition-all duration-200 ease-out',
+                    isActive
+                      ? 'bg-white/55 dark:bg-white/10 backdrop-blur-md border border-white/60 dark:border-white/15 shadow-sm shadow-primary/15 text-primary'
+                      : 'text-muted-foreground active:scale-[0.97]'
+                  )}
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span className="text-[10px] font-medium leading-none">
+                    {item.label}
+                  </span>
+                </div>
               </Link>
             );
+
 
 
           })}
