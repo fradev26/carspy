@@ -400,12 +400,21 @@ export default function BusinessDashboard() {
         ))}
       </div>
 
-      <Tabs defaultValue="inventory" className="space-y-6">
+      <Tabs defaultValue={initialTab} className="space-y-6" onValueChange={(v) => {
+        const sp = new URLSearchParams(searchParams);
+        sp.set('tab', v);
+        setSearchParams(sp, { replace: true });
+      }}>
         <TabsList>
           <TabsTrigger value="inventory">Voorraad</TabsTrigger>
-          <TabsTrigger value="performance">Prestaties</TabsTrigger>
+          <TabsTrigger value="leads">Leads</TabsTrigger>
+          <TabsTrigger value="performance">Statistieken</TabsTrigger>
           <TabsTrigger value="explorer">Marktverkenner</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="leads">
+          <MyLeadsPanel />
+        </TabsContent>
 
         {/* Inventory Tab */}
         <TabsContent value="inventory" className="space-y-4">
