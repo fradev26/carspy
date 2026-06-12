@@ -429,6 +429,20 @@ export default function ListingDetail() {
               ))}
             </div>
 
+            {/* 3b. Quick action — jump to full option list */}
+            {totalOptionCount > 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={scrollToOptions}
+                className="w-full justify-between border-border/60 bg-card hover:bg-muted/40"
+              >
+                <span className="font-medium">Bekijk volledige optielijst ({totalOptionCount})</span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              </Button>
+            )}
+
+
             {/* 4. Why this car */}
             {whyBuy.length > 0 && (
               <Card className="border-border/60 shadow-card">
