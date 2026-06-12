@@ -71,6 +71,7 @@ const App = () => (
                 <Route path="/account/instellingen" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
                 <Route path="/help" element={<Help />} />
                 <Route path="/contact" element={<Contact />} />
+              </Route>
               <Route path="/auth" element={<Auth />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
