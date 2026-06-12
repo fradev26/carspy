@@ -9,7 +9,7 @@ import { useFavorites } from '@/hooks/useFavorites';
 import { SEOHead } from '@/components/SEOHead';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CategoryGrid } from '@/components/home/CategoryGrid';
+import { CategorySections } from '@/components/home/CategoryGrid';
 
 
 const faqCategories = [
@@ -288,7 +288,7 @@ const Index = () => {
           </div>
         </div>
       </section>
-      <CategoryGrid />
+      
       <section className="bg-muted/30 py-12 md:py-16">
 
         <div className="container">
@@ -332,6 +332,12 @@ const Index = () => {
           </div>
         </div>
       </section>
+      <CategorySections
+        allListings={allListings}
+        loading={listingsLoading}
+        favorites={favorites}
+        onToggle={toggle}
+      />
 
       {/* Features */}
       <section className="hidden lg:block py-12 md:py-20">
