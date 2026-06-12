@@ -51,31 +51,21 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
               <Link
                 key={item.label}
                 to={path}
+                aria-current={isActive ? 'page' : undefined}
                 className={cn(
-                  'flex flex-col items-center justify-center gap-0.5 w-full h-full transition-all duration-200',
-                  isActive ? 'text-primary' : 'text-muted-foreground active:scale-95'
+                  'flex flex-1 mx-1 my-2 h-12 flex-col items-center justify-center gap-0.5 px-2 rounded-xl transition-all duration-200 ease-out',
+                  isActive
+                    ? 'bg-white/55 dark:bg-white/10 backdrop-blur-md border border-white/60 dark:border-white/15 shadow-sm shadow-primary/15 text-primary'
+                    : 'text-muted-foreground active:scale-[0.97]'
                 )}
               >
-                <item.icon className={cn(
-                  'h-5 w-5 transition-colors duration-200',
-                  isActive && 'text-primary'
-                )} />
-                <div className={cn(
-                  'h-1.5 w-4 rounded-md flex items-center justify-center transition-all duration-200 ease-out',
-                  isActive
-                    ? 'opacity-100 scale-100 bg-white/40 dark:bg-white/10 backdrop-blur-md border border-white/60 dark:border-white/15 shadow-sm shadow-primary/20'
-                    : 'opacity-0 scale-75'
-                )}>
-                  <span className="h-1 w-1 rounded-full bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.6)]" />
-                </div>
-                <span className={cn(
-                  "text-[10px] font-medium transition-colors duration-200 leading-none",
-                  isActive && "text-primary"
-                )}>
+                <item.icon className="h-5 w-5" />
+                <span className="text-[10px] font-medium leading-none">
                   {item.label}
                 </span>
               </Link>
             );
+
 
           })}
         </div>

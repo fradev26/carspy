@@ -1,61 +1,66 @@
 ## Doel
-De huidige actieve-tab indicator in `src/components/BottomNav.tsx` (een klein rood puntje onderaan de tab, onder het label) vervangen door een premium liquid-glass squircle die past bij het VATUUR design system en visueel familie is van de berichtenknop rechtsboven in de header.
+Verwijder de losse indicator en maak de actieve bottomnav-tab één samenhangende liquid-glass pill die zowel icoon als label omsluit.
 
 ## Scope
-Uitsluitend `src/components/BottomNav.tsx`. Geen wijzigingen aan hoogte, iconen, labels, spacing of routing.
+Uitsluitend `src/components/BottomNav.tsx`. Geen wijziging aan hoogte van de nav, iconen, labels, routing of de center AI-knop.
 
 ## Wijzigingen
 
-### 1. Plaatsing herstructureren
-Huidige structuur:
-```
-icon
-label
-[• puntje absoluut onderaan]
-```
-Nieuwe structuur:
-```
-icon
-[glass indicator]  ← direct onder icoon, boven label
-label
-```
+### 1. Verwijderen
+- De huidige glass-squircle `<div>` met rode kern tussen icoon en label verdwijnt volledig.
+- Geen losse puntjes of indicatoren meer.
 
-De indicator komt in de normale flow tussen icoon en label te staan (of als absolute element tussen die twee), nooit onder het label.
+### 2. Nieuwe actieve staat: pill om icoon + label
+De `<Link>` zelf wordt het glass-element. Layout binnen de link blijft `flex flex-col items-center` met icoon boven label, maar krijgt padding en achtergrond als de tab actief is.
 
-### 2. Visuele stijl (liquid glass)
-Klein squircle-element (16×16px, `rounded-md` = 10px volgens onze radius scale, matching de header berichtenknop):
-- Semi-transparante witte achtergrond: `bg-white/40 dark:bg-white/10`
-- Backdrop blur: `backdrop-blur-md`
-- Subtiele border: `border border-white/50 dark:border-white/15`
-- Zachte shadow: `shadow-sm shadow-primary/20`
-- Binnenin gecentreerd een kleine rode kern: 6×6px `rounded-full bg-primary` met lichte glow (`shadow-[0_0_6px_hsl(var(--primary)/0.5)]`)
+Actief:
+- `bg-white/50 dark:bg-white/10`
+- `backdrop-blur-md`
+- `border border-white/60 dark:border-white/15`
+- `shadow-sm shadow-primary/15`
+- `rounded-xl` (= 14px, matched aan onze radius scale en header berichtenknop)
+- `text-primary` op icoon + label
+- Lichte schaalverhoging niet nodig — pill is herkenbaar door de glass-achtergrond.
 
-Inactieve tabs renderen geen indicator (placeholder met `h-4` om verticale shift te voorkomen — of de indicator krijgt `opacity-0` zodat de layout stabiel blijft).
+Inactief:
+- Volledig transparant
+- `text-muted-foreground`
+- Geen border, geen shadow
 
-### 3. Animatie
-- Verschijnen: `animate-scale-in` (bestaand, 200ms ease-out) of inline `transition-all duration-200`.
-- Geen bounce, geen spring. Simpele opacity + scale transitie zodat het wisselen tussen tabs vloeiend voelt.
-- Optioneel: bij hover op niet-actieve tab een zeer subtiele preview (opacity 0 → 30%). Standaard niet, om het clean te houden.
+### 3. Maatvoering & layout
+- Bottomnav-rij blijft `h-16`. De pill krijgt verticaal `py-1` en horizontaal `px-2`, en wordt binnen een wrapper van `h-14` gecentreerd zodat de hoogte van de nav niet verandert.
+- Elke tab-cel behoudt `w-full` zodat de spacing identiek blijft; de pill vult de cel met een kleine inner margin (`mx-1`) zodat actieve tabs visueel iets prominenter ogen zonder layout-shift voor naburige tabs.
+- `gap-0.5` tussen icoon en label voor compacte verticale ritmiek.
 
-### 4. AI-knop ongewijzigd
-De center AI-knop heeft geen actieve indicator nodig (is altijd een actieknop) — geen wijziging.
+### 4. Animatie
+- `transition-all duration-200 ease-out` op de `<Link>` zodat background, border en shadow soepel infaden bij activatie.
+- Geen layout-animatie (we vermijden `framer-motion`/shared-layout om complexiteit te beperken). De fade van de glass-achtergrond + kleurwissel geeft het gewenste "selectie verschuift" gevoel zonder bounce of spring.
+- Active-press feedback: `active:scale-[0.97]` voor tactiele respons.
+
+### 5. AI center-knop ongewijzigd
+De ronde rode AI-knop in het midden blijft exact zoals nu.
 
 ## Technische details
-- Verwijder de huidige `<div className="absolute bottom-1 h-1 w-1 rounded-full bg-primary animate-scale-in" />`.
-- Voeg tussen `<item.icon />` en `<span>{label}</span>` een conditional in:
-  ```tsx
-  <div className={cn(
-    "h-4 w-4 rounded-md flex items-center justify-center transition-all duration-200",
+Binnen de map in `BottomNav.tsx` wordt de `<Link>` zo opgebouwd:
+
+```tsx
+<Link
+  to={path}
+  aria-current={isActive ? 'page' : undefined}
+  className={cn(
+    'flex flex-col items-center justify-center gap-0.5 mx-1 my-2 px-2 rounded-xl transition-all duration-200 ease-out h-12 flex-1',
     isActive
-      ? "bg-white/40 dark:bg-white/10 backdrop-blur-md border border-white/50 dark:border-white/15 shadow-sm shadow-primary/20 scale-100 opacity-100"
-      : "scale-75 opacity-0"
-  )}>
-    <span className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_6px_hsl(var(--primary)/0.5)]" />
-  </div>
-  ```
-- De `relative`/`absolute` wrapper rond het icoon kan vervallen voor de indicator (niet meer nodig).
-- Behoud `text-primary` op het icoon en label bij actief — kleurherkenning blijft dubbel ondersteund.
+      ? 'bg-white/50 dark:bg-white/10 backdrop-blur-md border border-white/60 dark:border-white/15 shadow-sm shadow-primary/15 text-primary'
+      : 'text-muted-foreground active:scale-[0.97]'
+  )}
+>
+  <item.icon className="h-5 w-5" />
+  <span className="text-[10px] font-medium leading-none">{item.label}</span>
+</Link>
+```
+
+De buitenste rij blijft `flex items-center justify-around h-16` zodat AI-knop en tabs uitgelijnd blijven.
 
 ## Verificatie
-- Preview op mobile viewport (`/zoeken`, `/`, `/favorieten`) controleren: indicator zit netjes tussen icoon en label, glas-effect zichtbaar, geen layout shift bij tab-wissel, animatie soepel (~200ms, geen bounce).
-- Donkere modus check.
+- Preview op mobile (`/`, `/zoeken`, `/favorieten`): actieve tab toont één glass pill, geen los puntje of squircle meer, hoogte van nav onveranderd, geen layout-shift bij wissel, fade van achtergrond voelt premium.
+- Donkere modus en safe-area (iOS) check.
