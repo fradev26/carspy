@@ -161,6 +161,8 @@ export default function ListingDetail() {
   const isFavorite = listing ? isFavCheck(listing.id) : false;
   const handleFavoriteToggle = () => { if (listing) toggleFav(listing.id); };
   const [equipmentOpen, setEquipmentOpen] = useState(false);
+  const [optionAccordion, setOptionAccordion] = useState<string>('');
+  const optionListRef = useRef<HTMLDivElement | null>(null);
   const [vehicleAnalysis, setVehicleAnalysis] = useState<any>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
