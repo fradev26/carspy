@@ -38,7 +38,8 @@ export function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, signOut } = useAuth();
-  const { isDealer } = useProfile();
+  const { isDealer, profile } = useProfile();
+  const { favorites } = useFavorites();
   const { count: unreadCount } = useUnreadMessages();
 
   const isHomepage = location.pathname === '/';
