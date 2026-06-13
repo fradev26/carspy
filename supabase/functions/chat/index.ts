@@ -1,11 +1,15 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { corsHeaders, jsonResponse, identify, rateLimit, parseJson, z } from "../_shared/ai-guard.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+const MessageSchema = z.object({
+  role: z.enum(["user", "assistant", "system"]),
+  content: z.string().min(1).max(4000),
+});
+const InputSchema = z.object({
+  messages: z.array(MessageSchema).min(1).max(40),
+  context: z.string().max(40).optional().nullable(),
+});
 
 const SYSTEM_PROMPT_BASE = `Je bent VATUUR. AI, een ervaren auto-expert voor de Belgische tweedehandsmarkt.
 
@@ -185,7 +189,14 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, context } = await req.json();
+    const id = await identify(req);
+    const max = id.isAuth ? 30 : 8;
+    if (!(await rateLimit(id, "chat", max, 60))) {
+      return jsonResponse({ error: "Te veel verzoeken. Wacht even of meld je aan." }, 429);
+    }
+    const v = await parseJson(req, InputSchema);
+    if (!v.ok) return v.response;
+    const { messages, context } = v.data;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 

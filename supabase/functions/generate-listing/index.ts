@@ -1,10 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import { corsHeaders, jsonResponse, requireAuth, rateLimit, parseJson, z } from "../_shared/ai-guard.ts";
 
 const SYSTEM_PROMPT = `Je bent een professionele autoadvertentie-schrijver voor de Belgische en Nederlandse markt. 
 Schrijf een aantrekkelijke, eerlijke en informatieve advertentietekst op basis van de opgegeven specificaties.
@@ -19,13 +14,32 @@ Richtlijnen:
 - Gebruik geen opsommingstekens, schrijf lopende tekst in 2-3 alinea's
 - Noem relevante verkoopargumenten (zuinigheid, betrouwbaarheid, comfort, etc.)`;
 
+const InputSchema = z.object({
+  brand: z.string().min(1).max(60),
+  model: z.string().min(1).max(80),
+  year: z.number().int().min(1950).max(2100),
+  mileage: z.number().int().min(0).max(2_000_000),
+  fuelType: z.string().min(1).max(40),
+  transmission: z.string().min(1).max(40),
+  bodyType: z.string().min(1).max(40),
+  color: z.string().max(40).optional().nullable(),
+  power: z.number().int().min(0).max(2000).optional().nullable(),
+});
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { brand, model, year, mileage, fuelType, transmission, bodyType, color, power } = await req.json();
+    const id = await requireAuth(req);
+    if (id instanceof Response) return id;
+    if (!(await rateLimit(id, "generate-listing", 20, 60))) {
+      return jsonResponse({ error: "Te veel verzoeken, probeer het over een minuut opnieuw." }, 429);
+    }
+    const v = await parseJson(req, InputSchema);
+    if (!v.ok) return v.response;
+    const { brand, model, year, mileage, fuelType, transmission, bodyType, color, power } = v.data;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 

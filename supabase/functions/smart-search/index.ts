@@ -1,10 +1,7 @@
 // Smart Search edge function — converts natural language to structured filters
 // using Lovable AI Gateway with tool calling.
+import { corsHeaders, jsonResponse, identify, rateLimit, parseJson, z } from "../_shared/ai-guard.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
-};
 
 const CAR_BRANDS = [
   'Audi', 'BMW', 'Citroën', 'Cupra', 'Dacia', 'Fiat', 'Ford', 'Honda', 'Hyundai',
@@ -74,23 +71,20 @@ interface ToolArgs {
   confidence: number;
 }
 
+const InputSchema = z.object({ query: z.string().trim().min(1).max(500) });
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
-    const { query } = await req.json();
-    if (!query || typeof query !== 'string' || query.trim().length === 0) {
-      return new Response(JSON.stringify({ error: 'query is required' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    const id = await identify(req);
+    const max = id.isAuth ? 30 : 10;
+    if (!(await rateLimit(id, 'smart-search', max, 60))) {
+      return jsonResponse({ error: 'Te veel verzoeken, probeer zo opnieuw.' }, 429);
     }
-    if (query.length > 500) {
-      return new Response(JSON.stringify({ error: 'query too long' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    const v = await parseJson(req, InputSchema);
+    if (!v.ok) return v.response;
+    const { query } = v.data;
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY not configured');
