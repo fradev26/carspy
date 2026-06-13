@@ -16,9 +16,17 @@ function CarCard({ href, children }: { href: string; children: React.ReactNode }
   const title = match ? match[1] : text;
   const price = match ? match[2] : '';
 
+  const handleClick = () => {
+    try {
+      sessionStorage.setItem('vatuur:reopenChatOnBack', '1');
+    } catch {}
+    window.dispatchEvent(new CustomEvent('vatuur:chat-navigate-listing'));
+  };
+
   return (
     <Link
       to={href}
+      onClick={handleClick}
       className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 my-2 hover:border-primary/50 hover:shadow-md transition-all group no-underline"
     >
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:bg-primary/20 transition-colors">

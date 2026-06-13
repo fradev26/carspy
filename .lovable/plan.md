@@ -1,31 +1,19 @@
-## Doel
+## Probleem
 
-Op dit moment accepteert het registratieformulier in `src/pages/Auth.tsx` enkel een Nederlands BTW-nummer (`NL123456789B01`). Belgische dealers kunnen dus niet registreren. We laten dealers vrij kiezen tussen een Belgisch (BE) of Nederlands (NL) ondernemingsnummer, met passende validatie per land.
+Wanneer iemand in de fullscreen AI-chat (mobiel, `AIFullscreenChat`) op een autokaart ("Bekijk →") klikt, navigeert de `<Link>` naar `/auto/:id`, maar de chat-overlay (`fixed inset-0 z-[60]`) blijft erbovenop staan. De gebruiker ziet dus nog steeds de chat in plaats van de advertentie.
 
-## Wijzigingen
+## Oplossing
 
-Enkel frontend, alleen `src/pages/Auth.tsx`:
+1. **Sluit de chat zodra je naar een advertentie navigeert via een CarCard-link** in `src/modules/chat/ChatMessage.tsx`. In de `CarCard`-`onClick` dispatchen we een custom event `vatuur:chat-navigate-listing`. Geen `preventDefault` — de React Router-navigatie blijft normaal werken; de chat wordt alleen gesloten.
 
-1. **Land-selector toevoegen** in het zakelijk-blok (zichtbaar als "Ik registreer als bedrijf" aanstaat):
-   - Een kleine `Select` (of toggle) met opties **België (BE)** en **Nederland (NL)**, default **BE** (passend bij `vatuur.be`).
-   - Nieuwe state `vatCountry: 'BE' | 'NL'`.
+2. **Markeer dat de chat heropend moet worden bij terug-navigatie.** In dezelfde click handler zetten we `sessionStorage.setItem('vatuur:reopenChatOnBack', '1')`.
 
-2. **Validatie per land** (vervangt huidige `VAT_REGEX`):
-   - BE: `^BE0\d{9}$` (BE + 10 cijfers, beginnend met 0). Voorbeeld: `BE0123456789`.
-   - NL: `^NL\d{9}B\d{2}$`. Voorbeeld: `NL123456789B01`.
-   - Bij invoer eerst spaties/punten strippen en uppercase maken. Als de gebruiker het land-prefix vergeet, automatisch prependen op basis van de geselecteerde `vatCountry` vóór validatie.
+3. **Luister in `BottomNav` (`src/components/BottomNav.tsx`)** naar het custom event en zet `aiOpen` op `false`, zodat de fullscreen overlay direct verdwijnt en de advertentie zichtbaar wordt.
 
-3. **UI-aanpassingen** in het BTW-veld:
-   - Label blijft "BTW-nummer / Ondernemingsnummer".
-   - Placeholder en helptekst volgen de gekozen `vatCountry`:
-     - BE → placeholder `BE0123456789`, hint "Formaat: BE + 10 cijfers".
-     - NL → placeholder `NL123456789B01`, hint "Formaat: NL + 9 cijfers + B + 2 cijfers".
-   - Foutmelding-toast toont het verwachte formaat van het gekozen land.
-
-4. **Doorgeven aan `signUp`**: het genormaliseerde nummer (met landprefix, uppercase, zonder spaties) wordt zoals nu via `dealerOptions.vatNumber` doorgestuurd. Geen wijziging aan `useAuth`, profielentabel of backend nodig — `profiles.vat_number` is een vrij tekstveld.
+4. **Heropen de chat bij `popstate`** (klik op het terug-pijltje van de browser of het ArrowLeft-pijltje op de detailpagina, dat al `navigate(-1)` gebruikt). In `BottomNav` registreren we een `popstate`-listener: als de sessionStorage-vlag staat én we komen terug op de pagina waar we vandaan kwamen, zetten we `aiOpen=true` en wissen we de vlag. De vlag wordt ook gewist als de gebruiker een nieuwe vooruit-navigatie doet (via een gewone Link-klik) of de chat handmatig sluit, zodat hij niet onbedoeld opnieuw opent in een latere sessie.
 
 ## Out of scope
 
-- Geen externe VIES-validatie (zelfde aanpak als nu).
-- Geen aanpassing aan `AccountSettings` (daar wordt het BTW-nummer momenteel niet getoond/bewerkt).
-- Geen databasewijzigingen.
+- Desktop `ChatWidget` (de gebruiker beschrijft het mobiele fullscreen-overlaygedrag; de desktop-widget is een hoek-popover die de pagina niet bedekt).
+- Wijzigen van de back-knop op `/auto/:id` — die roept al `navigate(-1)` op, wat een `popstate` triggert.
+- Geen routing- of statebeheer-refactor; we werken puur via een DOM-event en sessionStorage zodat we geen prop-drilling door `useChat`/`ChatMessage` hoeven te doen.
