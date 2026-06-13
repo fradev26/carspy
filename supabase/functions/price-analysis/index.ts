@@ -1,16 +1,37 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { corsHeaders, jsonResponse, requireAuth, rateLimit, parseJson, z } from "../_shared/ai-guard.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+const ListingSchema = z.object({
+  title: z.string().min(1).max(200),
+  year: z.number().int().min(1950).max(2100),
+  mileage: z.number().int().min(0).max(2_000_000),
+  fuelType: z.string().min(1).max(40),
+  transmission: z.string().min(1).max(40),
+  power: z.number().int().min(0).max(2000).optional().nullable(),
+  features: z.array(z.string().max(60)).max(60).optional(),
+  price: z.number().int().min(0).max(10_000_000),
+});
+const AnalysisSchema = z.object({
+  averagePrice: z.number().min(0).max(10_000_000),
+  minPrice: z.number().min(0).max(10_000_000),
+  maxPrice: z.number().min(0).max(10_000_000),
+  comparableCount: z.number().int().min(0).max(100000),
+  rating: z.enum(["good", "fair", "high"]),
+});
+const InputSchema = z.object({ listing: ListingSchema, analysis: AnalysisSchema });
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { listing, analysis } = await req.json();
+    const id = await requireAuth(req);
+    if (id instanceof Response) return id;
+    if (!(await rateLimit(id, "price-analysis", 20, 60))) {
+      return jsonResponse({ error: "Te veel verzoeken, wacht even." }, 429);
+    }
+    const v = await parseJson(req, InputSchema);
+    if (!v.ok) return v.response;
+    const { listing, analysis } = v.data;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
