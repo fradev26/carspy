@@ -105,14 +105,16 @@ function SignupForm() {
         toast({ title: 'Bedrijfsnaam is verplicht', variant: 'destructive' });
         return;
       }
-      if (!VAT_REGEX.test(vatNumber.replace(/\s/g, '').toUpperCase())) {
-        toast({ title: 'Ongeldig BTW-nummer', description: 'Formaat: NL123456789B01', variant: 'destructive' });
+      const pattern = VAT_PATTERNS[vatCountry];
+      const normalized = normalizeVat(vatNumber, vatCountry);
+      if (!pattern.regex.test(normalized)) {
+        toast({ title: 'Ongeldig ondernemingsnummer', description: pattern.hint, variant: 'destructive' });
         return;
       }
     }
 
     setIsLoading(true);
-    const dealerOptions = isBusiness ? { dealerName: dealerName.trim(), vatNumber: vatNumber.replace(/\s/g, '').toUpperCase() } : undefined;
+    const dealerOptions = isBusiness ? { dealerName: dealerName.trim(), vatNumber: normalizeVat(vatNumber, vatCountry) } : undefined;
     const { error } = await signUp(email, password, name, dealerOptions);
     setIsLoading(false);
 
