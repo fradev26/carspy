@@ -1,4 +1,4 @@
-import { forwardRef, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Search, Heart, User, Sparkles, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
