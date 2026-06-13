@@ -12,7 +12,17 @@ import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
-const VAT_REGEX = /^NL\d{9}B\d{2}$/;
+const VAT_PATTERNS = {
+  BE: { regex: /^BE0\d{9}$/, placeholder: 'BE0123456789', hint: 'Formaat: BE + 10 cijfers (start met 0)' },
+  NL: { regex: /^NL\d{9}B\d{2}$/, placeholder: 'NL123456789B01', hint: 'Formaat: NL + 9 cijfers + B + 2 cijfers' },
+} as const;
+type VatCountry = keyof typeof VAT_PATTERNS;
+
+function normalizeVat(input: string, country: VatCountry): string {
+  let v = input.replace(/[\s.\-]/g, '').toUpperCase();
+  if (!v.startsWith(country)) v = country + v.replace(/^(BE|NL)/, '');
+  return v;
+}
 
 function LoginForm() {
   const navigate = useNavigate();
