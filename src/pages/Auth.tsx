@@ -26,12 +26,15 @@ function normalizeVat(input: string, country: VatCountry): string {
 
 function LoginForm() {
   const navigate = useNavigate();
-  const { signIn } = useAuth();
+  const { signIn, resetPassword } = useAuth();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [mode, setMode] = useState<'login' | 'forgot'>('login');
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +57,58 @@ function LoginForm() {
     }
   };
 
+  const handleForgot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetEmail) {
+      toast({ title: 'Vul je emailadres in', variant: 'destructive' });
+      return;
+    }
+    setResetLoading(true);
+    const { error } = await resetPassword(resetEmail);
+    setResetLoading(false);
+    if (error) {
+      toast({ title: 'Versturen mislukt', description: error.message, variant: 'destructive' });
+    } else {
+      toast({
+        title: 'Check je inbox',
+        description: 'We hebben je een link gestuurd om je wachtwoord opnieuw in te stellen.',
+      });
+      setMode('login');
+      setResetEmail('');
+    }
+  };
+
+  if (mode === 'forgot') {
+    return (
+      <form onSubmit={handleForgot} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="reset-email">Email</Label>
+          <Input
+            id="reset-email"
+            type="email"
+            placeholder="naam@voorbeeld.nl"
+            value={resetEmail}
+            onChange={(e) => setResetEmail(e.target.value)}
+          />
+          <p className="text-xs text-muted-foreground">
+            Vul je emailadres in en we sturen een link om een nieuw wachtwoord in te stellen.
+          </p>
+        </div>
+        <Button type="submit" className="w-full" disabled={resetLoading}>
+          {resetLoading ? 'Versturen...' : 'Verstuur resetlink'}
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          className="w-full"
+          onClick={() => setMode('login')}
+        >
+          Terug naar inloggen
+        </Button>
+      </form>
+    );
+  }
+
   return (
     <form onSubmit={handleLogin} className="space-y-4">
       <div className="space-y-2">
@@ -67,6 +122,15 @@ function LoginForm() {
           <Button type="button" variant="ghost" size="icon" aria-label={showPassword ? 'Wachtwoord verbergen' : 'Wachtwoord tonen'} className="absolute right-0 top-0 h-full px-3" onClick={() => setShowPassword(!showPassword)}>
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </Button>
+        </div>
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => setMode('forgot')}
+            className="text-xs text-primary hover:underline focus-ring rounded"
+          >
+            Wachtwoord vergeten?
+          </button>
         </div>
       </div>
       <Button type="submit" className="w-full" disabled={isLoading}>
