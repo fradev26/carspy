@@ -169,9 +169,31 @@ function SignupForm() {
             <Input id="dealer-name" placeholder="Uw bedrijfsnaam" value={dealerName} onChange={(e) => setDealerName(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="vat-number">BTW-nummer</Label>
-            <Input id="vat-number" placeholder="NL123456789B01" value={vatNumber} onChange={(e) => setVatNumber(e.target.value)} />
-            <p className="text-xs text-muted-foreground">Formaat: NL + 9 cijfers + B + 2 cijfers</p>
+            <Label htmlFor="vat-country">Land</Label>
+            <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Land ondernemingsnummer">
+              {(['BE', 'NL'] as VatCountry[]).map((c) => (
+                <Button
+                  key={c}
+                  type="button"
+                  variant={vatCountry === c ? 'default' : 'outline'}
+                  role="radio"
+                  aria-checked={vatCountry === c}
+                  onClick={() => setVatCountry(c)}
+                >
+                  {c === 'BE' ? '🇧🇪 België' : '🇳🇱 Nederland'}
+                </Button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="vat-number">Ondernemingsnummer / BTW-nummer</Label>
+            <Input
+              id="vat-number"
+              placeholder={VAT_PATTERNS[vatCountry].placeholder}
+              value={vatNumber}
+              onChange={(e) => setVatNumber(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">{VAT_PATTERNS[vatCountry].hint}</p>
           </div>
         </div>
       )}
