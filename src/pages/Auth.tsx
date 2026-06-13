@@ -12,7 +12,17 @@ import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
-const VAT_REGEX = /^NL\d{9}B\d{2}$/;
+const VAT_PATTERNS = {
+  BE: { regex: /^BE0\d{9}$/, placeholder: 'BE0123456789', hint: 'Formaat: BE + 10 cijfers (start met 0)' },
+  NL: { regex: /^NL\d{9}B\d{2}$/, placeholder: 'NL123456789B01', hint: 'Formaat: NL + 9 cijfers + B + 2 cijfers' },
+} as const;
+type VatCountry = keyof typeof VAT_PATTERNS;
+
+function normalizeVat(input: string, country: VatCountry): string {
+  let v = input.replace(/[\s.\-]/g, '').toUpperCase();
+  if (!v.startsWith(country)) v = country + v.replace(/^(BE|NL)/, '');
+  return v;
+}
 
 function LoginForm() {
   const navigate = useNavigate();
@@ -78,6 +88,7 @@ function SignupForm() {
   const [isBusiness, setIsBusiness] = useState(false);
   const [dealerName, setDealerName] = useState('');
   const [vatNumber, setVatNumber] = useState('');
+  const [vatCountry, setVatCountry] = useState<VatCountry>('BE');
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,14 +105,16 @@ function SignupForm() {
         toast({ title: 'Bedrijfsnaam is verplicht', variant: 'destructive' });
         return;
       }
-      if (!VAT_REGEX.test(vatNumber.replace(/\s/g, '').toUpperCase())) {
-        toast({ title: 'Ongeldig BTW-nummer', description: 'Formaat: NL123456789B01', variant: 'destructive' });
+      const pattern = VAT_PATTERNS[vatCountry];
+      const normalized = normalizeVat(vatNumber, vatCountry);
+      if (!pattern.regex.test(normalized)) {
+        toast({ title: 'Ongeldig ondernemingsnummer', description: pattern.hint, variant: 'destructive' });
         return;
       }
     }
 
     setIsLoading(true);
-    const dealerOptions = isBusiness ? { dealerName: dealerName.trim(), vatNumber: vatNumber.replace(/\s/g, '').toUpperCase() } : undefined;
+    const dealerOptions = isBusiness ? { dealerName: dealerName.trim(), vatNumber: normalizeVat(vatNumber, vatCountry) } : undefined;
     const { error } = await signUp(email, password, name, dealerOptions);
     setIsLoading(false);
 
@@ -156,9 +169,31 @@ function SignupForm() {
             <Input id="dealer-name" placeholder="Uw bedrijfsnaam" value={dealerName} onChange={(e) => setDealerName(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="vat-number">BTW-nummer</Label>
-            <Input id="vat-number" placeholder="NL123456789B01" value={vatNumber} onChange={(e) => setVatNumber(e.target.value)} />
-            <p className="text-xs text-muted-foreground">Formaat: NL + 9 cijfers + B + 2 cijfers</p>
+            <Label htmlFor="vat-country">Land</Label>
+            <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Land ondernemingsnummer">
+              {(['BE', 'NL'] as VatCountry[]).map((c) => (
+                <Button
+                  key={c}
+                  type="button"
+                  variant={vatCountry === c ? 'default' : 'outline'}
+                  role="radio"
+                  aria-checked={vatCountry === c}
+                  onClick={() => setVatCountry(c)}
+                >
+                  {c === 'BE' ? '🇧🇪 België' : '🇳🇱 Nederland'}
+                </Button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="vat-number">Ondernemingsnummer / BTW-nummer</Label>
+            <Input
+              id="vat-number"
+              placeholder={VAT_PATTERNS[vatCountry].placeholder}
+              value={vatNumber}
+              onChange={(e) => setVatNumber(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">{VAT_PATTERNS[vatCountry].hint}</p>
           </div>
         </div>
       )}

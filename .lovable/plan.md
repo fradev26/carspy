@@ -1,21 +1,31 @@
-# Plan: Mock-voertuigen toevoegen voor categorie-secties
-
 ## Doel
-12 mock-listings invoegen (3 per categorie) zodat de 4 nieuwe categorie-secties op de homepage zichtbaar zijn.
 
-## Aanpak
-Eén `INSERT` in `public.listings` met `status='active'`, gekoppeld aan de bestaande gebruiker `40ff791c-9dc7-44c1-bd31-3bd02ebeb456` (eigenaar van de huidige actieve Golf GTI).
+Op dit moment accepteert het registratieformulier in `src/pages/Auth.tsx` enkel een Nederlands BTW-nummer (`NL123456789B01`). Belgische dealers kunnen dus niet registreren. We laten dealers vrij kiezen tussen een Belgisch (BE) of Nederlands (NL) ondernemingsnummer, met passende validatie per land.
 
-## Categorieën
-- **SUV's** (`body_type='suv'`): Volvo XC60, Audi Q5, Toyota RAV4
-- **Elektrisch** (`fuel_type='elektrisch'`): Tesla Model 3, Hyundai Kona Electric, Volkswagen ID.4
-- **Budget < €10.000**: Opel Corsa (€7.950), Peugeot 208 (€8.500), Renault Clio (€9.250)
-- **Sportief** (`body_type='coupe'`): BMW 4-serie, Audi A5, Ford Mustang
+## Wijzigingen
 
-## Velden per listing
-`title, brand, model, year, price, mileage, fuel_type, transmission, body_type, color, power, images, city, province, status='active'`. Voor `images` gebruiken we `/placeholder.svg` (al door `ListingCard` afgehandeld), zodat we geen externe hosts hoeven te raken.
+Enkel frontend, alleen `src/pages/Auth.tsx`:
 
-## Niet in scope
-- Geen schema-wijzigingen.
-- Geen aanpassingen aan frontend code.
-- Echte afbeeldingen — placeholders zijn voldoende voor zichtbaarheidstest.
+1. **Land-selector toevoegen** in het zakelijk-blok (zichtbaar als "Ik registreer als bedrijf" aanstaat):
+   - Een kleine `Select` (of toggle) met opties **België (BE)** en **Nederland (NL)**, default **BE** (passend bij `vatuur.be`).
+   - Nieuwe state `vatCountry: 'BE' | 'NL'`.
+
+2. **Validatie per land** (vervangt huidige `VAT_REGEX`):
+   - BE: `^BE0\d{9}$` (BE + 10 cijfers, beginnend met 0). Voorbeeld: `BE0123456789`.
+   - NL: `^NL\d{9}B\d{2}$`. Voorbeeld: `NL123456789B01`.
+   - Bij invoer eerst spaties/punten strippen en uppercase maken. Als de gebruiker het land-prefix vergeet, automatisch prependen op basis van de geselecteerde `vatCountry` vóór validatie.
+
+3. **UI-aanpassingen** in het BTW-veld:
+   - Label blijft "BTW-nummer / Ondernemingsnummer".
+   - Placeholder en helptekst volgen de gekozen `vatCountry`:
+     - BE → placeholder `BE0123456789`, hint "Formaat: BE + 10 cijfers".
+     - NL → placeholder `NL123456789B01`, hint "Formaat: NL + 9 cijfers + B + 2 cijfers".
+   - Foutmelding-toast toont het verwachte formaat van het gekozen land.
+
+4. **Doorgeven aan `signUp`**: het genormaliseerde nummer (met landprefix, uppercase, zonder spaties) wordt zoals nu via `dealerOptions.vatNumber` doorgestuurd. Geen wijziging aan `useAuth`, profielentabel of backend nodig — `profiles.vat_number` is een vrij tekstveld.
+
+## Out of scope
+
+- Geen externe VIES-validatie (zelfde aanpak als nu).
+- Geen aanpassing aan `AccountSettings` (daar wordt het BTW-nummer momenteel niet getoond/bewerkt).
+- Geen databasewijzigingen.
