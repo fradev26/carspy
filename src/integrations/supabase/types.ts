@@ -751,6 +751,33 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          created_at: string
+          endpoint: string
+          id: string
+          key: string
+          request_count: number
+          window_start: string
+        }
+        Insert: {
+          created_at?: string
+          endpoint: string
+          id?: string
+          key: string
+          request_count?: number
+          window_start?: string
+        }
+        Update: {
+          created_at?: string
+          endpoint?: string
+          id?: string
+          key?: string
+          request_count?: number
+          window_start?: string
+        }
+        Relationships: []
+      }
       saved_searches: {
         Row: {
           created_at: string
@@ -920,6 +947,30 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_rate_limits: { Args: never; Returns: undefined }
+      get_my_profile: {
+        Args: never
+        Returns: {
+          avatar_url: string | null
+          company_website: string | null
+          created_at: string
+          dealer_name: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          is_dealer: boolean
+          location: string | null
+          phone: string | null
+          updated_at: string
+          vat_number: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
