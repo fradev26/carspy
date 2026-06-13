@@ -189,7 +189,14 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, context } = await req.json();
+    const id = await identify(req);
+    const max = id.isAuth ? 30 : 8;
+    if (!(await rateLimit(id, "chat", max, 60))) {
+      return jsonResponse({ error: "Te veel verzoeken. Wacht even of meld je aan." }, 429);
+    }
+    const v = await parseJson(req, InputSchema);
+    if (!v.ok) return v.response;
+    const { messages, context } = v.data;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
