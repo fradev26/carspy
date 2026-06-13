@@ -266,7 +266,7 @@ export function useListings() {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const joined = `${LISTING_COLUMNS}, profiles:profiles!listings_user_id_fkey (id, full_name, dealer_name, is_dealer, phone, email, avatar_url, created_at)`;
+      const joined = `${LISTING_COLUMNS}, profiles:profiles!listings_user_id_fkey (id, full_name, dealer_name, is_dealer, avatar_url, created_at)`;
       const { data, error } = await supabase
         .from('listings')
         .select(joined)
@@ -320,7 +320,7 @@ export function useListing(id: string | undefined) {
     (async () => {
       setLoading(true);
       setError(null);
-      const joined = `${LISTING_COLUMNS}, profiles:profiles!listings_user_id_fkey (id, full_name, dealer_name, is_dealer, phone, email, avatar_url, created_at)`;
+      const joined = `${LISTING_COLUMNS}, profiles:profiles!listings_user_id_fkey (id, full_name, dealer_name, is_dealer, avatar_url, created_at)`;
       const { data, error } = await supabase
         .from('listings')
         .select(joined)
