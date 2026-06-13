@@ -494,9 +494,10 @@ export default function Sell() {
       if (autosaveKey) localStorage.removeItem(autosaveKey);
       toast({ title: 'Advertentie geplaatst!' });
       navigate('/dashboard');
-    } catch (e) {
-      console.error(e);
-      toast({ title: 'Er ging iets mis', variant: 'destructive' });
+    } catch (e: any) {
+      console.error('Sell submit failed:', e);
+      const msg = e?.message || e?.error_description || 'Er ging iets mis';
+      toast({ title: 'Plaatsen mislukt', description: msg, variant: 'destructive' });
     } finally {
       setIsSubmitting(false);
     }
