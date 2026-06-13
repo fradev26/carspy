@@ -206,9 +206,24 @@ function SignupForm() {
 }
 
 export default function Auth() {
+  const navigate = useNavigate();
+  const handleBack = () => {
+    if (window.history.length > 1) navigate(-1);
+    else navigate('/');
+  };
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4 py-12">
+    <div className="relative min-h-screen flex items-center justify-center bg-muted/30 px-4 py-12">
       <SEOHead title="Inloggen - VATUUR." description="Log in of maak een account aan bij VATUUR." noindex />
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        aria-label="Terug"
+        onClick={handleBack}
+        className="absolute top-4 left-4 focus-ring"
+      >
+        <ArrowLeft className="h-5 w-5" />
+      </Button>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex justify-center">
