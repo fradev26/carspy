@@ -88,6 +88,7 @@ function SignupForm() {
   const [isBusiness, setIsBusiness] = useState(false);
   const [dealerName, setDealerName] = useState('');
   const [vatNumber, setVatNumber] = useState('');
+  const [vatCountry, setVatCountry] = useState<VatCountry>('BE');
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
