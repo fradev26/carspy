@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { SEOHead } from '@/components/SEOHead';
 import { Logo } from '@/components/Logo';
 import { useNavigate, Link } from 'react-router-dom';
-import { Eye, EyeOff, Building2 } from 'lucide-react';
+import { Eye, EyeOff, Building2, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
