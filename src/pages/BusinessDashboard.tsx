@@ -308,8 +308,10 @@ export default function BusinessDashboard() {
       ? { is_premium: true }
       : { boost_until: new Date(Date.now() + 7 * 86400000).toISOString() };
 
-    for (const id of ids) {
-      await supabase.from('listings').update(updates as any).eq('id', id);
+    const { error } = await supabase.from('listings').update(updates as any).in('id', ids);
+    if (error) {
+      toast.error('Bulkactie mislukt: ' + error.message);
+      return;
     }
     toast.success(`${ids.length} listings ${action === 'premium' ? 'Premium gemaakt' : 'geboost'}!`);
     setSelectedIds(new Set());
