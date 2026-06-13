@@ -1,13 +1,16 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { corsHeaders, jsonResponse, identify, rateLimit, parseJson, z } from "../_shared/ai-guard.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const InputSchema = z.object({
+  name: z.string().trim().min(2).max(200),
+  email: z.string().trim().toLowerCase().email().max(200),
+  phone: z.string().trim().max(50).optional().nullable(),
+  company: z.string().trim().max(200).optional().nullable(),
+  vat_number: z.string().trim().max(50).optional().nullable(),
+  message: z.string().trim().max(2000).optional().nullable(),
+  source: z.string().max(100).optional().default("dealers_page_ai"),
+});
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -15,65 +18,41 @@ serve(async (req) => {
   }
 
   try {
-    const body = await req.json();
-    const name = String(body.name ?? "").trim().slice(0, 200);
-    const email = String(body.email ?? "").trim().toLowerCase().slice(0, 200);
-    const phone = body.phone ? String(body.phone).trim().slice(0, 50) : null;
-    const company = body.company ? String(body.company).trim().slice(0, 200) : null;
-    const vat_number = body.vat_number ? String(body.vat_number).trim().slice(0, 50) : null;
-    const message = body.message ? String(body.message).trim().slice(0, 2000) : null;
-    const source = body.source ? String(body.source).slice(0, 100) : "dealers_page_ai";
-
-    if (!name || name.length < 2) {
-      return new Response(JSON.stringify({ error: "Naam is verplicht." }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const id = await identify(req);
+    if (!(await rateLimit(id, "dealer-lead", 5, 60))) {
+      return jsonResponse({ error: "Te veel aanvragen, probeer het later opnieuw." }, 429);
     }
-    if (!EMAIL_RE.test(email)) {
-      return new Response(JSON.stringify({ error: "Ongeldig e-mailadres." }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const v = await parseJson(req, InputSchema);
+    if (!v.ok) return v.response;
+    const { name, email, phone, company, vat_number, message, source } = v.data;
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    // Best-effort: associate with logged-in user if Authorization is a user JWT
-    let user_id: string | null = null;
-    const authHeader = req.headers.get("Authorization");
-    if (authHeader?.startsWith("Bearer ")) {
-      try {
-        const token = authHeader.slice(7);
-        const { data } = await supabase.auth.getUser(token);
-        user_id = data.user?.id ?? null;
-      } catch { /* ignore */ }
-    }
-
     const { data, error } = await supabase
       .from("dealer_leads")
-      .insert({ name, email, phone, company, vat_number, message, source, user_id })
+      .insert({
+        name,
+        email,
+        phone: phone ?? null,
+        company: company ?? null,
+        vat_number: vat_number ?? null,
+        message: message ?? null,
+        source,
+        user_id: id.userId,
+      })
       .select("id")
       .single();
 
     if (error) {
       console.error("dealer-lead insert error:", error);
-      return new Response(JSON.stringify({ error: "Kon lead niet opslaan." }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return jsonResponse({ error: "Kon lead niet opslaan." }, 500);
     }
 
-    return new Response(JSON.stringify({ ok: true, id: data.id }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return jsonResponse({ ok: true, id: data.id });
   } catch (e) {
     console.error("dealer-lead error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Onbekende fout" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return jsonResponse({ error: e instanceof Error ? e.message : "Onbekende fout" }, 500);
   }
 });
