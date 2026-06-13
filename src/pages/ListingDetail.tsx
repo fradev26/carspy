@@ -235,10 +235,56 @@ export default function ListingDetail() {
     return [vehicle, breadcrumb];
   }, [listing, displayPrice]);
 
+  const [contactLoading, setContactLoading] = useState(false);
+
   const handleSendMessage = async () => {
-    if (!user) { navigate('/auth'); return; }
     if (!listing) return;
-    toast({ title: 'Bericht verzenden', description: 'De berichtenfunctie wordt binnenkort gelanceerd.' });
+    if (!user) {
+      // Preserve the listing URL so login redirects back here
+      navigate('/auth', { state: { from: { pathname: `/auto/${listing.id}` } } });
+      return;
+    }
+    if (user.id === listing.seller.id) {
+      toast({ title: 'Je eigen advertentie', description: 'Je kan geen bericht naar jezelf sturen.' });
+      return;
+    }
+    setContactLoading(true);
+    try {
+      // Look for an existing conversation between this buyer and seller for this listing
+      const { data: existing } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('listing_id', listing.id)
+        .eq('buyer_id', user.id)
+        .eq('seller_id', listing.seller.id)
+        .maybeSingle();
+
+      let conversationId = existing?.id as string | undefined;
+
+      if (!conversationId) {
+        const { data: created, error: insertError } = await supabase
+          .from('conversations')
+          .insert({
+            listing_id: listing.id,
+            buyer_id: user.id,
+            seller_id: listing.seller.id,
+          })
+          .select('id')
+          .single();
+        if (insertError) throw insertError;
+        conversationId = created.id as string;
+      }
+
+      navigate(`/berichten?c=${conversationId}`);
+    } catch (err) {
+      toast({
+        title: 'Kon gesprek niet starten',
+        description: err instanceof Error ? err.message : 'Probeer het opnieuw.',
+        variant: 'destructive',
+      });
+    } finally {
+      setContactLoading(false);
+    }
   };
 
   const handleShare = async () => {
@@ -945,9 +991,9 @@ export default function ListingDetail() {
                       </a>
                     </Button>
                   )}
-                  <Button variant="outline" className="w-full gap-2 h-12 text-base border-border/60" onClick={handleSendMessage}>
-                    <Mail className="h-5 w-5" /> Stuur bericht
-                  </Button>
+                <Button variant="outline" className="w-full gap-2 h-12 text-base border-border/60" onClick={handleSendMessage} disabled={contactLoading}>
+                  <Mail className="h-5 w-5" /> {contactLoading ? 'Bezig...' : 'Stuur bericht'}
+                </Button>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
