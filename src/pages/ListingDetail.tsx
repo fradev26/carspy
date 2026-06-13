@@ -1013,8 +1013,8 @@ export default function ListingDetail() {
                     </a>
                   </Button>
                 )}
-                <Button variant="outline" className="flex-1 gap-2 h-12 border-border/60" onClick={handleSendMessage}>
-                  <Mail className="h-5 w-5" /> Bericht
+                <Button variant="outline" className="flex-1 gap-2 h-12 border-border/60" onClick={handleSendMessage} disabled={contactLoading}>
+                  <Mail className="h-5 w-5" /> {contactLoading ? '...' : 'Bericht'}
                 </Button>
               </div>
             </div>
