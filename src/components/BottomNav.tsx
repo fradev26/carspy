@@ -1,4 +1,4 @@
-import { forwardRef, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Search, Heart, User, Sparkles, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -19,6 +19,28 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
   const { user } = useAuth();
   const { isDealer } = useProfile();
   const [aiOpen, setAiOpen] = useState(false);
+
+  // Close the fullscreen chat as soon as the user clicks a listing CarCard inside it
+  useEffect(() => {
+    const onNavigate = () => setAiOpen(false);
+    window.addEventListener('vatuur:chat-navigate-listing', onNavigate);
+    return () => window.removeEventListener('vatuur:chat-navigate-listing', onNavigate);
+  }, []);
+
+  // Reopen the chat when the user returns from the listing detail page
+  useEffect(() => {
+    let flag: string | null = null;
+    try { flag = sessionStorage.getItem('vatuur:reopenChatOnBack'); } catch {}
+    if (flag === '1' && !location.pathname.startsWith('/auto/')) {
+      try { sessionStorage.removeItem('vatuur:reopenChatOnBack'); } catch {}
+      setAiOpen(true);
+    }
+  }, [location.pathname]);
+
+  const handleAiClose = () => {
+    setAiOpen(false);
+    try { sessionStorage.removeItem('vatuur:reopenChatOnBack'); } catch {}
+  };
 
   return (
     <>
@@ -86,7 +108,7 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
       </nav>
 
       {/* Fullscreen AI Chat Overlay */}
-      <AIFullscreenChat open={aiOpen} onClose={() => setAiOpen(false)} />
+      <AIFullscreenChat open={aiOpen} onClose={handleAiClose} />
     </>
   );
 });
