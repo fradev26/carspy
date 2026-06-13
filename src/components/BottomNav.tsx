@@ -20,6 +20,28 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
   const { isDealer } = useProfile();
   const [aiOpen, setAiOpen] = useState(false);
 
+  // Close the fullscreen chat as soon as the user clicks a listing CarCard inside it
+  useEffect(() => {
+    const onNavigate = () => setAiOpen(false);
+    window.addEventListener('vatuur:chat-navigate-listing', onNavigate);
+    return () => window.removeEventListener('vatuur:chat-navigate-listing', onNavigate);
+  }, []);
+
+  // Reopen the chat when the user returns from the listing detail page
+  useEffect(() => {
+    let flag: string | null = null;
+    try { flag = sessionStorage.getItem('vatuur:reopenChatOnBack'); } catch {}
+    if (flag === '1' && !location.pathname.startsWith('/auto/')) {
+      try { sessionStorage.removeItem('vatuur:reopenChatOnBack'); } catch {}
+      setAiOpen(true);
+    }
+  }, [location.pathname]);
+
+  const handleAiClose = () => {
+    setAiOpen(false);
+    try { sessionStorage.removeItem('vatuur:reopenChatOnBack'); } catch {}
+  };
+
   return (
     <>
       {/* Gradient fade above nav for smooth blend into content */}
