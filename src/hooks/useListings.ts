@@ -246,9 +246,10 @@ function mapRow(row: ListingRow): Listing {
 async function fetchWithProfileFallback<T extends ListingRow>(rows: T[]): Promise<Listing[]> {
   const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
   if (userIds.length === 0) return rows.map(mapRow);
+  // Only public-safe columns — phone/email are PII and require the get_my_profile RPC
   const { data: profs } = await supabase
     .from('profiles')
-    .select('id, full_name, dealer_name, is_dealer, phone, email, avatar_url, created_at')
+    .select('id, full_name, dealer_name, is_dealer, avatar_url, created_at')
     .in('id', userIds);
   const byId = new Map<string, ProfileRow>(
     ((profs ?? []) as ProfileRow[]).map((p) => [p.id, p]),
