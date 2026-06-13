@@ -98,11 +98,11 @@ const websiteJsonLd = [
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "VATUUR.",
-    "url": "https://vatuur.nl/",
+    "url": "https://vatuur.be/",
     "description": "Tweedehands auto's kopen en verkopen in Nederland en België. Vind jouw perfecte occasion bij geverifieerde dealers.",
     "potentialAction": {
       "@type": "SearchAction",
-      "target": "https://vatuur.nl/zoeken?brand={search_term_string}",
+      "target": "https://vatuur.be/zoeken?brand={search_term_string}",
       "query-input": "required name=search_term_string"
     }
   },
@@ -110,11 +110,11 @@ const websiteJsonLd = [
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "VATUUR.",
-    "url": "https://vatuur.nl",
-    "logo": "https://vatuur.nl/favicon.ico",
+    "url": "https://vatuur.be",
+    "logo": "https://vatuur.be/favicon.ico",
     "contactPoint": {
       "@type": "ContactPoint",
-      "email": "info@vatuur.nl",
+      "email": "info@vatuur.be",
       "contactType": "customer service",
       "availableLanguage": "Dutch"
     }
@@ -144,7 +144,7 @@ const Index = () => {
       <SEOHead
         title="VATUUR. - Tweedehands auto's kopen en verkopen in Nederland en België"
         description="Doorzoek 25.000+ occasions. Vind jouw perfecte tweedehands auto bij geverifieerde dealers in Nederland en België."
-        canonical="https://vatuur.nl/"
+        canonical="https://vatuur.be/"
         jsonLd={websiteJsonLd}
       />
       {/* Mobile-only H1 for SEO (desktop H1 lives inside hero) */}

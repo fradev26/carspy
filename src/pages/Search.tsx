@@ -395,13 +395,13 @@ export default function Search() {
       <SEOHead
         title="Auto's zoeken - VATUUR."
         description="Zoek en filter tweedehands auto's op merk, prijs, bouwjaar, kilometerstand en meer. Vind jouw perfecte occasion."
-        canonical="https://vatuur.nl/zoeken"
+        canonical="https://vatuur.be/zoeken"
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
           "itemListElement": [
-            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://vatuur.nl/" },
-            { "@type": "ListItem", "position": 2, "name": "Zoeken", "item": "https://vatuur.nl/zoeken" }
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://vatuur.be/" },
+            { "@type": "ListItem", "position": 2, "name": "Zoeken", "item": "https://vatuur.be/zoeken" }
           ]
         }}
       />

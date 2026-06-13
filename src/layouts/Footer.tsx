@@ -77,7 +77,7 @@ export function Footer() {
             <ul className="space-y-3 text-sm">
               <li className="flex items-center gap-2 text-muted-foreground">
                 <Mail className="h-4 w-4" />
-                <a href="mailto:info@vatuur.nl" className="hover:text-foreground transition-colors">info@vatuur.nl</a>
+                <a href="mailto:info@vatuur.be" className="hover:text-foreground transition-colors">info@vatuur.be</a>
               </li>
               <li className="text-muted-foreground text-xs leading-relaxed">
                 Neem contact op via e-mail voor vragen over VATUUR.

@@ -227,9 +227,9 @@ export default function ListingDetail() {
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
       "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://vatuur.nl/" },
-        { "@type": "ListItem", "position": 2, "name": "Zoeken", "item": "https://vatuur.nl/zoeken" },
-        { "@type": "ListItem", "position": 3, "name": listing.title, "item": `https://vatuur.nl/auto/${listing.id}` }
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://vatuur.be/" },
+        { "@type": "ListItem", "position": 2, "name": "Zoeken", "item": "https://vatuur.be/zoeken" },
+        { "@type": "ListItem", "position": 3, "name": listing.title, "item": `https://vatuur.be/auto/${listing.id}` }
       ]
     };
     return [vehicle, breadcrumb];
@@ -372,7 +372,7 @@ export default function ListingDetail() {
       <SEOHead
         title={`${listing.title} - VATUUR.`}
         description={`${listing.title} - ${formatPrice(displayPrice)} - ${formatMileage(listing.mileage, listing.mileageUnit)} - Bouwjaar ${listing.year} - ${listing.fuelType} - ${listing.transmission}`}
-        canonical={`https://vatuur.nl/auto/${listing.id}`}
+        canonical={`https://vatuur.be/auto/${listing.id}`}
         ogImage={listing.images[0]}
         jsonLd={jsonLdSchemas}
       />
