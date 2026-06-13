@@ -18,6 +18,7 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const BusinessDashboard = lazy(() => import("./pages/BusinessDashboard"));
 const Favorites = lazy(() => import("./pages/Favorites"));
 const Auth = lazy(() => import("./pages/Auth"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Compare = lazy(() => import("./pages/Compare"));
 const Messages = lazy(() => import("./pages/Messages"));
@@ -73,6 +74,7 @@ const App = () => (
                 <Route path="/contact" element={<Contact />} />
               </Route>
               <Route path="/auth" element={<Auth />} />
+              <Route path="/wachtwoord-reset" element={<ResetPassword />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
