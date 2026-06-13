@@ -19,10 +19,10 @@ serve(async (req) => {
     // Use service role to aggregate data across tables
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
-    // 1. Get user's listings
+    // 1. Get user's listings (incl. fields used by AI price analysis on dashboard)
     const { data: listings, error: listingsError } = await adminClient
       .from("listings")
-      .select("id, title, price, status, views, images, created_at, is_premium, boost_until")
+      .select("id, title, brand, model, year, mileage, fuel_type, transmission, power, features, equipment, price, status, views, images, created_at, is_premium, boost_until")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
@@ -78,9 +78,17 @@ serve(async (req) => {
     }
 
     // 4. Build per-listing analytics
-    const listingAnalytics = listings.map((l) => ({
+    const listingAnalytics = listings.map((l: any) => ({
       id: l.id,
       title: l.title,
+      brand: l.brand,
+      model: l.model,
+      year: l.year,
+      mileage: l.mileage,
+      fuelType: l.fuel_type,
+      transmission: l.transmission,
+      power: l.power,
+      features: l.equipment ?? l.features ?? [],
       price: l.price,
       status: l.status,
       views: l.views,
