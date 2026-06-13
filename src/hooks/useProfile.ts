@@ -12,6 +12,7 @@ export interface Profile {
   dealer_name: string | null;
   vat_number: string | null;
   company_website: string | null;
+  location: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -30,14 +31,11 @@ export function useProfile() {
 
     const fetchProfile = async () => {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+      // Use the security-definer RPC to fetch own profile including PII (email/phone/vat_number).
+      // Direct .from('profiles').select('*') is blocked by column-level grants after S4 lockdown.
+      const { data, error } = await supabase.rpc('get_my_profile');
 
       if (!error && data) {
-        // Cast to include new columns not yet in generated types
         setProfile(data as unknown as Profile);
       }
       setLoading(false);

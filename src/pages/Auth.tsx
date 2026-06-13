@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { SEOHead } from '@/components/SEOHead';
 import { Logo } from '@/components/Logo';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Eye, EyeOff, Building2, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +26,7 @@ function normalizeVat(input: string, country: VatCountry): string {
 
 function LoginForm() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { signIn, resetPassword } = useAuth();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
@@ -53,7 +54,9 @@ function LoginForm() {
       });
     } else {
       toast({ title: 'Welkom terug!' });
-      navigate('/');
+      // Redirect back to the page the user came from (via ProtectedRoute), else home
+      const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
+      navigate(from && from !== '/auth' ? from : '/', { replace: true });
     }
   };
 
