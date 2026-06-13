@@ -239,6 +239,28 @@ export function Header() {
         </div>
       </div>
 
+      {/* Mobile search bar (slim, hidden on homepage hero) */}
+      {!isHomepage && (
+        <div className="container pb-2 lg:hidden">
+          <form onSubmit={handleSearch}>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="search"
+                inputMode="search"
+                placeholder="Zoek op merk, model..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="Zoek auto's"
+                className="h-9 w-full rounded-full bg-muted pl-9 pr-3 text-sm"
+              />
+            </div>
+          </form>
+        </div>
+      )}
+
+
+
 
 
       {/* Desktop Header */}
