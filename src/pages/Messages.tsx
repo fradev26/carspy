@@ -56,39 +56,46 @@ export default function Messages() {
         .select('*')
         .order('updated_at', { ascending: false });
 
-      if (data) {
-        // Enrich with listing titles and other user names
-        const enriched = await Promise.all(data.map(async (conv: any) => {
+      if (data && data.length) {
+        // Batch fetch all related data in parallel (avoid N+1)
+        const convIds = data.map((c: any) => c.id);
+        const listingIds = Array.from(new Set(data.map((c: any) => c.listing_id)));
+        const otherIds = Array.from(new Set(data.map((c: any) =>
+          c.buyer_id === user.id ? c.seller_id : c.buyer_id
+        )));
+
+        const [listingsRes, profilesRes, msgsRes] = await Promise.all([
+          supabase.from('listings').select('id, title').in('id', listingIds),
+          supabase.from('profiles').select('id, full_name, dealer_name').in('id', otherIds),
+          supabase
+            .from('messages')
+            .select('conversation_id, sender_id, content, read_at, created_at')
+            .in('conversation_id', convIds)
+            .order('created_at', { ascending: false }),
+        ]);
+
+        const listingMap = new Map((listingsRes.data || []).map((l: any) => [l.id, l.title]));
+        const profileMap = new Map((profilesRes.data || []).map((p: any) => [p.id, p]));
+        const lastMsgMap = new Map<string, string>();
+        const unreadMap = new Map<string, number>();
+        (msgsRes.data || []).forEach((m: any) => {
+          if (!lastMsgMap.has(m.conversation_id)) lastMsgMap.set(m.conversation_id, m.content);
+          if (m.sender_id !== user.id && !m.read_at) {
+            unreadMap.set(m.conversation_id, (unreadMap.get(m.conversation_id) || 0) + 1);
+          }
+        });
+
+        const enriched = data.map((conv: any) => {
           const otherId = conv.buyer_id === user.id ? conv.seller_id : conv.buyer_id;
-          const [listingRes, profileRes] = await Promise.all([
-            supabase.from('listings').select('title').eq('id', conv.listing_id).single(),
-            supabase.from('profiles').select('full_name, dealer_name').eq('id', otherId).single(),
-          ]);
-          
-          // Get last message
-          const { data: lastMsg } = await supabase
-            .from('messages')
-            .select('content')
-            .eq('conversation_id', conv.id)
-            .order('created_at', { ascending: false })
-            .limit(1);
-
-          // Get unread count
-          const { count } = await supabase
-            .from('messages')
-            .select('*', { count: 'exact', head: true })
-            .eq('conversation_id', conv.id)
-            .neq('sender_id', user.id)
-            .is('read_at', null);
-
+          const p: any = profileMap.get(otherId);
           return {
             ...conv,
-            listing_title: listingRes.data?.title || 'Onbekend',
-            other_name: profileRes.data?.dealer_name || profileRes.data?.full_name || 'Onbekend',
-            last_message: lastMsg?.[0]?.content,
-            unread_count: count || 0,
+            listing_title: listingMap.get(conv.listing_id) || 'Onbekend',
+            other_name: p?.dealer_name || p?.full_name || 'Onbekend',
+            last_message: lastMsgMap.get(conv.id),
+            unread_count: unreadMap.get(conv.id) || 0,
           };
-        }));
+        });
         setConversations(enriched);
       }
       setLoading(false);
