@@ -108,7 +108,7 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
       </nav>
 
       {/* Fullscreen AI Chat Overlay */}
-      <AIFullscreenChat open={aiOpen} onClose={() => setAiOpen(false)} />
+      <AIFullscreenChat open={aiOpen} onClose={handleAiClose} />
     </>
   );
 });
