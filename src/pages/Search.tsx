@@ -582,7 +582,7 @@ export default function Search() {
                         </div>
                       )}
                       <div className="overflow-y-auto px-4 py-4">
-                        <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} />
+                        <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} showPresets={false} />
                       </div>
                       <DrawerFooter className="border-t border-border/60 flex-row gap-2">
                         <Button
