@@ -6,7 +6,7 @@ export default function Terms() {
       <SEOHead
         title="Algemene voorwaarden - VATUUR."
         description="Lees de algemene voorwaarden van VATUUR."
-        canonical="https://vatuur.nl/voorwaarden"
+        canonical="https://vatuur.be/voorwaarden"
       />
       <h1 className="text-3xl font-bold">Algemene voorwaarden</h1>
       <div className="mt-8 space-y-6 text-muted-foreground leading-relaxed">
@@ -38,7 +38,7 @@ export default function Terms() {
           <h2 className="text-lg font-semibold text-foreground">5. Contact</h2>
           <p className="mt-2">
             Voor vragen over deze voorwaarden kunt u contact opnemen via{' '}
-            <a href="mailto:info@vatuur.nl" className="text-primary underline">info@vatuur.nl</a>.
+            <a href="mailto:info@vatuur.be" className="text-primary underline">info@vatuur.be</a>.
           </p>
         </section>
       </div>

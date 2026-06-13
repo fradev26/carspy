@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { MessageCircle, Send, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -34,11 +34,18 @@ interface Message {
 
 export default function Messages() {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConv, setSelectedConv] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
+
+  // Auto-select the conversation passed via ?c=<id> (e.g. from ListingDetail "Stuur bericht")
+  useEffect(() => {
+    const c = searchParams.get('c');
+    if (c) setSelectedConv(c);
+  }, [searchParams]);
 
   // Fetch conversations
   useEffect(() => {

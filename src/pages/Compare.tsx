@@ -43,7 +43,7 @@ export default function Compare() {
       <SEOHead
         title="Auto's vergelijken - VATUUR."
         description="Vergelijk tweedehands auto's op prijs, specificaties en uitrusting. Maak de beste keuze met VATUUR."
-        canonical="https://vatuur.nl/vergelijken"
+        canonical="https://vatuur.be/vergelijken"
         noindex
       />
       <div className="container py-6">
@@ -59,86 +59,92 @@ export default function Compare() {
           )}
         </div>
 
-        {/* Car headers */}
-        <div className="grid gap-4" style={{ gridTemplateColumns: `160px repeat(${items.length}, 1fr)` }}>
-          {/* Empty top-left cell */}
-          <div />
-          {items.map(item => (
-            <Card key={item.id} className="overflow-hidden border-border/60">
-              <div className="relative aspect-[16/10] overflow-hidden bg-muted">
-                <img src={item.images[0] || '/placeholder.svg'} alt={item.title} className="h-full w-full object-cover" />
-                <Button
-                  variant="ghost" size="icon"
-                  className="absolute top-2 right-2 h-7 w-7 rounded-md bg-card/90 backdrop-blur-sm"
-                  onClick={() => remove(item.id)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              <CardContent className="p-3">
-                <Link to={`/auto/${item.id}`} className="font-semibold text-sm hover:text-primary transition-colors line-clamp-2">
-                  {item.title}
-                </Link>
-                <p className="text-lg font-bold text-accent mt-1">{formatPrice(item.price)}</p>
-              </CardContent>
-            </Card>
-          ))}
-          {items.length < 3 && (
-            <Link to="/zoeken" className="flex items-center justify-center rounded-xl border-2 border-dashed border-border/60 min-h-[200px] hover:border-primary/40 transition-colors">
-              <div className="text-center text-muted-foreground">
-                <Plus className="h-8 w-8 mx-auto mb-2" />
-                <span className="text-sm">Auto toevoegen</span>
-              </div>
-            </Link>
-          )}
-        </div>
-
-        {/* Specs comparison */}
-        <div className="mt-6 rounded-xl border border-border/60 overflow-hidden">
-          {specs.map((spec, i) => (
-            <div
-              key={spec.label}
-              className="grid items-center gap-4"
-              style={{
-                gridTemplateColumns: `160px repeat(${items.length}, 1fr)`,
-                backgroundColor: i % 2 === 0 ? 'hsl(var(--muted) / 0.3)' : undefined
-              }}
-            >
-              <div className="p-3 text-sm font-medium text-muted-foreground">{spec.label}</div>
+        {/* Mobile-friendly horizontal scroll wrapper so the grid never overflows the viewport. */}
+        <div className="-mx-4 px-4 overflow-x-auto md:mx-0 md:px-0 md:overflow-visible">
+          <div className="min-w-[640px] md:min-w-0">
+            {/* Car headers */}
+            <div className="grid gap-4" style={{ gridTemplateColumns: `160px repeat(${items.length}, minmax(180px, 1fr))` }}>
+              {/* Empty top-left cell */}
+              <div />
               {items.map(item => (
-                <div key={item.id} className="p-3 text-sm font-medium capitalize">{spec.getValue(item)}</div>
+                <Card key={item.id} className="overflow-hidden border-border/60">
+                  <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+                    <img src={item.images[0] || '/placeholder.svg'} alt={item.title} className="h-full w-full object-cover" loading="lazy" />
+                    <Button
+                      variant="ghost" size="icon"
+                      aria-label={`Verwijder ${item.title} uit vergelijking`}
+                      className="absolute top-2 right-2 h-7 w-7 rounded-md bg-card/90 backdrop-blur-sm"
+                      onClick={() => remove(item.id)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <CardContent className="p-3">
+                    <Link to={`/auto/${item.id}`} className="font-semibold text-sm hover:text-primary transition-colors line-clamp-2">
+                      {item.title}
+                    </Link>
+                    <p className="text-lg font-bold text-accent mt-1">{formatPrice(item.price)}</p>
+                  </CardContent>
+                </Card>
+              ))}
+              {items.length < 3 && (
+                <Link to="/zoeken" className="flex items-center justify-center rounded-xl border-2 border-dashed border-border/60 min-h-[200px] hover:border-primary/40 transition-colors">
+                  <div className="text-center text-muted-foreground">
+                    <Plus className="h-8 w-8 mx-auto mb-2" />
+                    <span className="text-sm">Auto toevoegen</span>
+                  </div>
+                </Link>
+              )}
+            </div>
+
+            {/* Specs comparison */}
+            <div className="mt-6 rounded-xl border border-border/60 overflow-hidden">
+              {specs.map((spec, i) => (
+                <div
+                  key={spec.label}
+                  className="grid items-center gap-4"
+                  style={{
+                    gridTemplateColumns: `160px repeat(${items.length}, minmax(180px, 1fr))`,
+                    backgroundColor: i % 2 === 0 ? 'hsl(var(--muted) / 0.3)' : undefined
+                  }}
+                >
+                  <div className="p-3 text-sm font-medium text-muted-foreground">{spec.label}</div>
+                  {items.map(item => (
+                    <div key={item.id} className="p-3 text-sm font-medium capitalize">{spec.getValue(item)}</div>
+                  ))}
+                </div>
               ))}
             </div>
-          ))}
-        </div>
 
-        {/* Features comparison */}
-        <h2 className="text-lg font-semibold mt-8 mb-4">Uitrusting</h2>
-        <div className="rounded-xl border border-border/60 overflow-hidden">
-          {(() => {
-            const allFeatures = [...new Set(items.flatMap(i => i.features))].sort();
-            return allFeatures.map((feature, i) => (
-              <div
-                key={feature}
-                className="grid items-center gap-4"
-                style={{
-                  gridTemplateColumns: `160px repeat(${items.length}, 1fr)`,
-                  backgroundColor: i % 2 === 0 ? 'hsl(var(--muted) / 0.3)' : undefined
-                }}
-              >
-                <div className="p-3 text-sm text-muted-foreground capitalize">{feature.replace(/_/g, ' ')}</div>
-                {items.map(item => (
-                  <div key={item.id} className="p-3 text-sm">
-                    {item.features.includes(feature) ? (
-                      <Badge className="bg-success/10 text-success border-success/30">✓</Badge>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
+            {/* Features comparison */}
+            <h2 className="text-lg font-semibold mt-8 mb-4">Uitrusting</h2>
+            <div className="rounded-xl border border-border/60 overflow-hidden">
+              {(() => {
+                const allFeatures = [...new Set(items.flatMap(i => i.features))].sort();
+                return allFeatures.map((feature, i) => (
+                  <div
+                    key={feature}
+                    className="grid items-center gap-4"
+                    style={{
+                      gridTemplateColumns: `160px repeat(${items.length}, minmax(180px, 1fr))`,
+                      backgroundColor: i % 2 === 0 ? 'hsl(var(--muted) / 0.3)' : undefined
+                    }}
+                  >
+                    <div className="p-3 text-sm text-muted-foreground capitalize">{feature.replace(/_/g, ' ')}</div>
+                    {items.map(item => (
+                      <div key={item.id} className="p-3 text-sm">
+                        {item.features.includes(feature) ? (
+                          <Badge className="bg-success/10 text-success border-success/30">✓</Badge>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            ));
-          })()}
+                ));
+              })()}
+            </div>
+          </div>
         </div>
       </div>
     </div>

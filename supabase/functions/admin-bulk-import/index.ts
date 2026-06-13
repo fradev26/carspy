@@ -43,10 +43,41 @@ const bodySchema = z.object({
 const BATCH_SIZE = 50;
 const HEAD_TIMEOUT_MS = 3000;
 
-async function validateImage(url: string): Promise<boolean> {
+// Reject URLs that resolve to private/internal IPs or unusual ports to prevent SSRF.
+function isPublicImageUrl(raw: string): boolean {
   try {
-    const res = await fetch(url, { method: 'HEAD', signal: AbortSignal.timeout(HEAD_TIMEOUT_MS) });
-    if (!res.ok) return false;
+    const u = new URL(raw);
+    if (u.protocol !== 'https:' && u.protocol !== 'http:') return false;
+    if (u.port && !['', '80', '443', '8080', '8443'].includes(u.port)) return false;
+    const host = u.hostname.toLowerCase();
+    // Block loopback, link-local, private RFC1918, and common metadata endpoints
+    const blocked = [
+      /^localhost$/i,
+      /^127\./,
+      /^10\./,
+      /^192\.168\./,
+      /^172\.(1[6-9]|2\d|3[01])\./,
+      /^169\.254\./,
+      /^0\./,
+      /^::1$/,
+      /^fc00:/i, /^fd[0-9a-f]{2}:/i, /^fe80:/i,
+      /\.local$/i, /\.internal$/i,
+    ];
+    return !blocked.some((re) => re.test(host));
+  } catch {
+    return false;
+  }
+}
+
+async function validateImage(url: string): Promise<boolean> {
+  if (!isPublicImageUrl(url)) return false;
+  try {
+    const res = await fetch(url, {
+      method: 'HEAD',
+      signal: AbortSignal.timeout(HEAD_TIMEOUT_MS),
+      redirect: 'manual', // Prevent redirect-based SSRF bypass
+    });
+    if (!res.ok && res.status !== 302 && res.status !== 301) return false;
     const ct = res.headers.get('content-type') ?? '';
     return ct.startsWith('image/');
   } catch {

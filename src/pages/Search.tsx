@@ -29,7 +29,7 @@ import {
 import { SkeletonCard } from '@/components/ui/skeleton-card';
 import { useSavedSearches } from '@/hooks/useSavedSearches';
 import { useAuth } from '@/hooks/useAuth';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 // Helper to parse URL params into SearchFilters
@@ -395,13 +395,13 @@ export default function Search() {
       <SEOHead
         title="Auto's zoeken - VATUUR."
         description="Zoek en filter tweedehands auto's op merk, prijs, bouwjaar, kilometerstand en meer. Vind jouw perfecte occasion."
-        canonical="https://vatuur.nl/zoeken"
+        canonical="https://vatuur.be/zoeken"
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
           "itemListElement": [
-            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://vatuur.nl/" },
-            { "@type": "ListItem", "position": 2, "name": "Zoeken", "item": "https://vatuur.nl/zoeken" }
+            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://vatuur.be/" },
+            { "@type": "ListItem", "position": 2, "name": "Zoeken", "item": "https://vatuur.be/zoeken" }
           ]
         }}
       />
@@ -513,11 +513,15 @@ export default function Search() {
                       <DialogContent>
                         <DialogHeader>
                           <DialogTitle>Zoekopdracht opslaan</DialogTitle>
+                          <DialogDescription>
+                            Geef je zoekopdracht een naam. Je ontvangt een melding zodra er nieuwe auto's bijkomen die hieraan voldoen.
+                          </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 pt-4">
                           <div>
-                            <Label>Naam</Label>
+                            <Label htmlFor="search-name">Naam</Label>
                             <Input
+                              id="search-name"
                               value={searchName}
                               onChange={(e) => setSearchName(e.target.value)}
                               placeholder="Bijv. Zwarte BMW automaat"

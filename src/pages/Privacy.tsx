@@ -6,7 +6,7 @@ export default function Privacy() {
       <SEOHead
         title="Privacybeleid - VATUUR."
         description="Lees het privacybeleid van VATUUR. Hoe wij omgaan met je persoonsgegevens."
-        canonical="https://vatuur.nl/privacy"
+        canonical="https://vatuur.be/privacy"
       />
       <h1 className="text-3xl font-bold">Privacybeleid</h1>
       <div className="mt-8 space-y-6 text-muted-foreground leading-relaxed">
@@ -32,7 +32,7 @@ export default function Privacy() {
           <h2 className="text-lg font-semibold text-foreground">4. Contact</h2>
           <p className="mt-2">
             Voor vragen over dit privacybeleid kunt u contact opnemen via{' '}
-            <a href="mailto:info@vatuur.nl" className="text-primary underline">info@vatuur.nl</a>.
+            <a href="mailto:info@vatuur.be" className="text-primary underline">info@vatuur.be</a>.
           </p>
         </section>
       </div>

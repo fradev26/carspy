@@ -23,28 +23,39 @@ export default function ResetPassword() {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
+    // Only accept the form when a real recovery flow is in progress:
+    //  - the URL hash carries Supabase's recovery token (legacy implicit flow)
+    //  - OR the URL query carries a `code` param (PKCE flow)
+    //  - OR the PASSWORD_RECOVERY auth event fires after Supabase processes the token
     const hash = window.location.hash;
-    const isRecoveryHash = hash.includes('type=recovery');
+    const search = window.location.search;
+    const isRecoveryHash = hash.includes('type=recovery') || hash.includes('access_token=');
+    const isRecoveryPkce = new URLSearchParams(search).has('code');
+
+    if (isRecoveryHash || isRecoveryPkce) {
+      setHasRecovery(true);
+    }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
         setHasRecovery(true);
-        setChecking(false);
       }
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session || isRecoveryHash) setHasRecovery(true);
       setChecking(false);
     });
 
-    return () => subscription.unsubscribe();
+    // After a brief wait, stop showing the spinner even if no event fired
+    const timer = setTimeout(() => setChecking(false), 1500);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timer);
+    };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.length < 6) {
-      toast({ title: 'Wachtwoord moet minimaal 6 tekens zijn', variant: 'destructive' });
+    if (password.length < 8) {
+      toast({ title: 'Wachtwoord moet minimaal 8 tekens zijn', variant: 'destructive' });
       return;
     }
     if (password !== confirm) {
@@ -72,7 +83,7 @@ export default function ResetPassword() {
             <Logo size="lg" asLink />
           </div>
           <CardTitle>Nieuw wachtwoord instellen</CardTitle>
-          <CardDescription>Kies een sterk wachtwoord van minimaal 6 tekens</CardDescription>
+          <CardDescription>Kies een sterk wachtwoord van minimaal 8 tekens</CardDescription>
         </CardHeader>
         <CardContent>
           {checking ? (
@@ -92,7 +103,7 @@ export default function ResetPassword() {
                   <Input
                     id="new-password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Minimaal 6 tekens"
+                    placeholder="Minimaal 8 tekens"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
