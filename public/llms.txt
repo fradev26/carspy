@@ -34,11 +34,11 @@ VATUUR. is een online marktplaats voor occasions (tweedehands auto's) in Nederla
 - Dealer dashboard met analytics
 
 ## Technische details
-- Website: https://vatuur.nl
+- Website: https://vatuur.be
 - Taal: Nederlands
 - Regio: Nederland en België
 - Type: Tweedehands auto marktplaats
 - Aantal listings: 25.000+
 
 ## Contact
-- Email: info@vatuur.nl
+- Email: info@vatuur.be
