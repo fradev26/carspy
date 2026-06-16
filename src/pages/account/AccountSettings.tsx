@@ -120,7 +120,7 @@ export default function AccountSettings({ defaultTab = 'profiel' }: Props) {
 
   async function resetPassword() {
     if (!profile.email) return;
-    const { error } = await supabase.auth.resetPasswordForEmail(profile.email, { redirectTo: `${window.location.origin}/auth` });
+    const { error } = await supabase.auth.resetPasswordForEmail(profile.email, { redirectTo: `${window.location.origin}/wachtwoord-reset` });
     if (error) toast({ title: 'Fout', description: error.message, variant: 'destructive' });
     else toast({ title: 'E-mail verzonden', description: 'Controleer je inbox om je wachtwoord te wijzigen.' });
   }
