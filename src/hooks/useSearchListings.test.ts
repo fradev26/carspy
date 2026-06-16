@@ -67,9 +67,9 @@ describe('useSearchListings query builder', () => {
     renderHook(() =>
       useSearchListings({
         filters: {
-          fuelTypes: ['diesel', 'petrol'],
+          fuelTypes: ['diesel', 'benzine'],
           bodyTypes: ['suv'],
-          transmissions: ['automatic'],
+          transmissions: ['automaat'],
           colors: ['black'],
         },
       }),
