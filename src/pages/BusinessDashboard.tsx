@@ -20,6 +20,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import AutoScoutPanel from '@/modules/dealer/AutoScoutPanel';
 
 interface ListingAnalytics {
   id: string;
@@ -412,6 +413,7 @@ export default function BusinessDashboard() {
           <TabsTrigger value="leads">Leads</TabsTrigger>
           <TabsTrigger value="performance">Statistieken</TabsTrigger>
           <TabsTrigger value="explorer">Marktverkenner</TabsTrigger>
+          <TabsTrigger value="autoscout">AutoScout24</TabsTrigger>
         </TabsList>
 
         <TabsContent value="leads">
@@ -632,6 +634,11 @@ export default function BusinessDashboard() {
         {/* Market Explorer Tab */}
         <TabsContent value="explorer">
           <MarketExplorer />
+        </TabsContent>
+
+        {/* AutoScout24 Tab */}
+        <TabsContent value="autoscout">
+          <AutoScoutPanel />
         </TabsContent>
       </Tabs>
     </div>

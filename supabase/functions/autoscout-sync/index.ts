@@ -229,27 +229,33 @@ async function syncDealer(svc: SvcClient, dealerUserId: string, trigger: "manual
 }
 
 // ---------- Auth helpers ----------
-const CRON_SECRET = Deno.env.get("CRON_SECRET") ?? "";
-
 async function getCaller(req: Request) {
   const auth = req.headers.get("Authorization") || "";
   const token = auth.replace(/^Bearer\s+/i, "");
   if (!token) return { kind: "none" as const };
   if (token === SERVICE_ROLE) return { kind: "service" as const };
-  if (CRON_SECRET && token === CRON_SECRET) return { kind: "service" as const };
   const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     global: { headers: { Authorization: `Bearer ${token}` } },
   });
   const { data, error } = await userClient.auth.getUser();
   if (error || !data.user) return { kind: "none" as const };
-  // Check role
   const svc = createClient(SUPABASE_URL, SERVICE_ROLE);
-  const { data: roles } = await svc.from("user_roles").select("role").eq("user_id", data.user.id);
+  const [{ data: roles }, { data: profile }] = await Promise.all([
+    svc.from("user_roles").select("role").eq("user_id", data.user.id),
+    svc.from("profiles").select("is_dealer").eq("id", data.user.id).maybeSingle(),
+  ]);
   const r = (roles ?? []).map((x: any) => x.role);
   const isAdmin = r.includes("admin");
   const isStockManager = r.includes("stock_manager");
-  if (!isAdmin && !isStockManager) return { kind: "none" as const };
-  return { kind: "user" as const, userId: data.user.id, isAdmin };
+  const isDealer = !!(profile as any)?.is_dealer;
+  if (!isAdmin && !isStockManager && !isDealer) return { kind: "none" as const };
+  return { kind: "user" as const, userId: data.user.id as string, isAdmin, isStockManager, isDealer };
+}
+
+function canActFor(caller: any, dealerUserId: string): boolean {
+  if (caller.kind !== "user") return false;
+  if (caller.isAdmin || caller.isStockManager) return true;
+  return caller.userId === dealerUserId;
 }
 
 // ---------- HTTP entry ----------
@@ -269,6 +275,7 @@ serve(async (req) => {
         if (caller.kind !== "user") return json({ error: "Unauthorized" }, 401);
         const { dealer_user_id, customer_id, username, password } = body;
         if (!dealer_user_id || !customer_id || !username) return json({ error: "Verplichte velden ontbreken" }, 400);
+        if (!canActFor(caller, dealer_user_id)) return json({ error: "Forbidden" }, 403);
 
         // Find existing credentials to know whether a password is mandatory.
         const { data: existing } = await svc
@@ -306,6 +313,7 @@ serve(async (req) => {
       case "test_connection": {
         if (caller.kind !== "user") return json({ error: "Unauthorized" }, 401);
         const { dealer_user_id } = body;
+        if (!canActFor(caller, dealer_user_id)) return json({ error: "Forbidden" }, 403);
         const { data: cred } = await svc
           .from("autoscout_credentials")
           .select("customer_id, username, password_secret_id")
@@ -327,6 +335,7 @@ serve(async (req) => {
       case "sync": {
         if (caller.kind !== "user") return json({ error: "Unauthorized" }, 401);
         const { dealer_user_id, trigger } = body;
+        if (!canActFor(caller, dealer_user_id)) return json({ error: "Forbidden" }, 403);
         const totals = await syncDealer(svc, dealer_user_id, trigger === "cron" ? "cron" : "manual");
         return json({ ok: true, totals });
       }
@@ -335,6 +344,14 @@ serve(async (req) => {
         if (caller.kind !== "user") return json({ error: "Unauthorized" }, 401);
         const { internal_listing_id } = body;
         if (!internal_listing_id) return json({ error: "internal_listing_id verplicht" }, 400);
+        if (!caller.isAdmin && !caller.isStockManager) {
+          const { data: own } = await svc
+            .from("listings")
+            .select("user_id")
+            .eq("id", internal_listing_id)
+            .maybeSingle();
+          if (!own || (own as any).user_id !== caller.userId) return json({ error: "Forbidden" }, 403);
+        }
         const { error } = await svc.from("listings").update({ status: "active" }).eq("id", internal_listing_id);
         if (error) return json({ error: error.message }, 500);
         return json({ ok: true });
