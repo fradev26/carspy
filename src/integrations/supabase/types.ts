@@ -1142,6 +1142,10 @@ export type Database = {
     }
     Functions: {
       autoscout_get_password: { Args: { _secret_id: string }; Returns: string }
+      autoscout_save_password: {
+        Args: { _password: string; _user_id: string }
+        Returns: string
+      }
       cleanup_rate_limits: { Args: never; Returns: undefined }
       get_my_profile: {
         Args: never
