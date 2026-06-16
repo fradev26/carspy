@@ -634,6 +634,11 @@ export default function BusinessDashboard() {
         <TabsContent value="explorer">
           <MarketExplorer />
         </TabsContent>
+
+        {/* AutoScout24 Tab */}
+        <TabsContent value="autoscout">
+          <AutoScoutPanel />
+        </TabsContent>
       </Tabs>
     </div>
   );
