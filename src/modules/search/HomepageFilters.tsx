@@ -140,9 +140,7 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
       filters.minPower || filters.maxPower,
     ].filter(Boolean).length,
     appearance: [
-      filters.paintTypes?.length,
       filters.colors?.length,
-      filters.interiorMaterials?.length,
     ].filter(Boolean).length,
     practical: [
       filters.minDoors,
@@ -159,10 +157,7 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
       filters.sellerType,
       filters.maxPreviousOwners,
       filters.minWarranty,
-      filters.noDamageHistory,
       filters.vatDeductible,
-      filters.hasMaintenanceHistory,
-      filters.isNonSmoker,
     ].filter(Boolean).length,
   }), [filters]);
 
