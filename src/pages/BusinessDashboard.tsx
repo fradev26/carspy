@@ -412,6 +412,7 @@ export default function BusinessDashboard() {
           <TabsTrigger value="leads">Leads</TabsTrigger>
           <TabsTrigger value="performance">Statistieken</TabsTrigger>
           <TabsTrigger value="explorer">Marktverkenner</TabsTrigger>
+          <TabsTrigger value="autoscout">AutoScout24</TabsTrigger>
         </TabsList>
 
         <TabsContent value="leads">
