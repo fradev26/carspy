@@ -275,6 +275,7 @@ serve(async (req) => {
         if (caller.kind !== "user") return json({ error: "Unauthorized" }, 401);
         const { dealer_user_id, customer_id, username, password } = body;
         if (!dealer_user_id || !customer_id || !username) return json({ error: "Verplichte velden ontbreken" }, 400);
+        if (!canActFor(caller, dealer_user_id)) return json({ error: "Forbidden" }, 403);
 
         // Find existing credentials to know whether a password is mandatory.
         const { data: existing } = await svc
@@ -312,6 +313,7 @@ serve(async (req) => {
       case "test_connection": {
         if (caller.kind !== "user") return json({ error: "Unauthorized" }, 401);
         const { dealer_user_id } = body;
+        if (!canActFor(caller, dealer_user_id)) return json({ error: "Forbidden" }, 403);
         const { data: cred } = await svc
           .from("autoscout_credentials")
           .select("customer_id, username, password_secret_id")
@@ -333,6 +335,7 @@ serve(async (req) => {
       case "sync": {
         if (caller.kind !== "user") return json({ error: "Unauthorized" }, 401);
         const { dealer_user_id, trigger } = body;
+        if (!canActFor(caller, dealer_user_id)) return json({ error: "Forbidden" }, 403);
         const totals = await syncDealer(svc, dealer_user_id, trigger === "cron" ? "cron" : "manual");
         return json({ ok: true, totals });
       }
@@ -341,6 +344,14 @@ serve(async (req) => {
         if (caller.kind !== "user") return json({ error: "Unauthorized" }, 401);
         const { internal_listing_id } = body;
         if (!internal_listing_id) return json({ error: "internal_listing_id verplicht" }, 400);
+        if (!caller.isAdmin && !caller.isStockManager) {
+          const { data: own } = await svc
+            .from("listings")
+            .select("user_id")
+            .eq("id", internal_listing_id)
+            .maybeSingle();
+          if (!own || (own as any).user_id !== caller.userId) return json({ error: "Forbidden" }, 403);
+        }
         const { error } = await svc.from("listings").update({ status: "active" }).eq("id", internal_listing_id);
         if (error) return json({ error: error.message }, 500);
         return json({ ok: true });
