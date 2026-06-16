@@ -44,6 +44,98 @@ export type Database = {
         }
         Relationships: []
       }
+      autoscout_credentials: {
+        Row: {
+          created_at: string
+          customer_id: string
+          last_sync_at: string | null
+          last_sync_error: string | null
+          last_sync_status: string | null
+          password_secret_id: string | null
+          updated_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          last_sync_at?: string | null
+          last_sync_error?: string | null
+          last_sync_status?: string | null
+          password_secret_id?: string | null
+          updated_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          last_sync_at?: string | null
+          last_sync_error?: string | null
+          last_sync_status?: string | null
+          password_secret_id?: string | null
+          updated_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      autoscout_listings: {
+        Row: {
+          autoscout_listing_id: string
+          content_hash: string
+          created_at: string
+          id: string
+          internal_listing_id: string | null
+          last_changed_at: string | null
+          last_seen_at: string | null
+          publication_status: string | null
+          raw_data: Json | null
+          sync_error: string | null
+          sync_status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          autoscout_listing_id: string
+          content_hash?: string
+          created_at?: string
+          id?: string
+          internal_listing_id?: string | null
+          last_changed_at?: string | null
+          last_seen_at?: string | null
+          publication_status?: string | null
+          raw_data?: Json | null
+          sync_error?: string | null
+          sync_status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          autoscout_listing_id?: string
+          content_hash?: string
+          created_at?: string
+          id?: string
+          internal_listing_id?: string | null
+          last_changed_at?: string | null
+          last_seen_at?: string | null
+          publication_status?: string | null
+          raw_data?: Json | null
+          sync_error?: string | null
+          sync_status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "autoscout_listings_internal_listing_id_fkey"
+            columns: ["internal_listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       autoscout_sync_config: {
         Row: {
           api_key_secret_ref: string | null
@@ -83,6 +175,81 @@ export type Database = {
           last_status?: string | null
           last_sync_at?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      autoscout_sync_runs: {
+        Row: {
+          error_message: string | null
+          finished_at: string | null
+          id: string
+          started_at: string
+          status: string
+          totals: Json | null
+          trigger: string
+          user_id: string
+        }
+        Insert: {
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          started_at?: string
+          status: string
+          totals?: Json | null
+          trigger: string
+          user_id: string
+        }
+        Update: {
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          started_at?: string
+          status?: string
+          totals?: Json | null
+          trigger?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      companies: {
+        Row: {
+          address: string | null
+          city: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          postal_code: string | null
+          updated_at: string
+          vat_number: string | null
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          postal_code?: string | null
+          updated_at?: string
+          vat_number?: string | null
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          postal_code?: string | null
+          updated_at?: string
+          vat_number?: string | null
+          website?: string | null
         }
         Relationships: []
       }
@@ -210,7 +377,7 @@ export type Database = {
           job_id: string
           listing_id: string | null
           payload: Json
-          row_index: number
+          row_number: number
           status: string
         }
         Insert: {
@@ -220,7 +387,7 @@ export type Database = {
           job_id: string
           listing_id?: string | null
           payload?: Json
-          row_index: number
+          row_number: number
           status: string
         }
         Update: {
@@ -230,7 +397,7 @@ export type Database = {
           job_id?: string
           listing_id?: string | null
           payload?: Json
-          row_index?: number
+          row_number?: number
           status?: string
         }
         Relationships: [
@@ -298,6 +465,7 @@ export type Database = {
           co2_emissions_unit: string | null
           color: string | null
           combined_unit: string | null
+          company_id: string | null
           condition: Json | null
           condition_type: string | null
           consumption_city: number | null
@@ -343,6 +511,7 @@ export type Database = {
           model_version: string | null
           next_inspection_date: string | null
           offer_reference_id: string | null
+          onboarded_by: string | null
           particle_filter: boolean | null
           power: number | null
           power_unit: string | null
@@ -391,6 +560,7 @@ export type Database = {
           co2_emissions_unit?: string | null
           color?: string | null
           combined_unit?: string | null
+          company_id?: string | null
           condition?: Json | null
           condition_type?: string | null
           consumption_city?: number | null
@@ -436,6 +606,7 @@ export type Database = {
           model_version?: string | null
           next_inspection_date?: string | null
           offer_reference_id?: string | null
+          onboarded_by?: string | null
           particle_filter?: boolean | null
           power?: number | null
           power_unit?: string | null
@@ -484,6 +655,7 @@ export type Database = {
           co2_emissions_unit?: string | null
           color?: string | null
           combined_unit?: string | null
+          company_id?: string | null
           condition?: Json | null
           condition_type?: string | null
           consumption_city?: number | null
@@ -529,6 +701,7 @@ export type Database = {
           model_version?: string | null
           next_inspection_date?: string | null
           offer_reference_id?: string | null
+          onboarded_by?: string | null
           particle_filter?: boolean | null
           power?: number | null
           power_unit?: string | null
@@ -563,6 +736,13 @@ export type Database = {
           year?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "listings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "listings_user_id_fkey"
             columns: ["user_id"]
@@ -712,6 +892,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          company_id: string | null
           company_website: string | null
           created_at: string
           dealer_name: string | null
@@ -726,6 +907,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          company_id?: string | null
           company_website?: string | null
           created_at?: string
           dealer_name?: string | null
@@ -740,6 +922,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          company_id?: string | null
           company_website?: string | null
           created_at?: string
           dealer_name?: string | null
@@ -752,7 +935,15 @@ export type Database = {
           updated_at?: string
           vat_number?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rate_limits: {
         Row: {
@@ -950,11 +1141,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      autoscout_get_password: { Args: { _secret_id: string }; Returns: string }
+      autoscout_save_password: {
+        Args: { _password: string; _user_id: string }
+        Returns: string
+      }
       cleanup_rate_limits: { Args: never; Returns: undefined }
       get_my_profile: {
         Args: never
         Returns: {
           avatar_url: string | null
+          company_id: string | null
           company_website: string | null
           created_at: string
           dealer_name: string | null
@@ -986,7 +1183,7 @@ export type Database = {
       refresh_boosted_status: { Args: never; Returns: number }
     }
     Enums: {
-      app_role: "admin" | "moderator"
+      app_role: "admin" | "moderator" | "stock_manager"
       vehicle_lead_status:
         | "analyzed"
         | "account_created"
@@ -1120,7 +1317,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator"],
+      app_role: ["admin", "moderator", "stock_manager"],
       vehicle_lead_status: [
         "analyzed",
         "account_created",
