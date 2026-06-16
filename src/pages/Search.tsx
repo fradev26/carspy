@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useTransition } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { SEOHead } from '@/components/SEOHead';
@@ -9,7 +9,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger, Drawer
 import { Badge } from '@/components/ui/badge';
 import { FilterPanel, FilterChips, SmartSearchBar } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
-import { useListings } from '@/hooks/useListings';
+import { useSearchListings } from '@/hooks/useSearchListings';
 import {
   SearchFilters,
   SORT_OPTIONS,
