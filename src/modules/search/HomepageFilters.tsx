@@ -666,30 +666,6 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
               {/* Trust toggles */}
               <div className="space-y-3 p-4 rounded-lg bg-muted/30 border border-border/40">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="hp-no-damage" className="text-sm font-normal cursor-pointer">Geen schadehistorie</Label>
-                  <Switch
-                    id="hp-no-damage"
-                    checked={filters.noDamageHistory || false}
-                    onCheckedChange={(checked) => updateFilter('noDamageHistory', checked || undefined)}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="hp-maintenance" className="text-sm font-normal cursor-pointer">Onderhoudsboekje</Label>
-                  <Switch
-                    id="hp-maintenance"
-                    checked={filters.hasMaintenanceHistory || false}
-                    onCheckedChange={(checked) => updateFilter('hasMaintenanceHistory', checked || undefined)}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="hp-nonsmoker" className="text-sm font-normal cursor-pointer">Niet-roker auto</Label>
-                  <Switch
-                    id="hp-nonsmoker"
-                    checked={filters.isNonSmoker || false}
-                    onCheckedChange={(checked) => updateFilter('isNonSmoker', checked || undefined)}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
                   <Label htmlFor="hp-vat" className="text-sm font-normal cursor-pointer">BTW aftrekbaar</Label>
                   <Switch
                     id="hp-vat"
