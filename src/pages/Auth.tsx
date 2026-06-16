@@ -116,12 +116,12 @@ function LoginForm() {
     <form onSubmit={handleLogin} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="login-email">Email</Label>
-        <Input id="login-email" type="email" placeholder="naam@voorbeeld.nl" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <Input id="login-email" type="email" autoComplete="email" placeholder="naam@voorbeeld.nl" value={email} onChange={(e) => setEmail(e.target.value)} />
       </div>
       <div className="space-y-2">
         <Label htmlFor="login-password">Wachtwoord</Label>
         <div className="relative">
-          <Input id="login-password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <Input id="login-password" type={showPassword ? 'text' : 'password'} autoComplete="current-password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} />
           <Button type="button" variant="ghost" size="icon" aria-label={showPassword ? 'Wachtwoord verbergen' : 'Wachtwoord tonen'} className="absolute right-0 top-0 h-full px-3" onClick={() => setShowPassword(!showPassword)}>
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </Button>
