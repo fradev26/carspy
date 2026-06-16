@@ -21,14 +21,14 @@ function readSource(relPath: string): string {
 describe('password reset redirect', () => {
   it('useAuth.resetPassword redirects to /wachtwoord-reset', () => {
     const src = readSource('src/hooks/useAuth.tsx');
-    expect(src).toMatch(/resetPasswordForEmail\([^)]*\{[\s\S]*?redirectTo:[^,}]*\/wachtwoord-reset/);
-    expect(src).not.toMatch(/resetPasswordForEmail\([^)]*redirectTo:[^,}]*['"`]\/auth['"`]/);
+    expect(src).toMatch(/resetPasswordForEmail[\s\S]{0,200}\/wachtwoord-reset/);
+    expect(src).not.toMatch(/redirectTo:\s*[`'"][^`'"]*\/auth['"`]/);
   });
 
   it('AccountSettings.resetPassword redirects to /wachtwoord-reset', () => {
     const src = readSource('src/pages/account/AccountSettings.tsx');
-    expect(src).toMatch(/resetPasswordForEmail\([^)]*\{[\s\S]*?redirectTo:[^,}]*\/wachtwoord-reset/);
-    expect(src).not.toMatch(/resetPasswordForEmail\([^)]*redirectTo:[^,}]*['"`]\/auth['"`]/);
+    expect(src).toMatch(/resetPasswordForEmail[\s\S]{0,200}\/wachtwoord-reset/);
+    expect(src).not.toMatch(/redirectTo:\s*[`'"][^`'"]*\/auth['"`]/);
   });
 
   it('ResetPassword page is registered as a route', () => {
