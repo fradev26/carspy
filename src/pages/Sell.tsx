@@ -680,11 +680,16 @@ export default function Sell() {
           {currentStep === 2 && (
             <div className="space-y-6">
               <section className="space-y-3">
-                <Label>Algemene staat *</Label>
+          {currentStep === 2 && (
+            <div className="space-y-6">
+              <section className="space-y-3" aria-labelledby="sell-cond-label">
+                <Label id="sell-cond-label">Algemene staat *</Label>
                 <RadioGroup
                   value={formData.conditionOverall}
                   onValueChange={(v) => update('conditionOverall', v as FormState['conditionOverall'])}
                   className="grid gap-2 sm:grid-cols-2"
+                  aria-labelledby="sell-cond-label"
+                  aria-required="true"
                 >
                   {[
                     { v: 'excellent', l: 'Uitstekend' },
@@ -696,7 +701,7 @@ export default function Sell() {
                       key={opt.v}
                       htmlFor={`cond-${opt.v}`}
                       className={cn(
-                        'flex items-center gap-3 rounded-xl border px-3 py-3 cursor-pointer transition-colors',
+                        'flex items-center gap-3 rounded-xl border px-3 py-3 cursor-pointer transition-colors min-h-[48px]',
                         formData.conditionOverall === opt.v
                           ? 'border-primary/40 bg-primary/5'
                           : 'border-border/60 hover:bg-muted/40'
@@ -710,6 +715,7 @@ export default function Sell() {
               </section>
 
               <YesNoBlock
+                idPrefix="damage"
                 label="Schade aanwezig? *"
                 value={formData.damagePresent}
                 onChange={(v) => update('damagePresent', v)}
@@ -719,6 +725,7 @@ export default function Sell() {
               />
 
               <YesNoBlock
+                idPrefix="tech"
                 label="Technische problemen? *"
                 value={formData.technicalPresent}
                 onChange={(v) => update('technicalPresent', v)}
