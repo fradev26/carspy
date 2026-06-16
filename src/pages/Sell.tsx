@@ -560,61 +560,62 @@ export default function Sell() {
                 onModelChange={(v) => update('model', v)}
               />
               <div className="space-y-2">
-                <Label>Jaar eerste registratie *</Label>
+                <Label htmlFor="sell-year">Jaar eerste registratie *</Label>
                 <Select value={formData.year} onValueChange={(v) => update('year', v)}>
-                  <SelectTrigger><SelectValue placeholder="Selecteer jaar" /></SelectTrigger>
+                  <SelectTrigger id="sell-year"><SelectValue placeholder="Selecteer jaar" /></SelectTrigger>
                   <SelectContent>
                     {YEAR_OPTIONS.map((y) => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Maand</Label>
+                <Label htmlFor="sell-month">Maand</Label>
                 <Select value={formData.month} onValueChange={(v) => update('month', v)}>
-                  <SelectTrigger><SelectValue placeholder="Selecteer maand" /></SelectTrigger>
+                  <SelectTrigger id="sell-month"><SelectValue placeholder="Selecteer maand" /></SelectTrigger>
                   <SelectContent>
                     {MONTHS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Carrosserievorm *</Label>
+                <Label htmlFor="sell-bodyType">Carrosserievorm *</Label>
                 <Select value={formData.bodyType} onValueChange={(v) => update('bodyType', v)}>
-                  <SelectTrigger><SelectValue placeholder="Selecteer" /></SelectTrigger>
+                  <SelectTrigger id="sell-bodyType"><SelectValue placeholder="Selecteer" /></SelectTrigger>
                   <SelectContent>
                     {BODY_FORM_OPTIONS.map((b) => <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Brandstof *</Label>
+                <Label htmlFor="sell-fuelType">Brandstof *</Label>
                 <Select value={formData.fuelType} onValueChange={(v) => update('fuelType', v)}>
-                  <SelectTrigger><SelectValue placeholder="Selecteer" /></SelectTrigger>
+                  <SelectTrigger id="sell-fuelType"><SelectValue placeholder="Selecteer" /></SelectTrigger>
                   <SelectContent>
                     {FUEL_TYPES.map((f) => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Transmissie *</Label>
+                <Label htmlFor="sell-transmission">Transmissie *</Label>
                 <Select value={formData.transmission} onValueChange={(v) => update('transmission', v)}>
-                  <SelectTrigger><SelectValue placeholder="Selecteer" /></SelectTrigger>
+                  <SelectTrigger id="sell-transmission"><SelectValue placeholder="Selecteer" /></SelectTrigger>
                   <SelectContent>
                     {TRANSMISSION_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Vermogen</Label>
+                <Label htmlFor="sell-power">Vermogen</Label>
                 <div className="flex gap-2">
                   <Input
+                    id="sell-power"
                     type="number"
                     value={formData.power}
                     onChange={(e) => update('power', e.target.value)}
                     placeholder="150"
                   />
                   <Select value={formData.powerUnit} onValueChange={(v) => update('powerUnit', v as 'pk' | 'kW')}>
-                    <SelectTrigger className="w-24"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="w-24" aria-label="Eenheid vermogen"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="pk">pk</SelectItem>
                       <SelectItem value="kW">kW</SelectItem>
@@ -623,16 +624,18 @@ export default function Sell() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Uitvoering / versie</Label>
+                <Label htmlFor="sell-modelVersion">Uitvoering / versie</Label>
                 <Input
+                  id="sell-modelVersion"
                   value={formData.modelVersion}
                   onChange={(e) => update('modelVersion', e.target.value)}
                   placeholder="Bijv. 2.0 TDI Highline"
                 />
               </div>
               <div className="space-y-2 sm:col-span-2">
-                <Label>Kilometerstand *</Label>
+                <Label htmlFor="sell-mileage">Kilometerstand *</Label>
                 <Input
+                  id="sell-mileage"
                   type="number"
                   value={formData.mileage}
                   onChange={(e) => update('mileage', e.target.value)}
