@@ -940,11 +940,11 @@ export default function Sell() {
           {currentStep === 5 && (
             <div className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2"><Label>Naam *</Label><Input value={formData.name} onChange={(e) => update('name', e.target.value)} /></div>
-                <div className="space-y-2"><Label>E-mail *</Label><Input type="email" value={formData.email} onChange={(e) => update('email', e.target.value)} /></div>
-                <div className="space-y-2"><Label>Telefoon *</Label><Input value={formData.phone} onChange={(e) => update('phone', e.target.value)} /></div>
-                <div className="space-y-2"><Label>Postcode *</Label><Input value={formData.postalCode} onChange={(e) => update('postalCode', e.target.value)} /></div>
-                <div className="space-y-2 sm:col-span-2"><Label>Gemeente *</Label><Input value={formData.city} onChange={(e) => update('city', e.target.value)} /></div>
+                <div className="space-y-2"><Label htmlFor="sell-name">Naam *</Label><Input id="sell-name" autoComplete="name" value={formData.name} onChange={(e) => update('name', e.target.value)} /></div>
+                <div className="space-y-2"><Label htmlFor="sell-email">E-mail *</Label><Input id="sell-email" type="email" autoComplete="email" value={formData.email} onChange={(e) => update('email', e.target.value)} /></div>
+                <div className="space-y-2"><Label htmlFor="sell-phone">Telefoon *</Label><Input id="sell-phone" type="tel" autoComplete="tel" value={formData.phone} onChange={(e) => update('phone', e.target.value)} /></div>
+                <div className="space-y-2"><Label htmlFor="sell-postalCode">Postcode *</Label><Input id="sell-postalCode" autoComplete="postal-code" value={formData.postalCode} onChange={(e) => update('postalCode', e.target.value)} /></div>
+                <div className="space-y-2 sm:col-span-2"><Label htmlFor="sell-city">Gemeente *</Label><Input id="sell-city" autoComplete="address-level2" value={formData.city} onChange={(e) => update('city', e.target.value)} /></div>
               </div>
               <div className="space-y-3 rounded-xl border border-border/60 bg-muted/20 p-4">
                 <label className="flex items-start gap-3 text-sm cursor-pointer">
