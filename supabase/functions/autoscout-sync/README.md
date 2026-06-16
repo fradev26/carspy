@@ -17,6 +17,18 @@ Twee server-side helpers regelen dit (beide `SECURITY DEFINER`, alleen `service_
   Decrypteert het wachtwoord; gebruikt door `test_connection`, `sync` en
   `cron_sync_all`.
 
+## Autorisatie
+
+`getCaller()` accepteert drie soorten callers:
+
+- **`service`** — bearer token = `SUPABASE_SERVICE_ROLE_KEY` (gebruikt door
+  Admin Hub backend en `cron_sync_all`).
+- **`user` met admin/stock_manager rol** — mag voor élke `dealer_user_id`
+  acties uitvoeren (Admin Hub UI).
+- **`user` met `profiles.is_dealer = true`** — mag enkel acties voor zichzelf
+  (`dealer_user_id === auth.uid()`), of een eigen `internal_listing_id` bij
+  `publish`.
+
 ## Acties
 
 POST JSON body `{ action, ... }`:
@@ -25,10 +37,14 @@ POST JSON body `{ action, ... }`:
   (password optioneel bij update — laat leeg om bestaand wachtwoord te behouden)
 - `test_connection` — `{ dealer_user_id }`
 - `sync` — `{ dealer_user_id, trigger?: 'manual'|'cron' }`
-- `cron_sync_all` — iterates all stored credentials (service-role only)
+- `cron_sync_all` — itereert alle opgeslagen credentials (service-role only)
 - `publish` — `{ internal_listing_id }` zet interne advertentie op `active`
 
-## Cron
+## Trigger-strategie
 
-`cron_sync_all` wordt elk uur uitgevoerd via `pg_cron` job
-`autoscout-cron-sync-all-hourly` (zie migratie `*_autoscout_cron.sql`).
+Geen pg_cron schedule. Synchronisatie gebeurt op verzoek:
+
+- **Dealer** triggert zelf via `/zakelijk` → tabblad "AutoScout24"
+  (component `src/modules/dealer/AutoScoutPanel.tsx`).
+- **Admin Hub** triggert per dealer of bulk via service-role calls naar
+  dezelfde function.
