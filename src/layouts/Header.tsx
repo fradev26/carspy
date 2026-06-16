@@ -91,12 +91,6 @@ export function Header() {
 
   const isTransparent = isHomepage && !scrolled;
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/zoeken?q=${encodeURIComponent(searchQuery)}`);
-    }
-  };
 
   const handleSignOut = async () => {
     await signOut();
