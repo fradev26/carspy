@@ -648,38 +648,45 @@ export default function Sell() {
           {/* STEP 2 — Uitrusting */}
           {currentStep === 1 && (
             <div className="space-y-6">
-              <section className="space-y-3">
-                <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Voertuiginformatie</h3>
+              <section className="space-y-3" aria-labelledby="sell-feat-veh-info">
+                <h3 id="sell-feat-veh-info" className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Voertuiginformatie</h3>
                 <FeatureCheckboxGrid
                   items={VEHICLE_INFO_ITEMS}
                   selected={formData.features.vehicle_information}
                   onToggle={(v) => toggleFeature('vehicle_information', v)}
+                  groupLabel="Voertuiginformatie"
                 />
               </section>
-              {FEATURE_CATEGORY_ORDER.map((cat) => (
-                <section key={cat} className="space-y-3">
-                  <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                    {FEATURE_CATALOG[cat].title}
-                  </h3>
-                  <FeatureCheckboxGrid
-                    items={FEATURE_CATALOG[cat].items}
-                    selected={formData.features[cat]}
-                    onToggle={(v) => toggleFeature(cat, v)}
-                  />
-                </section>
-              ))}
+              {FEATURE_CATEGORY_ORDER.map((cat) => {
+                const headingId = `sell-feat-${cat}`;
+                return (
+                  <section key={cat} className="space-y-3" aria-labelledby={headingId}>
+                    <h3 id={headingId} className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                      {FEATURE_CATALOG[cat].title}
+                    </h3>
+                    <FeatureCheckboxGrid
+                      items={FEATURE_CATALOG[cat].items}
+                      selected={formData.features[cat]}
+                      onToggle={(v) => toggleFeature(cat, v)}
+                      groupLabel={FEATURE_CATALOG[cat].title}
+                    />
+                  </section>
+                );
+              })}
             </div>
           )}
 
           {/* STEP 3 — Staat */}
           {currentStep === 2 && (
             <div className="space-y-6">
-              <section className="space-y-3">
-                <Label>Algemene staat *</Label>
+              <section className="space-y-3" aria-labelledby="sell-cond-label">
+                <Label id="sell-cond-label">Algemene staat *</Label>
                 <RadioGroup
                   value={formData.conditionOverall}
                   onValueChange={(v) => update('conditionOverall', v as FormState['conditionOverall'])}
                   className="grid gap-2 sm:grid-cols-2"
+                  aria-labelledby="sell-cond-label"
+                  aria-required="true"
                 >
                   {[
                     { v: 'excellent', l: 'Uitstekend' },
@@ -691,7 +698,7 @@ export default function Sell() {
                       key={opt.v}
                       htmlFor={`cond-${opt.v}`}
                       className={cn(
-                        'flex items-center gap-3 rounded-xl border px-3 py-3 cursor-pointer transition-colors',
+                        'flex items-center gap-3 rounded-xl border px-3 py-3 cursor-pointer transition-colors min-h-[48px]',
                         formData.conditionOverall === opt.v
                           ? 'border-primary/40 bg-primary/5'
                           : 'border-border/60 hover:bg-muted/40'
@@ -705,6 +712,7 @@ export default function Sell() {
               </section>
 
               <YesNoBlock
+                idPrefix="damage"
                 label="Schade aanwezig? *"
                 value={formData.damagePresent}
                 onChange={(v) => update('damagePresent', v)}
@@ -714,6 +722,7 @@ export default function Sell() {
               />
 
               <YesNoBlock
+                idPrefix="tech"
                 label="Technische problemen? *"
                 value={formData.technicalPresent}
                 onChange={(v) => update('technicalPresent', v)}
@@ -760,14 +769,19 @@ export default function Sell() {
                 )}
 
                 {analysisLoading && (
-                  <div className="flex flex-col items-center gap-3 py-8">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <div
+                    className="flex flex-col items-center gap-3 py-8"
+                    role="status"
+                    aria-live="polite"
+                    aria-busy="true"
+                  >
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
                     <p className="text-sm text-muted-foreground">AI analyseert je wagen...</p>
                   </div>
                 )}
 
                 {analysisError && (
-                  <div className="rounded-lg bg-destructive/10 p-4 text-sm text-destructive">
+                  <div className="rounded-lg bg-destructive/10 p-4 text-sm text-destructive" role="alert">
                     {analysisError}
                     <Button variant="outline" size="sm" className="mt-2 w-full" onClick={fetchAnalysis}>
                       Opnieuw proberen
@@ -878,9 +892,12 @@ export default function Sell() {
                   <Input
                     id="sell-price"
                     type="number"
+                    inputMode="numeric"
+                    min={0}
                     value={formData.price}
                     onChange={(e) => update('price', e.target.value)}
                     placeholder="25000"
+                    aria-required="true"
                   />
                 </div>
                 <div className="space-y-2">
@@ -890,11 +907,12 @@ export default function Sell() {
                     onValueChange={(v) => update('priceNegotiable', v as 'yes' | 'no')}
                     className="flex gap-3 pt-1"
                     aria-labelledby="sell-neg-label"
+                    aria-required="true"
                   >
-                    <label htmlFor="neg-yes" className="flex items-center gap-2 text-sm">
+                    <label htmlFor="neg-yes" className="flex items-center gap-2 text-sm min-h-[44px] cursor-pointer">
                       <RadioGroupItem value="yes" id="neg-yes" /> Ja
                     </label>
-                    <label htmlFor="neg-no" className="flex items-center gap-2 text-sm">
+                    <label htmlFor="neg-no" className="flex items-center gap-2 text-sm min-h-[44px] cursor-pointer">
                       <RadioGroupItem value="no" id="neg-no" /> Nee
                     </label>
                   </RadioGroup>
@@ -1005,6 +1023,7 @@ export default function Sell() {
 // ────────────────────────────────────────────────────────────
 
 function YesNoBlock({
+  idPrefix,
   label,
   value,
   onChange,
@@ -1012,6 +1031,7 @@ function YesNoBlock({
   detailValue,
   onDetailChange,
 }: {
+  idPrefix: string;
   label: string;
   value: 'yes' | 'no' | '';
   onChange: (v: 'yes' | 'no') => void;
@@ -1019,27 +1039,39 @@ function YesNoBlock({
   detailValue: string;
   onDetailChange: (v: string) => void;
 }) {
+  const labelId = `${idPrefix}-label`;
+  const detailId = `${idPrefix}-detail`;
   return (
-    <section className="space-y-3">
-      <Label>{label}</Label>
-      <RadioGroup value={value} onValueChange={(v) => onChange(v as 'yes' | 'no')} className="flex gap-3">
-        {(['yes', 'no'] as const).map((opt) => (
-          <label
-            key={opt}
-            className={cn(
-              'flex items-center gap-2 rounded-xl border px-4 py-2 text-sm cursor-pointer',
-              value === opt ? 'border-primary/40 bg-primary/5' : 'border-border/60 hover:bg-muted/40'
-            )}
-          >
-            <RadioGroupItem value={opt} />
-            {opt === 'yes' ? 'Ja' : 'Nee'}
-          </label>
-        ))}
+    <section className="space-y-3" aria-labelledby={labelId}>
+      <Label id={labelId}>{label}</Label>
+      <RadioGroup
+        value={value}
+        onValueChange={(v) => onChange(v as 'yes' | 'no')}
+        className="flex gap-3"
+        aria-labelledby={labelId}
+        aria-required="true"
+      >
+        {(['yes', 'no'] as const).map((opt) => {
+          const optId = `${idPrefix}-${opt}`;
+          return (
+            <label
+              key={opt}
+              htmlFor={optId}
+              className={cn(
+                'flex items-center gap-2 rounded-xl border px-4 py-2 text-sm cursor-pointer min-h-[44px]',
+                value === opt ? 'border-primary/40 bg-primary/5' : 'border-border/60 hover:bg-muted/40'
+              )}
+            >
+              <RadioGroupItem value={opt} id={optId} />
+              {opt === 'yes' ? 'Ja' : 'Nee'}
+            </label>
+          );
+        })}
       </RadioGroup>
       {value === 'yes' && (
         <div className="space-y-2">
-          <Label className="text-sm text-muted-foreground">{detailLabel}</Label>
-          <Textarea value={detailValue} onChange={(e) => onDetailChange(e.target.value)} rows={3} />
+          <Label htmlFor={detailId} className="text-sm text-muted-foreground">{detailLabel}</Label>
+          <Textarea id={detailId} value={detailValue} onChange={(e) => onDetailChange(e.target.value)} rows={3} />
         </div>
       )}
     </section>
