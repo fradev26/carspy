@@ -6,8 +6,8 @@ type Call = { method: string; args: unknown[] };
 const calls: Call[] = [];
 
 // Builder that records every method call and returns itself for chaining.
-function makeBuilder() {
-  const builder: Record<string, unknown> = {};
+function makeBuilder(): any {
+  const builder: any = {};
   const methods = [
     'select', 'eq', 'in', 'gte', 'lte', 'or', 'contains',
     'order', 'range', 'limit', 'neq', 'maybeSingle',
@@ -19,9 +19,8 @@ function makeBuilder() {
     };
   }
   // Make the builder thenable so `await` resolves with our mock data.
-  (builder as unknown as PromiseLike<unknown>).then = (
-    onFulfilled: (value: { data: unknown[]; error: null; count: number }) => unknown,
-  ) => Promise.resolve({ data: [], error: null, count: 0 }).then(onFulfilled);
+  builder.then = (onFulfilled: any) =>
+    Promise.resolve({ data: [], error: null, count: 0 }).then(onFulfilled);
   return builder;
 }
 
