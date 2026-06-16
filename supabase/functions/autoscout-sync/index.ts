@@ -229,11 +229,14 @@ async function syncDealer(svc: SvcClient, dealerUserId: string, trigger: "manual
 }
 
 // ---------- Auth helpers ----------
+const CRON_SECRET = Deno.env.get("CRON_SECRET") ?? "";
+
 async function getCaller(req: Request) {
   const auth = req.headers.get("Authorization") || "";
   const token = auth.replace(/^Bearer\s+/i, "");
   if (!token) return { kind: "none" as const };
   if (token === SERVICE_ROLE) return { kind: "service" as const };
+  if (CRON_SECRET && token === CRON_SECRET) return { kind: "service" as const };
   const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     global: { headers: { Authorization: `Bearer ${token}` } },
   });
