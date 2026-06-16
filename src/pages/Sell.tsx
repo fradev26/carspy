@@ -679,9 +679,6 @@ export default function Sell() {
           {/* STEP 3 — Staat */}
           {currentStep === 2 && (
             <div className="space-y-6">
-              <section className="space-y-3">
-          {currentStep === 2 && (
-            <div className="space-y-6">
               <section className="space-y-3" aria-labelledby="sell-cond-label">
                 <Label id="sell-cond-label">Algemene staat *</Label>
                 <RadioGroup
