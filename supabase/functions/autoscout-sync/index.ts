@@ -266,17 +266,51 @@ serve(async (req) => {
         if (caller.kind !== "user") return json({ error: "Unauthorized" }, 401);
         const { dealer_user_id, customer_id, username, password } = body;
         if (!dealer_user_id || !customer_id || !username) return json({ error: "Verplichte velden ontbreken" }, 400);
-        const existing = !password
-          ? (await svc.from("autoscout_credentials").select("password_secret").eq("user_id", dealer_user_id).maybeSingle()).data
-          : null;
-        const pwd = password || existing?.password_secret;
-        if (!pwd) return json({ error: "Wachtwoord verplicht bij eerste registratie" }, 400);
+
+        // Find existing credentials (and existing vault secret_id, if any)
+        const { data: existing } = await svc
+          .from("autoscout_credentials")
+          .select("password_secret_id")
+          .eq("user_id", dealer_user_id)
+          .maybeSingle();
+
+        let secretId: string | null = (existing?.password_secret_id as string | null) ?? null;
+
+        if (password) {
+          // Create new Vault secret; if one existed, update it instead of creating duplicates.
+          if (secretId) {
+            const { error: updErr } = await svc.rpc("update_vault_secret" as any, {
+              _id: secretId,
+              _secret: password,
+            }).maybeSingle?.() ?? { error: null };
+            // Fallback: many projects don't have an update helper; just create a new one and overwrite the reference.
+            if (updErr) {
+              secretId = null;
+            }
+          }
+          if (!secretId) {
+            const { data: created, error: createErr } = await svc.rpc("vault_create_secret" as any, {
+              _secret: password,
+              _name: `autoscout_${dealer_user_id}`,
+              _description: "AutoScout24 password",
+            });
+            if (createErr) {
+              // Last-resort fallback: direct insert via service-role into vault.secrets via a tiny helper
+              // (we ship one in a follow-up migration if this branch fires).
+              return json({ error: `Vault opslaan mislukt: ${createErr.message}` }, 500);
+            }
+            secretId = created as string;
+          }
+        }
+
+        if (!secretId) return json({ error: "Wachtwoord verplicht bij eerste registratie" }, 400);
+
         const { error } = await svc.from("autoscout_credentials").upsert(
           {
             user_id: dealer_user_id,
             customer_id: String(customer_id).trim(),
             username: String(username).trim(),
-            password_secret: pwd,
+            password_secret_id: secretId,
           },
           { onConflict: "user_id" },
         );
@@ -289,14 +323,15 @@ serve(async (req) => {
         const { dealer_user_id } = body;
         const { data: cred } = await svc
           .from("autoscout_credentials")
-          .select("customer_id, username, password_secret")
+          .select("customer_id, username, password_secret_id")
           .eq("user_id", dealer_user_id)
           .maybeSingle();
         if (!cred) return json({ error: "Geen credentials gevonden" }, 404);
         try {
+          const password = await resolvePassword(svc, cred.password_secret_id as string | null);
           await as24Fetch(`/customers/${encodeURIComponent(cred.customer_id as string)}`, {
             username: cred.username as string,
-            password: cred.password_secret as string,
+            password,
           });
           return json({ ok: true });
         } catch (e: any) {
