@@ -129,7 +129,7 @@ async function syncDealer(svc: SvcClient, dealerUserId: string, trigger: "manual
         try {
           detail = await as24Fetch(
             `/customers/${encodeURIComponent(cred.customer_id as string)}/listings/${encodeURIComponent(asId)}`,
-            { username: cred.username as string, password: cred.password_secret as string },
+            { username: cred.username as string, password },
           );
         } catch (_) {
           // Fall back to list-row data when detail-fetch fails.
