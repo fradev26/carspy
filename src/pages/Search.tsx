@@ -301,7 +301,7 @@ export default function Search() {
                   onClick={() => setMobileResultsRevealed(true)}
                   className="w-full min-h-12 text-base font-semibold"
                 >
-                  Toon {activeFilterCount > 0 ? `${filteredListings.length} resultaten` : 'alle resultaten'}
+                  Toon {activeFilterCount > 0 ? `${total} resultaten` : 'alle resultaten'}
                 </Button>
                 {activeFilterCount > 0 && (
                   <Button
@@ -364,7 +364,7 @@ export default function Search() {
                 <div>
                   <h1 className="text-2xl font-bold md:text-3xl">Auto's zoeken</h1>
                   <p className="mt-1 text-muted-foreground">
-                    <span className="font-semibold text-foreground">{filteredListings.length}</span> resultaten gevonden
+                    <span className="font-semibold text-foreground">{total}</span> resultaten gevonden
                   </p>
                 </div>
 
@@ -467,7 +467,7 @@ export default function Search() {
                         </Button>
                         <DrawerClose asChild>
                           <Button className="flex-1 min-h-12">
-                            Toon {filteredListings.length} resultaten
+                            Toon {total} resultaten
                           </Button>
                         </DrawerClose>
                       </DrawerFooter>
@@ -537,12 +537,12 @@ export default function Search() {
                     />
                   ))}
                 </div>
-              ) : filteredListings.length > 0 ? (
+              ) : total > 0 ? (
                 <>
-                  <ListingGrid listings={filteredListings.slice((page - 1) * perPage, page * perPage)} variant={viewMode} columns={3} />
+                  <ListingGrid listings={pageListings} variant={viewMode} columns={3} />
                   
                   {/* Pagination */}
-                  {filteredListings.length > perPage && (
+                  {total > perPage && (
                     <div className="mt-8 flex items-center justify-center gap-2">
                       <Button
                         variant="outline"
@@ -553,8 +553,8 @@ export default function Search() {
                       >
                         Vorige
                       </Button>
-                      {Array.from({ length: Math.min(Math.ceil(filteredListings.length / perPage), 7) }, (_, i) => {
-                        const totalPages = Math.ceil(filteredListings.length / perPage);
+                      {Array.from({ length: Math.min(Math.ceil(total / perPage), 7) }, (_, i) => {
+                        const totalPages = Math.ceil(total / perPage);
                         let pageNum: number;
                         if (totalPages <= 7) {
                           pageNum = i + 1;
@@ -580,7 +580,7 @@ export default function Search() {
                       <Button
                         variant="outline"
                         size="sm"
-                        disabled={page >= Math.ceil(filteredListings.length / perPage)}
+                        disabled={page >= Math.ceil(total / perPage)}
                         onClick={() => { setPage(p => p + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                         className="border-border/60"
                       >
