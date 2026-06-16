@@ -165,172 +165,40 @@ export default function Search() {
   const [searchName, setSearchName] = useState('');
   const [page, setPage] = useState(1);
   const perPage = 24;
-  const { listings: allListings, loading: listingsLoading } = useListings();
+  const queryParam = searchParams.get('q') ?? undefined;
+  const {
+    listings: pageListings,
+    total,
+    loading: listingsLoading,
+  } = useSearchListings({ filters, query: queryParam, sort: sortBy, page, perPage });
   const [mobileResultsRevealed, setMobileResultsRevealed] = useState(false);
 
   // Update filters when URL params change
   useEffect(() => {
     const newFilters = parseFiltersFromURL(searchParams);
     setFilters(newFilters);
+    setPage(1);
   }, [searchParams]);
 
-  // Simulate loading when filters change
+  // Reset to first page when filters/sort change locally
   const handleFiltersChange = (newFilters: SearchFilters) => {
     setIsLoading(true);
     setPage(1);
     startTransition(() => {
       setFilters(newFilters);
-      setTimeout(() => setIsLoading(false), 300);
+      setTimeout(() => setIsLoading(false), 200);
     });
   };
 
   const handleSortChange = (value: string) => {
     setIsLoading(true);
+    setPage(1);
     startTransition(() => {
       setSortBy(value);
-      setTimeout(() => setIsLoading(false), 200);
+      setTimeout(() => setIsLoading(false), 150);
     });
   };
 
-  const filteredListings = useMemo(() => {
-    let results = [...allListings];
-
-    // Free-text query from URL (?q=...)
-    const query = searchParams.get('q')?.toLowerCase().trim();
-    if (query) {
-      results = results.filter(l =>
-        l.title.toLowerCase().includes(query) ||
-        l.brand.toLowerCase().includes(query) ||
-        l.model.toLowerCase().includes(query) ||
-        l.description.toLowerCase().includes(query)
-      );
-    }
-
-    // Basic filters
-    if (filters.brand && filters.brand !== 'all') {
-      results = results.filter(l => l.brand === filters.brand);
-    }
-    if (filters.model) {
-      results = results.filter(l => l.model === filters.model);
-    }
-    if (filters.minPrice) {
-      results = results.filter(l => l.price >= filters.minPrice!);
-    }
-    if (filters.maxPrice) {
-      results = results.filter(l => l.price <= filters.maxPrice!);
-    }
-    if (filters.minYear) {
-      results = results.filter(l => l.year >= filters.minYear!);
-    }
-    if (filters.maxYear) {
-      results = results.filter(l => l.year <= filters.maxYear!);
-    }
-    if (filters.minMileage) {
-      results = results.filter(l => l.mileage >= filters.minMileage!);
-    }
-    if (filters.maxMileage) {
-      results = results.filter(l => l.mileage <= filters.maxMileage!);
-    }
-    if (filters.fuelTypes?.length) {
-      results = results.filter(l => filters.fuelTypes!.includes(l.fuelType));
-    }
-    if (filters.bodyTypes?.length) {
-      results = results.filter(l => filters.bodyTypes!.includes(l.bodyType));
-    }
-
-    // Performance filters
-    if (filters.transmissions?.length) {
-      results = results.filter(l => filters.transmissions!.includes(l.transmission));
-    }
-    if (filters.driveTypes?.length) {
-      results = results.filter(l => l.driveType && filters.driveTypes!.includes(l.driveType));
-    }
-    if (filters.minPower) {
-      results = results.filter(l => l.power >= filters.minPower!);
-    }
-    if (filters.maxPower) {
-      results = results.filter(l => l.power <= filters.maxPower!);
-    }
-
-    // Appearance filters
-    if (filters.paintTypes?.length) {
-      results = results.filter(l => l.paintType && filters.paintTypes!.includes(l.paintType));
-    }
-    if (filters.colors?.length) {
-      results = results.filter(l => filters.colors!.includes(l.color));
-    }
-    if (filters.interiorMaterials?.length) {
-      results = results.filter(l => l.interiorMaterial && filters.interiorMaterials!.includes(l.interiorMaterial));
-    }
-
-    // Practical filters
-    if (filters.minDoors) {
-      results = results.filter(l => l.doors >= filters.minDoors!);
-    }
-    if (filters.minSeats) {
-      results = results.filter(l => l.seats >= filters.minSeats!);
-    }
-
-    // Location filters
-    if (filters.province) {
-      results = results.filter(l => l.location.province === filters.province);
-    }
-
-    // History filters
-    if (filters.sellerType) {
-      results = results.filter(l => l.seller.type === filters.sellerType);
-    }
-    if (filters.maxPreviousOwners) {
-      results = results.filter(l => l.previousOwners !== undefined && l.previousOwners <= filters.maxPreviousOwners!);
-    }
-    if (filters.noDamageHistory) {
-      results = results.filter(l => l.hasDamageHistory === false);
-    }
-    if (filters.vatDeductible) {
-      results = results.filter(l => l.vatDeductible === true);
-    }
-    if (filters.hasMaintenanceHistory) {
-      results = results.filter(l => l.hasMaintenanceHistory === true);
-    }
-    if (filters.isNonSmoker) {
-      results = results.filter(l => l.isNonSmoker === true);
-    }
-
-    // Feature filters
-    if (filters.features?.length) {
-      results = results.filter(l => 
-        filters.features!.every(f => l.features.includes(f))
-      );
-    }
-
-    // Sort
-    switch (sortBy) {
-      case 'price-asc':
-        results.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-desc':
-        results.sort((a, b) => b.price - a.price);
-        break;
-      case 'mileage-asc':
-        results.sort((a, b) => a.mileage - b.mileage);
-        break;
-      case 'year-desc':
-        results.sort((a, b) => b.year - a.year);
-        break;
-    }
-
-    // Premium & boosted listings always on top
-    const now = new Date();
-    results.sort((a, b) => {
-      const aIsPremium = a.isPremium || (a.boostUntil && new Date(a.boostUntil) > now);
-      const bIsPremium = b.isPremium || (b.boostUntil && new Date(b.boostUntil) > now);
-      if (aIsPremium && !bIsPremium) return -1;
-      if (!aIsPremium && bIsPremium) return 1;
-      return 0;
-    });
-
-    return results;
-  }, [filters, sortBy, allListings]);
 
   const handleRemoveFilter = (key: keyof SearchFilters, value?: string) => {
     const arrayKeys = ['fuelTypes', 'transmissions', 'bodyTypes', 'driveTypes', 'paintTypes', 'colors', 'interiorMaterials', 'features'];
