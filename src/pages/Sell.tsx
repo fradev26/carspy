@@ -769,14 +769,19 @@ export default function Sell() {
                 )}
 
                 {analysisLoading && (
-                  <div className="flex flex-col items-center gap-3 py-8">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <div
+                    className="flex flex-col items-center gap-3 py-8"
+                    role="status"
+                    aria-live="polite"
+                    aria-busy="true"
+                  >
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
                     <p className="text-sm text-muted-foreground">AI analyseert je wagen...</p>
                   </div>
                 )}
 
                 {analysisError && (
-                  <div className="rounded-lg bg-destructive/10 p-4 text-sm text-destructive">
+                  <div className="rounded-lg bg-destructive/10 p-4 text-sm text-destructive" role="alert">
                     {analysisError}
                     <Button variant="outline" size="sm" className="mt-2 w-full" onClick={fetchAnalysis}>
                       Opnieuw proberen
