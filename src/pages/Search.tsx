@@ -13,19 +13,12 @@ import { useSearchListings } from '@/hooks/useSearchListings';
 import {
   SearchFilters,
   SORT_OPTIONS,
-  BodyType,
-  FuelType,
-  TransmissionType,
-  DriveType,
-  PaintType,
-  InteriorMaterial,
-  OnlineSince,
-  WarrantyOption,
   CAR_BRANDS,
   CAR_MODELS,
   FUEL_TYPES,
   TRANSMISSION_TYPES,
 } from '@/types/listing';
+import { parseFiltersFromURL } from '@/lib/searchFilters';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
 import { useSavedSearches } from '@/hooks/useSavedSearches';
 import { useAuth } from '@/hooks/useAuth';
