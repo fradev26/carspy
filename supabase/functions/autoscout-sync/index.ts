@@ -85,14 +85,24 @@ async function sha256(s: string): Promise<string> {
 // ---------- Sync core ----------
 type SvcClient = ReturnType<typeof createClient>;
 
+async function resolvePassword(svc: SvcClient, secretId: string | null | undefined): Promise<string> {
+  if (!secretId) throw new Error("Geen wachtwoord opgeslagen voor deze dealer.");
+  const { data, error } = await svc.rpc("autoscout_get_password", { _secret_id: secretId });
+  if (error) throw new Error(`Wachtwoord ophalen mislukt: ${error.message}`);
+  if (!data) throw new Error("Wachtwoord-secret niet gevonden in Vault.");
+  return data as string;
+}
+
 async function syncDealer(svc: SvcClient, dealerUserId: string, trigger: "manual" | "cron") {
   const { data: cred, error: credErr } = await svc
     .from("autoscout_credentials")
-    .select("customer_id, username, password_secret")
+    .select("customer_id, username, password_secret_id")
     .eq("user_id", dealerUserId)
     .maybeSingle();
   if (credErr) throw new Error(credErr.message);
   if (!cred) throw new Error("Geen AutoScout24 credentials voor deze dealer.");
+
+  const password = await resolvePassword(svc, cred.password_secret_id as string | null);
 
   const { data: runRow, error: runErr } = await svc
     .from("autoscout_sync_runs")
@@ -106,7 +116,7 @@ async function syncDealer(svc: SvcClient, dealerUserId: string, trigger: "manual
   try {
     const listings = await fetchAllListings(cred.customer_id as string, {
       username: cred.username as string,
-      password: cred.password_secret as string,
+      password,
     });
     totals.total = listings.length;
 
