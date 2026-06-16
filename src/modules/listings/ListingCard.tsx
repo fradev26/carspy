@@ -97,14 +97,6 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
                 <span className="text-lg font-bold text-accent">{formatPrice(listing.price)}</span>
               </div>
 
-              {/* Favoriet badge */}
-              {favorite && (
-                <Badge className="absolute left-3 top-12 bg-primary text-primary-foreground font-medium gap-1 px-2 py-0.5 text-xs shadow-md">
-                  <Heart className="h-3 w-3 fill-current" />
-                  Favoriet
-                </Badge>
-              )}
-
               {/* Favorite Button */}
           <Button
             variant="ghost"
@@ -214,14 +206,6 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
           <div className="absolute left-3 top-3 rounded-lg bg-card/95 px-2.5 py-1 shadow-elevated backdrop-blur-sm">
             <span className="text-base font-bold text-accent">{formatPrice(listing.price)}</span>
           </div>
-
-          {/* Favoriet badge */}
-          {favorite && (
-            <Badge className="absolute left-3 top-11 bg-primary text-primary-foreground font-medium gap-1 px-2 py-0.5 text-xs shadow-md">
-              <Heart className="h-3 w-3 fill-current" />
-              Favoriet
-            </Badge>
-          )}
 
           {/* Favorite Button */}
           <Button
