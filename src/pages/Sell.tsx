@@ -560,61 +560,62 @@ export default function Sell() {
                 onModelChange={(v) => update('model', v)}
               />
               <div className="space-y-2">
-                <Label>Jaar eerste registratie *</Label>
+                <Label htmlFor="sell-year">Jaar eerste registratie *</Label>
                 <Select value={formData.year} onValueChange={(v) => update('year', v)}>
-                  <SelectTrigger><SelectValue placeholder="Selecteer jaar" /></SelectTrigger>
+                  <SelectTrigger id="sell-year"><SelectValue placeholder="Selecteer jaar" /></SelectTrigger>
                   <SelectContent>
                     {YEAR_OPTIONS.map((y) => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Maand</Label>
+                <Label htmlFor="sell-month">Maand</Label>
                 <Select value={formData.month} onValueChange={(v) => update('month', v)}>
-                  <SelectTrigger><SelectValue placeholder="Selecteer maand" /></SelectTrigger>
+                  <SelectTrigger id="sell-month"><SelectValue placeholder="Selecteer maand" /></SelectTrigger>
                   <SelectContent>
                     {MONTHS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Carrosserievorm *</Label>
+                <Label htmlFor="sell-bodyType">Carrosserievorm *</Label>
                 <Select value={formData.bodyType} onValueChange={(v) => update('bodyType', v)}>
-                  <SelectTrigger><SelectValue placeholder="Selecteer" /></SelectTrigger>
+                  <SelectTrigger id="sell-bodyType"><SelectValue placeholder="Selecteer" /></SelectTrigger>
                   <SelectContent>
                     {BODY_FORM_OPTIONS.map((b) => <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Brandstof *</Label>
+                <Label htmlFor="sell-fuelType">Brandstof *</Label>
                 <Select value={formData.fuelType} onValueChange={(v) => update('fuelType', v)}>
-                  <SelectTrigger><SelectValue placeholder="Selecteer" /></SelectTrigger>
+                  <SelectTrigger id="sell-fuelType"><SelectValue placeholder="Selecteer" /></SelectTrigger>
                   <SelectContent>
                     {FUEL_TYPES.map((f) => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Transmissie *</Label>
+                <Label htmlFor="sell-transmission">Transmissie *</Label>
                 <Select value={formData.transmission} onValueChange={(v) => update('transmission', v)}>
-                  <SelectTrigger><SelectValue placeholder="Selecteer" /></SelectTrigger>
+                  <SelectTrigger id="sell-transmission"><SelectValue placeholder="Selecteer" /></SelectTrigger>
                   <SelectContent>
                     {TRANSMISSION_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Vermogen</Label>
+                <Label htmlFor="sell-power">Vermogen</Label>
                 <div className="flex gap-2">
                   <Input
+                    id="sell-power"
                     type="number"
                     value={formData.power}
                     onChange={(e) => update('power', e.target.value)}
                     placeholder="150"
                   />
                   <Select value={formData.powerUnit} onValueChange={(v) => update('powerUnit', v as 'pk' | 'kW')}>
-                    <SelectTrigger className="w-24"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="w-24" aria-label="Eenheid vermogen"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="pk">pk</SelectItem>
                       <SelectItem value="kW">kW</SelectItem>
@@ -623,16 +624,18 @@ export default function Sell() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Uitvoering / versie</Label>
+                <Label htmlFor="sell-modelVersion">Uitvoering / versie</Label>
                 <Input
+                  id="sell-modelVersion"
                   value={formData.modelVersion}
                   onChange={(e) => update('modelVersion', e.target.value)}
                   placeholder="Bijv. 2.0 TDI Highline"
                 />
               </div>
               <div className="space-y-2 sm:col-span-2">
-                <Label>Kilometerstand *</Label>
+                <Label htmlFor="sell-mileage">Kilometerstand *</Label>
                 <Input
+                  id="sell-mileage"
                   type="number"
                   value={formData.mileage}
                   onChange={(e) => update('mileage', e.target.value)}
@@ -871,8 +874,9 @@ export default function Sell() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Vraagprijs (€) *</Label>
+                  <Label htmlFor="sell-price">Vraagprijs (€) *</Label>
                   <Input
+                    id="sell-price"
                     type="number"
                     value={formData.price}
                     onChange={(e) => update('price', e.target.value)}
@@ -880,23 +884,25 @@ export default function Sell() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Onderhandelbaar? *</Label>
+                  <Label id="sell-neg-label">Onderhandelbaar? *</Label>
                   <RadioGroup
                     value={formData.priceNegotiable}
                     onValueChange={(v) => update('priceNegotiable', v as 'yes' | 'no')}
                     className="flex gap-3 pt-1"
+                    aria-labelledby="sell-neg-label"
                   >
-                    <label className="flex items-center gap-2 text-sm">
+                    <label htmlFor="neg-yes" className="flex items-center gap-2 text-sm">
                       <RadioGroupItem value="yes" id="neg-yes" /> Ja
                     </label>
-                    <label className="flex items-center gap-2 text-sm">
+                    <label htmlFor="neg-no" className="flex items-center gap-2 text-sm">
                       <RadioGroupItem value="no" id="neg-no" /> Nee
                     </label>
                   </RadioGroup>
                 </div>
                 <div className="space-y-2">
-                  <Label>Beschikbaar vanaf</Label>
+                  <Label htmlFor="sell-availableFrom">Beschikbaar vanaf</Label>
                   <Input
+                    id="sell-availableFrom"
                     type="date"
                     value={formData.availableFrom}
                     onChange={(e) => update('availableFrom', e.target.value)}
@@ -906,7 +912,7 @@ export default function Sell() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label>Opmerkingen / beschrijving</Label>
+                  <Label htmlFor="sell-description">Opmerkingen / beschrijving</Label>
                   <Button
                     type="button"
                     variant="outline"
@@ -920,6 +926,7 @@ export default function Sell() {
                   </Button>
                 </div>
                 <Textarea
+                  id="sell-description"
                   value={formData.description}
                   onChange={(e) => update('description', e.target.value)}
                   placeholder="Vertel iets extra over je auto..."
@@ -933,11 +940,11 @@ export default function Sell() {
           {currentStep === 5 && (
             <div className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2"><Label>Naam *</Label><Input value={formData.name} onChange={(e) => update('name', e.target.value)} /></div>
-                <div className="space-y-2"><Label>E-mail *</Label><Input type="email" value={formData.email} onChange={(e) => update('email', e.target.value)} /></div>
-                <div className="space-y-2"><Label>Telefoon *</Label><Input value={formData.phone} onChange={(e) => update('phone', e.target.value)} /></div>
-                <div className="space-y-2"><Label>Postcode *</Label><Input value={formData.postalCode} onChange={(e) => update('postalCode', e.target.value)} /></div>
-                <div className="space-y-2 sm:col-span-2"><Label>Gemeente *</Label><Input value={formData.city} onChange={(e) => update('city', e.target.value)} /></div>
+                <div className="space-y-2"><Label htmlFor="sell-name">Naam *</Label><Input id="sell-name" autoComplete="name" value={formData.name} onChange={(e) => update('name', e.target.value)} /></div>
+                <div className="space-y-2"><Label htmlFor="sell-email">E-mail *</Label><Input id="sell-email" type="email" autoComplete="email" value={formData.email} onChange={(e) => update('email', e.target.value)} /></div>
+                <div className="space-y-2"><Label htmlFor="sell-phone">Telefoon *</Label><Input id="sell-phone" type="tel" autoComplete="tel" value={formData.phone} onChange={(e) => update('phone', e.target.value)} /></div>
+                <div className="space-y-2"><Label htmlFor="sell-postalCode">Postcode *</Label><Input id="sell-postalCode" autoComplete="postal-code" value={formData.postalCode} onChange={(e) => update('postalCode', e.target.value)} /></div>
+                <div className="space-y-2 sm:col-span-2"><Label htmlFor="sell-city">Gemeente *</Label><Input id="sell-city" autoComplete="address-level2" value={formData.city} onChange={(e) => update('city', e.target.value)} /></div>
               </div>
               <div className="space-y-3 rounded-xl border border-border/60 bg-muted/20 p-4">
                 <label className="flex items-start gap-3 text-sm cursor-pointer">
