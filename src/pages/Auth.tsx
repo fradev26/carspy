@@ -201,16 +201,16 @@ function SignupForm() {
     <form onSubmit={handleSignup} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="signup-name">Naam</Label>
-        <Input id="signup-name" type="text" placeholder="Je naam" value={name} onChange={(e) => setName(e.target.value)} />
+        <Input id="signup-name" type="text" autoComplete="name" placeholder="Je naam" value={name} onChange={(e) => setName(e.target.value)} />
       </div>
       <div className="space-y-2">
         <Label htmlFor="signup-email">Email</Label>
-        <Input id="signup-email" type="email" placeholder="naam@voorbeeld.nl" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <Input id="signup-email" type="email" autoComplete="email" placeholder="naam@voorbeeld.nl" value={email} onChange={(e) => setEmail(e.target.value)} />
       </div>
       <div className="space-y-2">
         <Label htmlFor="signup-password">Wachtwoord</Label>
         <div className="relative">
-          <Input id="signup-password" type={showPassword ? 'text' : 'password'} placeholder="Minimaal 6 tekens" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <Input id="signup-password" type={showPassword ? 'text' : 'password'} autoComplete="new-password" placeholder="Minimaal 6 tekens" value={password} onChange={(e) => setPassword(e.target.value)} />
           <Button type="button" variant="ghost" size="icon" aria-label={showPassword ? 'Wachtwoord verbergen' : 'Wachtwoord tonen'} className="absolute right-0 top-0 h-full px-3" onClick={() => setShowPassword(!showPassword)}>
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </Button>
