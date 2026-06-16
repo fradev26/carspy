@@ -6,11 +6,16 @@ interface Props {
   items: FeatureItem[];
   selected: string[];
   onToggle: (value: string) => void;
+  groupLabel?: string;
 }
 
-export function FeatureCheckboxGrid({ items, selected, onToggle }: Props) {
+export function FeatureCheckboxGrid({ items, selected, onToggle, groupLabel }: Props) {
   return (
-    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+    <div
+      role="group"
+      aria-label={groupLabel}
+      className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3"
+    >
       {items.map((item) => {
         const active = selected.includes(item.value);
         return (
