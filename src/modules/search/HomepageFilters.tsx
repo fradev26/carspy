@@ -411,28 +411,6 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
         <TabsContent value="appearance" className="mt-4 animate-fade-in">
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-4">
-              {/* Paint Type */}
-              <div className="space-y-2">
-                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Laksoort</Label>
-                <div className="flex flex-wrap gap-2">
-                  {PAINT_TYPES.map((paint) => (
-                    <button
-                      key={paint.value}
-                      type="button"
-                      onClick={() => toggleArrayFilter('paintTypes', paint.value)}
-                      className={cn(
-                        "px-3 py-1.5 text-sm rounded-md border transition-all duration-200 focus-ring",
-                        filters.paintTypes?.includes(paint.value)
-                          ? "bg-primary text-primary-foreground border-primary" 
-                          : "bg-background text-foreground/70 border-border/60 hover:border-primary/50 hover:text-foreground"
-                      )}
-                    >
-                      {paint.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               {/* Exterior Color */}
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Kleur</Label>
@@ -445,35 +423,11 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
                       className={cn(
                         "px-3 py-1.5 text-sm rounded-md border transition-all duration-200 focus-ring",
                         filters.colors?.includes(color)
-                          ? "bg-primary text-primary-foreground border-primary" 
+                          ? "bg-primary text-primary-foreground border-primary"
                           : "bg-background text-foreground/70 border-border/60 hover:border-primary/50 hover:text-foreground"
                       )}
                     >
                       {color}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              {/* Interior */}
-              <div className="space-y-2">
-                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Interieur</Label>
-                <div className="flex flex-wrap gap-2">
-                  {INTERIOR_MATERIALS.map((mat) => (
-                    <button
-                      key={mat.value}
-                      type="button"
-                      onClick={() => toggleArrayFilter('interiorMaterials', mat.value)}
-                      className={cn(
-                        "px-3 py-1.5 text-sm rounded-md border transition-all duration-200 focus-ring",
-                        filters.interiorMaterials?.includes(mat.value)
-                          ? "bg-primary text-primary-foreground border-primary" 
-                          : "bg-background text-foreground/70 border-border/60 hover:border-primary/50 hover:text-foreground"
-                      )}
-                    >
-                      {mat.label}
                     </button>
                   ))}
                 </div>
