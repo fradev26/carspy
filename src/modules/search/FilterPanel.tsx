@@ -484,29 +484,6 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
         onToggle={() => toggleSection('appearance')}
       >
         <div className="space-y-4">
-          {/* Paint Type */}
-          <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Laksoort</Label>
-            <div className="grid grid-cols-2 gap-2">
-              {PAINT_TYPES.map((paint) => (
-                <div key={paint.value} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`paint-${paint.value}`}
-                    checked={filters.paintTypes?.includes(paint.value) || false}
-                    onCheckedChange={() => toggleArrayFilter('paintTypes', paint.value)}
-                    className="border-border"
-                  />
-                  <Label 
-                    htmlFor={`paint-${paint.value}`} 
-                    className="text-sm font-normal cursor-pointer"
-                  >
-                    {paint.label}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Exterior Color */}
           <div className="space-y-2">
             <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Kleur</Label>
@@ -519,34 +496,11 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
                     onCheckedChange={() => toggleArrayFilter('colors', color)}
                     className="border-border"
                   />
-                  <Label 
-                    htmlFor={`color-${color}`} 
+                  <Label
+                    htmlFor={`color-${color}`}
                     className="text-xs font-normal cursor-pointer"
                   >
                     {color}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Interior Material */}
-          <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Interieur</Label>
-            <div className="grid grid-cols-2 gap-2">
-              {INTERIOR_MATERIALS.map((material) => (
-                <div key={material.value} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`interior-${material.value}`}
-                    checked={filters.interiorMaterials?.includes(material.value) || false}
-                    onCheckedChange={() => toggleArrayFilter('interiorMaterials', material.value)}
-                    className="border-border"
-                  />
-                  <Label 
-                    htmlFor={`interior-${material.value}`} 
-                    className="text-sm font-normal cursor-pointer"
-                  >
-                    {material.label}
                   </Label>
                 </div>
               ))}
