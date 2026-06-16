@@ -892,9 +892,12 @@ export default function Sell() {
                   <Input
                     id="sell-price"
                     type="number"
+                    inputMode="numeric"
+                    min={0}
                     value={formData.price}
                     onChange={(e) => update('price', e.target.value)}
                     placeholder="25000"
+                    aria-required="true"
                   />
                 </div>
                 <div className="space-y-2">
@@ -904,11 +907,12 @@ export default function Sell() {
                     onValueChange={(v) => update('priceNegotiable', v as 'yes' | 'no')}
                     className="flex gap-3 pt-1"
                     aria-labelledby="sell-neg-label"
+                    aria-required="true"
                   >
-                    <label htmlFor="neg-yes" className="flex items-center gap-2 text-sm">
+                    <label htmlFor="neg-yes" className="flex items-center gap-2 text-sm min-h-[44px] cursor-pointer">
                       <RadioGroupItem value="yes" id="neg-yes" /> Ja
                     </label>
-                    <label htmlFor="neg-no" className="flex items-center gap-2 text-sm">
+                    <label htmlFor="neg-no" className="flex items-center gap-2 text-sm min-h-[44px] cursor-pointer">
                       <RadioGroupItem value="no" id="neg-no" /> Nee
                     </label>
                   </RadioGroup>
