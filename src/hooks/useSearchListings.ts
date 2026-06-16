@@ -219,10 +219,11 @@ export function useSearchListings(params: UseSearchListingsParams): UseSearchLis
       if (filters.features?.length) q = q.contains('equipment', filters.features);
 
       // Sorting — premium first, then chosen sort
-      q = q.order('is_premium', { ascending: false }).order('boost_until', {
-        ascending: false,
-        nullsFirst: false,
-      });
+      // Sorting — premium & active-boost first (server-tracked via is_boosted column,
+      // synced by trigger on listings.boost_until), then chosen sort.
+      q = q
+        .order('is_premium', { ascending: false })
+        .order('is_boosted', { ascending: false });
       switch (sort) {
         case 'price-asc':
           q = q.order('price', { ascending: true, nullsFirst: false });
