@@ -699,16 +699,6 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
           {/* Toggle filters */}
           <div className="space-y-3 pt-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="no-damage" className="text-sm font-normal cursor-pointer">
-                Schadeauto's verbergen
-              </Label>
-              <Switch
-                id="no-damage"
-                checked={filters.noDamageHistory || false}
-                onCheckedChange={(v) => updateFilter('noDamageHistory', v || undefined)}
-              />
-            </div>
-            <div className="flex items-center justify-between">
               <Label htmlFor="vat" className="text-sm font-normal cursor-pointer">
                 BTW aftrekbaar
               </Label>
@@ -716,26 +706,6 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
                 id="vat"
                 checked={filters.vatDeductible || false}
                 onCheckedChange={(v) => updateFilter('vatDeductible', v || undefined)}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="maintenance" className="text-sm font-normal cursor-pointer">
-                Met onderhoudshistorie
-              </Label>
-              <Switch
-                id="maintenance"
-                checked={filters.hasMaintenanceHistory || false}
-                onCheckedChange={(v) => updateFilter('hasMaintenanceHistory', v || undefined)}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="non-smoker" className="text-sm font-normal cursor-pointer">
-                Niet-rokersvoertuig
-              </Label>
-              <Switch
-                id="non-smoker"
-                checked={filters.isNonSmoker || false}
-                onCheckedChange={(v) => updateFilter('isNonSmoker', v || undefined)}
               />
             </div>
           </div>
