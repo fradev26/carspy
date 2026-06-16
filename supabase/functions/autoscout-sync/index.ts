@@ -229,27 +229,33 @@ async function syncDealer(svc: SvcClient, dealerUserId: string, trigger: "manual
 }
 
 // ---------- Auth helpers ----------
-const CRON_SECRET = Deno.env.get("CRON_SECRET") ?? "";
-
 async function getCaller(req: Request) {
   const auth = req.headers.get("Authorization") || "";
   const token = auth.replace(/^Bearer\s+/i, "");
   if (!token) return { kind: "none" as const };
   if (token === SERVICE_ROLE) return { kind: "service" as const };
-  if (CRON_SECRET && token === CRON_SECRET) return { kind: "service" as const };
   const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     global: { headers: { Authorization: `Bearer ${token}` } },
   });
   const { data, error } = await userClient.auth.getUser();
   if (error || !data.user) return { kind: "none" as const };
-  // Check role
   const svc = createClient(SUPABASE_URL, SERVICE_ROLE);
-  const { data: roles } = await svc.from("user_roles").select("role").eq("user_id", data.user.id);
+  const [{ data: roles }, { data: profile }] = await Promise.all([
+    svc.from("user_roles").select("role").eq("user_id", data.user.id),
+    svc.from("profiles").select("is_dealer").eq("id", data.user.id).maybeSingle(),
+  ]);
   const r = (roles ?? []).map((x: any) => x.role);
   const isAdmin = r.includes("admin");
   const isStockManager = r.includes("stock_manager");
-  if (!isAdmin && !isStockManager) return { kind: "none" as const };
-  return { kind: "user" as const, userId: data.user.id, isAdmin };
+  const isDealer = !!(profile as any)?.is_dealer;
+  if (!isAdmin && !isStockManager && !isDealer) return { kind: "none" as const };
+  return { kind: "user" as const, userId: data.user.id as string, isAdmin, isStockManager, isDealer };
+}
+
+function canActFor(caller: any, dealerUserId: string): boolean {
+  if (caller.kind !== "user") return false;
+  if (caller.isAdmin || caller.isStockManager) return true;
+  return caller.userId === dealerUserId;
 }
 
 // ---------- HTTP entry ----------
