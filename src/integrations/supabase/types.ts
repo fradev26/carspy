@@ -465,6 +465,7 @@ export type Database = {
           co2_emissions_unit: string | null
           color: string | null
           combined_unit: string | null
+          company_id: string | null
           condition: Json | null
           condition_type: string | null
           consumption_city: number | null
@@ -559,6 +560,7 @@ export type Database = {
           co2_emissions_unit?: string | null
           color?: string | null
           combined_unit?: string | null
+          company_id?: string | null
           condition?: Json | null
           condition_type?: string | null
           consumption_city?: number | null
@@ -653,6 +655,7 @@ export type Database = {
           co2_emissions_unit?: string | null
           color?: string | null
           combined_unit?: string | null
+          company_id?: string | null
           condition?: Json | null
           condition_type?: string | null
           consumption_city?: number | null
@@ -733,6 +736,13 @@ export type Database = {
           year?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "listings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "listings_user_id_fkey"
             columns: ["user_id"]
