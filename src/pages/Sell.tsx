@@ -1014,6 +1014,7 @@ export default function Sell() {
 // ────────────────────────────────────────────────────────────
 
 function YesNoBlock({
+  idPrefix,
   label,
   value,
   onChange,
@@ -1021,6 +1022,7 @@ function YesNoBlock({
   detailValue,
   onDetailChange,
 }: {
+  idPrefix: string;
   label: string;
   value: 'yes' | 'no' | '';
   onChange: (v: 'yes' | 'no') => void;
@@ -1028,27 +1030,39 @@ function YesNoBlock({
   detailValue: string;
   onDetailChange: (v: string) => void;
 }) {
+  const labelId = `${idPrefix}-label`;
+  const detailId = `${idPrefix}-detail`;
   return (
-    <section className="space-y-3">
-      <Label>{label}</Label>
-      <RadioGroup value={value} onValueChange={(v) => onChange(v as 'yes' | 'no')} className="flex gap-3">
-        {(['yes', 'no'] as const).map((opt) => (
-          <label
-            key={opt}
-            className={cn(
-              'flex items-center gap-2 rounded-xl border px-4 py-2 text-sm cursor-pointer',
-              value === opt ? 'border-primary/40 bg-primary/5' : 'border-border/60 hover:bg-muted/40'
-            )}
-          >
-            <RadioGroupItem value={opt} />
-            {opt === 'yes' ? 'Ja' : 'Nee'}
-          </label>
-        ))}
+    <section className="space-y-3" aria-labelledby={labelId}>
+      <Label id={labelId}>{label}</Label>
+      <RadioGroup
+        value={value}
+        onValueChange={(v) => onChange(v as 'yes' | 'no')}
+        className="flex gap-3"
+        aria-labelledby={labelId}
+        aria-required="true"
+      >
+        {(['yes', 'no'] as const).map((opt) => {
+          const optId = `${idPrefix}-${opt}`;
+          return (
+            <label
+              key={opt}
+              htmlFor={optId}
+              className={cn(
+                'flex items-center gap-2 rounded-xl border px-4 py-2 text-sm cursor-pointer min-h-[44px]',
+                value === opt ? 'border-primary/40 bg-primary/5' : 'border-border/60 hover:bg-muted/40'
+              )}
+            >
+              <RadioGroupItem value={opt} id={optId} />
+              {opt === 'yes' ? 'Ja' : 'Nee'}
+            </label>
+          );
+        })}
       </RadioGroup>
       {value === 'yes' && (
         <div className="space-y-2">
-          <Label className="text-sm text-muted-foreground">{detailLabel}</Label>
-          <Textarea value={detailValue} onChange={(e) => onDetailChange(e.target.value)} rows={3} />
+          <Label htmlFor={detailId} className="text-sm text-muted-foreground">{detailLabel}</Label>
+          <Textarea id={detailId} value={detailValue} onChange={(e) => onDetailChange(e.target.value)} rows={3} />
         </div>
       )}
     </section>
