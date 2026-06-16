@@ -231,48 +231,12 @@ export function Header() {
         </div>
       </div>
 
-      {/* Mobile search bar (slim, hidden on homepage hero) */}
-      {!isHomepage && (
-        <div className="container pb-2 lg:hidden">
-          <form onSubmit={handleSearch}>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="search"
-                inputMode="search"
-                placeholder="Zoek op merk, model..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                aria-label="Zoek auto's"
-                className="h-9 w-full rounded-full bg-muted pl-9 pr-3 text-sm"
-              />
-            </div>
-          </form>
-        </div>
-      )}
-
-
-
-
 
       {/* Desktop Header */}
       <div className="container hidden h-16 items-center justify-between gap-6 lg:flex">
         <Logo size="xl" asLink />
 
 
-        {/* Desktop Search */}
-        <form onSubmit={handleSearch} className="flex-1 max-w-lg">
-          <div className="relative w-full">
-            <Search className={cn("absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2", isTransparent ? "text-white/60" : "text-muted-foreground")} />
-            <Input
-              type="search"
-              placeholder="Zoek op merk, model..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={cn("w-full pl-10 pr-4 h-11", isTransparent ? "bg-white/10 border-white/20 text-white placeholder:text-white/60 focus:bg-white/15" : "bg-muted border-border text-foreground placeholder:text-muted-foreground focus:bg-background")}
-            />
-          </div>
-        </form>
 
         {/* Desktop Navigation */}
         <nav className="flex items-center gap-1">
