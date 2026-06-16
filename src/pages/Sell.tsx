@@ -648,26 +648,31 @@ export default function Sell() {
           {/* STEP 2 — Uitrusting */}
           {currentStep === 1 && (
             <div className="space-y-6">
-              <section className="space-y-3">
-                <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Voertuiginformatie</h3>
+              <section className="space-y-3" aria-labelledby="sell-feat-veh-info">
+                <h3 id="sell-feat-veh-info" className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Voertuiginformatie</h3>
                 <FeatureCheckboxGrid
                   items={VEHICLE_INFO_ITEMS}
                   selected={formData.features.vehicle_information}
                   onToggle={(v) => toggleFeature('vehicle_information', v)}
+                  groupLabel="Voertuiginformatie"
                 />
               </section>
-              {FEATURE_CATEGORY_ORDER.map((cat) => (
-                <section key={cat} className="space-y-3">
-                  <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                    {FEATURE_CATALOG[cat].title}
-                  </h3>
-                  <FeatureCheckboxGrid
-                    items={FEATURE_CATALOG[cat].items}
-                    selected={formData.features[cat]}
-                    onToggle={(v) => toggleFeature(cat, v)}
-                  />
-                </section>
-              ))}
+              {FEATURE_CATEGORY_ORDER.map((cat) => {
+                const headingId = `sell-feat-${cat}`;
+                return (
+                  <section key={cat} className="space-y-3" aria-labelledby={headingId}>
+                    <h3 id={headingId} className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                      {FEATURE_CATALOG[cat].title}
+                    </h3>
+                    <FeatureCheckboxGrid
+                      items={FEATURE_CATALOG[cat].items}
+                      selected={formData.features[cat]}
+                      onToggle={(v) => toggleFeature(cat, v)}
+                      groupLabel={FEATURE_CATALOG[cat].title}
+                    />
+                  </section>
+                );
+              })}
             </div>
           )}
 
