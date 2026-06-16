@@ -13,143 +13,20 @@ import { useSearchListings } from '@/hooks/useSearchListings';
 import {
   SearchFilters,
   SORT_OPTIONS,
-  BodyType,
-  FuelType,
-  TransmissionType,
-  DriveType,
-  PaintType,
-  InteriorMaterial,
-  OnlineSince,
-  WarrantyOption,
   CAR_BRANDS,
   CAR_MODELS,
   FUEL_TYPES,
   TRANSMISSION_TYPES,
 } from '@/types/listing';
+import { parseFiltersFromURL } from '@/lib/searchFilters';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
 import { useSavedSearches } from '@/hooks/useSavedSearches';
 import { useAuth } from '@/hooks/useAuth';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-// Helper to parse URL params into SearchFilters
-function parseFiltersFromURL(searchParams: URLSearchParams): SearchFilters {
-  const filters: SearchFilters = {};
 
-  // Basic filters
-  const brand = searchParams.get('brand');
-  if (brand) filters.brand = brand;
 
-  const model = searchParams.get('model');
-  if (model) filters.model = model;
-
-  const minPrice = searchParams.get('minPrice');
-  if (minPrice) filters.minPrice = parseInt(minPrice);
-
-  const maxPrice = searchParams.get('maxPrice');
-  if (maxPrice) filters.maxPrice = parseInt(maxPrice);
-
-  const minYear = searchParams.get('minYear');
-  if (minYear) filters.minYear = parseInt(minYear);
-
-  const maxYear = searchParams.get('maxYear');
-  if (maxYear) filters.maxYear = parseInt(maxYear);
-
-  const minMileage = searchParams.get('minMileage');
-  if (minMileage) filters.minMileage = parseInt(minMileage);
-
-  const maxMileage = searchParams.get('maxMileage');
-  if (maxMileage) filters.maxMileage = parseInt(maxMileage);
-
-  // Array filters
-  const fuelTypes = searchParams.get('fuelTypes');
-  if (fuelTypes) filters.fuelTypes = fuelTypes.split(',') as FuelType[];
-  
-  // Legacy single fuelType support
-  const fuelType = searchParams.get('fuelType');
-  if (fuelType && !fuelTypes) filters.fuelTypes = [fuelType as FuelType];
-
-  const bodyTypes = searchParams.get('bodyTypes');
-  if (bodyTypes) filters.bodyTypes = bodyTypes.split(',') as BodyType[];
-  
-  // Legacy single bodyType support
-  const bodyType = searchParams.get('bodyType');
-  if (bodyType && !bodyTypes) filters.bodyTypes = [bodyType as BodyType];
-
-  const transmissions = searchParams.get('transmissions');
-  if (transmissions) filters.transmissions = transmissions.split(',') as TransmissionType[];
-
-  const driveTypes = searchParams.get('driveTypes');
-  if (driveTypes) filters.driveTypes = driveTypes.split(',') as DriveType[];
-
-  // Performance filters
-  const minPower = searchParams.get('minPower');
-  if (minPower) filters.minPower = parseInt(minPower);
-
-  const maxPower = searchParams.get('maxPower');
-  if (maxPower) filters.maxPower = parseInt(maxPower);
-
-  // Appearance filters
-  const paintTypes = searchParams.get('paintTypes');
-  if (paintTypes) filters.paintTypes = paintTypes.split(',') as PaintType[];
-
-  const colors = searchParams.get('colors');
-  if (colors) filters.colors = colors.split(',');
-
-  const interiorMaterials = searchParams.get('interiorMaterials');
-  if (interiorMaterials) filters.interiorMaterials = interiorMaterials.split(',') as InteriorMaterial[];
-
-  // Practical filters
-  const minDoors = searchParams.get('minDoors');
-  if (minDoors) filters.minDoors = parseInt(minDoors);
-
-  const minSeats = searchParams.get('minSeats');
-  if (minSeats) filters.minSeats = parseInt(minSeats);
-
-  // Location filters
-  const province = searchParams.get('province');
-  if (province) filters.province = province;
-
-  const radius = searchParams.get('radius');
-  if (radius) filters.radius = parseInt(radius);
-
-  const country = searchParams.get('country');
-  if (country) filters.country = country;
-
-  const postalCode = searchParams.get('postalCode');
-  if (postalCode) filters.postalCode = postalCode;
-
-  const onlineSince = searchParams.get('onlineSince');
-  if (onlineSince) filters.onlineSince = onlineSince as OnlineSince;
-
-  // History filters
-  const sellerType = searchParams.get('sellerType');
-  if (sellerType) filters.sellerType = sellerType as 'private' | 'dealer';
-
-  const maxPreviousOwners = searchParams.get('maxPreviousOwners');
-  if (maxPreviousOwners) filters.maxPreviousOwners = parseInt(maxPreviousOwners);
-
-  const minWarranty = searchParams.get('minWarranty');
-  if (minWarranty) filters.minWarranty = minWarranty as WarrantyOption;
-
-  const noDamageHistory = searchParams.get('noDamageHistory');
-  if (noDamageHistory === 'true') filters.noDamageHistory = true;
-
-  const vatDeductible = searchParams.get('vatDeductible');
-  if (vatDeductible === 'true') filters.vatDeductible = true;
-
-  const hasMaintenanceHistory = searchParams.get('hasMaintenanceHistory');
-  if (hasMaintenanceHistory === 'true') filters.hasMaintenanceHistory = true;
-
-  const isNonSmoker = searchParams.get('isNonSmoker');
-  if (isNonSmoker === 'true') filters.isNonSmoker = true;
-
-  // Feature filters
-  const features = searchParams.get('features');
-  if (features) filters.features = features.split(',');
-
-  return filters;
-}
 
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();

@@ -332,6 +332,7 @@ export type Database = {
           images: string[] | null
           included_services: string[] | null
           inspection_date: string | null
+          is_boosted: boolean
           is_premium: boolean
           leasing_offers: Json | null
           licence_plate: string | null
@@ -424,6 +425,7 @@ export type Database = {
           images?: string[] | null
           included_services?: string[] | null
           inspection_date?: string | null
+          is_boosted?: boolean
           is_premium?: boolean
           leasing_offers?: Json | null
           licence_plate?: string | null
@@ -516,6 +518,7 @@ export type Database = {
           images?: string[] | null
           included_services?: string[] | null
           inspection_date?: string | null
+          is_boosted?: boolean
           is_premium?: boolean
           leasing_offers?: Json | null
           licence_plate?: string | null
@@ -980,6 +983,7 @@ export type Database = {
       }
       is_listing_owner: { Args: { listing_id: string }; Returns: boolean }
       mark_dealer_eligible_leads: { Args: never; Returns: number }
+      refresh_boosted_status: { Args: never; Returns: number }
     }
     Enums: {
       app_role: "admin" | "moderator"

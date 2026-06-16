@@ -140,9 +140,7 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
       filters.minPower || filters.maxPower,
     ].filter(Boolean).length,
     appearance: [
-      filters.paintTypes?.length,
       filters.colors?.length,
-      filters.interiorMaterials?.length,
     ].filter(Boolean).length,
     practical: [
       filters.minDoors,
@@ -159,10 +157,7 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
       filters.sellerType,
       filters.maxPreviousOwners,
       filters.minWarranty,
-      filters.noDamageHistory,
       filters.vatDeductible,
-      filters.hasMaintenanceHistory,
-      filters.isNonSmoker,
     ].filter(Boolean).length,
   }), [filters]);
 
@@ -411,28 +406,6 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
         <TabsContent value="appearance" className="mt-4 animate-fade-in">
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-4">
-              {/* Paint Type */}
-              <div className="space-y-2">
-                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Laksoort</Label>
-                <div className="flex flex-wrap gap-2">
-                  {PAINT_TYPES.map((paint) => (
-                    <button
-                      key={paint.value}
-                      type="button"
-                      onClick={() => toggleArrayFilter('paintTypes', paint.value)}
-                      className={cn(
-                        "px-3 py-1.5 text-sm rounded-md border transition-all duration-200 focus-ring",
-                        filters.paintTypes?.includes(paint.value)
-                          ? "bg-primary text-primary-foreground border-primary" 
-                          : "bg-background text-foreground/70 border-border/60 hover:border-primary/50 hover:text-foreground"
-                      )}
-                    >
-                      {paint.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               {/* Exterior Color */}
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Kleur</Label>
@@ -445,35 +418,11 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
                       className={cn(
                         "px-3 py-1.5 text-sm rounded-md border transition-all duration-200 focus-ring",
                         filters.colors?.includes(color)
-                          ? "bg-primary text-primary-foreground border-primary" 
+                          ? "bg-primary text-primary-foreground border-primary"
                           : "bg-background text-foreground/70 border-border/60 hover:border-primary/50 hover:text-foreground"
                       )}
                     >
                       {color}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              {/* Interior */}
-              <div className="space-y-2">
-                <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Interieur</Label>
-                <div className="flex flex-wrap gap-2">
-                  {INTERIOR_MATERIALS.map((mat) => (
-                    <button
-                      key={mat.value}
-                      type="button"
-                      onClick={() => toggleArrayFilter('interiorMaterials', mat.value)}
-                      className={cn(
-                        "px-3 py-1.5 text-sm rounded-md border transition-all duration-200 focus-ring",
-                        filters.interiorMaterials?.includes(mat.value)
-                          ? "bg-primary text-primary-foreground border-primary" 
-                          : "bg-background text-foreground/70 border-border/60 hover:border-primary/50 hover:text-foreground"
-                      )}
-                    >
-                      {mat.label}
                     </button>
                   ))}
                 </div>
@@ -711,30 +660,6 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
             <div className="space-y-3">
               {/* Trust toggles */}
               <div className="space-y-3 p-4 rounded-lg bg-muted/30 border border-border/40">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="hp-no-damage" className="text-sm font-normal cursor-pointer">Geen schadehistorie</Label>
-                  <Switch
-                    id="hp-no-damage"
-                    checked={filters.noDamageHistory || false}
-                    onCheckedChange={(checked) => updateFilter('noDamageHistory', checked || undefined)}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="hp-maintenance" className="text-sm font-normal cursor-pointer">Onderhoudsboekje</Label>
-                  <Switch
-                    id="hp-maintenance"
-                    checked={filters.hasMaintenanceHistory || false}
-                    onCheckedChange={(checked) => updateFilter('hasMaintenanceHistory', checked || undefined)}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="hp-nonsmoker" className="text-sm font-normal cursor-pointer">Niet-roker auto</Label>
-                  <Switch
-                    id="hp-nonsmoker"
-                    checked={filters.isNonSmoker || false}
-                    onCheckedChange={(checked) => updateFilter('isNonSmoker', checked || undefined)}
-                  />
-                </div>
                 <div className="flex items-center justify-between">
                   <Label htmlFor="hp-vat" className="text-sm font-normal cursor-pointer">BTW aftrekbaar</Label>
                   <Switch

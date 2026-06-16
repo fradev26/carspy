@@ -112,10 +112,7 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
         filters.minPower || filters.maxPower,
       ].filter(Boolean).length,
       appearance: [
-        filters.paintTypes?.length,
         filters.colors?.length,
-        filters.interiorColors?.length,
-        filters.interiorMaterials?.length,
       ].filter(Boolean).length,
       practical: [
         filters.minDoors,
@@ -132,10 +129,7 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
         filters.sellerType,
         filters.maxPreviousOwners,
         filters.minWarranty,
-        filters.noDamageHistory,
         filters.vatDeductible,
-        filters.hasMaintenanceHistory,
-        filters.isNonSmoker,
       ].filter(Boolean).length,
       options: [
         filters.features?.length,
@@ -484,29 +478,6 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
         onToggle={() => toggleSection('appearance')}
       >
         <div className="space-y-4">
-          {/* Paint Type */}
-          <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Laksoort</Label>
-            <div className="grid grid-cols-2 gap-2">
-              {PAINT_TYPES.map((paint) => (
-                <div key={paint.value} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`paint-${paint.value}`}
-                    checked={filters.paintTypes?.includes(paint.value) || false}
-                    onCheckedChange={() => toggleArrayFilter('paintTypes', paint.value)}
-                    className="border-border"
-                  />
-                  <Label 
-                    htmlFor={`paint-${paint.value}`} 
-                    className="text-sm font-normal cursor-pointer"
-                  >
-                    {paint.label}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Exterior Color */}
           <div className="space-y-2">
             <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Kleur</Label>
@@ -519,34 +490,11 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
                     onCheckedChange={() => toggleArrayFilter('colors', color)}
                     className="border-border"
                   />
-                  <Label 
-                    htmlFor={`color-${color}`} 
+                  <Label
+                    htmlFor={`color-${color}`}
                     className="text-xs font-normal cursor-pointer"
                   >
                     {color}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Interior Material */}
-          <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Interieur</Label>
-            <div className="grid grid-cols-2 gap-2">
-              {INTERIOR_MATERIALS.map((material) => (
-                <div key={material.value} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`interior-${material.value}`}
-                    checked={filters.interiorMaterials?.includes(material.value) || false}
-                    onCheckedChange={() => toggleArrayFilter('interiorMaterials', material.value)}
-                    className="border-border"
-                  />
-                  <Label 
-                    htmlFor={`interior-${material.value}`} 
-                    className="text-sm font-normal cursor-pointer"
-                  >
-                    {material.label}
                   </Label>
                 </div>
               ))}
@@ -745,16 +693,6 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
           {/* Toggle filters */}
           <div className="space-y-3 pt-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="no-damage" className="text-sm font-normal cursor-pointer">
-                Schadeauto's verbergen
-              </Label>
-              <Switch
-                id="no-damage"
-                checked={filters.noDamageHistory || false}
-                onCheckedChange={(v) => updateFilter('noDamageHistory', v || undefined)}
-              />
-            </div>
-            <div className="flex items-center justify-between">
               <Label htmlFor="vat" className="text-sm font-normal cursor-pointer">
                 BTW aftrekbaar
               </Label>
@@ -762,26 +700,6 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
                 id="vat"
                 checked={filters.vatDeductible || false}
                 onCheckedChange={(v) => updateFilter('vatDeductible', v || undefined)}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="maintenance" className="text-sm font-normal cursor-pointer">
-                Met onderhoudshistorie
-              </Label>
-              <Switch
-                id="maintenance"
-                checked={filters.hasMaintenanceHistory || false}
-                onCheckedChange={(v) => updateFilter('hasMaintenanceHistory', v || undefined)}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="non-smoker" className="text-sm font-normal cursor-pointer">
-                Niet-rokersvoertuig
-              </Label>
-              <Switch
-                id="non-smoker"
-                checked={filters.isNonSmoker || false}
-                onCheckedChange={(v) => updateFilter('isNonSmoker', v || undefined)}
               />
             </div>
           </div>
