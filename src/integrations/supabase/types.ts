@@ -986,7 +986,7 @@ export type Database = {
       refresh_boosted_status: { Args: never; Returns: number }
     }
     Enums: {
-      app_role: "admin" | "moderator"
+      app_role: "admin" | "moderator" | "stock_manager"
       vehicle_lead_status:
         | "analyzed"
         | "account_created"
@@ -1120,7 +1120,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator"],
+      app_role: ["admin", "moderator", "stock_manager"],
       vehicle_lead_status: [
         "analyzed",
         "account_created",
