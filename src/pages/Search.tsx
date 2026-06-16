@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useTransition } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { SEOHead } from '@/components/SEOHead';
@@ -9,7 +9,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger, Drawer
 import { Badge } from '@/components/ui/badge';
 import { FilterPanel, FilterChips, SmartSearchBar } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
-import { useListings } from '@/hooks/useListings';
+import { useSearchListings } from '@/hooks/useSearchListings';
 import {
   SearchFilters,
   SORT_OPTIONS,
@@ -165,172 +165,40 @@ export default function Search() {
   const [searchName, setSearchName] = useState('');
   const [page, setPage] = useState(1);
   const perPage = 24;
-  const { listings: allListings, loading: listingsLoading } = useListings();
+  const queryParam = searchParams.get('q') ?? undefined;
+  const {
+    listings: pageListings,
+    total,
+    loading: listingsLoading,
+  } = useSearchListings({ filters, query: queryParam, sort: sortBy, page, perPage });
   const [mobileResultsRevealed, setMobileResultsRevealed] = useState(false);
 
   // Update filters when URL params change
   useEffect(() => {
     const newFilters = parseFiltersFromURL(searchParams);
     setFilters(newFilters);
+    setPage(1);
   }, [searchParams]);
 
-  // Simulate loading when filters change
+  // Reset to first page when filters/sort change locally
   const handleFiltersChange = (newFilters: SearchFilters) => {
     setIsLoading(true);
     setPage(1);
     startTransition(() => {
       setFilters(newFilters);
-      setTimeout(() => setIsLoading(false), 300);
+      setTimeout(() => setIsLoading(false), 200);
     });
   };
 
   const handleSortChange = (value: string) => {
     setIsLoading(true);
+    setPage(1);
     startTransition(() => {
       setSortBy(value);
-      setTimeout(() => setIsLoading(false), 200);
+      setTimeout(() => setIsLoading(false), 150);
     });
   };
 
-  const filteredListings = useMemo(() => {
-    let results = [...allListings];
-
-    // Free-text query from URL (?q=...)
-    const query = searchParams.get('q')?.toLowerCase().trim();
-    if (query) {
-      results = results.filter(l =>
-        l.title.toLowerCase().includes(query) ||
-        l.brand.toLowerCase().includes(query) ||
-        l.model.toLowerCase().includes(query) ||
-        l.description.toLowerCase().includes(query)
-      );
-    }
-
-    // Basic filters
-    if (filters.brand && filters.brand !== 'all') {
-      results = results.filter(l => l.brand === filters.brand);
-    }
-    if (filters.model) {
-      results = results.filter(l => l.model === filters.model);
-    }
-    if (filters.minPrice) {
-      results = results.filter(l => l.price >= filters.minPrice!);
-    }
-    if (filters.maxPrice) {
-      results = results.filter(l => l.price <= filters.maxPrice!);
-    }
-    if (filters.minYear) {
-      results = results.filter(l => l.year >= filters.minYear!);
-    }
-    if (filters.maxYear) {
-      results = results.filter(l => l.year <= filters.maxYear!);
-    }
-    if (filters.minMileage) {
-      results = results.filter(l => l.mileage >= filters.minMileage!);
-    }
-    if (filters.maxMileage) {
-      results = results.filter(l => l.mileage <= filters.maxMileage!);
-    }
-    if (filters.fuelTypes?.length) {
-      results = results.filter(l => filters.fuelTypes!.includes(l.fuelType));
-    }
-    if (filters.bodyTypes?.length) {
-      results = results.filter(l => filters.bodyTypes!.includes(l.bodyType));
-    }
-
-    // Performance filters
-    if (filters.transmissions?.length) {
-      results = results.filter(l => filters.transmissions!.includes(l.transmission));
-    }
-    if (filters.driveTypes?.length) {
-      results = results.filter(l => l.driveType && filters.driveTypes!.includes(l.driveType));
-    }
-    if (filters.minPower) {
-      results = results.filter(l => l.power >= filters.minPower!);
-    }
-    if (filters.maxPower) {
-      results = results.filter(l => l.power <= filters.maxPower!);
-    }
-
-    // Appearance filters
-    if (filters.paintTypes?.length) {
-      results = results.filter(l => l.paintType && filters.paintTypes!.includes(l.paintType));
-    }
-    if (filters.colors?.length) {
-      results = results.filter(l => filters.colors!.includes(l.color));
-    }
-    if (filters.interiorMaterials?.length) {
-      results = results.filter(l => l.interiorMaterial && filters.interiorMaterials!.includes(l.interiorMaterial));
-    }
-
-    // Practical filters
-    if (filters.minDoors) {
-      results = results.filter(l => l.doors >= filters.minDoors!);
-    }
-    if (filters.minSeats) {
-      results = results.filter(l => l.seats >= filters.minSeats!);
-    }
-
-    // Location filters
-    if (filters.province) {
-      results = results.filter(l => l.location.province === filters.province);
-    }
-
-    // History filters
-    if (filters.sellerType) {
-      results = results.filter(l => l.seller.type === filters.sellerType);
-    }
-    if (filters.maxPreviousOwners) {
-      results = results.filter(l => l.previousOwners !== undefined && l.previousOwners <= filters.maxPreviousOwners!);
-    }
-    if (filters.noDamageHistory) {
-      results = results.filter(l => l.hasDamageHistory === false);
-    }
-    if (filters.vatDeductible) {
-      results = results.filter(l => l.vatDeductible === true);
-    }
-    if (filters.hasMaintenanceHistory) {
-      results = results.filter(l => l.hasMaintenanceHistory === true);
-    }
-    if (filters.isNonSmoker) {
-      results = results.filter(l => l.isNonSmoker === true);
-    }
-
-    // Feature filters
-    if (filters.features?.length) {
-      results = results.filter(l => 
-        filters.features!.every(f => l.features.includes(f))
-      );
-    }
-
-    // Sort
-    switch (sortBy) {
-      case 'price-asc':
-        results.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-desc':
-        results.sort((a, b) => b.price - a.price);
-        break;
-      case 'mileage-asc':
-        results.sort((a, b) => a.mileage - b.mileage);
-        break;
-      case 'year-desc':
-        results.sort((a, b) => b.year - a.year);
-        break;
-    }
-
-    // Premium & boosted listings always on top
-    const now = new Date();
-    results.sort((a, b) => {
-      const aIsPremium = a.isPremium || (a.boostUntil && new Date(a.boostUntil) > now);
-      const bIsPremium = b.isPremium || (b.boostUntil && new Date(b.boostUntil) > now);
-      if (aIsPremium && !bIsPremium) return -1;
-      if (!aIsPremium && bIsPremium) return 1;
-      return 0;
-    });
-
-    return results;
-  }, [filters, sortBy, allListings]);
 
   const handleRemoveFilter = (key: keyof SearchFilters, value?: string) => {
     const arrayKeys = ['fuelTypes', 'transmissions', 'bodyTypes', 'driveTypes', 'paintTypes', 'colors', 'interiorMaterials', 'features'];
@@ -433,7 +301,7 @@ export default function Search() {
                   onClick={() => setMobileResultsRevealed(true)}
                   className="w-full min-h-12 text-base font-semibold"
                 >
-                  Toon {activeFilterCount > 0 ? `${filteredListings.length} resultaten` : 'alle resultaten'}
+                  Toon {activeFilterCount > 0 ? `${total} resultaten` : 'alle resultaten'}
                 </Button>
                 {activeFilterCount > 0 && (
                   <Button
@@ -496,7 +364,7 @@ export default function Search() {
                 <div>
                   <h1 className="text-2xl font-bold md:text-3xl">Auto's zoeken</h1>
                   <p className="mt-1 text-muted-foreground">
-                    <span className="font-semibold text-foreground">{filteredListings.length}</span> resultaten gevonden
+                    <span className="font-semibold text-foreground">{total}</span> resultaten gevonden
                   </p>
                 </div>
 
@@ -599,7 +467,7 @@ export default function Search() {
                         </Button>
                         <DrawerClose asChild>
                           <Button className="flex-1 min-h-12">
-                            Toon {filteredListings.length} resultaten
+                            Toon {total} resultaten
                           </Button>
                         </DrawerClose>
                       </DrawerFooter>
@@ -669,12 +537,12 @@ export default function Search() {
                     />
                   ))}
                 </div>
-              ) : filteredListings.length > 0 ? (
+              ) : total > 0 ? (
                 <>
-                  <ListingGrid listings={filteredListings.slice((page - 1) * perPage, page * perPage)} variant={viewMode} columns={3} />
+                  <ListingGrid listings={pageListings} variant={viewMode} columns={3} />
                   
                   {/* Pagination */}
-                  {filteredListings.length > perPage && (
+                  {total > perPage && (
                     <div className="mt-8 flex items-center justify-center gap-2">
                       <Button
                         variant="outline"
@@ -685,8 +553,8 @@ export default function Search() {
                       >
                         Vorige
                       </Button>
-                      {Array.from({ length: Math.min(Math.ceil(filteredListings.length / perPage), 7) }, (_, i) => {
-                        const totalPages = Math.ceil(filteredListings.length / perPage);
+                      {Array.from({ length: Math.min(Math.ceil(total / perPage), 7) }, (_, i) => {
+                        const totalPages = Math.ceil(total / perPage);
                         let pageNum: number;
                         if (totalPages <= 7) {
                           pageNum = i + 1;
@@ -712,7 +580,7 @@ export default function Search() {
                       <Button
                         variant="outline"
                         size="sm"
-                        disabled={page >= Math.ceil(filteredListings.length / perPage)}
+                        disabled={page >= Math.ceil(total / perPage)}
                         onClick={() => { setPage(p => p + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                         className="border-border/60"
                       >

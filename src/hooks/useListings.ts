@@ -272,7 +272,7 @@ export function useListings() {
         .select(joined)
         .eq('status', 'active')
         .order('created_at', { ascending: false })
-        .limit(1000);
+        .limit(24);
 
       if (cancelled) return;
 
@@ -282,7 +282,7 @@ export function useListings() {
           .select(LISTING_COLUMNS)
           .eq('status', 'active')
           .order('created_at', { ascending: false })
-          .limit(1000);
+          .limit(24);
         if (e2) {
           setError(e2.message);
           setLoading(false);
