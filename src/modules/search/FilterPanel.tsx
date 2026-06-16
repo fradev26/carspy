@@ -112,10 +112,7 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
         filters.minPower || filters.maxPower,
       ].filter(Boolean).length,
       appearance: [
-        filters.paintTypes?.length,
         filters.colors?.length,
-        filters.interiorColors?.length,
-        filters.interiorMaterials?.length,
       ].filter(Boolean).length,
       practical: [
         filters.minDoors,
@@ -132,10 +129,7 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
         filters.sellerType,
         filters.maxPreviousOwners,
         filters.minWarranty,
-        filters.noDamageHistory,
         filters.vatDeductible,
-        filters.hasMaintenanceHistory,
-        filters.isNonSmoker,
       ].filter(Boolean).length,
       options: [
         filters.features?.length,
