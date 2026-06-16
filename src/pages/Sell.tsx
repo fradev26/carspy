@@ -874,8 +874,9 @@ export default function Sell() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Vraagprijs (€) *</Label>
+                  <Label htmlFor="sell-price">Vraagprijs (€) *</Label>
                   <Input
+                    id="sell-price"
                     type="number"
                     value={formData.price}
                     onChange={(e) => update('price', e.target.value)}
@@ -883,23 +884,25 @@ export default function Sell() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Onderhandelbaar? *</Label>
+                  <Label id="sell-neg-label">Onderhandelbaar? *</Label>
                   <RadioGroup
                     value={formData.priceNegotiable}
                     onValueChange={(v) => update('priceNegotiable', v as 'yes' | 'no')}
                     className="flex gap-3 pt-1"
+                    aria-labelledby="sell-neg-label"
                   >
-                    <label className="flex items-center gap-2 text-sm">
+                    <label htmlFor="neg-yes" className="flex items-center gap-2 text-sm">
                       <RadioGroupItem value="yes" id="neg-yes" /> Ja
                     </label>
-                    <label className="flex items-center gap-2 text-sm">
+                    <label htmlFor="neg-no" className="flex items-center gap-2 text-sm">
                       <RadioGroupItem value="no" id="neg-no" /> Nee
                     </label>
                   </RadioGroup>
                 </div>
                 <div className="space-y-2">
-                  <Label>Beschikbaar vanaf</Label>
+                  <Label htmlFor="sell-availableFrom">Beschikbaar vanaf</Label>
                   <Input
+                    id="sell-availableFrom"
                     type="date"
                     value={formData.availableFrom}
                     onChange={(e) => update('availableFrom', e.target.value)}
@@ -909,7 +912,7 @@ export default function Sell() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label>Opmerkingen / beschrijving</Label>
+                  <Label htmlFor="sell-description">Opmerkingen / beschrijving</Label>
                   <Button
                     type="button"
                     variant="outline"
@@ -923,6 +926,7 @@ export default function Sell() {
                   </Button>
                 </div>
                 <Textarea
+                  id="sell-description"
                   value={formData.description}
                   onChange={(e) => update('description', e.target.value)}
                   placeholder="Vertel iets extra over je auto..."
