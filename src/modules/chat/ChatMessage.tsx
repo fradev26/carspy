@@ -1,13 +1,15 @@
 import { cn } from '@/lib/utils';
 import type { ChatMessage as ChatMsg } from '@/hooks/useChat';
-import { Bot, User, Car, MapPin, Gauge, Fuel } from 'lucide-react';
+import { Bot, User, Car } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Link } from 'react-router-dom';
 import type { Components } from 'react-markdown';
+import { SalesAIResponse, hasSalesAIPayload } from '@/components/dealer/salesai/SalesAIResponse';
 
 interface Props {
   message: ChatMsg;
 }
+
 
 function CarCard({ href, children }: { href: string; children: React.ReactNode }) {
   const text = typeof children === 'string' ? children : '';
