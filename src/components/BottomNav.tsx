@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   Home, Search, Heart, Sparkles, Plus,
   Store, Car, Upload, MoreHorizontal,
-  Settings, BarChart3, MessageSquare, User, Link2, FileSpreadsheet,
+  Settings, BarChart3, User, Link2, FileSpreadsheet,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -31,7 +31,6 @@ const moreLinks = [
   { icon: FileSpreadsheet, label: 'Import (CSV)',  path: '/zakelijk/import' },
   { icon: Link2,           label: 'Integraties',   path: '/zakelijk/instellingen' },
   { icon: User,            label: 'Leads',         path: '/zakelijk/leads' },
-  { icon: MessageSquare,   label: 'Berichten',     path: '/berichten' },
   { icon: Heart,           label: 'Favorieten',    path: '/favorieten' },
   { icon: Settings,        label: 'Instellingen',  path: '/account/instellingen' },
 ];
