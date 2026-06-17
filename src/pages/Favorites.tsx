@@ -11,6 +11,9 @@ import {
   Eye,
   GitCompare,
   LogIn,
+  Pencil,
+  ExternalLink,
+  Sparkles,
 } from 'lucide-react';
 
 import { SEOHead } from '@/components/SEOHead';
@@ -25,6 +28,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 import { ListingGrid } from '@/modules/listings';
 import { supabase } from '@/integrations/supabase/client';
@@ -391,15 +414,44 @@ interface AlertRow {
   created_at: string;
   paused: boolean;
   frequency: string;
+  last_notified_at: string | null;
 }
 
 function summarize(f: Record<string, unknown>): string {
   const parts: string[] = [];
   if (f.brand) parts.push(String(f.brand));
   if (f.model) parts.push(String(f.model));
+  if (f.fuelType) parts.push(String(f.fuelType));
   if (f.minPrice || f.maxPrice) parts.push(`€${f.minPrice ?? 0} – €${f.maxPrice ?? '∞'}`);
+  if (f.minYear) parts.push(`≥ ${f.minYear}`);
   if (f.location || f.province) parts.push(String(f.location ?? f.province));
   return parts.join(' · ') || 'Alle wagens';
+}
+
+function freqLabel(f: string): string {
+  return f === 'instant' ? 'Direct' : f === 'weekly' ? 'Wekelijks' : 'Dagelijks';
+}
+
+async function countNewMatches(a: AlertRow): Promise<number> {
+  const since = a.last_notified_at ?? a.created_at;
+  let q = supabase
+    .from('listings')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'active')
+    .gt('created_at', since);
+  const f = a.filters || {};
+  if (f.brand) q = q.eq('brand', String(f.brand));
+  if (f.model) q = q.eq('model', String(f.model));
+  if (f.fuelType) q = q.eq('fuel_type', String(f.fuelType));
+  if (f.bodyType) q = q.eq('body_type', String(f.bodyType));
+  if (f.transmission) q = q.eq('transmission', String(f.transmission));
+  if (f.province) q = q.eq('province', String(f.province));
+  if (f.minPrice) q = q.gte('price', Number(f.minPrice));
+  if (f.maxPrice) q = q.lte('price', Number(f.maxPrice));
+  if (f.minYear) q = q.gte('year', Number(f.minYear));
+  if (f.maxMileage) q = q.lte('mileage', Number(f.maxMileage));
+  const { count } = await q;
+  return count ?? 0;
 }
 
 function AlertsTab() {
@@ -408,6 +460,10 @@ function AlertsTab() {
   const navigate = useNavigate();
   const [alerts, setAlerts] = useState<AlertRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [newCounts, setNewCounts] = useState<Record<string, number>>({});
+  const [editing, setEditing] = useState<AlertRow | null>(null);
+  const [editName, setEditName] = useState('');
+  const [deleting, setDeleting] = useState<AlertRow | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -415,12 +471,17 @@ function AlertsTab() {
     setLoading(true);
     supabase
       .from('saved_searches')
-      .select('id, name, filters, created_at, paused, frequency')
+      .select('id, name, filters, created_at, paused, frequency, last_notified_at')
       .order('created_at', { ascending: false })
-      .then(({ data }) => {
+      .then(async ({ data }) => {
         if (cancelled) return;
-        setAlerts((data ?? []) as AlertRow[]);
+        const rows = (data ?? []) as AlertRow[];
+        setAlerts(rows);
         setLoading(false);
+        const entries = await Promise.all(
+          rows.map(async (r) => [r.id, await countNewMatches(r)] as const),
+        );
+        if (!cancelled) setNewCounts(Object.fromEntries(entries));
       });
     return () => {
       cancelled = true;
@@ -432,10 +493,11 @@ function AlertsTab() {
       .from('saved_searches')
       .update({ paused: !a.paused })
       .eq('id', a.id);
-    if (error) return toast({ title: 'Fout', variant: 'destructive' });
+    if (error) return toast({ title: 'Fout bij bijwerken', variant: 'destructive' });
     setAlerts((prev) =>
       prev.map((x) => (x.id === a.id ? { ...x, paused: !x.paused } : x)),
     );
+    toast({ title: a.paused ? 'Alert hervat' : 'Alert gepauzeerd' });
   }
 
   async function changeFreq(a: AlertRow, frequency: string) {
@@ -443,19 +505,52 @@ function AlertsTab() {
       .from('saved_searches')
       .update({ frequency })
       .eq('id', a.id);
-    if (error) return toast({ title: 'Fout', variant: 'destructive' });
+    if (error) return toast({ title: 'Fout bij bijwerken', variant: 'destructive' });
     setAlerts((prev) => prev.map((x) => (x.id === a.id ? { ...x, frequency } : x)));
     toast({ title: 'Frequentie aangepast' });
   }
 
-  async function remove(id: string) {
+  async function saveName() {
+    if (!editing) return;
+    const trimmed = editName.trim();
+    if (!trimmed) {
+      toast({ title: 'Naam mag niet leeg zijn', variant: 'destructive' });
+      return;
+    }
+    const { error } = await supabase
+      .from('saved_searches')
+      .update({ name: trimmed })
+      .eq('id', editing.id);
+    if (error) return toast({ title: 'Fout bij opslaan', variant: 'destructive' });
+    setAlerts((prev) =>
+      prev.map((x) => (x.id === editing.id ? { ...x, name: trimmed } : x)),
+    );
+    setEditing(null);
+    toast({ title: 'Naam bijgewerkt' });
+  }
+
+  async function confirmDelete() {
+    if (!deleting) return;
+    const id = deleting.id;
     const { error } = await supabase.from('saved_searches').delete().eq('id', id);
-    if (error) return toast({ title: 'Fout', variant: 'destructive' });
+    if (error) return toast({ title: 'Fout bij verwijderen', variant: 'destructive' });
     setAlerts((prev) => prev.filter((x) => x.id !== id));
+    setDeleting(null);
     toast({ title: 'Alert verwijderd' });
   }
 
-  function openSearch(a: AlertRow) {
+  async function openResults(a: AlertRow) {
+    // Stamp last_notified_at so the "nieuwe" badge resets
+    const now = new Date().toISOString();
+    await supabase
+      .from('saved_searches')
+      .update({ last_notified_at: now })
+      .eq('id', a.id);
+    setAlerts((prev) =>
+      prev.map((x) => (x.id === a.id ? { ...x, last_notified_at: now } : x)),
+    );
+    setNewCounts((prev) => ({ ...prev, [a.id]: 0 }));
+
     const params = new URLSearchParams();
     Object.entries(a.filters).forEach(([k, v]) => {
       if (v != null && v !== '')
@@ -499,77 +594,157 @@ function AlertsTab() {
       </div>
 
       <div className="space-y-3">
-        {alerts.map((a) => (
-          <Card key={a.id} className={a.paused ? 'opacity-70' : ''}>
-            <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="truncate font-semibold">{a.name}</h3>
-                  {a.paused ? (
-                    <Badge variant="secondary" className="gap-1">
-                      <Pause className="h-3 w-3" /> Gepauzeerd
+        {alerts.map((a) => {
+          const newCount = newCounts[a.id] ?? 0;
+          const lastUpdate = a.last_notified_at ?? a.created_at;
+          return (
+            <Card key={a.id} className={a.paused ? 'opacity-70' : ''}>
+              <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-start">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="truncate font-semibold">{a.name}</h3>
+                    {a.paused ? (
+                      <Badge variant="secondary" className="gap-1">
+                        <Pause className="h-3 w-3" /> Gepauzeerd
+                      </Badge>
+                    ) : (
+                      <Badge className="gap-1 bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/20 dark:text-emerald-400">
+                        <Play className="h-3 w-3" /> Actief
+                      </Badge>
+                    )}
+                    {!a.paused && newCount > 0 && (
+                      <Badge className="gap-1 bg-primary text-primary-foreground hover:bg-primary/90">
+                        <Sparkles className="h-3 w-3" />
+                        {newCount} nieuw{newCount === 1 ? '' : 'e'}
+                      </Badge>
+                    )}
+                    <Badge variant="outline" className="text-xs font-normal">
+                      {freqLabel(a.frequency)}
                     </Badge>
-                  ) : (
-                    <Badge className="gap-1 bg-emerald-500/15 text-emerald-600 hover:bg-emerald-500/20 dark:text-emerald-400">
-                      <Play className="h-3 w-3" /> Actief
-                    </Badge>
-                  )}
+                  </div>
+                  <p className="mt-1.5 truncate text-xs text-muted-foreground">
+                    {summarize(a.filters)}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Laatste update:{' '}
+                    {new Date(lastUpdate).toLocaleDateString('nl-NL', {
+                      day: '2-digit',
+                      month: 'short',
+                      year: 'numeric',
+                    })}
+                  </p>
                 </div>
-                <p className="mt-1 truncate text-xs text-muted-foreground">
-                  {summarize(a.filters)}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Laatste update:{' '}
-                  {new Date(a.created_at).toLocaleDateString('nl-NL', {
-                    day: '2-digit',
-                    month: 'short',
-                    year: 'numeric',
-                  })}
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Select value={a.frequency} onValueChange={(v) => changeFreq(a, v)}>
-                  <SelectTrigger className="h-9 w-36">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="instant">Direct</SelectItem>
-                    <SelectItem value="daily">Dagelijks</SelectItem>
-                    <SelectItem value="weekly">Wekelijks</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2"
-                  onClick={() => togglePause(a)}
-                >
-                  {a.paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-                  {a.paused ? 'Hervat' : 'Pauzeer'}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2"
-                  onClick={() => openSearch(a)}
-                >
-                  <SearchIcon className="h-4 w-4" />
-                  Bewerken
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="text-destructive"
-                  onClick={() => remove(a.id)}
-                  aria-label="Verwijder alert"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => openResults(a)}
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Bekijk resultaten
+                  </Button>
+                  <Select value={a.frequency} onValueChange={(v) => changeFreq(a, v)}>
+                    <SelectTrigger className="h-9 w-32" aria-label="Frequentie">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="instant">Direct</SelectItem>
+                      <SelectItem value="daily">Dagelijks</SelectItem>
+                      <SelectItem value="weekly">Wekelijks</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => togglePause(a)}
+                  >
+                    {a.paused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+                    {a.paused ? 'Hervat' : 'Pauzeer'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="Bewerken"
+                    onClick={() => {
+                      setEditing(a);
+                      setEditName(a.name);
+                    }}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="text-destructive"
+                    onClick={() => setDeleting(a)}
+                    aria-label="Verwijder alert"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
+
+      {/* Rename dialog */}
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Zoekalert bewerken</DialogTitle>
+            <DialogDescription>
+              Pas de naam van je zoekalert aan. De zoekcriteria kun je aanpassen via
+              "Bekijk resultaten" en daar opnieuw opslaan.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="alert-name">Naam</Label>
+            <Input
+              id="alert-name"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              placeholder="Bijv. Audi A4 onder €25.000"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') saveName();
+              }}
+            />
+            {editing && (
+              <p className="text-xs text-muted-foreground">{summarize(editing.filters)}</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditing(null)}>
+              Annuleren
+            </Button>
+            <Button onClick={saveName}>Opslaan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Zoekalert verwijderen?</AlertDialogTitle>
+            <AlertDialogDescription>
+              "{deleting?.name}" wordt definitief verwijderd. Je ontvangt geen meldingen
+              meer voor deze zoekopdracht.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuleren</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Verwijderen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
