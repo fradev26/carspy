@@ -107,22 +107,25 @@ const packages: Pkg[] = [
   },
 ];
 
-const comparisonRows: { label: string; values: [string, string, string] }[] = [
+type ComparisonValue = boolean | string;
+const YES: ComparisonValue = true;
+const NO: ComparisonValue = false;
+const comparisonRows: { label: string; values: [ComparisonValue, ComparisonValue, ComparisonValue] }[] = [
   { label: 'Maandprijs', values: ['€49,95', '€149,95', '€299,95'] },
-  { label: 'Trust Badge', values: ['✓', '✓', '✓'] },
-  { label: 'Dealerprofiel', values: ['✓', '✓', '✓'] },
-  { label: 'Voorraadimport', values: ['✓', '✓', '✓'] },
-  { label: 'Website-link', values: ['✓', '✓', '✓'] },
+  { label: 'Trust Badge', values: [YES, YES, YES] },
+  { label: 'Dealerprofiel', values: [YES, YES, YES] },
+  { label: 'Voorraadimport', values: [YES, YES, YES] },
+  { label: 'Website-link', values: [YES, YES, YES] },
   { label: 'Statistieken', values: ['Basis', 'Uitgebreid', 'Uitgebreid + concurrentie'] },
   { label: 'Turbo boosts / maand', values: ['10', '40', '100'] },
-  { label: 'Nitro boosts / maand', values: ['—', '10', '30'] },
+  { label: 'Nitro boosts / maand', values: [NO, '10', '30'] },
   { label: 'Featured voertuigen', values: ['2', '10', '25'] },
-  { label: 'Homepage-vermelding', values: ['—', '✓', '✓'] },
-  { label: 'Leadrapportage', values: ['—', '✓', '✓'] },
-  { label: 'Multi-vestiging', values: ['—', '—', '✓'] },
-  { label: 'API-integraties', values: ['—', '—', '✓'] },
-  { label: 'White-label dealerpagina', values: ['—', '—', '✓'] },
-  { label: 'Accountmanager', values: ['—', 'Prioritaire support', 'Dedicated'] },
+  { label: 'Homepage-vermelding', values: [NO, YES, YES] },
+  { label: 'Leadrapportage', values: [NO, YES, YES] },
+  { label: 'Multi-vestiging', values: [NO, NO, YES] },
+  { label: 'API-integraties', values: [NO, NO, YES] },
+  { label: 'White-label dealerpagina', values: [NO, NO, YES] },
+  { label: 'Accountmanager', values: [NO, 'Prioritaire support', 'Dedicated'] },
 ];
 
 const usps = [
@@ -430,10 +433,10 @@ export default function Dealers() {
                         key={i}
                         className={cn('text-center text-sm', i === 1 && 'bg-primary/5 font-medium')}
                       >
-                        {v === '✓' ? (
+                        {v === true ? (
                           <CheckCircle2 className="mx-auto h-4 w-4 text-primary" />
-                        ) : v === '—' ? (
-                          <span className="text-muted-foreground">—</span>
+                        ) : v === false ? (
+                          <Minus className="mx-auto h-4 w-4 text-muted-foreground" />
                         ) : (
                           v
                         )}
