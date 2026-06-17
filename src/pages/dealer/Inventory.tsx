@@ -3,14 +3,13 @@ import { Link } from 'react-router-dom';
 import {
   Eye, Heart, MessageCircle, Car, Crown, Rocket, Pencil, CheckCircle2,
   Search as SearchIcon, ExternalLink, Trash2, Plus, BarChart3,
-  Clock, TrendingUp, Flame, TrendingDown, Wallet, ChevronDown, PlayCircle,
+  Clock, Flame, TrendingDown, PlayCircle,
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { StatusBadge } from '@/modules/listings/StatusBadge';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -32,54 +31,24 @@ const STATUS_OPTIONS = [
 ] as const;
 
 export default function Inventory() {
-  const { overview, listings, loading, refresh } = useDealerAnalytics();
+  const { listings, loading, refresh } = useDealerAnalytics();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<Set<string>>(new Set());
   const [preset, setPreset] = useState<Preset>(null);
-  const [kpiOpen, setKpiOpen] = useState(false);
 
-  // ── Cockpit metrics ─────────────────────────────────────────────────────
-  const cockpit = useMemo(() => {
-    const active = listings.filter((l) => l.status === 'active');
-    const avgDays = active.length
-      ? Math.round(active.reduce((s, l) => s + daysSince(l.createdAt), 0) / active.length)
-      : 0;
-
-    // Snelste segment: per merk, hoogste views/dag (proxy voor demand)
-    const bySeg = new Map<string, { views: number; days: number; count: number }>();
-    for (const l of active) {
-      const key = l.brand || '—';
-      const d = Math.max(1, daysSince(l.createdAt));
-      const cur = bySeg.get(key) ?? { views: 0, days: 0, count: 0 };
-      cur.views += l.views;
-      cur.days  += d;
-      cur.count += 1;
-      bySeg.set(key, cur);
-    }
-    let topSeg = '—';
-    let topRate = 0;
-    for (const [k, v] of bySeg) {
-      if (v.count < 1) continue;
-      const rate = v.views / v.days;
-      if (rate > topRate) { topRate = rate; topSeg = k; }
-    }
-
-    const medianViews = (() => {
-      const arr = active.map((l) => l.views).sort((a, b) => a - b);
-      return arr.length ? arr[Math.floor(arr.length / 2)] : 0;
-    })();
-
-    return { avgDays, topSeg, medianViews };
+  // Median views — alleen nodig voor de "Snel verkopen" preset
+  const medianViews = useMemo(() => {
+    const arr = listings.filter((l) => l.status === 'active').map((l) => l.views).sort((a, b) => a - b);
+    return arr.length ? arr[Math.floor(arr.length / 2)] : 0;
   }, [listings]);
 
   // ── Filter pipeline ─────────────────────────────────────────────────────
   const filtered = useMemo(() => {
     return listings.filter((l) => {
       if (statusFilter.size > 0 && !statusFilter.has(l.status)) return false;
-      if (preset === 'fast' && !(l.views > cockpit.medianViews && daysSince(l.createdAt) < 14)) return false;
+      if (preset === 'fast' && !(l.views > medianViews && daysSince(l.createdAt) < 14)) return false;
       if (preset === 'stale' && daysSince(l.createdAt) < 60) return false;
-      // 'margin' preset hidden until backend exposes market delta
       if (query) {
         const q = query.toLowerCase();
         if (
@@ -90,7 +59,7 @@ export default function Inventory() {
       }
       return true;
     });
-  }, [listings, query, statusFilter, preset, cockpit.medianViews]);
+  }, [listings, query, statusFilter, preset, medianViews]);
 
   // ── Selection & bulk ────────────────────────────────────────────────────
   const toggleSelect = (id: string) => {
@@ -138,20 +107,9 @@ export default function Inventory() {
     );
   }
 
-  // ── KPI tiles ───────────────────────────────────────────────────────────
-  const kpis = [
-    { label: 'Actief',           value: String(overview?.activeListings ?? 0), icon: Car },
-    { label: 'Views',            value: (overview?.totalViews ?? 0).toLocaleString('nl-NL'), icon: Eye },
-    { label: 'Favorieten',       value: (overview?.totalFavorites ?? 0).toLocaleString('nl-NL'), icon: Heart },
-    { label: 'Leads',            value: (overview?.totalMessages ?? 0).toLocaleString('nl-NL'), icon: MessageCircle },
-    { label: 'Gem. dagen in voorraad', value: cockpit.avgDays ? `${cockpit.avgDays}d` : '—', icon: Clock },
-    { label: 'Snelst verkopend', value: cockpit.topSeg, icon: TrendingUp },
-    { label: 'Prijspositie',     value: '—', icon: Wallet, hint: 'binnenkort' },
-  ];
-
   return (
     <div className="container py-6 space-y-5">
-      <SEOHead title="Verkopen — VATUUR. Zakelijk" description="Sales cockpit voor je voorraad." noindex />
+      <SEOHead title="Verkopen — VATUUR. Zakelijk" description="Sales feed voor je voorraad." noindex />
 
       {/* Header */}
       <div className="flex items-end justify-between flex-wrap gap-3">
@@ -160,7 +118,7 @@ export default function Inventory() {
             <Car className="h-6 w-6 text-primary" /> Verkopen
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Inzicht boven, filteren in het midden, handelen onderaan.
+            Elke kaart is een beslis-unit. Insight zit waar je actie onderneemt.
           </p>
         </div>
         <Button asChild size="sm" className="gap-1.5">
@@ -168,35 +126,6 @@ export default function Inventory() {
         </Button>
       </div>
 
-      {/* KPI strip (collapsible on mobile) */}
-      <Collapsible open={kpiOpen} onOpenChange={setKpiOpen} className="md:!block">
-        <CollapsibleTrigger asChild>
-          <button
-            type="button"
-            className="md:hidden flex w-full items-center justify-between rounded-lg border border-border/60 bg-card px-3 py-2 text-sm"
-          >
-            <span className="font-medium">Cockpit · {kpis.length} KPI's</span>
-            <ChevronDown className={cn('h-4 w-4 transition-transform', kpiOpen && 'rotate-180')} />
-          </button>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="data-[state=closed]:hidden md:!block mt-3 md:mt-0">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2.5">
-            {kpis.map((kpi) => (
-              <Card key={kpi.label} className="border-border/60">
-                <CardContent className="p-3 flex items-center gap-2.5">
-                  <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-                    <kpi.icon className="h-4 w-4 text-primary" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[11px] text-muted-foreground truncate leading-tight" title={kpi.hint}>{kpi.label}</p>
-                    <p className="text-base font-bold truncate">{kpi.value}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
 
       {/* Filters */}
       <div className="space-y-2.5">
