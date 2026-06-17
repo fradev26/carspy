@@ -177,7 +177,7 @@ export default function Search() {
                 </p>
               </div>
               <div className="rounded-xl border border-border/60 bg-card p-4 shadow-sm">
-                <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} showPresets={false} />
+                <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} />
               </div>
               <div className="sticky bottom-20 mt-4 pb-2 bg-gradient-to-t from-background via-background to-transparent pt-4 flex flex-col gap-2">
                 <Button
@@ -316,7 +316,7 @@ export default function Search() {
                         </div>
                       )}
                       <div className="overflow-y-auto px-4 py-4">
-                        <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} showPresets={false} />
+                        <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} />
                       </div>
                       <DrawerFooter className="border-t border-border/60 flex-row gap-2">
                         <Button
