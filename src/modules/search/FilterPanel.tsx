@@ -207,8 +207,13 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
             <Select 
               value={filters.brand || ''} 
               onValueChange={(v) => {
-                updateFilter('brand', v === 'all' ? undefined : v);
-                if (v === 'all' || v !== filters.brand) updateFilter('model', undefined);
+                const nextBrand = v === 'all' ? undefined : v;
+                const resetModel = nextBrand !== filters.brand;
+                onFiltersChange({
+                  ...filters,
+                  brand: nextBrand,
+                  model: resetModel ? undefined : filters.model,
+                });
               }}
             >
               <SelectTrigger className="border-border/60">

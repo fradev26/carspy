@@ -177,15 +177,27 @@ export default function Search() {
                 </p>
               </div>
               <div className="rounded-xl border border-border/60 bg-card p-4 shadow-sm">
-                <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} />
+                <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} showPresets={false} />
               </div>
               <div className="sticky bottom-20 mt-4 pb-2 bg-gradient-to-t from-background via-background to-transparent pt-4 flex flex-col gap-2">
-                <Button
-                  onClick={() => setMobileResultsRevealed(true)}
-                  className="w-full min-h-12 text-base font-semibold"
-                >
-                  Toon {activeFilterCount > 0 ? `${total} resultaten` : 'alle resultaten'}
-                </Button>
+                <div className="flex w-full items-stretch gap-2">
+                  <Button
+                    onClick={() => setMobileResultsRevealed(true)}
+                    className="flex-1 min-h-12 text-base font-semibold"
+                  >
+                    Toon {activeFilterCount > 0 ? `${total} resultaten` : 'alle resultaten'}
+                  </Button>
+                  {activeFilterCount > 0 && (
+                    <Button
+                      variant="outline"
+                      onClick={saveGate.openSave}
+                      className="min-h-12 px-3"
+                      aria-label="Opslaan als zoekalert"
+                    >
+                      <Bell className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
                 {activeFilterCount > 0 && (
                   <Button
                     variant="ghost"
@@ -316,7 +328,7 @@ export default function Search() {
                         </div>
                       )}
                       <div className="overflow-y-auto px-4 py-4">
-                        <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} />
+                        <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} showPresets={false} />
                       </div>
                       <DrawerFooter className="border-t border-border/60 flex-row gap-2">
                         <Button
@@ -327,6 +339,16 @@ export default function Search() {
                         >
                           Wis alles
                         </Button>
+                        {activeFilterCount > 0 && (
+                          <Button
+                            variant="outline"
+                            className="min-h-12 px-3"
+                            onClick={saveGate.openSave}
+                            aria-label="Opslaan als zoekalert"
+                          >
+                            <Bell className="h-4 w-4" />
+                          </Button>
+                        )}
                         <DrawerClose asChild>
                           <Button className="flex-1 min-h-12">
                             Toon {total} resultaten
