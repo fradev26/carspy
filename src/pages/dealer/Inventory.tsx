@@ -102,16 +102,6 @@ export default function Inventory() {
     <div className="container py-6 space-y-5">
       <SEOHead title="Zakelijk — VATUUR." description="Sales feed voor je voorraad." noindex />
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold tracking-tight">Zakelijk</h1>
-        <Button asChild size="sm" className="gap-1.5">
-          <Link to="/verkopen">
-            <Plus className="h-4 w-4" /> Wagen verkopen
-          </Link>
-        </Button>
-      </div>
-
       {/* Filters */}
       <div className="space-y-2.5">
         {/* Search + status chips */}

@@ -1,8 +1,9 @@
 import { Outlet, Link, NavLink } from 'react-router-dom';
 
-import { Car, Upload, Inbox, BarChart3, Settings, Sparkles } from 'lucide-react';
+import { Car, Upload, Inbox, BarChart3, Settings, Sparkles, Plus } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 const tabs = [
   { to: '/zakelijk',             label: 'SalesAI',       icon: Sparkles, end: true },
