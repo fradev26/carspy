@@ -332,6 +332,19 @@ export default function Search() {
                     </DrawerContent>
                   </Drawer>
 
+                  {/* Save as alert */}
+                  <Button
+                    variant="outline"
+                    onClick={saveGate.openSave}
+                    aria-label="Zoekopdracht opslaan als alert"
+                    title={activeFilterCount === 0 ? 'Voeg eerst filters toe' : 'Zoekopdracht opslaan als alert'}
+                    className="gap-2 border-border/60 hover:border-primary/40 hover:text-primary"
+                  >
+                    <Bell className="h-4 w-4" />
+                    <span className="hidden md:inline">Opslaan</span>
+                  </Button>
+
+
                   {/* Sort */}
                   <Select value={sortBy} onValueChange={handleSortChange}>
                     <SelectTrigger className="w-44 border-border/60">
