@@ -1,26 +1,22 @@
-## Doel
+# Favoriet-hartje duidelijker zichtbaar maken op ListingCard
 
-De zoekbalk uit de header verwijderen — zowel de mobiele variant (regels 242-260) als de desktop-variant (regels 271-283) in `src/layouts/Header.tsx`. De prominente zoekfunctie staat al op de homepage en op `/zoeken`; in de header is ze visueel ruis.
+De hart-knop toont nu al dat een wagen favoriet is (gevuld hartje, primary achtergrond), maar het visuele signaal kan sterker zodat het opvalt bij het scrollen door listings.
 
 ## Wijzigingen
 
-**`src/layouts/Header.tsx`**
+### `src/modules/listings/ListingCard.tsx`
 
-1. Verwijder mobile search block (regels 242-260, het hele `{!isHomepage && (...)}`-blok inclusief `<form>`).
-2. Verwijder desktop search form (regels 271-283).
-3. Verwijder ongebruikt geworden code:
-   - `searchQuery` state + `setSearchQuery`.
-   - `handleSearch` handler.
-   - `Input` en `Search` (lucide) imports als die nergens anders in dit bestand gebruikt worden.
-4. Desktop nav verschuift natuurlijk naar links naast het logo — pas indien nodig `justify-between` of `gap` aan zodat het logo links en nav rechts blijft (huidige `justify-between` op de container blijft prima werken zonder middle-element).
+Beide card-varianten (`horizontal` en `default`) — de **Favorite Button** krijgt een opvallender favoriet-state:
 
-## Wat we NIET aanraken
+- **Glow-effect**: `shadow-[0_0_12px_rgba(225,29,72,0.35)]` wanneer favoriet, zodat het hartje subtiel "gloeit".
+- **Groter hart-icoon**: `scale-110` → `scale-125` wanneer favoriet.
+- **Dikkere stroke**: `strokeWidth={favorite ? 2.5 : 2}` voor een voller uiterlijk.
+- **Behoud bestaand**: primary achtergrond, ring, filled heart — die blijven.
 
-- De zoekbalk op de homepage (`HomepageFilters` / hero) blijft.
-- De zoekpagina `/zoeken` blijft.
-- BottomNav (mobiel) blijft ongewijzigd.
+## Niet gewijzigd
+- Geen logica-aanpassingen (`useFavorites`, toggle, etc.)
+- Geen andere componenten — ListingCard is het enige weergavepunt.
 
 ## Verificatie
-
-- Vitest run (35/35 moet groen blijven).
-- Preview check op `/`, `/zoeken`, `/favorieten` (mobiel + desktop): geen zoekbalk meer in header, layout intact.
+- TypeScript compileert zonder errors.
+- Preview-check: wagen als favoriet markeren → hartje gloeit subtiel en is duidelijk gevuld op alle kaarten waar deze wagen verschijnt.
