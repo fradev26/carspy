@@ -9,7 +9,8 @@
 
     <!-- PWA -->
     <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="theme-color" content="#E11D48" />
+    <meta name="theme-color" content="#F8FAFC" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#13161B" media="(prefers-color-scheme: dark)" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -51,6 +52,9 @@
           var dark = t === 'dark' || (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
           if (dark) document.documentElement.classList.add('dark');
           document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+          var color = dark ? '#13161B' : '#F8FAFC';
+          var metas = document.querySelectorAll('meta[name="theme-color"]');
+          metas.forEach(function (m) { m.setAttribute('content', color); m.removeAttribute('media'); });
         } catch (e) {}
       })();
     </script>
