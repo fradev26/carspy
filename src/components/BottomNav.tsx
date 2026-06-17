@@ -2,14 +2,12 @@ import { forwardRef, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Home, Search, Heart, Sparkles, Plus,
-  Store, Car, Upload, MoreHorizontal,
-  BarChart3, Inbox,
+  Car, Settings,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { cn } from '@/lib/utils';
 import { AIFullscreenChat } from '@/modules/chat/AIFullscreenChat';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 const consumerItems = [
   { icon: Home,     label: 'Home',       path: '/' },
@@ -20,16 +18,11 @@ const consumerItems = [
 ];
 
 const dealerItems = [
-  { icon: Store,            label: 'Markt',     path: '/zoeken' },
-  { icon: Car,              label: 'Voorraad',  path: '/zakelijk/voorraad' },
-  { icon: Plus,             label: 'Toevoegen', path: '/verkopen?dealer=1' },
-  { icon: MoreHorizontal,   label: 'Meer',      path: null, isMore: true },
-];
-
-const moreLinks = [
-  { icon: BarChart3, label: 'Analytics',     path: '/zakelijk/analytics' },
-  { icon: Upload,    label: 'Import & Sync', path: '/zakelijk/import' },
-  { icon: Inbox,     label: 'Leads',         path: '/zakelijk/leads' },
+  { icon: Home,     label: 'Home',         path: '/' },
+  { icon: Search,   label: 'Zoeken',       path: '/zoeken' },
+  { icon: Sparkles, label: 'AI',           path: null, isAI: true },
+  { icon: Car,      label: 'Voorraad',     path: '/zakelijk/voorraad' },
+  { icon: Settings, label: 'Instellingen', path: '/zakelijk/instellingen' },
 ];
 
 export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref) {
@@ -37,7 +30,6 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
   const { user } = useAuth();
   const { isDealer } = useProfile();
   const [aiOpen, setAiOpen] = useState(false);
-  const [moreOpen, setMoreOpen] = useState(false);
 
   useEffect(() => {
     const onNavigate = () => setAiOpen(false);
@@ -88,42 +80,6 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
                   </div>
                   <span className="text-[10px] font-semibold text-primary -mt-0.5">AI</span>
                 </button>
-              );
-            }
-
-            if (item.isMore) {
-              return (
-                <Sheet key={item.label} open={moreOpen} onOpenChange={setMoreOpen}>
-                  <SheetTrigger asChild>
-                    <button
-                      aria-label="Meer opties"
-                      className="flex flex-col items-center justify-center w-full h-full"
-                    >
-                      <div className="flex flex-col items-center justify-center gap-1 px-3 py-1.5 rounded-xl text-muted-foreground active:scale-[0.97]">
-                        <item.icon className="h-5 w-5" />
-                        <span className="text-[10px] font-medium leading-none">{item.label}</span>
-                      </div>
-                    </button>
-                  </SheetTrigger>
-                  <SheetContent side="bottom" className="rounded-t-2xl">
-                    <SheetHeader>
-                      <SheetTitle>Meer</SheetTitle>
-                    </SheetHeader>
-                    <div className="grid grid-cols-3 gap-3 py-4">
-                      {moreLinks.map((l) => (
-                        <Link
-                          key={l.path}
-                          to={l.path}
-                          onClick={() => setMoreOpen(false)}
-                          className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-border/60 bg-card p-4 text-center hover:bg-muted/60 transition-colors"
-                        >
-                          <l.icon className="h-5 w-5 text-primary" />
-                          <span className="text-xs font-medium leading-tight">{l.label}</span>
-                        </Link>
-                      ))}
-                    </div>
-                  </SheetContent>
-                </Sheet>
               );
             }
 
