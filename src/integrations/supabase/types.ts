@@ -902,6 +902,7 @@ export type Database = {
           is_dealer: boolean
           location: string | null
           phone: string | null
+          theme_preference: string
           updated_at: string
           vat_number: string | null
         }
@@ -917,6 +918,7 @@ export type Database = {
           is_dealer?: boolean
           location?: string | null
           phone?: string | null
+          theme_preference?: string
           updated_at?: string
           vat_number?: string | null
         }
@@ -932,6 +934,7 @@ export type Database = {
           is_dealer?: boolean
           location?: string | null
           phone?: string | null
+          theme_preference?: string
           updated_at?: string
           vat_number?: string | null
         }
@@ -1161,6 +1164,7 @@ export type Database = {
           is_dealer: boolean
           location: string | null
           phone: string | null
+          theme_preference: string
           updated_at: string
           vat_number: string | null
         }

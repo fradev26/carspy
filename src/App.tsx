@@ -9,6 +9,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "./layouts/AppLayout";
 import { CompareProvider } from "./hooks/useCompare";
 import { FavoritesProvider } from "./hooks/useFavorites";
+import { ThemeProvider } from "./hooks/useTheme";
 import Index from "./pages/Index";
 
 const Search = lazy(() => import("./pages/Search"));
@@ -39,6 +40,7 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
+      <ThemeProvider>
       <CompareProvider>
       <TooltipProvider>
         <Toaster />
@@ -69,6 +71,7 @@ const App = () => (
                 <Route path="/account/profiel" element={<ProtectedRoute><AccountSettings defaultTab="profiel" /></ProtectedRoute>} />
                 <Route path="/account/meldingen" element={<ProtectedRoute><AccountSettings defaultTab="meldingen" /></ProtectedRoute>} />
                 <Route path="/account/privacy" element={<ProtectedRoute><AccountSettings defaultTab="privacy" /></ProtectedRoute>} />
+                <Route path="/account/weergave" element={<ProtectedRoute><AccountSettings defaultTab="weergave" /></ProtectedRoute>} />
                 <Route path="/account/instellingen" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
                 <Route path="/help" element={<Help />} />
                 <Route path="/contact" element={<Contact />} />
@@ -82,6 +85,7 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
       </CompareProvider>
+      </ThemeProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

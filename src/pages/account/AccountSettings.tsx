@@ -9,12 +9,15 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Monitor, Sun, Moon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme, type ThemePref } from '@/hooks/useTheme';
 import { useToast } from '@/hooks/use-toast';
 
 interface Props {
-  defaultTab?: 'profiel' | 'meldingen' | 'privacy';
+  defaultTab?: 'profiel' | 'meldingen' | 'privacy' | 'weergave';
 }
 
 const profileSchema = z.object({
@@ -41,6 +44,7 @@ const DEFAULT_PRIV: PrivacyPrefs = { profile_public: true, show_contact: false, 
 
 export default function AccountSettings({ defaultTab = 'profiel' }: Props) {
   const { user } = useAuth();
+  const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const [profile, setProfile] = useState({ full_name: '', phone: '', location: '', avatar_url: '' as string | null, email: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -136,6 +140,7 @@ export default function AccountSettings({ defaultTab = 'profiel' }: Props) {
           <TabsTrigger value="profiel">Profiel</TabsTrigger>
           <TabsTrigger value="meldingen">Meldingen</TabsTrigger>
           <TabsTrigger value="privacy">Privacy</TabsTrigger>
+          <TabsTrigger value="weergave">Weergave</TabsTrigger>
         </TabsList>
 
         <TabsContent value="profiel" className="mt-6">
@@ -237,6 +242,50 @@ export default function AccountSettings({ defaultTab = 'profiel' }: Props) {
               <Button variant="outline" onClick={() => { localStorage.removeItem('cookie-consent'); toast({ title: 'Cookievoorkeuren gereset' }); }}>
                 Cookievoorkeuren resetten
               </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="weergave" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Weergave</CardTitle>
+              <CardDescription>Kies hoe VATUUR. eruitziet. Je voorkeur wordt op al je toestellen onthouden.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <RadioGroup
+                value={theme}
+                onValueChange={(v) => {
+                  const t = v as ThemePref;
+                  void setTheme(t);
+                  toast({ title: 'Weergave bijgewerkt' });
+                }}
+                className="grid gap-3 sm:grid-cols-3"
+              >
+                {([
+                  ['system', 'Systeem', 'Volgt automatisch je toestel.', Monitor],
+                  ['light', 'Licht', 'Heldere achtergrond, ideaal overdag.', Sun],
+                  ['dark', 'Donker', 'Rustig voor de ogen in donkere omgevingen.', Moon],
+                ] as const).map(([value, label, desc, Icon]) => {
+                  const active = theme === value;
+                  return (
+                    <Label
+                      key={value}
+                      htmlFor={`theme-${value}`}
+                      className={`flex cursor-pointer flex-col gap-2 rounded-md border bg-card p-4 transition-colors hover:bg-accent/40 ${active ? 'border-primary ring-2 ring-primary/30' : 'border-border'}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
+                        <RadioGroupItem id={`theme-${value}`} value={value} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold">{label}</p>
+                        <p className="text-xs text-muted-foreground">{desc}</p>
+                      </div>
+                    </Label>
+                  );
+                })}
+              </RadioGroup>
             </CardContent>
           </Card>
         </TabsContent>
