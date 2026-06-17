@@ -1,13 +1,14 @@
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useEffect, useTransition, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { SEOHead } from '@/components/SEOHead';
-import { Grid, List, SlidersHorizontal, Car, Sparkles } from 'lucide-react';
+import { Grid, List, SlidersHorizontal, Car, Sparkles, Bell, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger, DrawerFooter, DrawerClose } from '@/components/ui/drawer';
 import { Badge } from '@/components/ui/badge';
 import { FilterPanel, FilterChips, SmartSearchBar } from '@/modules/search';
+import { SaveSearchDialog, useSaveSearchGate } from '@/modules/search/SaveSearchDialog';
 import { ListingGrid } from '@/modules/listings';
 import { MarketCompareBanner } from '@/components/MarketCompareBanner';
 import { useSearchListings } from '@/hooks/useSearchListings';
@@ -19,20 +20,21 @@ import {
   FUEL_TYPES,
   TRANSMISSION_TYPES,
 } from '@/types/listing';
-import { parseFiltersFromURL } from '@/lib/searchFilters';
+import { parseFiltersFromURL, serializeFiltersToParams } from '@/lib/searchFilters';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
 
-
+// Params we preserve through filter updates (not part of SearchFilters)
+const PRESERVED_PARAMS = ['q', 'aiIntent', 'aiQuery', 'compareWith', 'sort'] as const;
 
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [filters, setFilters] = useState<SearchFilters>(() => parseFiltersFromURL(searchParams));
-  const [sortBy, setSortBy] = useState('newest');
+  const filters = useMemo(() => parseFiltersFromURL(searchParams), [searchParams]);
+  const sortBy = searchParams.get('sort') || 'newest';
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [isLoading, setIsLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [page, setPage] = useState(1);
+  const [aiBarOpen, setAiBarOpen] = useState(false);
   const perPage = 24;
   const queryParam = searchParams.get('q') ?? undefined;
   const {
@@ -44,31 +46,37 @@ export default function Search() {
   const compareWithId = searchParams.get('compareWith');
   const referenceListing = compareWithId ? pageListings.find((l) => l.id === compareWithId) : undefined;
 
-  // Update filters when URL params change
+  // Reset to page 1 whenever the URL (filters or sort) changes
   useEffect(() => {
-    const newFilters = parseFiltersFromURL(searchParams);
-    setFilters(newFilters);
     setPage(1);
   }, [searchParams]);
 
-  // Reset to first page when filters/sort change locally
-  const handleFiltersChange = (newFilters: SearchFilters) => {
-    setIsLoading(true);
-    setPage(1);
+  // Write filters to URL (preserves q/ai/compareWith/sort)
+  const writeFiltersToURL = (newFilters: SearchFilters) => {
+    const next = new URLSearchParams();
+    // Preserve non-filter params
+    PRESERVED_PARAMS.forEach((k) => {
+      const v = searchParams.get(k);
+      if (v) next.set(k, v);
+    });
+    const serialized = serializeFiltersToParams(newFilters);
+    Object.entries(serialized).forEach(([k, v]) => next.set(k, v));
     startTransition(() => {
-      setFilters(newFilters);
-      setTimeout(() => setIsLoading(false), 200);
+      setSearchParams(next, { replace: false });
     });
   };
 
-  const handleSortChange = (value: string) => {
-    setIsLoading(true);
-    setPage(1);
-    startTransition(() => {
-      setSortBy(value);
-      setTimeout(() => setIsLoading(false), 150);
-    });
+  const handleFiltersChange = (newFilters: SearchFilters) => {
+    writeFiltersToURL(newFilters);
   };
+
+  const handleSortChange = (value: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (value && value !== 'newest') next.set('sort', value);
+    else next.delete('sort');
+    startTransition(() => setSearchParams(next, { replace: false }));
+  };
+
 
 
   const handleRemoveFilter = (key: keyof SearchFilters, value?: string) => {
