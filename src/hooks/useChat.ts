@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 export type ChatMessage = { role: 'user' | 'assistant'; content: string };
 
@@ -8,7 +9,7 @@ const LEAD_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/dealer-lead`
 const LEAD_BLOCK_RE = /```vatuur-lead\s*([\s\S]*?)```/g;
 
 type UseChatOptions = {
-  context?: 'default' | 'dealer';
+  context?: 'default' | 'dealer' | 'business';
   onLeadSubmitted?: (lead: Record<string, string>) => void;
 };
 
@@ -58,11 +59,14 @@ export function useChat(options: UseChatOptions = {}) {
     };
 
     try {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess.session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
       const resp = await fetch(CHAT_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${token}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         },
         body: JSON.stringify({ messages: [...messages, userMsg], context }),
       });

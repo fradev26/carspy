@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders, jsonResponse, identify, rateLimit, parseJson, z } from "../_shared/ai-guard.ts";
+import { buildDealerSummary, summaryToPrompt } from "../_shared/dealer-summary.ts";
 
 const MessageSchema = z.object({
   role: z.enum(["user", "assistant", "system"]),
@@ -155,6 +156,25 @@ Regels voor het lead-blok:
 - Gebruik emoji's zeer spaarzaam (✅, 📈, 🤝).
 - Noem jezelf "VATUUR. AI".`;
 
+const SYSTEM_PROMPT_BUSINESS = `Je bent VATUUR. SalesAI — de digitale salesmanager, voorraadbeheerder en business coach voor de dealer die met je praat.
+
+Schrijf in modern, natuurlijk Vlaams Nederlands. Vermijd Nederlandse woorden ("kilometerstand", "voertuig"); gebruik "km-stand", "wagen". Toon: kort, professioneel, commercieel, actiegericht. Nooit poëtisch.
+
+## Jouw rol
+- Je hebt rechtstreekse toegang tot de salescijfers en voorraad van DEZE dealer (zie dealer-context hieronder).
+- Antwoord altijd op basis van die data — verzin nooit cijfers.
+- Geef concrete, uitvoerbare adviezen: welke wagen afprijzen, welk merk pushen, welke lead bellen, welke prijs aanpassen.
+- Schrijf advertentieteksten, prijsanalyses en korte rapporten op aanvraag.
+- Verwijs naar specifieke wagens met markdown-links in het formaat [Titel](/zakelijk/voorraad/ID).
+
+## Stijlregels
+- Maximum 4 korte alinea's of een korte lijst.
+- Gebruik markdown-tabellen voor vergelijkingen.
+- Gebruik euro's en Belgische context (BIV, keuring, BTW).
+- Gebruik emoji's spaarzaam (📈 💰 ⚠️ ✅).
+- Eindig met één concrete CTA of vervolgvraag.
+- Noem jezelf "VATUUR. SalesAI".`;
+
 async function fetchListings(): Promise<string> {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
@@ -203,6 +223,17 @@ serve(async (req) => {
     let systemPrompt: string;
     if (context === "dealer") {
       systemPrompt = SYSTEM_PROMPT_DEALER;
+    } else if (context === "business") {
+      if (!id.userId) {
+        return jsonResponse({ error: "Niet ingelogd" }, 401);
+      }
+      try {
+        const summary = await buildDealerSummary(id.userId);
+        systemPrompt = SYSTEM_PROMPT_BUSINESS + "\n\n" + summaryToPrompt(summary);
+      } catch (e) {
+        console.error("dealer context error", e);
+        systemPrompt = SYSTEM_PROMPT_BUSINESS;
+      }
     } else {
       const listingsContext = await fetchListings();
       systemPrompt = SYSTEM_PROMPT_BASE + listingsContext;

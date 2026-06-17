@@ -1,15 +1,16 @@
 import { Outlet, Link, NavLink } from 'react-router-dom';
 
-import { Car, Upload, Inbox, BarChart3, Settings } from 'lucide-react';
+import { Car, Upload, Inbox, BarChart3, Settings, Sparkles } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { cn } from '@/lib/utils';
 
 const tabs = [
-  { to: '/zakelijk/voorraad',    label: 'Zakelijk',     icon: Car },
+  { to: '/zakelijk',             label: 'SalesAI',       icon: Sparkles, end: true },
+  { to: '/zakelijk/voorraad',    label: 'Voorraad',      icon: Car },
   { to: '/zakelijk/import',      label: 'Import & Sync', icon: Upload },
-  { to: '/zakelijk/leads',       label: 'Leads',        icon: Inbox },
-  { to: '/zakelijk/analytics',   label: 'Analytics',    icon: BarChart3 },
-  { to: '/zakelijk/instellingen',label: 'Instellingen', icon: Settings },
+  { to: '/zakelijk/leads',       label: 'Leads',         icon: Inbox },
+  { to: '/zakelijk/analytics',   label: 'Analytics',     icon: BarChart3 },
+  { to: '/zakelijk/instellingen',label: 'Instellingen',  icon: Settings },
 ];
 
 export default function DealerLayout() {
@@ -18,7 +19,7 @@ export default function DealerLayout() {
     <div className="min-h-screen flex flex-col bg-background">
       <header className="border-b bg-card sticky top-0 z-20">
         <div className="flex items-center gap-4 px-4 h-14">
-          <Link to="/zakelijk/voorraad" className="text-sm font-bold text-primary shrink-0">
+          <Link to="/zakelijk" className="text-sm font-bold text-primary shrink-0">
             VATUUR. <span className="text-muted-foreground font-medium">Zakelijk</span>
           </Link>
           <div className="hidden md:block flex-1 min-w-0">
@@ -35,6 +36,7 @@ export default function DealerLayout() {
             <NavLink
               key={t.to}
               to={t.to}
+              end={(t as any).end}
               className={({ isActive }) =>
                 cn(
                   'inline-flex items-center gap-2 px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors',

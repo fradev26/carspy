@@ -15,6 +15,7 @@ import Index from "./pages/Index";
 const Search = lazy(() => import("./pages/Search"));
 const ListingDetail = lazy(() => import("./pages/ListingDetail"));
 const DealerLayout = lazy(() => import("./layouts/DealerLayout"));
+const DealerSalesAI = lazy(() => import("./pages/dealer/SalesAI"));
 const DealerInventoryPage = lazy(() => import("./pages/dealer/Inventory"));
 const DealerListingOperating = lazy(() => import("./pages/dealer/ListingOperating"));
 const DealerImport = lazy(() => import("./pages/dealer/Import"));
@@ -64,7 +65,8 @@ const App = () => (
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="/dealer-analytics" element={<ProtectedRoute><BusinessDashboard /></ProtectedRoute>} />
                 <Route path="/zakelijk" element={<ProtectedRoute><DealerLayout /></ProtectedRoute>}>
-                  <Route index element={<BusinessDashboard />} />
+                  <Route index element={<DealerSalesAI />} />
+                  <Route path="dashboard" element={<BusinessDashboard />} />
                   <Route path="voorraad" element={<DealerInventoryPage />} />
                   <Route path="voorraad/:id" element={<DealerListingOperating />} />
                   <Route path="import" element={<DealerImport />} />
