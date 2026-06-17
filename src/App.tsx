@@ -62,9 +62,9 @@ const App = () => (
                 <Route path="/auto/:id" element={<ListingDetail />} />
                 <Route path="/verkopen" element={<ProtectedRoute><Sell /></ProtectedRoute>} />
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                <Route path="/zakelijk" element={<ProtectedRoute><BusinessDashboard /></ProtectedRoute>} />
                 <Route path="/dealer-analytics" element={<ProtectedRoute><BusinessDashboard /></ProtectedRoute>} />
                 <Route path="/zakelijk" element={<ProtectedRoute><DealerLayout /></ProtectedRoute>}>
+                  <Route index element={<BusinessDashboard />} />
                   <Route path="voorraad" element={<DealerInventoryPage />} />
                   <Route path="voorraad/:id" element={<DealerListingOperating />} />
                   <Route path="import" element={<DealerImport />} />
