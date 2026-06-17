@@ -20,7 +20,7 @@ const consumerItems = [
 const dealerItems = [
   { icon: Home,     label: 'Home',         path: '/' },
   { icon: Search,   label: 'Zoeken',       path: '/zoeken' },
-  { icon: Sparkles, label: 'SalesAI',      path: '/zakelijk' },
+  { icon: Sparkles, label: 'SalesAI',      path: '/zakelijk', isAI: true },
   { icon: Car,      label: 'Zakelijk',     path: '/zakelijk/voorraad' },
   { icon: Settings, label: 'Instellingen', path: '/zakelijk/instellingen' },
 ];
@@ -68,6 +68,35 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
         <div className="flex items-center justify-around h-16">
           {items.map((item: any) => {
             if (item.isAI) {
+              const isActive = item.path && (
+                location.pathname === item.path ||
+                (item.path !== '/' && location.pathname.startsWith(item.path))
+              );
+              const aiContent = (
+                <div className="flex flex-col items-center justify-center w-full h-full relative">
+                  <div className={cn(
+                    'flex items-center justify-center w-12 h-12 -mt-2 rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-transform active:scale-95',
+                    isActive && 'ring-2 ring-primary-foreground'
+                  )}>
+                    <Sparkles className="h-6 w-6" />
+                  </div>
+                  <span className="text-[10px] font-semibold text-primary -mt-0.5">{item.label}</span>
+                </div>
+              );
+
+              if (item.path) {
+                return (
+                  <Link
+                    key={item.label}
+                    to={item.path}
+                    aria-current={isActive ? 'page' : undefined}
+                    className="flex flex-col items-center justify-center w-full h-full relative"
+                  >
+                    {aiContent}
+                  </Link>
+                );
+              }
+
               return (
                 <button
                   key={item.label}
@@ -75,10 +104,7 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
                   aria-label="Open AI assistent"
                   className="flex flex-col items-center justify-center w-full h-full relative"
                 >
-                  <div className="flex items-center justify-center w-12 h-12 -mt-2 rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-transform active:scale-95">
-                    <Sparkles className="h-6 w-6" />
-                  </div>
-                  <span className="text-[10px] font-semibold text-primary -mt-0.5">AI</span>
+                  {aiContent}
                 </button>
               );
             }
