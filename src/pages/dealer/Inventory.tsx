@@ -311,7 +311,7 @@ function DealerCard({
             <Rocket className="h-4 w-4" />
             Boosten
           </Button>
-          <Button asChild variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-primary shrink-0" title="Vergelijk markt">
+          <Button asChild variant="ghost" size="icon" className="h-9 w-9 shrink-0 transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground" title="Vergelijk markt">
             <Link
               to={`/zoeken?brand=${encodeURIComponent(l.brand ?? '')}&model=${encodeURIComponent(l.model ?? '')}&yearMin=${(l.year ?? 0) - 1}&yearMax=${(l.year ?? 0) + 1}&compareWith=${l.id}`}
               aria-label="Vergelijk markt"
