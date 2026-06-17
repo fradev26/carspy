@@ -105,16 +105,16 @@ export async function buildDealerSummary(userId: string) {
     }));
 
   const insights: string[] = [];
-  if (attention.length) insights.push(`📦 ${attention.length} wagen${attention.length === 1 ? "" : "s"} staat langer dan 60 dagen online — overweeg een prijsherziening.`);
+  if (attention.length) insights.push(`${attention.length} wagen${attention.length === 1 ? "" : "s"} staat langer dan 60 dagen online — overweeg een prijsherziening.`);
   if (soldMonth.length && soldPrev.length) {
     const delta = revenue(soldMonth) - revenue(soldPrev);
     const pct = revenue(soldPrev) ? Math.round((delta / revenue(soldPrev)) * 100) : 0;
     if (Math.abs(pct) >= 5) {
-      insights.push(`📈 Omzet deze maand is ${pct > 0 ? "+" : ""}${pct}% t.o.v. vorige maand.`);
+      insights.push(`Omzet deze maand is ${pct > 0 ? "+" : ""}${pct}% t.o.v. vorige maand.`);
     }
   }
   if (monthMargins.length) {
-    insights.push(`💰 Gemiddelde marge deze maand: €${avg(monthMargins).toLocaleString("nl-BE")} per wagen.`);
+    insights.push(`Gemiddelde marge deze maand: €${avg(monthMargins).toLocaleString("nl-BE")} per wagen.`);
   }
   const brandMargin: Record<string, number[]> = {};
   for (const l of sold as any[]) {
@@ -128,13 +128,13 @@ export async function buildDealerSummary(userId: string) {
     .filter((b) => b.n >= 2)
     .sort((a, b) => b.avg - a.avg)[0];
   if (bestBrand) {
-    insights.push(`🏆 ${bestBrand.brand} levert je hoogste gemiddelde marge (€${bestBrand.avg.toLocaleString("nl-BE")}).`);
+    insights.push(`${bestBrand.brand} levert je hoogste gemiddelde marge (€${bestBrand.avg.toLocaleString("nl-BE")}).`);
   }
   if (activeLeads > 0) {
-    insights.push(`💬 Je hebt ${activeLeads} actieve lead${activeLeads === 1 ? "" : "s"} die wachten op opvolging.`);
+    insights.push(`Je hebt ${activeLeads} actieve lead${activeLeads === 1 ? "" : "s"} die wachten op opvolging.`);
   }
   if (sold.length === 0) {
-    insights.push(`🚀 Markeer je eerste verkochte wagen om je SalesAI te activeren.`);
+    insights.push(`Markeer je eerste verkochte wagen om je SalesAI te activeren.`);
   }
 
   return {

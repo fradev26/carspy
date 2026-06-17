@@ -247,7 +247,7 @@ function SignupForm() {
                   aria-checked={vatCountry === c}
                   onClick={() => setVatCountry(c)}
                 >
-                  {c === 'BE' ? '🇧🇪 België' : '🇳🇱 Nederland'}
+                  {c === 'BE' ? 'België' : 'Nederland'}
                 </Button>
               ))}
             </div>

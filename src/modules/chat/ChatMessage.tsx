@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import type { ChatMessage as ChatMsg } from '@/hooks/useChat';
-import { Bot, User, Car } from 'lucide-react';
+import { Bot, User, Car, Check } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Link } from 'react-router-dom';
 import type { Components } from 'react-markdown';
@@ -121,8 +121,9 @@ export function ChatMessage({ message }: Props) {
             return (
               <div className="prose prose-sm dark:prose-invert max-w-none">
                 {hasLead && (
-                  <div className="mb-2 rounded-lg border border-primary/30 bg-primary/5 px-2.5 py-1.5 text-xs font-medium text-primary not-prose">
-                    ✅ Je gegevens werden doorgestuurd naar onze accountmanager.
+                  <div className="mb-2 flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/5 px-2.5 py-1.5 text-xs font-medium text-primary not-prose">
+                    <Check className="h-3.5 w-3.5" />
+                    Je gegevens werden doorgestuurd naar onze accountmanager.
                   </div>
                 )}
                 <ReactMarkdown components={markdownComponents}>{cleaned}</ReactMarkdown>

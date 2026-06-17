@@ -134,7 +134,9 @@ export default function Compare() {
                     {items.map(item => (
                       <div key={item.id} className="p-3 text-sm">
                         {item.features.includes(feature) ? (
-                          <Badge className="bg-success/10 text-success border-success/30">✓</Badge>
+                          <Badge className="bg-success/10 text-success border-success/30 inline-flex items-center gap-1">
+                            <Check className="h-3 w-3" />
+                          </Badge>
                         ) : (
                           <span className="text-muted-foreground">—</span>
                         )}

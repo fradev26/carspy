@@ -375,7 +375,7 @@ export default function Sell() {
       }
       const { description } = await resp.json();
       update('description', description);
-      toast({ title: 'Beschrijving gegenereerd ✨' });
+      toast({ title: 'Beschrijving gegenereerd' });
     } catch (e) {
       toast({ title: e instanceof Error ? e.message : 'Er ging iets mis', variant: 'destructive' });
     } finally {

@@ -72,8 +72,8 @@ export const ChatWidget = forwardRef<HTMLDivElement>(function ChatWidget(_props,
   const headerSubtitle = isDealersPage ? 'Jouw digitale accountmanager' : 'Jouw auto-assistent';
   const HeaderIcon = isDealersPage ? Briefcase : MessageCircle;
   const emptyText = isDealersPage
-    ? '👋 Hallo! Ik ben VATUUR. AI. Stel me een vraag over onze dealerpakketten, vraag een demo aan, of laat je gegevens achter — onze accountmanager contacteert je binnen 1 werkdag.'
-    : "👋 Hoi! Ik ben VATUUR. AI. Stel me een vraag over auto's of gebruik een suggestie:";
+    ? 'Hallo, ik ben VATUUR. AI. Stel me een vraag over onze dealerpakketten, vraag een demo aan, of laat je gegevens achter — onze accountmanager contacteert je binnen 1 werkdag.'
+    : "Hallo, ik ben VATUUR. AI. Stel me een vraag over auto's of gebruik een suggestie:";
   const placeholder = isDealersPage ? 'Vraag iets over dealerabonnementen...' : 'Stel een vraag...';
 
   return (

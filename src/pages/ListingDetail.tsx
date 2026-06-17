@@ -894,7 +894,10 @@ export default function ListingDetail() {
                           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Geschikt voor</p>
                           <ul className="mt-1 space-y-1">
                             {vehicleAnalysis.suitability.map((s: string, i: number) => (
-                              <li key={i} className="text-sm text-foreground/80">✓ {s}</li>
+                              <li key={i} className="flex items-start gap-1.5 text-sm text-foreground/80">
+                                <Check className="h-3.5 w-3.5 text-success shrink-0 mt-0.5" />
+                                <span>{s}</span>
+                              </li>
                             ))}
                           </ul>
                         </div>
