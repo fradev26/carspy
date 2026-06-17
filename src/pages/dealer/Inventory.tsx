@@ -36,6 +36,7 @@ export default function Inventory() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<Set<string>>(new Set());
+  const [boostDialog, setBoostDialog] = useState<{ ids: string[]; title?: string } | null>(null);
 
   // ── Filter pipeline ─────────────────────────────────────────────────────
   const filtered = useMemo(() => {
