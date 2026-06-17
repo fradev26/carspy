@@ -311,6 +311,17 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
               {listing.seller.type === 'dealer' ? 'Dealer' : 'Particulier'}
             </Badge>
           </div>
+
+          {variant !== 'compact' && (
+            <button
+              type="button"
+              onClick={handleMarketCompare}
+              className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-md border border-border/60 bg-muted/40 px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary hover:border-primary/30"
+            >
+              <BarChart3 className="h-3.5 w-3.5" />
+              Vergelijk markt
+            </button>
+          )}
         </CardContent>
       </Card>
     </Link>
