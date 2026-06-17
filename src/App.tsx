@@ -14,6 +14,13 @@ import Index from "./pages/Index";
 
 const Search = lazy(() => import("./pages/Search"));
 const ListingDetail = lazy(() => import("./pages/ListingDetail"));
+const DealerLayout = lazy(() => import("./layouts/DealerLayout"));
+const DealerInventoryPage = lazy(() => import("./pages/dealer/Inventory"));
+const DealerListingOperating = lazy(() => import("./pages/dealer/ListingOperating"));
+const DealerImport = lazy(() => import("./pages/dealer/Import"));
+const DealerAnalytics = lazy(() => import("./pages/dealer/Analytics"));
+const DealerSettings = lazy(() => import("./pages/dealer/Settings"));
+const MyLeadsPanel = lazy(() => import("./components/MyLeadsPanel"));
 const Sell = lazy(() => import("./pages/Sell"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const BusinessDashboard = lazy(() => import("./pages/BusinessDashboard"));
@@ -55,8 +62,16 @@ const App = () => (
                 <Route path="/auto/:id" element={<ListingDetail />} />
                 <Route path="/verkopen" element={<ProtectedRoute><Sell /></ProtectedRoute>} />
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                <Route path="/zakelijk" element={<ProtectedRoute><BusinessDashboard /></ProtectedRoute>} />
                 <Route path="/dealer-analytics" element={<ProtectedRoute><BusinessDashboard /></ProtectedRoute>} />
+                <Route path="/zakelijk" element={<ProtectedRoute><DealerLayout /></ProtectedRoute>}>
+                  <Route index element={<BusinessDashboard />} />
+                  <Route path="voorraad" element={<DealerInventoryPage />} />
+                  <Route path="voorraad/:id" element={<DealerListingOperating />} />
+                  <Route path="import" element={<DealerImport />} />
+                  <Route path="leads" element={<div className="container py-6"><MyLeadsPanel /></div>} />
+                  <Route path="analytics" element={<DealerAnalytics />} />
+                  <Route path="instellingen" element={<DealerSettings />} />
+                </Route>
                 <Route path="/favorieten" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
                 <Route path="/vergelijken" element={<Compare />} />
                 <Route path="/privacy" element={<Privacy />} />
