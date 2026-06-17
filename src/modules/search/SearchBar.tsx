@@ -243,7 +243,8 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
     return (
       <div className={cn('flex w-full items-stretch', h)}>
         <Button
-          type="submit"
+          type="button"
+          onClick={() => handleSearch()}
           className={cn(
             'flex-[4] gap-2 rounded-r-none border-r-0 bg-primary font-semibold text-primary-foreground hover:bg-primary/90 focus-visible:z-10',
             h,
