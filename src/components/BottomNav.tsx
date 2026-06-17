@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   Home, Search, Heart, Sparkles, Plus,
   Store, Car, Upload, MoreHorizontal,
-  Settings, BarChart3, Inbox,
+  BarChart3, Inbox,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -30,7 +30,6 @@ const moreLinks = [
   { icon: BarChart3, label: 'Analytics',     path: '/zakelijk/analytics' },
   { icon: Upload,    label: 'Import & Sync', path: '/zakelijk/import' },
   { icon: Inbox,     label: 'Leads',         path: '/zakelijk/leads' },
-  { icon: Settings,  label: 'Instellingen',  path: '/zakelijk/instellingen' },
 ];
 
 export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref) {
