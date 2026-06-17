@@ -32,10 +32,6 @@ export default function Search() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isLoading, setIsLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const { user } = useAuth();
-  const { save } = useSavedSearches();
-  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
-  const [searchName, setSearchName] = useState('');
   const [page, setPage] = useState(1);
   const perPage = 24;
   const queryParam = searchParams.get('q') ?? undefined;
