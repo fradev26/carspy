@@ -1,105 +1,64 @@
 
-# VATUUR SalesAI — Chat-first dashboard
+# Herontwerp Instellingen — VATUUR Zakelijk
 
-De Zakelijk-sectie krijgt **één centrale ervaring**: een fullscreen AI-chat die zichzelf opent met een live salesoverzicht (KPI's + insights). De dealer kan onmiddellijk doorvragen ("welke wagens moet ik afprijzen?", "schrijf een advertentie voor mijn Audi"). Geen aparte dashboardpagina meer — het dashboard zit *in* de chat.
+Een complete rebuild van `src/pages/dealer/Settings.tsx` naar een compacte, rij-gebaseerde lijststijl à la Stripe/Linear/Notion, passend in de bestaande donkere VATUUR-stijl.
 
-## Concept
+## Structuur
 
-```text
-/zakelijk  →  SalesAI (fullscreen chat)
-┌─────────────────────────────────────────────┐
-│  VATUUR. SalesAI                            │
-│  Jouw digitale salesmanager                 │
-├─────────────────────────────────────────────┤
-│  [Auto-opening assistant message]           │
-│                                             │
-│  Goeiemorgen Jan 👋                         │
-│                                             │
-│  ┌──KPI──┬──KPI──┬──KPI──┬──KPI──┐          │
-│  │Omzet  │Marge  │Verk.  │Leads  │          │
-│  │ maand │ gem.  │ deze  │actief │          │
-│  └───────┴───────┴───────┴───────┘          │
-│                                             │
-│  📊 3 inzichten vandaag:                    │
-│  • 4 wagens >90 dagen online                │
-│  • BMW levert hoogste marge (+€2.300)       │
-│  • SUV's verkopen 2x sneller dan hatchback  │
-│                                             │
-│  [Quick chips: Welke afprijzen? · Top-      │
-│   verkopers · Schrijf advertentie · Leads]  │
-├─────────────────────────────────────────────┤
-│  [Tekstinvoer: Vraag iets...]            ➤  │
-└─────────────────────────────────────────────┘
-```
+1. **SEOHead** (ongewijzigd, noindex).
+2. **Bedrijfskaart** (bovenaan, licht verhoogd):
+   - Bedrijfsnaam (`profile.dealer_name` → fallback `full_name` → "Test Garage")
+   - BTW (`profile.vat_number`)
+   - Knop "Profiel bewerken" met pencil icoon → `/account/profiel`
+   - Lichte border, `bg-card`, `rounded-xl`, subtiele shadow.
+3. **4 secties** met kleine accent-gekleurde titel, en een container (`rounded-xl border bg-card divide-y`) met rijen:
+   - **Koppelingen**: AutoScout24, Marktplaats, Mobile.de, Facebook Marketplace
+   - **Voorraad**: Voorraadvoorkeuren, Prijsinstellingen, Automatische publicatie
+   - **Account**: Gebruikers beheren, Meldingen, Beveiliging, Abonnement
+   - **Ondersteuning**: Support, Contact, Over VATUUR
 
-De voorraadpagina blijft bestaan onder `/zakelijk/voorraad` (toegankelijk via tab of via "Open voorraad"-knop in chat-antwoorden).
+## Row-component
 
-## Sprint 1 — Wat we nu bouwen
+Nieuw lokaal component `SettingsRow` (binnen Settings.tsx, geen apart bestand):
+- `<Link>` of `<button>` met `flex items-center justify-between`
+- Hoogte `h-14` (56px), `px-4 md:px-5`
+- Linker icoon (lucide) + label (`text-sm font-medium`), optionele subtitel `text-xs text-muted-foreground`
+- Rechts `ChevronRight` icoon, `text-muted-foreground`
+- Hover: `hover:bg-muted/40`, actieve tap: `active:bg-muted/60`, `transition-colors`
 
-### 1. Database (migratie)
-Op `listings`:
-- `cost_price integer`
-- `sold_price integer`
-- `sold_at timestamptz`
-- `margin integer GENERATED ALWAYS AS (sold_price - cost_price) STORED`
-- Trigger: bij overgang naar `status='sold'`, vul `sold_at = now()` als leeg.
+## Routes / acties per rij
 
-Bestaande RLS dekt owner-only toegang; we verifiëren.
+| Rij | Doel |
+|---|---|
+| AutoScout24 | opent AutoScoutPanel in een Sheet/Dialog of inline (zie hieronder) |
+| Marktplaats, Mobile.de, Facebook Marketplace | `disabled`-rij met badge "Binnenkort" |
+| Voorraadvoorkeuren | `/zakelijk/voorraad` |
+| Prijsinstellingen | placeholder (toast "Binnenkort beschikbaar") |
+| Automatische publicatie | placeholder toast |
+| Gebruikers beheren | placeholder toast |
+| Meldingen | `/account/meldingen` |
+| Beveiliging | `/account/privacy` |
+| Abonnement | placeholder toast |
+| Support | `/help` |
+| Contact | `/contact` |
+| Over VATUUR | `/` (of placeholder) |
 
-### 2. Edge function: `dealer-sales-summary`
-JWT-validated. Aggregeert voor `auth.uid()`:
-- KPI's: omzet (vandaag/week/maand + delta), aantal verkocht, gem. verkoopprijs, gem. marge €/%, brutowinst maand, conversieratio, actieve leads (`vehicle_leads`), gem. verkooptijd, gem. voorraadduur.
-- Lijsten: top 5 stilstaand, top 5 hoogste marge verkocht, voertuigen die aandacht nodig hebben (>60 dagen actief).
-- Insights (regels-gebaseerd, geen AI-call): array van korte zinnen ("4 wagens > 90 dagen", "BMW = hoogste marge", "Marge +X% vs vorige maand").
+`AutoScoutPanel` blijft beschikbaar maar wordt verplaatst naar een Sheet die opent vanaf de AutoScout24-rij, zodat de hoofdpagina compact blijft en alles zichtbaar zonder veel scrollen.
 
-Eén response, gecached client-side via React Query (5 min).
+## Stijl-details
 
-### 3. SalesAI pagina `/zakelijk` (nieuwe landing)
-- Fullscreen chat-UI (geen floating widget — volledige pagina, mobiel-first).
-- **Auto-greeting** bij open: assistant-message met begroeting + **embedded KPI-cards + insights** gerenderd via custom message-parts (geen markdown-only).
-- Quick-action chips boven de invoer, contextueel (gevuld vanuit summary).
-- Standaard tekstinvoer voor vrije vragen.
-- Bij elk antwoord kan de AI verwijzen naar `/zakelijk/voorraad?listing=ID` met directe link.
+- Sectietitel: `text-xs font-semibold uppercase tracking-wider text-primary/80 px-1 mb-2`
+- Container: `rounded-xl border border-border/60 bg-card overflow-hidden divide-y divide-border/60`
+- Pagina-wrapper: `container max-w-2xl py-6 space-y-6 pb-24` (bottom-nav clearance)
+- Mobiel-first; werkt ook netjes op desktop door `max-w-2xl`
+- Iconen consistent `h-4 w-4 text-muted-foreground`
+- Animaties: alleen `transition-colors` op rijen, geen scale-effecten (Linear-stijl rust)
 
-### 4. Edge function `chat` uitbreiden
-- Nieuwe context `business`. `SYSTEM_PROMPT_BUSINESS`: digitale salesmanager + voorraadbeheerder, kort/commercieel/Vlaams, altijd actiegericht.
-- JWT verplicht voor `business`. Server haalt compacte dealercontext op (zelfde data als summary, sterk samengevat in <2 kB tekst) en injecteert als system-context.
-- Antwoorden mogen markdown-tabellen en `/auto/ID`- of `/zakelijk/voorraad?listing=ID`-links bevatten.
+## Bestanden
 
-### 5. Navigatie
-- `/zakelijk` (default) = SalesAI fullscreen.
-- `/zakelijk/voorraad` = bestaande inventory.
-- Dealer `BottomNav` + `DealerLayout` tabs: **SalesAI** / Voorraad / Stats / Import / Settings. SalesAI eerste tab, Sparkles-icoon.
-- Floating `ChatWidget` is uit op `/zakelijk/*` (we hebben fullscreen).
+- **Edit** `src/pages/dealer/Settings.tsx` — volledige rewrite volgens bovenstaande structuur.
+- Geen wijzigingen aan routes, layout, BottomNav of AutoScoutPanel zelf.
 
-### 6. UX-details
-- Custom message-part `kpi-grid` rendert KPI-kaarten in een assistant-bubble.
-- Custom message-part `insight-list` rendert bullet-insights met emoji.
-- KPI's en insights worden bij elke nieuwe chatsessie opnieuw opgehaald + getoond.
-- Empty state (geen verkopen ooit): assistant zegt "Markeer je eerste wagen als verkocht om je SalesAI te activeren" + link naar voorraad.
-- Mobiel: chat vult viewport-min-bottomnav, KPI-grid 2 cols → desktop 4 cols.
+## Out of scope
 
-## Nieuwe / gewijzigde files
-
-**Nieuw:**
-- `supabase/migrations/<ts>_listings_sales_tracking.sql`
-- `supabase/functions/dealer-sales-summary/index.ts`
-- `src/pages/dealer/SalesAI.tsx`
-- `src/components/dealer/salesai/KpiGrid.tsx`
-- `src/components/dealer/salesai/InsightList.tsx`
-- `src/components/dealer/salesai/QuickChips.tsx`
-- `src/hooks/useDealerSummary.ts`
-
-**Gewijzigd:**
-- `src/App.tsx` — route `/zakelijk` → SalesAI
-- `src/layouts/DealerLayout.tsx` — tab "SalesAI" eerst, default redirect naar `/zakelijk`
-- `src/components/BottomNav.tsx` — dealer-tab "SalesAI" (Sparkles)
-- `src/hooks/useChat.ts` — context `business`, JWT-header doorsturen
-- `src/modules/chat/ChatWidget.tsx` — verbergen op `/zakelijk/*`
-- `supabase/functions/chat/index.ts` — `SYSTEM_PROMPT_BUSINESS` + dealercontext-loader voor `context='business'`
-
-## Sprints later (uit scope nu)
-- Sprint 2: per-listing AI-badges + quick-actions ("afprijzen", "boost", "herschrijf").
-- Sprint 3: dagelijkse cron die insights pre-genereert in `dealer_insights` tabel.
-
-Akkoord om Sprint 1 te bouwen?
+- Echte implementatie van Marktplaats / Mobile.de / Facebook-koppelingen, prijsinstellingen, gebruikersbeheer, abonnementen — deze rijen tonen placeholders/toasts zodat de visuele structuur compleet is.
