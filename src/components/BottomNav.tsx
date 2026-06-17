@@ -18,10 +18,10 @@ const consumerItems = [
 ];
 
 const dealerItems = [
-  { icon: Sparkles, label: 'SalesAI',      path: '/zakelijk' },
-  { icon: Car,      label: 'Voorraad',     path: '/zakelijk/voorraad' },
-  { icon: Search,   label: 'Zoeken',       path: '/zoeken' },
   { icon: Home,     label: 'Home',         path: '/' },
+  { icon: Search,   label: 'Zoeken',       path: '/zoeken' },
+  { icon: Sparkles, label: 'SalesAI',      path: '/zakelijk' },
+  { icon: Car,      label: 'Zakelijk',     path: '/zakelijk/voorraad' },
   { icon: Settings, label: 'Instellingen', path: '/zakelijk/instellingen' },
 ];
 
