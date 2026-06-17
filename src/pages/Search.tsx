@@ -51,6 +51,8 @@ export default function Search() {
     loading: listingsLoading,
   } = useSearchListings({ filters, query: queryParam, sort: sortBy, page, perPage });
   const [mobileResultsRevealed, setMobileResultsRevealed] = useState(false);
+  const compareWithId = searchParams.get('compareWith');
+  const referenceListing = compareWithId ? pageListings.find((l) => l.id === compareWithId) : undefined;
 
   // Update filters when URL params change
   useEffect(() => {
