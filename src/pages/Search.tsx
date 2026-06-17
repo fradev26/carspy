@@ -2,7 +2,7 @@ import { useState, useEffect, useTransition } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { SEOHead } from '@/components/SEOHead';
-import { Grid, List, SlidersHorizontal, Car, Bell, Sparkles } from 'lucide-react';
+import { Grid, List, SlidersHorizontal, Car, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger, DrawerFooter, DrawerClose } from '@/components/ui/drawer';
@@ -21,11 +21,6 @@ import {
 } from '@/types/listing';
 import { parseFiltersFromURL } from '@/lib/searchFilters';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
-import { useSavedSearches } from '@/hooks/useSavedSearches';
-import { useAuth } from '@/hooks/useAuth';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 
 
@@ -37,10 +32,6 @@ export default function Search() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isLoading, setIsLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const { user } = useAuth();
-  const { save } = useSavedSearches();
-  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
-  const [searchName, setSearchName] = useState('');
   const [page, setPage] = useState(1);
   const perPage = 24;
   const queryParam = searchParams.get('q') ?? undefined;
@@ -249,48 +240,6 @@ export default function Search() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  {/* Save Search */}
-                  {user && activeFilterCount > 0 && (
-                    <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button variant="outline" className="gap-2 border-border/60">
-                          <Bell className="h-4 w-4" />
-                          <span className="hidden sm:inline">Bewaar zoekopdracht</span>
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Zoekopdracht opslaan</DialogTitle>
-                          <DialogDescription>
-                            Geef je zoekopdracht een naam. Je ontvangt een melding zodra er nieuwe auto's bijkomen die hieraan voldoen.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-4 pt-4">
-                          <div>
-                            <Label htmlFor="search-name">Naam</Label>
-                            <Input
-                              id="search-name"
-                              value={searchName}
-                              onChange={(e) => setSearchName(e.target.value)}
-                              placeholder="Bijv. Zwarte BMW automaat"
-                              className="mt-1.5"
-                            />
-                          </div>
-                          <Button
-                            className="w-full"
-                            disabled={!searchName.trim()}
-                            onClick={async () => {
-                              await save(searchName.trim(), filters);
-                              setSearchName('');
-                              setSaveDialogOpen(false);
-                            }}
-                          >
-                            Opslaan
-                          </Button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  )}
 
                   {/* Mobile Filter Button - Drawer */}
                   <Drawer>

@@ -1,17 +1,28 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, RotateCcw, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { CAR_BRANDS, CAR_MODELS, FUEL_TYPES, SearchFilters } from '@/types/listing';
 import { cn } from '@/lib/utils';
 import { HomepageFilters } from './HomepageFilters';
 import { FilterChips } from './FilterChips';
 import { RecentSearches } from '@/components/RecentSearches';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
+import { useSavedSearches } from '@/hooks/useSavedSearches';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from '@/hooks/use-toast';
 
 interface SearchBarProps {
   variant?: 'hero' | 'compact';
@@ -35,6 +46,13 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
   
   // Recent searches
   const { recentSearches, saveSearch, removeSearch, clearAllSearches } = useRecentSearches();
+
+  // Saved searches (zoekalerts)
+  const { user } = useAuth();
+  const { save } = useSavedSearches();
+  const [saveOpen, setSaveOpen] = useState(false);
+  const [searchName, setSearchName] = useState('');
+  const [saving, setSaving] = useState(false);
 
   // Sync basic form fields to filters
   useEffect(() => {
@@ -180,6 +198,80 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
   // Get available models based on selected brand
   const availableModels = brand && brand !== 'all' ? CAR_MODELS[brand] || [] : [];
 
+  // Suggested alert name from filters
+  const suggestName = (): string => {
+    const parts: string[] = [];
+    if (filters.brand) parts.push(filters.brand);
+    if (filters.model) parts.push(filters.model);
+    if (filters.fuelTypes?.length) parts.push(filters.fuelTypes[0]);
+    if (filters.maxPrice) parts.push(`onder €${filters.maxPrice.toLocaleString('nl-NL')}`);
+    else if (filters.minPrice) parts.push(`vanaf €${filters.minPrice.toLocaleString('nl-NL')}`);
+    if (!parts.length) return 'Mijn zoekopdracht';
+    return parts.join(' ');
+  };
+
+  const openSaveDialog = () => {
+    if (!user) {
+      toast({
+        title: 'Log in om zoekopdrachten te bewaren',
+        description: 'Maak een gratis account aan of meld je aan.',
+      });
+      navigate('/auth');
+      return;
+    }
+    if (totalFilterCount === 0) {
+      toast({ title: 'Voeg eerst filters toe voordat je opslaat', variant: 'destructive' });
+      return;
+    }
+    setSearchName(suggestName());
+    setSaveOpen(true);
+  };
+
+  const handleSave = async () => {
+    const name = searchName.trim();
+    if (!name) return;
+    setSaving(true);
+    await save(name, filters);
+    setSaving(false);
+    setSaveOpen(false);
+    setSearchName('');
+  };
+
+  // Combined 80/20 control: "Toon resultaten" + "Zoekopdracht opslaan"
+  const SearchActions = ({ size = 'lg' }: { size?: 'lg' | 'md' }) => {
+    const h = size === 'lg' ? 'h-12' : 'h-10';
+    return (
+      <div className={cn('flex w-full items-stretch', h)}>
+        <Button
+          type="button"
+          onClick={() => handleSearch()}
+          className={cn(
+            'flex-[4] gap-2 rounded-r-none border-r-0 bg-primary font-semibold text-primary-foreground hover:bg-primary/90 focus-visible:z-10',
+            h,
+          )}
+        >
+          <Search className="h-5 w-5" />
+          <span className="truncate">Toon resultaten</span>
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={openSaveDialog}
+          aria-label="Zoekopdracht opslaan"
+          title="Zoekopdracht opslaan"
+          className={cn(
+            '-ml-px flex-[1] gap-1.5 rounded-l-none border-border/60 px-2 text-foreground/80 hover:bg-muted hover:text-foreground focus-visible:z-10',
+            h,
+          )}
+        >
+          <Bell className="h-4 w-4" />
+          <span className="hidden sm:inline text-xs font-medium">Opslaan</span>
+        </Button>
+      </div>
+    );
+  };
+
+
   if (variant === 'hero') {
     return (
       <div className={cn('w-full', className)}>
@@ -266,16 +358,9 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
                 </Select>
               </div>
 
-              {/* Search Button */}
+              {/* Search + Save combined control (80/20) */}
               <div className="flex items-end">
-                <Button 
-                  type="submit" 
-                  size="lg" 
-                  className="h-12 w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
-                >
-                  <Search className="h-5 w-5" />
-                  <span className="hidden sm:inline">Toon resultaten</span>
-                </Button>
+                <SearchActions size="lg" />
               </div>
             </div>
             
@@ -376,28 +461,62 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
                     <span>{totalFilterCount} filter{totalFilterCount !== 1 ? 's' : ''} actief</span>
                   )}
                 </div>
-                <div className="flex gap-3">
-                  <Button 
+                <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
+                  <Button
                     type="button"
                     variant="outline"
                     onClick={() => setShowAdvancedFilters(false)}
-                    className="flex-1 sm:flex-none"
+                    className="sm:w-32"
                   >
                     Sluiten
                   </Button>
-                  <Button 
-                    type="button"
-                    onClick={() => handleSearch()}
-                    className="flex-1 sm:flex-none bg-accent text-accent-foreground hover:bg-accent/90 gap-2"
-                  >
-                    <Search className="h-4 w-4" />
-                    Toon resultaten
-                  </Button>
+                  <div className="flex-1">
+                    <SearchActions size="md" />
+                  </div>
                 </div>
               </div>
             </div>
           </CollapsibleContent>
         </Collapsible>
+
+        {/* Save search dialog */}
+        <Dialog open={saveOpen} onOpenChange={setSaveOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Zoekopdracht opslaan</DialogTitle>
+              <DialogDescription>
+                Geef je zoekopdracht een naam. Je ontvangt een melding zodra er nieuwe auto's
+                bijkomen die hieraan voldoen. Je vindt opgeslagen zoekopdrachten terug onder
+                "Mijn activiteiten".
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 pt-2">
+              <div>
+                <Label htmlFor="alert-name">Naam</Label>
+                <Input
+                  id="alert-name"
+                  value={searchName}
+                  onChange={(e) => setSearchName(e.target.value)}
+                  placeholder="Bijv. Zwarte BMW automaat"
+                  className="mt-1.5"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleSave();
+                    }
+                  }}
+                />
+              </div>
+              <Button
+                className="w-full"
+                disabled={!searchName.trim() || saving}
+                onClick={handleSave}
+              >
+                {saving ? 'Opslaan…' : 'Opslaan'}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
