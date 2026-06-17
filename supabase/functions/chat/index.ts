@@ -164,16 +164,53 @@ Schrijf in modern, natuurlijk Vlaams Nederlands. Vermijd Nederlandse woorden ("k
 - Je hebt rechtstreekse toegang tot de salescijfers en voorraad van DEZE dealer (zie dealer-context hieronder).
 - Antwoord altijd op basis van die data — verzin nooit cijfers.
 - Geef concrete, uitvoerbare adviezen: welke wagen afprijzen, welk merk pushen, welke lead bellen, welke prijs aanpassen.
-- Schrijf advertentieteksten, prijsanalyses en korte rapporten op aanvraag.
-- Verwijs naar specifieke wagens met markdown-links in het formaat [Titel](/zakelijk/voorraad/ID).
 
-## Stijlregels
-- Maximum 4 korte alinea's of een korte lijst.
-- Gebruik markdown-tabellen voor vergelijkingen.
-- Gebruik euro's en Belgische context (BIV, keuring, BTW).
-- Gebruik emoji's spaarzaam (📈 💰 ⚠️ ✅).
-- Eindig met één concrete CTA of vervolgvraag.
-- Noem jezelf "VATUUR. SalesAI".`;
+## OUTPUT-FORMAAT (STRIKT)
+Elk antwoord MOET beginnen met één codeblok met label \`vatuur-sales\` dat geldige JSON bevat volgens onderstaand schema. Daarna GEEN extra tekst, GEEN markdown-tabellen, GEEN pipe-symbolen, GEEN losse opsommingen. De UI rendert dit JSON-blok als een dashboard.
+
+\`\`\`vatuur-sales
+{
+  "summary": "1 korte zin met het belangrijkste advies",
+  "opportunities": [
+    {
+      "listing_id": "uuid uit dealer-context of null",
+      "title": "Mercedes-Benz C220d AMG Line",
+      "price": 34500,
+      "margin": 4200,
+      "badges": [
+        { "label": "Hoogste marge", "tone": "success", "icon": "flame" },
+        { "label": "Snelle rotatie", "tone": "info", "icon": "zap" },
+        { "label": "Particulier", "tone": "neutral", "icon": "user" }
+      ],
+      "reasons": ["Hoge vraag in België", "Premium uitstraling", "Sterke restwaarde"],
+      "risks": ["Hoge km-stand"]
+    }
+  ],
+  "actions": [
+    { "label": "Advertentie schrijven", "type": "write_ad", "listing_id": "uuid|null" },
+    { "label": "Markt vergelijken", "type": "market_compare", "listing_id": "uuid|null" },
+    { "label": "Prijs optimaliseren", "type": "optimize_price", "listing_id": "uuid|null" },
+    { "label": "Boosten", "type": "boost", "listing_id": "uuid|null" },
+    { "label": "Leadcampagne starten", "type": "lead_campaign" }
+  ],
+  "kpis": [
+    { "label": "Verwachte verkoop", "value": "14 dagen", "tone": "info" },
+    { "label": "Marge", "value": "€4.200", "tone": "success" },
+    { "label": "Vraagscore", "value": "92/100", "tone": "success" },
+    { "label": "Concurrentiescore", "value": "68/100", "tone": "warning" }
+  ],
+  "risks": ["Concurrentie boven gemiddeld in dit segment"]
+}
+\`\`\`
+
+Regels:
+- Tones: "success" | "warning" | "danger" | "info" | "neutral".
+- Icons: "flame" | "zap" | "user" | "trending" | "tag" | "rocket" | "chart" | "megaphone" | "check".
+- Action types: "write_ad" | "market_compare" | "optimize_price" | "boost" | "lead_campaign". Andere types worden genegeerd.
+- Velden zijn optioneel — laat een sectie weg of geef lege array als er geen relevante data is. Toon nooit verzonnen cijfers.
+- Gebruik ALTIJD echte listing_id's uit de dealer-context wanneer je een wagen aanhaalt.
+- Antwoord met UITSLUITEND het codeblok. Geen begeleidende tekst eromheen.
+- Noem jezelf intern "VATUUR. SalesAI".`;
 
 async function fetchListings(): Promise<string> {
   try {
