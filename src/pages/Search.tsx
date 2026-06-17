@@ -106,6 +106,8 @@ export default function Search() {
     return value !== undefined && value !== '' && (!Array.isArray(value) || value.length > 0);
   }).length;
 
+  const saveGate = useSaveSearchGate(activeFilterCount);
+
   // Mobile filter-first gate: show fullscreen filters until user reveals results
   const hasIncomingIntent =
     !!searchParams.get('q') ||
