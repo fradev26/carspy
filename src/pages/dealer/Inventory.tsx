@@ -37,47 +37,18 @@ export default function Inventory() {
   const [statusFilter, setStatusFilter] = useState<Set<string>>(new Set());
   const [preset, setPreset] = useState<Preset>(null);
 
-  // ── Cockpit metrics ─────────────────────────────────────────────────────
-  const cockpit = useMemo(() => {
-    const active = listings.filter((l) => l.status === 'active');
-    const avgDays = active.length
-      ? Math.round(active.reduce((s, l) => s + daysSince(l.createdAt), 0) / active.length)
-      : 0;
-
-    // Snelste segment: per merk, hoogste views/dag (proxy voor demand)
-    const bySeg = new Map<string, { views: number; days: number; count: number }>();
-    for (const l of active) {
-      const key = l.brand || '—';
-      const d = Math.max(1, daysSince(l.createdAt));
-      const cur = bySeg.get(key) ?? { views: 0, days: 0, count: 0 };
-      cur.views += l.views;
-      cur.days  += d;
-      cur.count += 1;
-      bySeg.set(key, cur);
-    }
-    let topSeg = '—';
-    let topRate = 0;
-    for (const [k, v] of bySeg) {
-      if (v.count < 1) continue;
-      const rate = v.views / v.days;
-      if (rate > topRate) { topRate = rate; topSeg = k; }
-    }
-
-    const medianViews = (() => {
-      const arr = active.map((l) => l.views).sort((a, b) => a - b);
-      return arr.length ? arr[Math.floor(arr.length / 2)] : 0;
-    })();
-
-    return { avgDays, topSeg, medianViews };
+  // Median views — alleen nodig voor de "Snel verkopen" preset
+  const medianViews = useMemo(() => {
+    const arr = listings.filter((l) => l.status === 'active').map((l) => l.views).sort((a, b) => a - b);
+    return arr.length ? arr[Math.floor(arr.length / 2)] : 0;
   }, [listings]);
 
   // ── Filter pipeline ─────────────────────────────────────────────────────
   const filtered = useMemo(() => {
     return listings.filter((l) => {
       if (statusFilter.size > 0 && !statusFilter.has(l.status)) return false;
-      if (preset === 'fast' && !(l.views > cockpit.medianViews && daysSince(l.createdAt) < 14)) return false;
+      if (preset === 'fast' && !(l.views > medianViews && daysSince(l.createdAt) < 14)) return false;
       if (preset === 'stale' && daysSince(l.createdAt) < 60) return false;
-      // 'margin' preset hidden until backend exposes market delta
       if (query) {
         const q = query.toLowerCase();
         if (
@@ -88,7 +59,7 @@ export default function Inventory() {
       }
       return true;
     });
-  }, [listings, query, statusFilter, preset, cockpit.medianViews]);
+  }, [listings, query, statusFilter, preset, medianViews]);
 
   // ── Selection & bulk ────────────────────────────────────────────────────
   const toggleSelect = (id: string) => {
