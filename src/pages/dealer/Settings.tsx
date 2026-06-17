@@ -95,7 +95,6 @@ export default function DealerSettings() {
   const { profile } = useProfile();
   const { toast } = useToast();
   const [autoScoutOpen, setAutoScoutOpen] = useState(false);
-  const [boostOpen, setBoostOpen] = useState(false);
 
   const soon = () =>
     toast({ title: 'Binnenkort beschikbaar', description: 'Deze functie is in ontwikkeling.' });
