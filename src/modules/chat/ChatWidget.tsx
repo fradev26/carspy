@@ -27,6 +27,7 @@ export const ChatWidget = forwardRef<HTMLDivElement>(function ChatWidget(_props,
   const location = useLocation();
   const isHomepage = location.pathname === '/';
   const isDealersPage = location.pathname === '/dealers';
+  const isBusinessArea = location.pathname.startsWith('/zakelijk');
   const isMobile = useIsMobile();
 
   const [open, setOpen] = useState(false);
@@ -56,7 +57,8 @@ export const ChatWidget = forwardRef<HTMLDivElement>(function ChatWidget(_props,
 
   // Hide on homepage — the inline AIChatSection takes over
   // Hide on mobile — the bottom nav AI button is the single entrypoint
-  if (isHomepage || isMobile) return null;
+  // Hide in business area — SalesAI is the dedicated chat surface there
+  if (isHomepage || isMobile || isBusinessArea) return null;
 
   const mobileBottomOffset = isDealersPage
     ? 'bottom-[calc(9rem+env(safe-area-inset-bottom))]'
