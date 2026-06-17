@@ -194,10 +194,24 @@ export default function Inventory() {
               listing={l}
               selected={selectedIds.has(l.id)}
               onSelect={() => toggleSelect(l.id)}
+              onBoost={() => setBoostDialog({ ids: [l.id], title: l.title })}
             />
           ))}
         </div>
       )}
+
+      <BoostDialog
+        open={boostDialog !== null}
+        onOpenChange={(v) => !v && setBoostDialog(null)}
+        listingId={boostDialog?.ids.length === 1 ? boostDialog.ids[0] : undefined}
+        listingTitle={boostDialog?.title}
+        lockedListing={boostDialog?.ids.length === 1}
+        bulkListingIds={boostDialog && boostDialog.ids.length > 1 ? boostDialog.ids : undefined}
+        onSuccess={() => {
+          setSelectedIds(new Set());
+          refresh();
+        }}
+      />
     </div>
   );
 }
