@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import {
   ArrowRight, CheckCircle2, Zap, Rocket, Upload, Users, BarChart3,
   Sparkles, Shield, TrendingUp, Eye, Headphones, Building2, Star,
-  Car, Crown, Target, MousePointerClick, Quote,
+  Car, Crown, Target, MousePointerClick, Quote, Minus,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
