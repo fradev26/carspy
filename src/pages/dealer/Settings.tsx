@@ -152,7 +152,7 @@ export default function DealerSettings() {
         <SettingsRow icon={Users} label="Gebruikers beheren" onClick={soon} />
         <SettingsRow icon={Bell} label="Meldingen" to="/account/meldingen" />
         <SettingsRow icon={Shield} label="Beveiliging" to="/account/privacy" />
-        <SettingsRow icon={CreditCard} label="Abonnement" onClick={soon} />
+        <SettingsRow icon={CreditCard} label="Abonnement" to="/zakelijk/abonnement" />
       </Section>
 
       <Section title="Ondersteuning">
