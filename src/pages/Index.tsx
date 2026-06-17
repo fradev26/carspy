@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { ArrowRight, Shield, Zap, Users, Car, CheckCircle2, Star, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HeroSearch, SmartSearchBar } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
 import { useListings } from '@/hooks/useListings';
+import { useProfile } from '@/hooks/useProfile';
 
 import { SEOHead } from '@/components/SEOHead';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -134,9 +135,17 @@ const websiteJsonLd = [
 ];
 
 const Index = () => {
+  const { isDealer, loading: profileLoading } = useProfile();
   const { listings: allListings, loading: listingsLoading } = useListings();
   const latestListings = allListings.slice(0, 6);
   const [faqExpanded, setFaqExpanded] = useState(false);
+
+  // Dealers landen direct in hun voorraad
+  if (!profileLoading && isDealer) {
+    return <Navigate to="/zakelijk/voorraad" replace />;
+  }
+
+
   
 
   return (

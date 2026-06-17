@@ -1,17 +1,39 @@
 import { forwardRef, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Search, Heart, User, Sparkles, Plus } from 'lucide-react';
+import {
+  Home, Search, Heart, Sparkles, Plus,
+  Store, Car, Upload, MoreHorizontal,
+  Settings, BarChart3, MessageSquare, User, Link2, FileSpreadsheet,
+} from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { cn } from '@/lib/utils';
 import { AIFullscreenChat } from '@/modules/chat/AIFullscreenChat';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
-const navItems = [
-  { icon: Home, label: 'Home', path: '/' },
-  { icon: Search, label: 'Zoeken', path: '/zoeken' },
-  { icon: Sparkles, label: 'AI', path: null, isAI: true },
-  { icon: Heart, label: 'Favorieten', path: '/favorieten' },
-  { icon: Plus, label: 'Verkopen', path: '/verkopen', authPath: '/auth', dealerPath: '/zakelijk' },
+const consumerItems = [
+  { icon: Home,     label: 'Home',       path: '/' },
+  { icon: Search,   label: 'Zoeken',     path: '/zoeken' },
+  { icon: Sparkles, label: 'AI',         path: null, isAI: true },
+  { icon: Heart,    label: 'Favorieten', path: '/favorieten' },
+  { icon: Plus,     label: 'Verkopen',   path: '/verkopen', authPath: '/auth' },
+];
+
+const dealerItems = [
+  { icon: Store,            label: 'Markt',     path: '/zoeken' },
+  { icon: Car,              label: 'Voorraad',  path: '/zakelijk/voorraad' },
+  { icon: Upload,           label: 'Verkopen',  path: '/verkopen?dealer=1' },
+  { icon: MoreHorizontal,   label: 'Meer',      path: null, isMore: true },
+];
+
+const moreLinks = [
+  { icon: BarChart3,       label: 'Analytics',     path: '/zakelijk/analytics' },
+  { icon: FileSpreadsheet, label: 'Import (CSV)',  path: '/zakelijk/import' },
+  { icon: Link2,           label: 'Integraties',   path: '/zakelijk/instellingen' },
+  { icon: User,            label: 'Leads',         path: '/zakelijk/leads' },
+  { icon: MessageSquare,   label: 'Berichten',     path: '/berichten' },
+  { icon: Heart,           label: 'Favorieten',    path: '/favorieten' },
+  { icon: Settings,        label: 'Instellingen',  path: '/account/instellingen' },
 ];
 
 export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref) {
@@ -19,15 +41,14 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
   const { user } = useAuth();
   const { isDealer } = useProfile();
   const [aiOpen, setAiOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
 
-  // Close the fullscreen chat as soon as the user clicks a listing CarCard inside it
   useEffect(() => {
     const onNavigate = () => setAiOpen(false);
     window.addEventListener('vatuur:chat-navigate-listing', onNavigate);
     return () => window.removeEventListener('vatuur:chat-navigate-listing', onNavigate);
   }, []);
 
-  // Reopen the chat when the user returns from the listing detail page
   useEffect(() => {
     let flag: string | null = null;
     try { flag = sessionStorage.getItem('vatuur:reopenChatOnBack'); } catch {}
@@ -42,9 +63,10 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
     try { sessionStorage.removeItem('vatuur:reopenChatOnBack'); } catch {}
   };
 
+  const items = user && isDealer ? dealerItems : consumerItems;
+
   return (
     <>
-      {/* Gradient fade above nav for smooth blend into content */}
       <div
         aria-hidden="true"
         className="pointer-events-none fixed bottom-16 left-0 right-0 z-40 h-6 bg-gradient-to-t from-background/70 to-transparent lg:hidden safe-x"
@@ -56,8 +78,7 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
         className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 dark:border-white/[0.06] bg-card shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] lg:hidden safe-bottom safe-x"
       >
         <div className="flex items-center justify-around h-16">
-          {navItems.map((item) => {
-            // AI center button
+          {items.map((item: any) => {
             if (item.isAI) {
               return (
                 <button
@@ -74,11 +95,48 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
               );
             }
 
-            const path = item.authPath && !user
-              ? item.authPath
-              : (item.dealerPath && user && isDealer ? item.dealerPath : item.path!);
-            const isActive = location.pathname === path || location.pathname === item.path || (item.authPath && location.pathname === item.authPath);
-            
+            if (item.isMore) {
+              return (
+                <Sheet key={item.label} open={moreOpen} onOpenChange={setMoreOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      aria-label="Meer opties"
+                      className="flex flex-col items-center justify-center w-full h-full"
+                    >
+                      <div className="flex flex-col items-center justify-center gap-1 px-3 py-1.5 rounded-xl text-muted-foreground active:scale-[0.97]">
+                        <item.icon className="h-5 w-5" />
+                        <span className="text-[10px] font-medium leading-none">{item.label}</span>
+                      </div>
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent side="bottom" className="rounded-t-2xl">
+                    <SheetHeader>
+                      <SheetTitle>Meer</SheetTitle>
+                    </SheetHeader>
+                    <div className="grid grid-cols-3 gap-3 py-4">
+                      {moreLinks.map((l) => (
+                        <Link
+                          key={l.path}
+                          to={l.path}
+                          onClick={() => setMoreOpen(false)}
+                          className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-border/60 bg-card p-4 text-center hover:bg-muted/60 transition-colors"
+                        >
+                          <l.icon className="h-5 w-5 text-primary" />
+                          <span className="text-xs font-medium leading-tight">{l.label}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              );
+            }
+
+            const path = item.authPath && !user ? item.authPath : item.path!;
+            const cleanPath = path.split('?')[0];
+            const isActive =
+              location.pathname === cleanPath ||
+              (cleanPath !== '/' && location.pathname.startsWith(cleanPath));
+
             return (
               <Link
                 key={item.label}
@@ -95,20 +153,14 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
                   )}
                 >
                   <item.icon className="h-5 w-5" />
-                  <span className="text-[10px] font-medium leading-none">
-                    {item.label}
-                  </span>
+                  <span className="text-[10px] font-medium leading-none">{item.label}</span>
                 </div>
               </Link>
             );
-
-
-
           })}
         </div>
       </nav>
 
-      {/* Fullscreen AI Chat Overlay */}
       <AIFullscreenChat open={aiOpen} onClose={handleAiClose} />
     </>
   );

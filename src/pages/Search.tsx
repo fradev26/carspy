@@ -9,6 +9,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger, Drawer
 import { Badge } from '@/components/ui/badge';
 import { FilterPanel, FilterChips, SmartSearchBar } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
+import { MarketCompareBanner } from '@/components/MarketCompareBanner';
 import { useSearchListings } from '@/hooks/useSearchListings';
 import {
   SearchFilters,
@@ -49,6 +50,8 @@ export default function Search() {
     loading: listingsLoading,
   } = useSearchListings({ filters, query: queryParam, sort: sortBy, page, perPage });
   const [mobileResultsRevealed, setMobileResultsRevealed] = useState(false);
+  const compareWithId = searchParams.get('compareWith');
+  const referenceListing = compareWithId ? pageListings.find((l) => l.id === compareWithId) : undefined;
 
   // Update filters when URL params change
   useEffect(() => {
@@ -399,6 +402,19 @@ export default function Search() {
 
             {/* Results */}
             <div className="mt-6">
+              {compareWithId && (
+                <MarketCompareBanner
+                  reference={referenceListing}
+                  listings={pageListings}
+                  onClose={() => {
+                    const next = new URLSearchParams(searchParams);
+                    next.delete('compareWith');
+                    setSearchParams(next);
+                  }}
+                />
+              )}
+
+
 
               {isLoading || isPending || listingsLoading ? (
                 <div className={viewMode === 'grid' 

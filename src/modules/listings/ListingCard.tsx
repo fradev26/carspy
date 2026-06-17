@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Heart, MapPin, Fuel, Gauge, Calendar, Eye, GitCompareArrows, Crown, Settings2, BadgeCheck } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Heart, MapPin, Fuel, Gauge, Calendar, Eye, GitCompareArrows, Crown, Settings2, BadgeCheck, BarChart3 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { Listing } from '@/types/listing';
 import { cn } from '@/lib/utils';
 import { useCompare } from '@/hooks/useCompare';
 import { useFavorites } from '@/hooks/useFavorites';
+import { StatusBadge } from './StatusBadge';
 
 
 interface ListingCardProps {
@@ -19,6 +20,7 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [justLiked, setJustLiked] = useState(false);
+  const navigate = useNavigate();
 
   const { isFavorite: isFavGlobal, toggle: toggleFavGlobal } = useFavorites();
   const favorite = isFavGlobal(listing.id);
@@ -31,6 +33,20 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
     e.preventDefault();
     e.stopPropagation();
     add(listing);
+  };
+
+  const handleMarketCompare = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const params = new URLSearchParams();
+    if (listing.brand) params.set('brand', listing.brand);
+    if (listing.model) params.set('model', listing.model);
+    if (listing.year) {
+      params.set('yearMin', String(listing.year - 1));
+      params.set('yearMax', String(listing.year + 1));
+    }
+    params.set('compareWith', listing.id);
+    navigate(`/zoeken?${params.toString()}`);
   };
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
@@ -108,17 +124,14 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
           </Button>
 
               {/* Status / Premium Badges */}
-              {isPremium && (
-                <Badge className="absolute left-3 bottom-3 bg-premium text-premium-foreground font-semibold gap-1">
-                  <Crown className="h-3 w-3" />
-                  Top
-                </Badge>
-              )}
-              {listing.status === 'reserved' && (
-                <Badge className={cn("absolute bottom-3 bg-warning text-warning-foreground font-medium", isPremium ? "left-20" : "left-3")}>
-                  Gereserveerd
-                </Badge>
-              )}
+              <div className="absolute left-3 bottom-3 flex items-center gap-1.5">
+                {isPremium && (
+                  <Badge className="bg-premium text-premium-foreground font-semibold gap-1">
+                    <Crown className="h-3 w-3" /> Top
+                  </Badge>
+                )}
+                <StatusBadge status={listing.status} />
+              </div>
             </div>
 
             {/* Content */}
@@ -231,17 +244,14 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
 
           
           {/* Status / Premium Badges */}
-          {isPremium && (
-            <Badge className="absolute left-3 bottom-3 bg-premium text-premium-foreground font-semibold gap-1">
-              <Crown className="h-3 w-3" />
-              Top
-            </Badge>
-          )}
-          {listing.status === 'reserved' && (
-            <Badge className={cn("absolute bottom-3 bg-warning text-warning-foreground font-medium", isPremium ? "left-20" : "left-3")}>
-              Gereserveerd
-            </Badge>
-          )}
+          <div className="absolute left-3 bottom-3 flex items-center gap-1.5">
+            {isPremium && (
+              <Badge className="bg-premium text-premium-foreground font-semibold gap-1">
+                <Crown className="h-3 w-3" /> Top
+              </Badge>
+            )}
+            <StatusBadge status={listing.status} />
+          </div>
           
           {/* Hover CTA */}
           <div className="absolute inset-x-3 bottom-3 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
@@ -301,6 +311,17 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
               {listing.seller.type === 'dealer' ? 'Dealer' : 'Particulier'}
             </Badge>
           </div>
+
+          {variant !== 'compact' && (
+            <button
+              type="button"
+              onClick={handleMarketCompare}
+              className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-md border border-border/60 bg-muted/40 px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary hover:border-primary/30"
+            >
+              <BarChart3 className="h-3.5 w-3.5" />
+              Vergelijk markt
+            </button>
+          )}
         </CardContent>
       </Card>
     </Link>
