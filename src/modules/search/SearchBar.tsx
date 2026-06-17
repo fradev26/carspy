@@ -198,6 +198,79 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
   // Get available models based on selected brand
   const availableModels = brand && brand !== 'all' ? CAR_MODELS[brand] || [] : [];
 
+  // Suggested alert name from filters
+  const suggestName = (): string => {
+    const parts: string[] = [];
+    if (filters.brand) parts.push(filters.brand);
+    if (filters.model) parts.push(filters.model);
+    if (filters.fuelTypes?.length) parts.push(filters.fuelTypes[0]);
+    if (filters.maxPrice) parts.push(`onder €${filters.maxPrice.toLocaleString('nl-NL')}`);
+    else if (filters.minPrice) parts.push(`vanaf €${filters.minPrice.toLocaleString('nl-NL')}`);
+    if (!parts.length) return 'Mijn zoekopdracht';
+    return parts.join(' ');
+  };
+
+  const openSaveDialog = () => {
+    if (!user) {
+      toast({
+        title: 'Log in om zoekopdrachten te bewaren',
+        description: 'Maak een gratis account aan of meld je aan.',
+      });
+      navigate('/auth');
+      return;
+    }
+    if (totalFilterCount === 0) {
+      toast({ title: 'Voeg eerst filters toe voordat je opslaat', variant: 'destructive' });
+      return;
+    }
+    setSearchName(suggestName());
+    setSaveOpen(true);
+  };
+
+  const handleSave = async () => {
+    const name = searchName.trim();
+    if (!name) return;
+    setSaving(true);
+    await save(name, filters);
+    setSaving(false);
+    setSaveOpen(false);
+    setSearchName('');
+  };
+
+  // Combined 80/20 control: "Toon resultaten" + "Zoekopdracht opslaan"
+  const SearchActions = ({ size = 'lg' }: { size?: 'lg' | 'md' }) => {
+    const h = size === 'lg' ? 'h-12' : 'h-10';
+    return (
+      <div className={cn('flex w-full items-stretch', h)}>
+        <Button
+          type="submit"
+          className={cn(
+            'flex-[4] gap-2 rounded-r-none border-r-0 bg-primary font-semibold text-primary-foreground hover:bg-primary/90 focus-visible:z-10',
+            h,
+          )}
+        >
+          <Search className="h-5 w-5" />
+          <span className="truncate">Toon resultaten</span>
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={openSaveDialog}
+          aria-label="Zoekopdracht opslaan"
+          title="Zoekopdracht opslaan"
+          className={cn(
+            '-ml-px flex-[1] gap-1.5 rounded-l-none border-border/60 px-2 text-foreground/80 hover:bg-muted hover:text-foreground focus-visible:z-10',
+            h,
+          )}
+        >
+          <Bell className="h-4 w-4" />
+          <span className="hidden sm:inline text-xs font-medium">Opslaan</span>
+        </Button>
+      </div>
+    );
+  };
+
+
   if (variant === 'hero') {
     return (
       <div className={cn('w-full', className)}>
