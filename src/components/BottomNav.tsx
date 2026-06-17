@@ -1,57 +1,20 @@
-import { forwardRef, useEffect, useState } from 'react';
+import { forwardRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import {
-  Home, Search, Heart, Sparkles, Plus,
-  Car,
-} from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { cn } from '@/lib/utils';
-import { AIFullscreenChat } from '@/modules/chat/AIFullscreenChat';
-
-const consumerItems = [
-  { icon: Home,     label: 'Home',       path: '/' },
-  { icon: Search,   label: 'Zoeken',     path: '/zoeken' },
-  { icon: Sparkles, label: 'AI',         path: null, isAI: true },
-  { icon: Heart,    label: 'Favorieten', path: '/favorieten' },
-  { icon: Plus,     label: 'Verkopen',   path: '/verkopen', authPath: '/auth' },
-];
-
-const dealerItems = [
-  { icon: Home,     label: 'Home',       path: '/' },
-  { icon: Search,   label: 'Zoeken',     path: '/zoeken' },
-  { icon: Sparkles, label: 'AI',         path: '/zakelijk', isAI: true },
-  { icon: Car,      label: 'Voorraad',   path: '/zakelijk/voorraad' },
-  { icon: Heart,    label: 'Favorieten', path: '/favorieten' },
-];
+import { consumerNavItems, dealerNavItems, type NavItem } from '@/config/navigation';
+import { isNavItemActive } from '@/lib/navActive';
+import { useAIChat } from '@/context/AIChatContext';
 
 export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref) {
   const location = useLocation();
   const { user } = useAuth();
   const { isDealer } = useProfile();
-  const [aiOpen, setAiOpen] = useState(false);
+  const { openChat } = useAIChat();
 
-  useEffect(() => {
-    const onNavigate = () => setAiOpen(false);
-    window.addEventListener('vatuur:chat-navigate-listing', onNavigate);
-    return () => window.removeEventListener('vatuur:chat-navigate-listing', onNavigate);
-  }, []);
-
-  useEffect(() => {
-    let flag: string | null = null;
-    try { flag = sessionStorage.getItem('vatuur:reopenChatOnBack'); } catch {}
-    if (flag === '1' && !location.pathname.startsWith('/auto/')) {
-      try { sessionStorage.removeItem('vatuur:reopenChatOnBack'); } catch {}
-      setAiOpen(true);
-    }
-  }, [location.pathname]);
-
-  const handleAiClose = () => {
-    setAiOpen(false);
-    try { sessionStorage.removeItem('vatuur:reopenChatOnBack'); } catch {}
-  };
-
-  const items = user && isDealer ? dealerItems : consumerItems;
+  const items: NavItem[] = user && isDealer ? dealerNavItems : consumerNavItems;
 
   return (
     <>
@@ -66,12 +29,9 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
         className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 dark:border-white/[0.06] bg-card shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] lg:hidden safe-bottom safe-x"
       >
         <div className="flex items-center justify-around h-16">
-          {items.map((item: any) => {
+          {items.map((item) => {
             if (item.isAI) {
-              const isActive = item.path && (
-                location.pathname === item.path ||
-                (item.path !== '/' && location.pathname.startsWith(item.path))
-              );
+              const isActive = isNavItemActive(location.pathname, item.path);
               const aiContent = (
                 <div className="flex flex-col items-center justify-center w-full h-full relative">
                   <div className={cn(
@@ -99,7 +59,7 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
               return (
                 <button
                   key={item.label}
-                  onClick={() => setAiOpen(true)}
+                  onClick={openChat}
                   aria-label="Open AI assistent"
                   className="flex flex-col items-center justify-center w-full h-full relative"
                 >
@@ -109,10 +69,8 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
             }
 
             const path = item.authPath && !user ? item.authPath : item.path!;
-            const cleanPath = path.split('?')[0];
-            const isActive =
-              location.pathname === cleanPath ||
-              (cleanPath !== '/' && location.pathname.startsWith(cleanPath));
+            const isActive = isNavItemActive(location.pathname, path);
+            const Icon = item.icon;
 
             return (
               <Link
@@ -129,7 +87,7 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
                       : 'text-muted-foreground active:scale-[0.97]'
                   )}
                 >
-                  <item.icon className="h-5 w-5" />
+                  <Icon className="h-5 w-5" />
                   <span className="text-[10px] font-medium leading-none">{item.label}</span>
                 </div>
               </Link>
@@ -137,8 +95,6 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
           })}
         </div>
       </nav>
-
-      <AIFullscreenChat open={aiOpen} onClose={handleAiClose} />
     </>
   );
 });
