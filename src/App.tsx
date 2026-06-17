@@ -64,6 +64,14 @@ const App = () => (
                 <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                 <Route path="/zakelijk" element={<ProtectedRoute><BusinessDashboard /></ProtectedRoute>} />
                 <Route path="/dealer-analytics" element={<ProtectedRoute><BusinessDashboard /></ProtectedRoute>} />
+                <Route path="/zakelijk" element={<ProtectedRoute><DealerLayout /></ProtectedRoute>}>
+                  <Route path="voorraad" element={<DealerInventoryPage />} />
+                  <Route path="voorraad/:id" element={<DealerListingOperating />} />
+                  <Route path="import" element={<DealerImport />} />
+                  <Route path="leads" element={<MyLeadsPanel />} />
+                  <Route path="analytics" element={<DealerAnalytics />} />
+                  <Route path="instellingen" element={<DealerSettings />} />
+                </Route>
                 <Route path="/favorieten" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
                 <Route path="/vergelijken" element={<Compare />} />
                 <Route path="/privacy" element={<Privacy />} />
