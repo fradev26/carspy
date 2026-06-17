@@ -124,3 +124,58 @@ export function parseFiltersFromURL(searchParams: URLSearchParams): SearchFilter
 
   return filters;
 }
+
+/**
+ * Serialize a SearchFilters object into a plain string map suitable for
+ * URLSearchParams. Mirrors parseFiltersFromURL so values round-trip.
+ */
+export function serializeFiltersToParams(filters: SearchFilters): Record<string, string> {
+  const out: Record<string, string> = {};
+  const setStr = (k: string, v: string | undefined | null) => {
+    if (v != null && v !== '') out[k] = v;
+  };
+  const setNum = (k: string, v: number | undefined | null) => {
+    if (v != null && Number.isFinite(v)) out[k] = String(v);
+  };
+  const setArr = (k: string, v: string[] | undefined) => {
+    if (v && v.length) out[k] = v.join(',');
+  };
+  const setBool = (k: string, v: boolean | undefined) => {
+    if (v) out[k] = 'true';
+  };
+
+  setStr('brand', filters.brand);
+  setStr('model', filters.model);
+  setNum('minPrice', filters.minPrice);
+  setNum('maxPrice', filters.maxPrice);
+  setNum('minYear', filters.minYear);
+  setNum('maxYear', filters.maxYear);
+  setNum('minMileage', filters.minMileage);
+  setNum('maxMileage', filters.maxMileage);
+  setArr('fuelTypes', filters.fuelTypes);
+  setArr('bodyTypes', filters.bodyTypes);
+  setArr('transmissions', filters.transmissions);
+  setArr('driveTypes', filters.driveTypes);
+  setNum('minPower', filters.minPower);
+  setNum('maxPower', filters.maxPower);
+  setArr('paintTypes', filters.paintTypes);
+  setArr('colors', filters.colors);
+  setArr('interiorMaterials', filters.interiorMaterials);
+  setNum('minDoors', filters.minDoors);
+  setNum('minSeats', filters.minSeats);
+  setStr('province', filters.province);
+  setNum('radius', filters.radius);
+  setStr('country', filters.country);
+  setStr('postalCode', filters.postalCode);
+  setStr('onlineSince', filters.onlineSince);
+  setStr('sellerType', filters.sellerType);
+  setNum('maxPreviousOwners', filters.maxPreviousOwners);
+  setStr('minWarranty', filters.minWarranty);
+  setBool('noDamageHistory', filters.noDamageHistory);
+  setBool('vatDeductible', filters.vatDeductible);
+  setBool('hasMaintenanceHistory', filters.hasMaintenanceHistory);
+  setBool('isNonSmoker', filters.isNonSmoker);
+  setArr('features', filters.features);
+
+  return out;
+}
