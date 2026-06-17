@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useDealerAnalytics, type ListingAnalytics } from '@/hooks/useDealerAnalytics';
+import { BoostDialog } from '@/components/boost/BoostDialog';
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(price);
@@ -35,6 +36,7 @@ export default function Inventory() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<Set<string>>(new Set());
+  const [boostDialog, setBoostDialog] = useState<{ ids: string[]; title?: string } | null>(null);
 
   // ── Filter pipeline ─────────────────────────────────────────────────────
   const filtered = useMemo(() => {
@@ -72,6 +74,10 @@ export default function Inventory() {
   const bulkAction = async (action: 'premium' | 'boost' | 'sold' | 'delete') => {
     if (selectedIds.size === 0) return;
     const ids = Array.from(selectedIds);
+    if (action === 'boost') {
+      setBoostDialog({ ids });
+      return;
+    }
     if (action === 'delete') {
       if (!confirm(`${ids.length} advertenties verwijderen?`)) return;
       const { error } = await supabase.from('listings').delete().in('id', ids);
@@ -80,7 +86,6 @@ export default function Inventory() {
     } else {
       const updates =
         action === 'premium' ? { is_premium: true } :
-        action === 'boost'   ? { boost_until: new Date(Date.now() + 7 * 86400000).toISOString() } :
                                { status: 'sold' };
       const { error } = await supabase.from('listings').update(updates as any).in('id', ids);
       if (error) return toast.error('Bulkactie mislukt');
@@ -189,10 +194,24 @@ export default function Inventory() {
               listing={l}
               selected={selectedIds.has(l.id)}
               onSelect={() => toggleSelect(l.id)}
+              onBoost={() => setBoostDialog({ ids: [l.id], title: l.title })}
             />
           ))}
         </div>
       )}
+
+      <BoostDialog
+        open={boostDialog !== null}
+        onOpenChange={(v) => !v && setBoostDialog(null)}
+        listingId={boostDialog?.ids.length === 1 ? boostDialog.ids[0] : undefined}
+        listingTitle={boostDialog?.title}
+        lockedListing={boostDialog?.ids.length === 1}
+        bulkListingIds={boostDialog && boostDialog.ids.length > 1 ? boostDialog.ids : undefined}
+        onSuccess={() => {
+          setSelectedIds(new Set());
+          refresh();
+        }}
+      />
     </div>
   );
 }
@@ -202,10 +221,12 @@ function DealerCard({
   listing: l,
   selected,
   onSelect,
+  onBoost,
 }: {
   listing: ListingAnalytics;
   selected: boolean;
   onSelect: () => void;
+  onBoost: () => void;
 }) {
   const isDraft = l.status === 'draft';
   const ageDays = daysSince(l.createdAt);
@@ -285,6 +306,10 @@ function DealerCard({
                 <><Pencil className="h-4 w-4" /> Bewerken</>
               )}
             </Link>
+          </Button>
+          <Button variant="outline" size="sm" className="h-9 px-2.5 gap-1.5" title="Boosten" onClick={onBoost}>
+            <Rocket className="h-4 w-4" />
+            <span className="hidden sm:inline text-xs">Boost</span>
           </Button>
           <Button asChild variant="ghost" size="sm" className="h-9 px-2.5 gap-1.5 text-muted-foreground hover:text-primary" title="Vergelijk markt">
             <Link

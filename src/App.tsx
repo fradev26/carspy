@@ -21,6 +21,7 @@ const DealerListingOperating = lazy(() => import("./pages/dealer/ListingOperatin
 const DealerImport = lazy(() => import("./pages/dealer/Import"));
 const DealerAnalytics = lazy(() => import("./pages/dealer/Analytics"));
 const DealerSettings = lazy(() => import("./pages/dealer/Settings"));
+const DealerSubscription = lazy(() => import("./pages/dealer/Subscription"));
 const MyLeadsPanel = lazy(() => import("./components/MyLeadsPanel"));
 const Sell = lazy(() => import("./pages/Sell"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -73,6 +74,7 @@ const App = () => (
                   <Route path="leads" element={<div className="container py-6"><MyLeadsPanel /></div>} />
                   <Route path="analytics" element={<DealerAnalytics />} />
                   <Route path="instellingen" element={<DealerSettings />} />
+                  <Route path="abonnement" element={<DealerSubscription />} />
                 </Route>
                 <Route path="/favorieten" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
                 <Route path="/vergelijken" element={<Compare />} />
