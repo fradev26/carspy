@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { Car, Upload, Inbox, BarChart3, Settings, Plus } from 'lucide-react';
+import { Car, Upload, Inbox, BarChart3, Settings } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
