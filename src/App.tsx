@@ -9,6 +9,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "./layouts/AppLayout";
 import { CompareProvider } from "./hooks/useCompare";
 import { FavoritesProvider } from "./hooks/useFavorites";
+import { ThemeProvider } from "./hooks/useTheme";
 import Index from "./pages/Index";
 
 const Search = lazy(() => import("./pages/Search"));
