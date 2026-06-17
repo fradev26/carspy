@@ -2,17 +2,16 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Eye, Heart, MessageCircle, Car, Crown, Rocket, Pencil, CheckCircle2,
-  Search as SearchIcon, ExternalLink, Trash2, Plus, FileSpreadsheet, Link2,
-  BarChart3,
+  Search as SearchIcon, ExternalLink, Trash2, Plus, BarChart3,
+  Clock, TrendingUp, Flame, TrendingDown, Wallet, ChevronDown, PlayCircle,
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { StatusBadge } from '@/modules/listings/StatusBadge';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,35 +20,79 @@ import { useDealerAnalytics, type ListingAnalytics } from '@/hooks/useDealerAnal
 const formatPrice = (price: number) =>
   new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(price);
 
-const STATUS_LABEL: Record<string, string> = {
-  active: 'Actief',
-  reserved: 'Gereserveerd',
-  sold: 'Verkocht',
-  draft: 'Concept',
-  inactive: 'Gepauzeerd',
-  expired: 'Verlopen',
-};
+const daysSince = (iso: string) => Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86400000));
+
+type Preset = 'fast' | 'stale' | 'margin' | null;
+
+const STATUS_OPTIONS = [
+  { v: 'active',   label: 'Beschikbaar' },
+  { v: 'draft',    label: 'Concept' },
+  { v: 'reserved', label: 'Gereserveerd' },
+  { v: 'sold',     label: 'Verkocht' },
+] as const;
 
 export default function Inventory() {
   const { overview, listings, loading, refresh } = useDealerAnalytics();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [editingPrice, setEditingPrice] = useState<{ id: string; price: string } | null>(null);
   const [query, setQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<Set<string>>(new Set());
+  const [preset, setPreset] = useState<Preset>(null);
+  const [kpiOpen, setKpiOpen] = useState(false);
 
+  // ── Cockpit metrics ─────────────────────────────────────────────────────
+  const cockpit = useMemo(() => {
+    const active = listings.filter((l) => l.status === 'active');
+    const avgDays = active.length
+      ? Math.round(active.reduce((s, l) => s + daysSince(l.createdAt), 0) / active.length)
+      : 0;
+
+    // Snelste segment: per merk, hoogste views/dag (proxy voor demand)
+    const bySeg = new Map<string, { views: number; days: number; count: number }>();
+    for (const l of active) {
+      const key = l.brand || '—';
+      const d = Math.max(1, daysSince(l.createdAt));
+      const cur = bySeg.get(key) ?? { views: 0, days: 0, count: 0 };
+      cur.views += l.views;
+      cur.days  += d;
+      cur.count += 1;
+      bySeg.set(key, cur);
+    }
+    let topSeg = '—';
+    let topRate = 0;
+    for (const [k, v] of bySeg) {
+      if (v.count < 1) continue;
+      const rate = v.views / v.days;
+      if (rate > topRate) { topRate = rate; topSeg = k; }
+    }
+
+    const medianViews = (() => {
+      const arr = active.map((l) => l.views).sort((a, b) => a - b);
+      return arr.length ? arr[Math.floor(arr.length / 2)] : 0;
+    })();
+
+    return { avgDays, topSeg, medianViews };
+  }, [listings]);
+
+  // ── Filter pipeline ─────────────────────────────────────────────────────
   const filtered = useMemo(() => {
     return listings.filter((l) => {
-      if (statusFilter !== 'all' && l.status !== statusFilter) return false;
-      if (!query) return true;
-      const q = query.toLowerCase();
-      return (
-        l.title.toLowerCase().includes(q) ||
-        l.brand?.toLowerCase().includes(q) ||
-        l.model?.toLowerCase().includes(q)
-      );
+      if (statusFilter.size > 0 && !statusFilter.has(l.status)) return false;
+      if (preset === 'fast' && !(l.views > cockpit.medianViews && daysSince(l.createdAt) < 14)) return false;
+      if (preset === 'stale' && daysSince(l.createdAt) < 60) return false;
+      // 'margin' preset hidden until backend exposes market delta
+      if (query) {
+        const q = query.toLowerCase();
+        if (
+          !l.title.toLowerCase().includes(q) &&
+          !l.brand?.toLowerCase().includes(q) &&
+          !l.model?.toLowerCase().includes(q)
+        ) return false;
+      }
+      return true;
     });
-  }, [listings, query, statusFilter]);
+  }, [listings, query, statusFilter, preset, cockpit.medianViews]);
 
+  // ── Selection & bulk ────────────────────────────────────────────────────
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -57,11 +100,14 @@ export default function Inventory() {
       return next;
     });
   };
-
-  const toggleSelectAll = () => {
-    if (selectedIds.size === filtered.length) setSelectedIds(new Set());
-    else setSelectedIds(new Set(filtered.map((l) => l.id)));
+  const toggleStatus = (v: string) => {
+    setStatusFilter((prev) => {
+      const next = new Set(prev);
+      next.has(v) ? next.delete(v) : next.add(v);
+      return next;
+    });
   };
+  const togglePreset = (p: Exclude<Preset, null>) => setPreset((cur) => (cur === p ? null : p));
 
   const bulkAction = async (action: 'premium' | 'boost' | 'sold' | 'delete') => {
     if (selectedIds.size === 0) return;
@@ -74,29 +120,13 @@ export default function Inventory() {
     } else {
       const updates =
         action === 'premium' ? { is_premium: true } :
-        action === 'boost' ? { boost_until: new Date(Date.now() + 7 * 86400000).toISOString() } :
-        { status: 'sold' };
+        action === 'boost'   ? { boost_until: new Date(Date.now() + 7 * 86400000).toISOString() } :
+                               { status: 'sold' };
       const { error } = await supabase.from('listings').update(updates as any).in('id', ids);
       if (error) return toast.error('Bulkactie mislukt');
       toast.success(`${ids.length} bijgewerkt`);
     }
     setSelectedIds(new Set());
-    refresh();
-  };
-
-  const updateStatus = async (id: string, status: string) => {
-    await supabase.from('listings').update({ status } as any).eq('id', id);
-    toast.success('Status gewijzigd');
-    refresh();
-  };
-
-  const savePrice = async () => {
-    if (!editingPrice) return;
-    const price = parseInt(editingPrice.price);
-    if (isNaN(price) || price <= 0) return toast.error('Ongeldige prijs');
-    await supabase.from('listings').update({ price } as any).eq('id', editingPrice.id);
-    toast.success('Prijs bijgewerkt');
-    setEditingPrice(null);
     refresh();
   };
 
@@ -108,95 +138,144 @@ export default function Inventory() {
     );
   }
 
+  // ── KPI tiles ───────────────────────────────────────────────────────────
+  const kpis = [
+    { label: 'Actief',           value: String(overview?.activeListings ?? 0), icon: Car },
+    { label: 'Views',            value: (overview?.totalViews ?? 0).toLocaleString('nl-NL'), icon: Eye },
+    { label: 'Favorieten',       value: (overview?.totalFavorites ?? 0).toLocaleString('nl-NL'), icon: Heart },
+    { label: 'Leads',            value: (overview?.totalMessages ?? 0).toLocaleString('nl-NL'), icon: MessageCircle },
+    { label: 'Gem. dagen in voorraad', value: cockpit.avgDays ? `${cockpit.avgDays}d` : '—', icon: Clock },
+    { label: 'Snelst verkopend', value: cockpit.topSeg, icon: TrendingUp },
+    { label: 'Prijspositie',     value: '—', icon: Wallet, hint: 'binnenkort' },
+  ];
+
   return (
     <div className="container py-6 space-y-5">
-      <SEOHead title="Voorraad — VATUUR. Zakelijk" description="Beheer je voertuigvoorraad." noindex />
+      <SEOHead title="Verkopen — VATUUR. Zakelijk" description="Sales cockpit voor je voorraad." noindex />
 
+      {/* Header */}
       <div className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Car className="h-6 w-6 text-primary" /> Voorraad
+            <Car className="h-6 w-6 text-primary" /> Verkopen
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Beheer al je voertuigen op één plek.</p>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Inzicht boven, filteren in het midden, handelen onderaan.
+          </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button asChild size="sm" className="gap-1.5">
-            <Link to="/verkopen?dealer=1"><Plus className="h-4 w-4" /> Voertuig toevoegen</Link>
-          </Button>
-          <Button asChild variant="outline" size="sm" className="gap-1.5">
-            <Link to="/zakelijk/import"><FileSpreadsheet className="h-4 w-4" /> CSV import</Link>
-          </Button>
-          <Button asChild variant="outline" size="sm" className="gap-1.5">
-            <Link to="/zakelijk/instellingen"><Link2 className="h-4 w-4" /> AutoScout koppelen</Link>
-          </Button>
-        </div>
+        <Button asChild size="sm" className="gap-1.5">
+          <Link to="/verkopen?dealer=1"><Plus className="h-4 w-4" /> Voertuig toevoegen</Link>
+        </Button>
       </div>
 
-      {/* KPI Strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {[
-          { label: 'Actieve voertuigen', value: overview?.activeListings ?? 0, icon: Car },
-          { label: 'Views',              value: overview?.totalViews ?? 0,     icon: Eye },
-          { label: 'Favorieten',         value: overview?.totalFavorites ?? 0, icon: Heart },
-          { label: 'Leads',              value: overview?.totalMessages ?? 0,  icon: MessageCircle },
-        ].map((kpi) => (
-          <Card key={kpi.label} className="border-border/60">
-            <CardContent className="p-3 sm:p-4 flex items-center gap-3">
-              <div className="h-9 w-9 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-                <kpi.icon className="h-4 w-4 text-primary" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs text-muted-foreground truncate">{kpi.label}</p>
-                <p className="text-lg font-bold">{kpi.value.toLocaleString('nl-NL')}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* KPI strip (collapsible on mobile) */}
+      <Collapsible open={kpiOpen} onOpenChange={setKpiOpen} className="md:!block">
+        <CollapsibleTrigger asChild>
+          <button
+            type="button"
+            className="md:hidden flex w-full items-center justify-between rounded-lg border border-border/60 bg-card px-3 py-2 text-sm"
+          >
+            <span className="font-medium">Cockpit · {kpis.length} KPI's</span>
+            <ChevronDown className={cn('h-4 w-4 transition-transform', kpiOpen && 'rotate-180')} />
+          </button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="data-[state=closed]:hidden md:!block mt-3 md:mt-0">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2.5">
+            {kpis.map((kpi) => (
+              <Card key={kpi.label} className="border-border/60">
+                <CardContent className="p-3 flex items-center gap-2.5">
+                  <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
+                    <kpi.icon className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] text-muted-foreground truncate leading-tight" title={kpi.hint}>{kpi.label}</p>
+                    <p className="text-base font-bold truncate">{kpi.value}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
 
       {/* Filters */}
-      <div className="space-y-3">
-        <div className="relative max-w-md">
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Zoek op titel, merk, model…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
+      <div className="space-y-2.5">
+        {/* Smart presets */}
+        <div className="flex items-center gap-2 overflow-x-auto -mx-1 px-1 pb-1">
           {[
-            { v: 'all',      label: 'Alle' },
-            { v: 'active',   label: 'Beschikbaar' },
-            { v: 'draft',    label: 'Concept' },
-            { v: 'reserved', label: 'Gereserveerd' },
-            { v: 'sold',     label: 'Verkocht' },
-          ].map((c) => {
-            const count = c.v === 'all' ? listings.length : listings.filter((l) => l.status === c.v).length;
-            const active = statusFilter === c.v;
+            { id: 'fast'   as const, label: 'Snel verkopen',   icon: Flame },
+            { id: 'stale'  as const, label: 'Lang in voorraad', icon: TrendingDown },
+          ].map((p) => {
+            const active = preset === p.id;
             return (
               <button
-                key={c.v}
+                key={p.id}
                 type="button"
-                onClick={() => setStatusFilter(c.v)}
+                onClick={() => togglePreset(p.id)}
                 className={cn(
-                  'rounded-full px-3 py-1.5 text-xs font-medium border transition-colors',
+                  'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium border whitespace-nowrap transition-colors',
                   active
                     ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-                    : 'bg-card text-muted-foreground border-border/60 hover:bg-muted hover:text-foreground'
+                    : 'bg-card text-foreground border-border/60 hover:bg-muted'
                 )}
               >
-                {c.label} <span className={cn('ml-1 opacity-70', active && 'opacity-90')}>({count})</span>
+                <p.icon className="h-3.5 w-3.5" />
+                {p.label}
               </button>
             );
           })}
+        </div>
+
+        {/* Search + status chips */}
+        <div className="flex flex-col sm:flex-row gap-2.5">
+          <div className="relative sm:w-72">
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Zoek op titel, merk, model…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="pl-9 h-9"
+            />
+          </div>
+          <div className="flex items-center gap-1.5 overflow-x-auto -mx-1 px-1">
+            <button
+              type="button"
+              onClick={() => setStatusFilter(new Set())}
+              className={cn(
+                'rounded-full px-3 py-1.5 text-xs font-medium border whitespace-nowrap transition-colors',
+                statusFilter.size === 0
+                  ? 'bg-foreground text-background border-foreground'
+                  : 'bg-card text-muted-foreground border-border/60 hover:bg-muted'
+              )}
+            >
+              Alle ({listings.length})
+            </button>
+            {STATUS_OPTIONS.map((c) => {
+              const count = listings.filter((l) => l.status === c.v).length;
+              const active = statusFilter.has(c.v);
+              return (
+                <button
+                  key={c.v}
+                  type="button"
+                  onClick={() => toggleStatus(c.v)}
+                  className={cn(
+                    'rounded-full px-3 py-1.5 text-xs font-medium border whitespace-nowrap transition-colors',
+                    active
+                      ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                      : 'bg-card text-muted-foreground border-border/60 hover:bg-muted hover:text-foreground'
+                  )}
+                >
+                  {c.label} <span className="opacity-70 ml-0.5">({count})</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
       {/* Bulk bar */}
       {selectedIds.size > 0 && (
-        <div className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 p-3 flex-wrap">
+        <div className="sticky top-14 z-10 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 backdrop-blur p-2.5 flex-wrap">
           <span className="text-sm font-medium">{selectedIds.size} geselecteerd</span>
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => bulkAction('premium')}>
             <Crown className="h-3.5 w-3.5" /> Premium
@@ -213,142 +292,163 @@ export default function Inventory() {
         </div>
       )}
 
-      <Card className="border-border/60">
-        <CardContent className="p-0">
-          {filtered.length === 0 ? (
-            <div className="py-16 text-center text-muted-foreground">
-              {listings.length === 0 ? (
-                <>
-                  <p className="mb-1 font-medium">Nog geen voertuigen in je voorraad</p>
-                  <p className="text-sm">Voeg je eerste auto toe, importeer een CSV of koppel AutoScout.</p>
-                  <div className="mt-4 flex justify-center gap-2 flex-wrap">
-                    <Button asChild><Link to="/verkopen?dealer=1">Voertuig toevoegen</Link></Button>
-                    <Button asChild variant="outline"><Link to="/zakelijk/import">Import CSV</Link></Button>
-                    <Button asChild variant="outline"><Link to="/zakelijk/instellingen">Koppel AutoScout</Link></Button>
-                  </div>
-                </>
-              ) : (
-                <p>Geen voertuigen met deze filters.</p>
-              )}
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-10">
-                      <Checkbox
-                        checked={selectedIds.size === filtered.length && filtered.length > 0}
-                        onCheckedChange={toggleSelectAll}
-                      />
-                    </TableHead>
-                    <TableHead className="min-w-[200px]">Voertuig</TableHead>
-                    <TableHead className="text-right">Prijs</TableHead>
-                    <TableHead className="text-center">Status</TableHead>
-                    <TableHead className="text-right"><Eye className="h-4 w-4 inline" /></TableHead>
-                    <TableHead className="text-right"><Heart className="h-4 w-4 inline" /></TableHead>
-                    <TableHead className="text-right"><MessageCircle className="h-4 w-4 inline" /></TableHead>
-                    <TableHead className="text-right">Conv.</TableHead>
-                    <TableHead className="text-center">Acties</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filtered.map((l) => {
-                    const conv = l.views > 0 ? ((l.favorites + l.conversations) / l.views * 100) : 0;
-                    return (
-                      <TableRow key={l.id} className={l.isPremium ? 'bg-primary/5' : ''}>
-                        <TableCell>
-                          <Checkbox checked={selectedIds.has(l.id)} onCheckedChange={() => toggleSelect(l.id)} />
-                        </TableCell>
-                        <TableCell>
-                          <Link to={`/zakelijk/voorraad/${l.id}`} className="flex items-center gap-3 hover:text-primary">
-                            <img src={l.image || '/placeholder.svg'} alt={l.title} className="h-10 w-14 rounded-md object-cover flex-shrink-0" />
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-medium text-sm truncate max-w-[180px]">{l.title}</span>
-                                {l.isPremium && <Crown className="h-3.5 w-3.5 text-primary flex-shrink-0" />}
-                              </div>
-                              <p className="text-xs text-muted-foreground">{l.year} · {l.mileage?.toLocaleString('nl-NL')} km</p>
-                            </div>
-                          </Link>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {editingPrice?.id === l.id ? (
-                            <div className="flex items-center gap-1 justify-end">
-                              <Input
-                                type="number"
-                                className="w-24 h-7 text-xs"
-                                value={editingPrice.price}
-                                onChange={(e) => setEditingPrice({ ...editingPrice, price: e.target.value })}
-                                onKeyDown={(e) => e.key === 'Enter' && savePrice()}
-                              />
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={savePrice}>
-                                <CheckCircle2 className="h-3.5 w-3.5" />
-                              </Button>
-                            </div>
-                          ) : (
-                            <button
-                              className="font-semibold text-sm hover:text-primary inline-flex items-center gap-1"
-                              onClick={() => setEditingPrice({ id: l.id, price: String(l.price) })}
-                            >
-                              {formatPrice(l.price)}
-                              <Pencil className="h-3 w-3 text-muted-foreground" />
-                            </button>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Select value={l.status} onValueChange={(v) => updateStatus(l.id, v)}>
-                            <SelectTrigger className="h-7 w-32 text-xs">
-                              <SelectValue>{STATUS_LABEL[l.status] ?? l.status}</SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="active">Actief</SelectItem>
-                              <SelectItem value="reserved">Gereserveerd</SelectItem>
-                              <SelectItem value="sold">Verkocht</SelectItem>
-                              <SelectItem value="draft">Concept</SelectItem>
-                              <SelectItem value="inactive">Gepauzeerd</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell className="text-right text-sm">{l.views}</TableCell>
-                        <TableCell className="text-right text-sm">{l.favorites}</TableCell>
-                        <TableCell className="text-right text-sm">{l.messages}</TableCell>
-                        <TableCell className="text-right">
-                          <span className={`text-sm font-medium ${conv > 5 ? 'text-chart-3' : conv > 2 ? 'text-chart-2' : 'text-muted-foreground'}`}>
-                            {conv.toFixed(1)}%
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <div className="flex items-center justify-center gap-1.5">
-                            <Button asChild variant="outline" size="sm" className="h-7 text-xs gap-1">
-                              <Link to={`/zakelijk/voorraad/${l.id}`}>
-                                <Pencil className="h-3 w-3" /> Beheren
-                              </Link>
-                            </Button>
-                            <Button asChild variant="ghost" size="icon" className="h-7 w-7" title="Vergelijk markt">
-                              <Link
-                                to={`/zoeken?brand=${encodeURIComponent(l.brand ?? '')}&model=${encodeURIComponent(l.model ?? '')}&yearMin=${(l.year ?? 0) - 1}&yearMax=${(l.year ?? 0) + 1}&compareWith=${l.id}`}
-                                aria-label="Vergelijk markt"
-                              >
-                                <BarChart3 className="h-3.5 w-3.5" />
-                              </Link>
-                            </Button>
-                            <Button asChild variant="ghost" size="icon" className="h-7 w-7">
-                              <Link to={`/auto/${l.id}`} target="_blank" aria-label="Publieke pagina">
-                                <ExternalLink className="h-3.5 w-3.5" />
-                              </Link>
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Grid */}
+      {filtered.length === 0 ? (
+        listings.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <Card className="border-border/60">
+            <CardContent className="py-12 text-center text-muted-foreground">
+              Geen voertuigen met deze filters.
+            </CardContent>
+          </Card>
+        )
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          {filtered.map((l) => (
+            <DealerCard
+              key={l.id}
+              listing={l}
+              selected={selectedIds.has(l.id)}
+              onSelect={() => toggleSelect(l.id)}
+            />
+          ))}
+        </div>
+      )}
     </div>
+  );
+}
+
+// ─── Decision-unit card ────────────────────────────────────────────────────
+function DealerCard({
+  listing: l,
+  selected,
+  onSelect,
+}: {
+  listing: ListingAnalytics;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  const isDraft = l.status === 'draft';
+  const ageDays = daysSince(l.createdAt);
+
+  return (
+    <Card
+      className={cn(
+        'group overflow-hidden transition-all hover:shadow-card-hover hover:-translate-y-0.5 border-border/60',
+        selected && 'ring-2 ring-primary',
+        l.isPremium && 'border-premium/50 ring-1 ring-premium/20',
+      )}
+    >
+      <div className="relative">
+        <Link to={`/zakelijk/voorraad/${l.id}`} className="block aspect-[16/10] bg-muted overflow-hidden">
+          <img
+            src={l.image || '/placeholder.svg'}
+            alt={l.title}
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform group-hover:scale-105"
+          />
+        </Link>
+
+        {/* Checkbox */}
+        <label
+          className="absolute top-2 left-2 h-7 w-7 rounded-md bg-card/95 backdrop-blur flex items-center justify-center shadow-sm cursor-pointer"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Checkbox checked={selected} onCheckedChange={onSelect} />
+        </label>
+
+        {/* Status badge top-right */}
+        <div className="absolute top-2 right-2 flex items-center gap-1">
+          {l.isPremium && (
+            <span className="inline-flex items-center gap-1 rounded-sm bg-premium text-premium-foreground text-[10px] font-semibold px-2 py-0.5 shadow-sm">
+              <Crown className="h-3 w-3" /> Top
+            </span>
+          )}
+          <StatusBadge status={l.status} />
+        </div>
+      </div>
+
+      <CardContent className="p-3.5 space-y-3">
+        {/* Title + meta */}
+        <div className="min-w-0">
+          <Link
+            to={`/zakelijk/voorraad/${l.id}`}
+            className="block font-semibold text-sm leading-tight truncate hover:text-primary"
+          >
+            {l.title}
+          </Link>
+          <p className="text-xs text-muted-foreground mt-0.5 truncate">
+            {l.year} · {l.mileage?.toLocaleString('nl-NL')} km · <span className="capitalize">{l.fuelType}</span>
+          </p>
+        </div>
+
+        {/* Price row */}
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="text-lg font-bold text-foreground">{formatPrice(l.price)}</span>
+          {/* margin pill — graceful: only render when backend later supplies marketDelta */}
+        </div>
+
+        {/* Mini-stats row */}
+        <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1"><Eye className="h-3 w-3" />{l.views}</span>
+          <span className="inline-flex items-center gap-1"><Heart className="h-3 w-3" />{l.favorites}</span>
+          <span className="inline-flex items-center gap-1"><MessageCircle className="h-3 w-3" />{l.messages}</span>
+          <span className="inline-flex items-center gap-1 ml-auto"><Clock className="h-3 w-3" />{ageDays}d</span>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2 pt-1">
+          <Button asChild size="sm" className="flex-1 h-9 gap-1.5">
+            <Link to={`/zakelijk/voorraad/${l.id}`}>
+              {isDraft ? (
+                <><PlayCircle className="h-4 w-4" /> Verkoop starten</>
+              ) : (
+                <><Pencil className="h-4 w-4" /> Bewerken</>
+              )}
+            </Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm" className="h-9 px-2.5 gap-1.5 text-muted-foreground hover:text-primary" title="Vergelijk markt">
+            <Link
+              to={`/zoeken?brand=${encodeURIComponent(l.brand ?? '')}&model=${encodeURIComponent(l.model ?? '')}&yearMin=${(l.year ?? 0) - 1}&yearMax=${(l.year ?? 0) + 1}&compareWith=${l.id}`}
+              aria-label="Vergelijk markt"
+            >
+              <BarChart3 className="h-4 w-4" />
+              <span className="hidden sm:inline text-xs">Markt</span>
+            </Link>
+          </Button>
+          <Button asChild variant="ghost" size="icon" className="h-9 w-9" title="Publieke pagina">
+            <Link to={`/auto/${l.id}`} target="_blank" aria-label="Publieke pagina">
+              <ExternalLink className="h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Empty state ───────────────────────────────────────────────────────────
+function EmptyState() {
+  return (
+    <Card className="border-dashed border-border/60">
+      <CardContent className="py-14 text-center space-y-4">
+        <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+          <Car className="h-6 w-6 text-primary" />
+        </div>
+        <div className="space-y-1">
+          <h3 className="text-lg font-semibold">Je eerste auto staat één klik weg</h3>
+          <p className="text-sm text-muted-foreground">Binnen 2 minuten live voorraad.</p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
+          <Button asChild size="lg" className="gap-1.5">
+            <Link to="/verkopen?dealer=1"><Plus className="h-4 w-4" /> Eerste voertuig toevoegen</Link>
+          </Button>
+          <Button asChild variant="link" className="text-muted-foreground hover:text-primary">
+            <Link to="/zakelijk/import">Of importeer via CSV</Link>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
