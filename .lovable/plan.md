@@ -1,61 +1,52 @@
-# Plan: wrijving op /zoeken oplossen
+# Plan: drie regressies op /zoeken oplossen
 
-Testbevindingen (uit browser-acties + code-review). Twee blockers, drie polish-fixes, plus zichtbare console-warning.
+## Root cause van "Filters doen niets"
 
-## Kritieke wrijving
+Reproduceerbaar: kies "BMW" in het Merk-dropdown → URL blijft `/zoeken`, niets gebeurt. Checkboxes (Brandstof) wérken wel.
 
-### 1. Filterstatus syncroniseert niet met de URL (blocker)
-**Wat ik zag:** Diesel aanvinken laat 3 resultaten zien, maar de URL blijft `/zoeken` — geen `?fuelTypes=diesel`. Gevolgen: refresh wist filters, deelbare/bookmarkbare resultaten kapot, terug/vooruit knop onbetrouwbaar, en de `Bekijk resultaten`-deeplink vanuit Zoekalerts werkt enkel bij eerste mount.
+In `src/modules/search/FilterPanel.tsx` doet de Merk-Select **twee** sequentiële `onFiltersChange`-aanroepen in één handler:
 
-**Oorzaak:** `handleFiltersChange` in `src/pages/Search.tsx` zet alleen lokale state (`setFilters`). De `parseFiltersFromURL`-effect schrijft nooit terug.
+```tsx
+onValueChange={(v) => {
+  updateFilter('brand', v === 'all' ? undefined : v);        // call 1
+  if (v === 'all' || v !== filters.brand) updateFilter('model', undefined); // call 2
+}}
+```
 
-**Fix:** maak `filters` URL-driven.
-- Vervang lokale `setFilters` in `handleFiltersChange` (en in `handleRemoveFilter`) door één helper `writeFiltersToURL(newFilters)` die met `setSearchParams` schrijft. Bewaar bestaande `q`, `aiIntent`, `aiQuery`, `compareWith` params.
-- De bestaande `useEffect([searchParams])` updatet `filters` automatisch via `parseFiltersFromURL`, dus state blijft consistent.
-- Idem voor `sortBy` → schrijf naar `?sort=`.
-- Bestaande utility: `src/lib/searchFilters.ts` heeft al de parser; voeg een `serializeFiltersToParams(filters)` helper toe (volledige whitelist conform `SearchFilters`) en gebruik die in `writeFiltersToURL` en in `SearchBar.handleSearch` om duplicatie te schrappen.
+Beide calls bouwen `{...filters, ...}` op met dezelfde **stale** `filters`-closure. Call 2 wint en overschrijft de URL zónder de net-gezette `brand`. Sinds filters nu URL-driven zijn is `setSearchParams` async → de tweede call ziet nooit het brand-veld → URL = leeg.
 
-### 2. Geen manier om een zoekopdracht op te slaan vanaf /zoeken (blocker)
-**Wat ik zag:** Het 80/20 "Toon resultaten + Opslaan"-combo zit in `SearchBar.tsx` (hero-variant — homepage), niet in `FilterPanel`. Tijdens vorige cleanup hebben we de "Bewaar zoekopdracht"-knop uit de Search-header weggehaald. Resultaat: op `/zoeken` kan je nu nergens een Zoekalert maken.
+## Fix 1 — Filters werken weer (blocker)
+**`src/modules/search/FilterPanel.tsx`**, brand-Select handler combineren tot één update:
+```tsx
+onValueChange={(v) => {
+  const nextBrand = v === 'all' ? undefined : v;
+  const resetModel = nextBrand !== filters.brand;
+  onFiltersChange({
+    ...filters,
+    brand: nextBrand,
+    model: resetModel ? undefined : filters.model,
+  });
+}}
+```
+Snelle grep doen naar andere Selects/handlers in FilterPanel/FilterPresets met meerdere `updateFilter`-calls in één event en hetzelfde patroon toepassen.
 
-**Fix:** zet één compact "Opslaan als zoekalert"-knop terug, maar dichter bij de filter-acties:
-- In `Search.tsx` header (regel ±232-243, naast de telling/sort/grid-toggle) een `Button variant="outline"` met `Bell`-icon + label "Opslaan". Disabled als `activeFilterCount === 0`, en als niet-ingelogd → toast + redirect `/auth`.
-- Dialog hergebruikt zelfde patroon als in `SearchBar.tsx` (naam-veld met suggestie uit `filters`, `useSavedSearches().save`).
-- Extract de dialog naar `src/modules/search/SaveSearchDialog.tsx` zodat SearchBar (hero) én Search-header dezelfde component delen — geen duplicatie.
+## Fix 2 — "Opslaan" altijd bereikbaar bij actieve filters
+- **Mobile filter-gate** (`src/pages/Search.tsx`, blok `!showMobileResults && (...)`): voeg in de sticky bottom-bar een tweede knop `Opslaan als zoekalert` toe, naast/onder "Toon resultaten", zichtbaar zodra `activeFilterCount > 0`. Hergebruikt `saveGate.openSave`.
+- **Mobile filter-Drawer** (`<DrawerFooter>` in zelfde bestand, rond regel 320): voeg een outline-knop `Opslaan` toe links van de "Toon X resultaten"-knop, ook gated op `activeFilterCount > 0`.
+- Header-knop blijft staan voor desktop/post-gate.
 
-## Polish-wrijving
+## Fix 3 — "Snelle selectie" weer verbergen op mobiel
+Terug naar het oorspronkelijke gedrag: `showPresets={false}` op de twee mobile-instances in `src/pages/Search.tsx`:
+- regel ~165 (mobile gate)
+- regel ~319 (drawer)
 
-### 3. Card-hover-overlay blijft hangen na klik
-**Wat ik zag:** "Bekijk deze deal"-overlay blijft op de eerste kaart staan nadat de pointer ergens anders heen ging (group-hover state stuck door focus-ring na klik).
+Desktop-sidebar blijft `showPresets` standaard `true`.
 
-**Fix in `src/modules/listings/ListingCard.tsx`:** beperk de overlay tot `group-hover:` zonder `group-focus-within:` (of voeg `pointer-events-none` toe op de overlay) en zorg dat hij niet triggert op `:focus-visible` van interne knoppen. Verifieer met re-screenshot.
-
-### 4. AI-zoekbalk dupliceert filterspoor op /zoeken
-**Wat ik zag:** Bovenaan de results-kolom prijkt nog de volledige `SmartSearchBar` ("Beschrijf je droomwagen") terwijl de gebruiker al midden in het filteren zit. Neemt verticale ruimte weg van resultaten.
-
-**Fix:** comprimeer `SmartSearchBar` op `/zoeken` tot een collapsed chip (1 regel, "Vraag het de AI…") die uitklapt bij klik. `variant="chip"` toevoegen aan `SmartSearchBar`, of inline in `Search.tsx` de huidige `variant="compact"`-render vervangen door een collapsible.
-
-### 5. "Snelle selectie"-presets zonder labels
-**Wat ik zag:** 5 icon-only chips in de sidebar (zie eerste screenshot) zijn niet te interpreteren zonder hover. Op mobiel zijn ze überhaupt verborgen omdat `showPresets={false}`.
-
-**Fix in `src/modules/search/FilterPresets.tsx`:** label naast icoon tonen vanaf `sm:` breedte, en `title`/`aria-label` op alle chips. Mobiel: presets aanzetten in de drawer/gate (`showPresets={true}` op mobiel) — ze zijn juist daar nuttig.
-
-### 6. Console-warning `fetchPriority` (cosmetic)
-**Wat ik zag:** `Warning: React does not recognize the 'fetchPriority' prop` afkomstig van `Index.tsx` (`<img fetchPriority="high">`).
-
-**Fix:** in `src/pages/Index.tsx` vervang `fetchPriority="high"` door `fetchpriority="high"` (lowercase, native HTML attribuut) of laat het weg en gebruik `<link rel="preload">` in `index.html`.
-
-## Technische details
-
-- **Geen DB-migratie nodig.**
-- Geen edge-function wijzigingen.
-- Nieuwe util: `serializeFiltersToParams` in `src/lib/searchFilters.ts` (whitelist parallel aan `parseFiltersFromURL`).
-- Nieuwe component: `src/modules/search/SaveSearchDialog.tsx` (props: `open`, `onOpenChange`, `filters`, `activeFilterCount`).
-- Test-pad: na fix #1 moet `/zoeken?fuelTypes=diesel` direct 3 resultaten + aangevinkte Diesel-checkbox tonen na refresh.
+## Technische notes
+- Geen DB/types-wijziging.
+- Verificatie: na fix kies "BMW" → URL = `?brand=BMW`, telling daalt; check Carrosserie/Body-Select met dezelfde aanpak indien aanwezig.
+- Mobile-presets: bevestig dat de chip-rij in 768px viewport niet meer verschijnt.
 
 ## Buiten scope
-
-- Vrije invoer/slider voor prijs/jaar/km (apart project).
-- Herontwerp `FilterPanel` secties.
-- Mobile gate skip-link (los voorstel later).
-- Confirm op "Reset alles" (los voorstel later).
+- Bredere refactor naar functional-update pattern in `writeFiltersToURL` (nice-to-have als andere componenten ooit batch-updaten).
+- Wijzigingen aan DealerInventory (gebruikt al `showPresets={false}`).
