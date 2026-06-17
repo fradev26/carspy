@@ -43,7 +43,7 @@ const DEFAULT_NOTIF: NotifPrefs = { new_messages: true, search_alerts: true, lis
 const DEFAULT_PRIV: PrivacyPrefs = { profile_public: true, show_contact: false, marketing_consent: false };
 
 export default function AccountSettings({ defaultTab = 'profiel' }: Props) {
-  const { user } = useAuth();
+  const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const [profile, setProfile] = useState({ full_name: '', phone: '', location: '', avatar_url: '' as string | null, email: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
