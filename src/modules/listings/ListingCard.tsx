@@ -244,17 +244,14 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
 
           
           {/* Status / Premium Badges */}
-          {isPremium && (
-            <Badge className="absolute left-3 bottom-3 bg-premium text-premium-foreground font-semibold gap-1">
-              <Crown className="h-3 w-3" />
-              Top
-            </Badge>
-          )}
-          {listing.status === 'reserved' && (
-            <Badge className={cn("absolute bottom-3 bg-warning text-warning-foreground font-medium", isPremium ? "left-20" : "left-3")}>
-              Gereserveerd
-            </Badge>
-          )}
+          <div className="absolute left-3 bottom-3 flex items-center gap-1.5">
+            {isPremium && (
+              <Badge className="bg-premium text-premium-foreground font-semibold gap-1">
+                <Crown className="h-3 w-3" /> Top
+              </Badge>
+            )}
+            <StatusBadge status={listing.status} />
+          </div>
           
           {/* Hover CTA */}
           <div className="absolute inset-x-3 bottom-3 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
