@@ -221,10 +221,12 @@ function DealerCard({
   listing: l,
   selected,
   onSelect,
+  onBoost,
 }: {
   listing: ListingAnalytics;
   selected: boolean;
   onSelect: () => void;
+  onBoost: () => void;
 }) {
   const isDraft = l.status === 'draft';
   const ageDays = daysSince(l.createdAt);
