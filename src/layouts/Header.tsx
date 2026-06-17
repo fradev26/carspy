@@ -13,6 +13,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/Logo';
+import { DesktopNav } from '@/components/DesktopNav';
 
 function UnreadBadge({ count, className }: { count: number; className?: string }) {
   if (!count) return null;
@@ -223,33 +224,46 @@ export function Header() {
       <div className="container hidden h-16 items-center justify-between gap-6 lg:flex">
         <Logo size="xl" asLink />
 
+        {/* Primary nav — mirrors mobile BottomNav */}
+        <DesktopNav isTransparent={isTransparent} />
 
-
-        {/* Desktop Navigation */}
-        <nav className="flex items-center gap-1">
-          <Button variant="ghost" asChild className={cn("font-bold", isTransparent ? "text-white hover:bg-white/10 hover:text-white" : "text-foreground hover:bg-muted hover:text-foreground")}>
-            <Link to="/zoeken">Zoeken</Link>
-          </Button>
-          
+        {/* Secondary actions */}
+        <div className="flex items-center gap-1">
           {user ? (
             <>
-              <Button variant="ghost" asChild className={cn("gap-2 font-bold", isTransparent ? "text-white hover:bg-white/10 hover:text-white" : "text-foreground hover:bg-muted hover:text-foreground")}>
-                <Link to="/favorieten">
-                  <Heart className="h-4 w-4" />
-                  Favorieten
-                </Link>
-              </Button>
-              <Button variant="ghost" asChild className={cn("gap-2 font-bold relative", isTransparent ? "text-white hover:bg-white/10 hover:text-white" : "text-foreground hover:bg-muted hover:text-foreground")}>
+              <Button
+                variant="ghost"
+                size="icon"
+                asChild
+                aria-label={unreadCount ? `Berichten (${unreadCount} ongelezen)` : 'Berichten'}
+                className={cn(
+                  'relative h-9 w-9',
+                  isTransparent
+                    ? 'text-white hover:bg-white/10 hover:text-white'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                )}
+              >
                 <Link to="/berichten">
                   <MessageCircle className="h-4 w-4" />
-                  Berichten
-                  <UnreadBadge count={unreadCount} />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ring-2 ring-background">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
                 </Link>
               </Button>
-              
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className={cn("gap-2 font-bold", isTransparent ? "text-white hover:bg-white/10 hover:text-white" : "text-foreground hover:bg-muted hover:text-foreground")}>
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      'gap-2 font-semibold',
+                      isTransparent
+                        ? 'text-white hover:bg-white/10 hover:text-white'
+                        : 'text-foreground hover:bg-muted hover:text-foreground',
+                    )}
+                  >
                     <User className="h-4 w-4" />
                     Account
                   </Button>
@@ -273,28 +287,22 @@ export function Header() {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              
-              <Button asChild className="ml-2 gap-2 font-bold shadow-sm bg-primary text-primary-foreground hover:bg-primary/90">
-                <Link to={isDealer ? '/zakelijk' : '/verkopen'}>
-                  <Plus className="h-4 w-4" />
-                  Auto verkopen
-                </Link>
-              </Button>
             </>
           ) : (
-            <>
-              <Button variant="ghost" asChild className={cn("font-bold", isTransparent ? "text-white hover:bg-white/10 hover:text-white" : "text-foreground hover:bg-muted hover:text-foreground")}>
-                <Link to="/auth">Inloggen</Link>
-              </Button>
-              <Button asChild className="ml-2 gap-2 font-bold shadow-sm bg-primary text-primary-foreground hover:bg-primary/90">
-                <Link to="/auth">
-                  <Plus className="h-4 w-4" />
-                  Auto verkopen
-                </Link>
-              </Button>
-            </>
+            <Button
+              variant="ghost"
+              asChild
+              className={cn(
+                'font-semibold',
+                isTransparent
+                  ? 'text-white hover:bg-white/10 hover:text-white'
+                  : 'text-foreground hover:bg-muted hover:text-foreground',
+              )}
+            >
+              <Link to="/auth">Inloggen</Link>
+            </Button>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   );
