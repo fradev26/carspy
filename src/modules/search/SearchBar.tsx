@@ -357,16 +357,9 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
                 </Select>
               </div>
 
-              {/* Search Button */}
+              {/* Search + Save combined control (80/20) */}
               <div className="flex items-end">
-                <Button 
-                  type="submit" 
-                  size="lg" 
-                  className="h-12 w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
-                >
-                  <Search className="h-5 w-5" />
-                  <span className="hidden sm:inline">Toon resultaten</span>
-                </Button>
+                <SearchActions size="lg" />
               </div>
             </div>
             
@@ -467,23 +460,18 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
                     <span>{totalFilterCount} filter{totalFilterCount !== 1 ? 's' : ''} actief</span>
                   )}
                 </div>
-                <div className="flex gap-3">
-                  <Button 
+                <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
+                  <Button
                     type="button"
                     variant="outline"
                     onClick={() => setShowAdvancedFilters(false)}
-                    className="flex-1 sm:flex-none"
+                    className="sm:w-32"
                   >
                     Sluiten
                   </Button>
-                  <Button 
-                    type="button"
-                    onClick={() => handleSearch()}
-                    className="flex-1 sm:flex-none bg-accent text-accent-foreground hover:bg-accent/90 gap-2"
-                  >
-                    <Search className="h-4 w-4" />
-                    Toon resultaten
-                  </Button>
+                  <div className="flex-1">
+                    <SearchActions size="md" />
+                  </div>
                 </div>
               </div>
             </div>
