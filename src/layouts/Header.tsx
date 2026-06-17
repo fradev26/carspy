@@ -13,6 +13,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/Logo';
+import { DesktopNav } from '@/components/DesktopNav';
 
 function UnreadBadge({ count, className }: { count: number; className?: string }) {
   if (!count) return null;
