@@ -325,6 +325,14 @@ export default function Inventory() {
                                 <Pencil className="h-3 w-3" /> Beheren
                               </Link>
                             </Button>
+                            <Button asChild variant="ghost" size="icon" className="h-7 w-7" title="Vergelijk markt">
+                              <Link
+                                to={`/zoeken?brand=${encodeURIComponent(l.brand ?? '')}&model=${encodeURIComponent(l.model ?? '')}&yearMin=${(l.year ?? 0) - 1}&yearMax=${(l.year ?? 0) + 1}&compareWith=${l.id}`}
+                                aria-label="Vergelijk markt"
+                              >
+                                <BarChart3 className="h-3.5 w-3.5" />
+                              </Link>
+                            </Button>
                             <Button asChild variant="ghost" size="icon" className="h-7 w-7">
                               <Link to={`/auto/${l.id}`} target="_blank" aria-label="Publieke pagina">
                                 <ExternalLink className="h-3.5 w-3.5" />
