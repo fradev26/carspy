@@ -107,20 +107,9 @@ export default function Inventory() {
     );
   }
 
-  // ── KPI tiles ───────────────────────────────────────────────────────────
-  const kpis = [
-    { label: 'Actief',           value: String(overview?.activeListings ?? 0), icon: Car },
-    { label: 'Views',            value: (overview?.totalViews ?? 0).toLocaleString('nl-NL'), icon: Eye },
-    { label: 'Favorieten',       value: (overview?.totalFavorites ?? 0).toLocaleString('nl-NL'), icon: Heart },
-    { label: 'Leads',            value: (overview?.totalMessages ?? 0).toLocaleString('nl-NL'), icon: MessageCircle },
-    { label: 'Gem. dagen in voorraad', value: cockpit.avgDays ? `${cockpit.avgDays}d` : '—', icon: Clock },
-    { label: 'Snelst verkopend', value: cockpit.topSeg, icon: TrendingUp },
-    { label: 'Prijspositie',     value: '—', icon: Wallet, hint: 'binnenkort' },
-  ];
-
   return (
     <div className="container py-6 space-y-5">
-      <SEOHead title="Verkopen — VATUUR. Zakelijk" description="Sales cockpit voor je voorraad." noindex />
+      <SEOHead title="Verkopen — VATUUR. Zakelijk" description="Sales feed voor je voorraad." noindex />
 
       {/* Header */}
       <div className="flex items-end justify-between flex-wrap gap-3">
@@ -129,7 +118,7 @@ export default function Inventory() {
             <Car className="h-6 w-6 text-primary" /> Verkopen
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Inzicht boven, filteren in het midden, handelen onderaan.
+            Elke kaart is een beslis-unit. Insight zit waar je actie onderneemt.
           </p>
         </div>
         <Button asChild size="sm" className="gap-1.5">
@@ -137,35 +126,6 @@ export default function Inventory() {
         </Button>
       </div>
 
-      {/* KPI strip (collapsible on mobile) */}
-      <Collapsible open={kpiOpen} onOpenChange={setKpiOpen} className="md:!block">
-        <CollapsibleTrigger asChild>
-          <button
-            type="button"
-            className="md:hidden flex w-full items-center justify-between rounded-lg border border-border/60 bg-card px-3 py-2 text-sm"
-          >
-            <span className="font-medium">Cockpit · {kpis.length} KPI's</span>
-            <ChevronDown className={cn('h-4 w-4 transition-transform', kpiOpen && 'rotate-180')} />
-          </button>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="data-[state=closed]:hidden md:!block mt-3 md:mt-0">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2.5">
-            {kpis.map((kpi) => (
-              <Card key={kpi.label} className="border-border/60">
-                <CardContent className="p-3 flex items-center gap-2.5">
-                  <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
-                    <kpi.icon className="h-4 w-4 text-primary" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[11px] text-muted-foreground truncate leading-tight" title={kpi.hint}>{kpi.label}</p>
-                    <p className="text-base font-bold truncate">{kpi.value}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
 
       {/* Filters */}
       <div className="space-y-2.5">
