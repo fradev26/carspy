@@ -2,7 +2,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   Phone, Mail, MapPin, Calendar, Gauge, Fuel, Settings, Star, Heart, Share2,
   Shield, ShieldCheck, GitCompareArrows, Home, Sparkles, Loader2, Wrench, AlertTriangle, Users,
-  Cog, Leaf, BadgeCheck, ChevronRight, ChevronDown, Calculator, History, Crown, CheckCircle2, Car,
+  Cog, Leaf, BadgeCheck, ChevronRight, ChevronDown, Calculator, History, Crown, CheckCircle2, Car, Check,
 } from 'lucide-react';
 import { EquipmentDialog } from '@/modules/listings/EquipmentDialog';
 import { Button } from '@/components/ui/button';
