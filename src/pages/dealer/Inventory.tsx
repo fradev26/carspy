@@ -31,12 +31,11 @@ const STATUS_OPTIONS = [
 ] as const;
 
 export default function Inventory() {
-  const { overview, listings, loading, refresh } = useDealerAnalytics();
+  const { listings, loading, refresh } = useDealerAnalytics();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<Set<string>>(new Set());
   const [preset, setPreset] = useState<Preset>(null);
-  const [kpiOpen, setKpiOpen] = useState(false);
 
   // ── Cockpit metrics ─────────────────────────────────────────────────────
   const cockpit = useMemo(() => {
