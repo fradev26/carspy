@@ -315,12 +315,7 @@ const Index = () => {
               ))}
             </div>
           ) : (
-            <ListingGrid
-              listings={latestListings}
-              columns={3}
-              favorites={Array.from(favorites)}
-              onFavoriteToggle={(id, isFav) => toggle(id)}
-            />
+            <ListingGrid listings={latestListings} columns={3} />
           )}
           <div className="mt-8 text-center">
             <Link
@@ -332,12 +327,7 @@ const Index = () => {
           </div>
         </div>
       </section>
-      <CategorySections
-        allListings={allListings}
-        loading={listingsLoading}
-        favorites={favorites}
-        onToggle={toggle}
-      />
+      <CategorySections allListings={allListings} loading={listingsLoading} />
 
       {/* Features */}
       <section className="hidden lg:block py-12 md:py-20">

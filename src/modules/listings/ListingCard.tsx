@@ -13,17 +13,15 @@ import { useFavorites } from '@/hooks/useFavorites';
 interface ListingCardProps {
   listing: Listing;
   variant?: 'default' | 'compact' | 'horizontal';
-  onFavoriteToggle?: (id: string, isFavorite: boolean) => void;
-  isFavorite?: boolean;
 }
 
-export function ListingCard({ listing, variant = 'default', onFavoriteToggle, isFavorite }: ListingCardProps) {
+export function ListingCard({ listing, variant = 'default' }: ListingCardProps) {
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [justLiked, setJustLiked] = useState(false);
 
   const { isFavorite: isFavGlobal, toggle: toggleFavGlobal } = useFavorites();
-  const favorite = isFavorite ?? isFavGlobal(listing.id);
+  const favorite = isFavGlobal(listing.id);
 
   const { add, has } = useCompare();
   const isComparing = has(listing.id);
@@ -42,11 +40,7 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
       setJustLiked(true);
       window.setTimeout(() => setJustLiked(false), 420);
     }
-    if (onFavoriteToggle) {
-      onFavoriteToggle(listing.id, !favorite);
-    } else {
-      toggleFavGlobal(listing.id);
-    }
+    toggleFavGlobal(listing.id);
   };
 
 
