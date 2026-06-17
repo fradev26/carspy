@@ -140,6 +140,7 @@ export default function AccountSettings({ defaultTab = 'profiel' }: Props) {
           <TabsTrigger value="profiel">Profiel</TabsTrigger>
           <TabsTrigger value="meldingen">Meldingen</TabsTrigger>
           <TabsTrigger value="privacy">Privacy</TabsTrigger>
+          <TabsTrigger value="weergave">Weergave</TabsTrigger>
         </TabsList>
 
         <TabsContent value="profiel" className="mt-6">
