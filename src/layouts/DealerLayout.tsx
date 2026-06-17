@@ -5,7 +5,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { cn } from '@/lib/utils';
 
 const tabs = [
-  { to: '/zakelijk/voorraad',    label: 'Verkopen',     icon: Car },
+  { to: '/zakelijk/voorraad',    label: 'Zakelijk',     icon: Car },
   { to: '/zakelijk/import',      label: 'Import & Sync', icon: Upload },
   { to: '/zakelijk/leads',       label: 'Leads',        icon: Inbox },
   { to: '/zakelijk/analytics',   label: 'Analytics',    icon: BarChart3 },
