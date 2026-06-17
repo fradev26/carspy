@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import {
   Pencil,
+  Rocket,
   ChevronRight,
   Link2,
   ShoppingBag,
@@ -26,6 +27,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import AutoScoutPanel from '@/modules/dealer/AutoScoutPanel';
+import { BoostDialog } from '@/components/boost/BoostDialog';
 import { cn } from '@/lib/utils';
 
 type RowProps = {
