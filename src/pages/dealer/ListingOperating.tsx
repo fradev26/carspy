@@ -119,7 +119,7 @@ export default function ListingOperating() {
     const { data } = await supabase
       .from('listings')
       .select(
-        'id,title,description,price,status,views,images,brand,model,year,mileage,fuel_type,transmission,power,color,is_premium,created_at,user_id',
+        'id,title,description,price,status,views,images,brand,model,year,mileage,fuel_type,transmission,power,color,body_type,is_premium,created_at,user_id',
       )
       .eq('id', id)
       .maybeSingle();
