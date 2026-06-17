@@ -71,6 +71,27 @@ const markdownComponents: Components = {
 
 export function ChatMessage({ message }: Props) {
   const isUser = message.role === 'user';
+  const isSalesAI = !isUser && hasSalesAIPayload(message.content);
+
+  if (isSalesAI) {
+    // Strip vatuur-sales fence; render dashboard UI full-width without bubble.
+    const cleaned = message.content.replace(/```vatuur-sales[\s\S]*?(```|$)/g, '').trim();
+    return (
+      <div className="flex gap-2">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+          <Bot className="h-4 w-4" />
+        </div>
+        <div className="flex-1 min-w-0 space-y-2">
+          <SalesAIResponse rawContent={message.content} />
+          {cleaned && (
+            <div className="prose prose-sm dark:prose-invert max-w-none text-sm text-muted-foreground">
+              <ReactMarkdown components={markdownComponents}>{cleaned}</ReactMarkdown>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={cn('flex gap-2', isUser ? 'flex-row-reverse' : 'flex-row')}>
@@ -113,3 +134,4 @@ export function ChatMessage({ message }: Props) {
     </div>
   );
 }
+
