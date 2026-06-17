@@ -47,17 +47,51 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     applyToDOM(resolved);
   }, [theme]);
 
-  // Follow system when in 'system'
+  // Follow system when in 'system' — with robust fallbacks for browsers
+  // where MediaQueryList 'change' events are unreliable (older Safari,
+  // some WebViews, Samsung Internet, etc.).
   useEffect(() => {
     if (theme !== 'system' || typeof window === 'undefined') return;
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const onChange = () => {
+
+    const sync = () => {
       const r: Resolved = mq.matches ? 'dark' : 'light';
-      setResolvedTheme(r);
-      applyToDOM(r);
+      setResolvedTheme((prev) => {
+        if (prev !== r) applyToDOM(r);
+        return r;
+      });
     };
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
+
+    // 1) Modern API
+    if (typeof mq.addEventListener === 'function') {
+      mq.addEventListener('change', sync);
+    } else if (typeof (mq as MediaQueryList & { addListener?: (cb: () => void) => void }).addListener === 'function') {
+      // 2) Legacy Safari/WebKit fallback
+      (mq as MediaQueryList & { addListener: (cb: () => void) => void }).addListener(sync);
+    }
+
+    // 3) Re-check when the tab regains focus or becomes visible
+    //    (covers browsers that don't fire 'change' at all).
+    const onVisible = () => { if (document.visibilityState === 'visible') sync(); };
+    window.addEventListener('focus', sync);
+    document.addEventListener('visibilitychange', onVisible);
+
+    // 4) Polling safety net (cheap: 1 boolean read every 30s)
+    const interval = window.setInterval(sync, 30_000);
+
+    // Initial sync in case state drifted before listeners attached
+    sync();
+
+    return () => {
+      if (typeof mq.removeEventListener === 'function') {
+        mq.removeEventListener('change', sync);
+      } else if (typeof (mq as MediaQueryList & { removeListener?: (cb: () => void) => void }).removeListener === 'function') {
+        (mq as MediaQueryList & { removeListener: (cb: () => void) => void }).removeListener(sync);
+      }
+      window.removeEventListener('focus', sync);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.clearInterval(interval);
+    };
   }, [theme]);
 
   // Sync from server profile on login (server wins over local)
