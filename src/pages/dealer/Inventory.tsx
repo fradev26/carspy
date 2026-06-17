@@ -317,7 +317,7 @@ function DealerCard({
               aria-label="Vergelijk markt"
             >
               <BarChart3 className="h-4 w-4" />
-              <span className="hidden sm:inline text-xs">Markt</span>
+              <span className="sr-only">Markt</span>
             </Link>
           </Button>
           <Button asChild variant="ghost" size="icon" className="h-9 w-9" title="Publieke pagina">
