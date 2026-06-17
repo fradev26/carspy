@@ -171,6 +171,8 @@ export default function DealerSettings() {
           </div>
         </SheetContent>
       </Sheet>
+
+      <BoostDialog open={boostOpen} onOpenChange={setBoostOpen} />
     </div>
   );
 }
