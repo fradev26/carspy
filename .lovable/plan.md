@@ -1,88 +1,61 @@
-# Plan: /favorieten → "Mijn activiteiten" hub
+# Plan: 80/20 "Toon resultaten" + "Zoekopdracht opslaan" combo
 
-Consolideer Favorieten, Recent bekeken en Zoekalerts op één pagina (`/favorieten`) met tabs. Identiek voor particulier en zakelijk.
+Splits de zoekknop op /zoeken in één gecombineerde 80/20 control en zorg dat opslaan écht naar `saved_searches` schrijft.
 
-## 1. Nieuwe paginastructuur (`src/pages/Favorites.tsx`)
+## Scope
 
-Hernoem visueel naar **Mijn activiteiten**:
+Twee plekken in `src/modules/search/SearchBar.tsx` (gebruikt op `/zoeken`):
 
-- H1: "Mijn activiteiten"
-- Sub: "Beheer je favoriete voertuigen, recente bezoeken en zoekalerts."
-- `<Tabs defaultValue="favorieten">` met `?tab=` URL-sync zodat diepe links blijven werken (`?tab=alerts`, `?tab=recent`).
-- TabsList sticky onder de header, full-width op mobiel, horizontal scroll bij overflow.
-- Logged-out gate (huidige Heart-card) blijft, met aangepaste copy ("Bewaar wagens, alerts en geschiedenis").
+1. **Hoofdbalk** (rond regel 269-279) — bovenste "Toon resultaten" knop.
+2. **Onderkant geavanceerde filters** (rond regel 388-395) — tweede "Toon resultaten" knop.
+
+`ClassicHeroSearch.tsx` (homepage mobile sheet) blijft ongewijzigd; dat is een andere surface.
+
+## Combined control (per locatie)
 
 ```
-TabsList:
-[ Heart  Favorieten ]  [ Clock  Recent bekeken ]  [ Bell  Zoekalerts ]
+[ ─────────────  Toon resultaten  ───────────── ][ Bell ]
+        flex-[4] (≈80%)                          flex-[1] (≈20%)
+        primary, solid                            outline, kleiner
+        rounded-l-md rounded-r-none               rounded-l-none rounded-r-md
+        border-r-0                                -ml-px
 ```
 
-### Tab 1 — Favorieten
-Bestaande logica behouden (Supabase `favorites` + `ListingGrid`). Toevoegen boven de grid:
-- Aantal-badge ("12 wagens")
-- Sorteer-`Select` (Nieuwste / Prijs ↑ / Prijs ↓ / Km ↑ / Bouwjaar ↓) — client-side sort op `listings` state.
-- Knop "Vergelijken" (zichtbaar als `useCompare().items.length > 0`) → `/vergelijken`.
-- Empty state: Heart icon, "Nog geen favorieten", CTA → `/zoeken`.
+- Wrapper: `<div class="flex w-full h-12 items-stretch">`.
+- Primair: bestaande primary styling (`bg-primary`, `font-semibold`, `gap-2`, `Search` icon + tekst). `flex-[4]`, alleen rechts geen radius.
+- Secundair: `variant="outline"`, `flex-[1]`, alleen links geen radius, `-ml-px` om naadloze rand te maken, `border-l border-border/60`, kleiner icon-only (`Bell` h-4) op mobiel met tooltip/aria-label "Zoekopdracht opslaan". Op `sm:` toont het label "Opslaan" naast de bell als de ruimte het toelaat. Hover: zacht `bg-muted`.
+- Beide krijgen dezelfde `h-12` zodat ze als één control voelen.
+- Disabled state voor de save-knop wanneer er geen actieve filters zijn (`activeFilterCount === 0`) of gebruiker niet ingelogd is — dan opent klik een toast "Log in om zoekopdrachten te bewaren" via toast + redirect naar `/auth`.
 
-(Filterpanel is overkill voor v1 — sorteer + vergelijken volstaan; "Filters" laten we als later toevoeging buiten scope, omdat brief "indien beschikbaar" zegt.)
+## Save-functionaliteit (echt opslaan)
 
-### Tab 2 — Recent bekeken
-Inline-port van `RecentlyViewed.tsx`:
-- `useRecentlyViewedListings()` hook hergebruiken.
-- Card-grid (zelfde stijl als bestaand): afbeelding, titel, prijs, "Bekeken op {relatieve tijd}" via `Intl.RelativeTimeFormat`.
-- Acties per kaart: Bekijken (link) + Verwijderen (trash).
-- Toolbar boven grid: aantal + "Wis alles".
-- Empty state: Clock icon, copy uit brief, CTA → `/zoeken`.
+In `SearchBar.tsx`:
+- Toevoegen: `import { useSavedSearches } from '@/hooks/useSavedSearches'`, `useAuth`, `Dialog*`, `Input`, `Label`, `Bell`, `toast`.
+- Lokale state: `saveOpen`, `searchName`.
+- `const { save } = useSavedSearches();` — die hook doet al `supabase.from('saved_searches').insert(...)` met `user_id`, `name`, `filters` en toont een toast.
+- Opslaan met de huidige `filters` state (synced via bestaande useEffect met basis-velden + advanced filters). Dezelfde inhoud als de huidige Search.tsx dialog (naam-veld, "Opslaan" knop).
+- Default naam-suggestie genereren uit filters (bv. "Audi A4 onder €25.000") als pre-fill, leegmaken na opslaan.
 
-### Tab 3 — Zoekalerts
-Inline-port van `SearchAlerts.tsx`:
-- Behoud: `saved_searches` query, pauseren/hervatten, frequentie-select, verwijderen, "Zoeken" actie.
-- Toevoegen badge "Actief"/"Gepauzeerd" links in de kaart.
-- Kop-actie: "Nieuwe zoekalert" → `/zoeken`.
-- Empty state: Bell icon, copy uit brief, CTA → `/zoeken`.
+## Opruimen in `src/pages/Search.tsx`
 
-(Een echte "nieuwe matches sinds laatste bezoek"-badge vereist backend werk; v1 toont `frequency` als badge en `created_at` als "Laatste update" — `last_run_at` kolom is niet beschikbaar, dus geen verzonnen data.)
+- Verwijder de losse `Dialog` met "Bewaar zoekopdracht"-knop in de header (regel ±253-293) en de bijhorende states (`saveDialogOpen`, `searchName`, `useSavedSearches` import en `useAuth` indien verder niet gebruikt). Hiermee voorkomen we dubbele opslagknoppen.
+- Header behoudt dan alleen titel + telling + filters-drawer.
 
-## 2. Routing (`src/App.tsx`)
+## Visuele consistentie
 
-- Behoud `/favorieten`.
-- Verwijder routes `/account/recent` en `/account/zoekalerts` (de losse pagina's worden niet meer geladen).
-- Bestanden `src/pages/account/RecentlyViewed.tsx` en `src/pages/account/SearchAlerts.tsx` worden verwijderd nadat hun logica geport is.
-
-## 3. Navigatie-opruiming
-
-Vervang alle links naar `/account/recent` of `/account/zoekalerts` door:
-- `/favorieten?tab=recent`
-- `/favorieten?tab=alerts`
-
-Bestanden te updaten:
-- `src/layouts/Header.tsx` (mobiele sheet)
-- `src/pages/Dashboard.tsx`
-- `src/pages/Index.tsx`
-- `src/pages/ListingDetail.tsx`
-- `src/pages/dealer/Settings.tsx` ("Mijn activiteiten" sectie)
-- `src/pages/account/AccountSettings.tsx` ("Mijn activiteiten" sectie)
-- `src/data/faq.ts`
-
-BottomNav blijft ongewijzigd (Favorieten-item wijst al naar `/favorieten`).
-
-## 4. Design
-
-- Donker thema, bestaande shadcn `Tabs` (zelfde styling als overige VATUUR-tabs).
-- Lucide-only iconen (Heart, Clock, Bell, Search, Trash2, Pause, Play, GitCompare).
-- Geen emoji, geen pipes, geen markdown-tabellen.
-- Mobile-first: tabs full-width, kaarten 1-koloms < sm, 2/3 koloms ≥ sm.
-- Actieve tab krijgt `data-[state=active]` styling met primary underline-accent.
+- Gebruik bestaande design-tokens (`bg-primary`, `border-border/60`, `text-primary-foreground`, hover-varianten). Geen hardcoded kleuren.
+- Beide knoppen samen vullen dezelfde breedte als de huidige losse knop (full width binnen kolom).
+- Focus-ring blijft per knop zichtbaar.
+- Geen emoji's; Lucide `Search` + `Bell` iconen.
 
 ## Technische details
 
-- Eén bestand wijzigen (`Favorites.tsx`) + één hook hergebruiken; geen nieuwe componenten nodig behalve evt. lokale `FavoritesTab`, `RecentTab`, `AlertsTab` subcomponenten onderaan hetzelfde bestand voor leesbaarheid.
-- Tab-state via `useSearchParams` zodat back/forward en deep links werken.
-- Geen DB-migraties.
-- Geen edge-function wijzigingen.
+- Geen DB-migratie nodig (`saved_searches` heeft al `name`, `filters`, `user_id`, `paused`, `frequency`).
+- Geen edge-function wijziging.
+- Bestaande `useSavedSearches.save()` schrijft direct en toont toast — gebruiker ziet de nieuwe alert vervolgens onder `/favorieten?tab=alerts`.
 
-## Out of scope (expliciet)
+## Out of scope
 
-- Echte "nieuwe matches sinds vorige check"-teller (vereist `last_seen_at`/cron, geen mock-data).
-- Server-side filterpanel binnen Favorieten-tab.
-- Wijzigingen aan BottomNav of desktop header dropdown.
+- `ClassicHeroSearch.tsx` op homepage (andere surface).
+- Wijzigingen aan filter-logica zelf.
+- Wijzigingen aan favorieten-pagina.
