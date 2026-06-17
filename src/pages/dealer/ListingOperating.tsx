@@ -68,6 +68,7 @@ interface Listing {
   transmission: string | null;
   power: number | null;
   color: string | null;
+  body_type: string | null;
   is_premium: boolean | null;
   created_at: string;
   user_id: string | null;
