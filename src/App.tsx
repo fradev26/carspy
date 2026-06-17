@@ -71,6 +71,7 @@ const App = () => (
                 <Route path="/account/profiel" element={<ProtectedRoute><AccountSettings defaultTab="profiel" /></ProtectedRoute>} />
                 <Route path="/account/meldingen" element={<ProtectedRoute><AccountSettings defaultTab="meldingen" /></ProtectedRoute>} />
                 <Route path="/account/privacy" element={<ProtectedRoute><AccountSettings defaultTab="privacy" /></ProtectedRoute>} />
+                <Route path="/account/weergave" element={<ProtectedRoute><AccountSettings defaultTab="weergave" /></ProtectedRoute>} />
                 <Route path="/account/instellingen" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
                 <Route path="/help" element={<Help />} />
                 <Route path="/contact" element={<Contact />} />
