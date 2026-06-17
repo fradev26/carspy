@@ -2,7 +2,7 @@ import { Outlet, Link } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { DealerSidebar } from '@/components/dealer/DealerSidebar';
 import { Button } from '@/components/ui/button';
-import { Plus, Upload, Link2 } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 
 export default function DealerLayout() {
