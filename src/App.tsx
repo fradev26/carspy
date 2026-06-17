@@ -15,7 +15,7 @@ import Index from "./pages/Index";
 const Search = lazy(() => import("./pages/Search"));
 const ListingDetail = lazy(() => import("./pages/ListingDetail"));
 const DealerLayout = lazy(() => import("./layouts/DealerLayout"));
-const DealerInventory = lazy(() => import("./pages/dealer/Inventory"));
+const DealerInventoryPage = lazy(() => import("./pages/dealer/Inventory"));
 const DealerListingOperating = lazy(() => import("./pages/dealer/ListingOperating"));
 const DealerImport = lazy(() => import("./pages/dealer/Import"));
 const DealerAnalytics = lazy(() => import("./pages/dealer/Analytics"));
