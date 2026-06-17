@@ -49,7 +49,6 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
 
   // Saved searches (zoekalerts)
   const { user } = useAuth();
-  const navigateRoute = useNavigate();
   const { save } = useSavedSearches();
   const [saveOpen, setSaveOpen] = useState(false);
   const [searchName, setSearchName] = useState('');
