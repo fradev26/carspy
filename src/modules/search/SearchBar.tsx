@@ -478,6 +478,45 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
             </div>
           </CollapsibleContent>
         </Collapsible>
+
+        {/* Save search dialog */}
+        <Dialog open={saveOpen} onOpenChange={setSaveOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Zoekopdracht opslaan</DialogTitle>
+              <DialogDescription>
+                Geef je zoekopdracht een naam. Je ontvangt een melding zodra er nieuwe auto's
+                bijkomen die hieraan voldoen. Je vindt opgeslagen zoekopdrachten terug onder
+                "Mijn activiteiten".
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 pt-2">
+              <div>
+                <Label htmlFor="alert-name">Naam</Label>
+                <Input
+                  id="alert-name"
+                  value={searchName}
+                  onChange={(e) => setSearchName(e.target.value)}
+                  placeholder="Bijv. Zwarte BMW automaat"
+                  className="mt-1.5"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleSave();
+                    }
+                  }}
+                />
+              </div>
+              <Button
+                className="w-full"
+                disabled={!searchName.trim() || saving}
+                onClick={handleSave}
+              >
+                {saving ? 'Opslaan…' : 'Opslaan'}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
