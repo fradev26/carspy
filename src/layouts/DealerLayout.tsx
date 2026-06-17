@@ -1,6 +1,6 @@
 import { Outlet, Link, NavLink } from 'react-router-dom';
 
-import { Car, Upload, Inbox, BarChart3, Settings, Sparkles, Plus } from 'lucide-react';
+import { Car, Upload, Inbox, BarChart3, Settings, Sparkles } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -23,11 +23,6 @@ export default function DealerLayout() {
           <Link to="/zakelijk" className="text-sm font-bold text-primary shrink-0">
             VATUUR. <span className="text-muted-foreground font-medium">Zakelijk</span>
           </Link>
-          <Button asChild size="sm" variant="outline" className="gap-1.5 h-8 text-xs">
-            <Link to="/verkopen">
-              <Plus className="h-3.5 w-3.5" /> Wagen verkopen
-            </Link>
-          </Button>
           <div className="hidden md:block flex-1 min-w-0">
             <p className="text-sm text-muted-foreground truncate">
               {profile?.dealer_name ?? profile?.full_name ?? ''}
@@ -58,9 +53,15 @@ export default function DealerLayout() {
           ))}
         </nav>
       </header>
-      <main className="flex-1 pb-20 md:pb-6">
+      <main className="flex-1 pb-40 md:pb-6">
         <Outlet />
       </main>
+      {/* Mobile sticky CTA above bottom nav */}
+      <div className="fixed bottom-nav-above left-0 right-0 z-40 px-4 pt-3 pb-2 bg-gradient-to-t from-background via-background to-transparent md:hidden safe-x">
+        <Button asChild className="w-full min-h-12 text-base font-semibold shadow-elevated">
+          <Link to="/verkopen">Auto verkopen</Link>
+        </Button>
+      </div>
     </div>
   );
 }
