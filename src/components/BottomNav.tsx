@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   Home, Search, Heart, Sparkles, Plus,
   Store, Car, Upload, MoreHorizontal,
-  Settings, BarChart3, User, Link2, FileSpreadsheet,
+  Settings, BarChart3, Inbox,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -22,17 +22,15 @@ const consumerItems = [
 const dealerItems = [
   { icon: Store,            label: 'Markt',     path: '/zoeken' },
   { icon: Car,              label: 'Voorraad',  path: '/zakelijk/voorraad' },
-  { icon: Upload,           label: 'Verkopen',  path: '/verkopen?dealer=1' },
+  { icon: Plus,             label: 'Toevoegen', path: '/verkopen?dealer=1' },
   { icon: MoreHorizontal,   label: 'Meer',      path: null, isMore: true },
 ];
 
 const moreLinks = [
-  { icon: BarChart3,       label: 'Analytics',     path: '/zakelijk/analytics' },
-  { icon: FileSpreadsheet, label: 'Import (CSV)',  path: '/zakelijk/import' },
-  { icon: Link2,           label: 'Integraties',   path: '/zakelijk/instellingen' },
-  { icon: User,            label: 'Leads',         path: '/zakelijk/leads' },
-  { icon: Heart,           label: 'Favorieten',    path: '/favorieten' },
-  { icon: Settings,        label: 'Instellingen',  path: '/account/instellingen' },
+  { icon: BarChart3, label: 'Analytics',     path: '/zakelijk/analytics' },
+  { icon: Upload,    label: 'Import & Sync', path: '/zakelijk/import' },
+  { icon: Inbox,     label: 'Leads',         path: '/zakelijk/leads' },
+  { icon: Settings,  label: 'Instellingen',  path: '/zakelijk/instellingen' },
 ];
 
 export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref) {
