@@ -8,7 +8,7 @@ const LEAD_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/dealer-lead`
 const LEAD_BLOCK_RE = /```vatuur-lead\s*([\s\S]*?)```/g;
 
 type UseChatOptions = {
-  context?: 'default' | 'dealer';
+  context?: 'default' | 'dealer' | 'business';
   onLeadSubmitted?: (lead: Record<string, string>) => void;
 };
 
