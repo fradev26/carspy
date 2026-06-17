@@ -154,25 +154,12 @@ export function Header() {
               {user ? (
                 <>
                   <SectionHeader>Mijn account</SectionHeader>
-                  <SheetLink onClick={() => handleMobileNav('/account/instellingen')} icon={Settings} label="Accountinstellingen" />
-
-                  <SectionHeader>Mijn activiteiten</SectionHeader>
-                  <SheetLink onClick={() => handleMobileNav('/account/advertenties')} icon={Megaphone} label="Mijn advertenties" />
-                  <SheetLink onClick={() => handleMobileNav('/account/zoekalerts')} icon={Bell} label="Zoekalerts" />
-                  <SheetLink onClick={() => handleMobileNav('/account/recent')} icon={Clock} label="Recent bekeken" />
+                  <SheetLink onClick={() => handleMobileNav('/account/instellingen')} icon={User} label="Accountinstellingen" />
                   <SheetLink
-                    onClick={() => handleMobileNav('/favorieten')}
-                    icon={Heart}
-                    label="Favorieten"
-                    trailing={favorites.size > 0 ? String(favorites.size) : undefined}
+                    onClick={() => handleMobileNav(isDealer ? '/zakelijk/instellingen' : '/account/instellingen')}
+                    icon={Settings}
+                    label="Instellingen"
                   />
-
-                  {isDealer && (
-                    <>
-                      <SectionHeader>Dealerfuncties</SectionHeader>
-                      <SheetLink onClick={() => handleMobileNav('/zakelijk')} icon={Briefcase} label="Zakelijk Dashboard" />
-                    </>
-                  )}
 
                   <SectionHeader>Juridisch</SectionHeader>
                   <SheetLink onClick={() => handleMobileNav('/privacy')} icon={Shield} label="Privacybeleid" muted />

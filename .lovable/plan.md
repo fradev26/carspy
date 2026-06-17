@@ -1,69 +1,51 @@
-# Emoji-vrije UI/UX audit
+# Navigatieherstructurering: Instellingen-hub + bottom nav
 
-Doel: alle emoji-unicode uit zowel UI, AI-prompts als gegenereerde content verwijderen en vervangen door Lucide-iconen, badges of tekst-labels. Premium B2B-uitstraling, geen visuele speelsheid.
+## Doel
+- Eén volwaardige Instellingen-pagina (zowel particulier als dealer) die alle eerder versnipperde items toont.
+- Sheet-sidebar in de Header opschonen — geen dubbele navigatie meer.
+- Bottom nav: laatste slot wordt overal Favorieten.
 
-## Scope (39 vindplaatsen, gegroepeerd)
+## 1. Bottom nav — `src/components/BottomNav.tsx`
+- Consumer: blijft `[Home · Zoeken · AI · Favorieten · Verkopen]` (ongewijzigd).
+- Dealer: was `[Home · Zoeken · AI · Voorraad · Instellingen]` → wordt **`[Home · Zoeken · AI · Voorraad · Favorieten]`** (Heart-icoon, `/favorieten`).
 
-### 1. AI / backend prompts & gegenereerde tekst
-- `supabase/functions/chat/index.ts` (regels 87, 156): instructies "gebruik emoji's spaarzaam" → vervangen door **"Gebruik geen emoji's. Gebruik korte zinnen en bullet points."**
-- `supabase/functions/_shared/dealer-summary.ts` (regels 108, 113, 117, 131, 134, 137): emoji-prefixes (📦 📈 💰 🏆 💬 🚀) uit insights verwijderen. Tonen worden bepaald door de bestaande `tone`-veld (success/warning/info), niet door emoji.
-- `src/hooks/useChat.ts` (148): "⚠️ {error}" → enkel de errortekst. Visuele waarschuwing zit al in `ChatMessage`-styling; eventueel via een `AlertTriangle`-icoon in de bubble (out of scope qua component, dus alleen tekst opschonen).
+## 2. Mobile sheet sidebar — `src/layouts/Header.tsx`
+Volledige nav binnen het `<SheetContent>` herwerken. Behouden secties: **Mijn account**, **Juridisch**, **Support**. Verwijderd: **Mijn activiteiten** en **Dealerfuncties** (die navigatie verhuist naar de Instellingen-hub).
 
-### 2. SalesAI-dashboard
-- `src/pages/dealer/SalesAI.tsx`:
-  - Regel 83: `👋` na begroeting weghalen.
-  - Regel 100: `⚠️ Vraagt aandacht` → `<AlertTriangle className="h-3.5 w-3.5 text-amber-500" />` + tekst.
-- `src/components/dealer/salesai/InsightList.tsx` (7): `📊 Inzichten vandaag` → `<BarChart3 />` icoon + tekst.
-- `src/modules/chat/ChatMessage.tsx` (125): `✅ Je gegevens werden doorgestuurd…` → `<CheckCircle2 />` icoon + tekst.
+Nieuwe inhoud van "Mijn account":
+- `Accountinstellingen` → `/account/instellingen` (bestaand, profiel/meldingen/privacy/weergave)
+- `Instellingen` → `/zakelijk/instellingen` voor dealers, `/account/instellingen` voor particulieren
 
-### 3. Listings / marketplace
-- `src/data/mockListings.ts` (973–980): brand-logo's staan op `🚗`. Vervangen door `null` of leeg, en op consumptieplekken (CategoryGrid e.d.) fallback naar `<Car />` Lucide-icoon renderen.
-- `src/modules/listings/ListingGrid.tsx` (21): empty state `🚗` → `<Car className="h-12 w-12 text-muted-foreground" />`.
-- `src/pages/ListingDetail.tsx` (897): `✓ {s}` features → `<Check className="h-3.5 w-3.5 text-success" />` + tekst.
+Dealers krijgen dus de hub aangeboden, particulieren landen op de bestaande tabs-pagina (die we hieronder uitbreiden).
 
-### 4. Vergelijken & dealers-tabel
-- `src/pages/Compare.tsx` (137): Badge met `✓` → `<Check className="h-3 w-3" />` in de badge.
-- `src/pages/Dealers.tsx` (112–124, 433): vergelijktabel met `'✓'` en `'—'` waarden. Renderlogica (regel 433) al conditional; vervangen door:
-  - `'✓'` waarde → `<Check className="h-4 w-4 text-success" />`
-  - `'—'` waarde → `<Minus className="h-4 w-4 text-muted-foreground" />`
-  De data-array houden we als boolean (`true` / `false`) of als enum-string die we mappen.
+## 3. Dealer-instellingenhub — `src/pages/dealer/Settings.tsx`
+Bovenaan de bestaande secties twee nieuwe `Section` blokken invoegen (zelfde `SettingsRow`-component):
 
-### 5. Chat-onboarding
-- `src/modules/chat/ChatWidget.tsx` (75, 76): `👋 Hallo!` / `👋 Hoi!` → wave-emoji droppen; openingstekst start direct met "Hallo!".
-- `src/modules/chat/AIChatSection.tsx` (145): `✓` span → `<Check className="h-3.5 w-3.5 text-primary" />`.
+- **Mijn activiteiten**
+  - `Megaphone` Mijn advertenties → `/account/advertenties`
+  - `Bell` Zoekalerts → `/account/zoekalerts`
+  - `Clock` Recent bekeken → `/account/recent`
+  - `Heart` Favorieten → `/favorieten` (met trailing teller indien beschikbaar via `useFavorites`)
+- **Dealerfuncties** (alleen render voor `isDealer`)
+  - `Briefcase` Zakelijk Dashboard → `/zakelijk`
+  - `BarChart3` Analytics → `/zakelijk/analytics`
+  - `Megaphone` Leads → `/zakelijk/leads`
 
-### 6. Auth / land-keuze
-- `src/pages/Auth.tsx` (250): `🇧🇪 België` / `🇳🇱 Nederland` → vlaggen verwijderen; alleen tekst (`'België'`, `'Nederland'`). Geen vlag-SVG toevoegen (out of scope).
+Bestaande secties (Koppelingen, Voorraad, Account, Ondersteuning) blijven onder de nieuwe twee.
 
-### 7. Sell-flow
-- `src/pages/Sell.tsx` (378): toast `'Beschrijving gegenereerd ✨'` → `'Beschrijving gegenereerd'`. Sonner-toast krijgt al een icoon via variant.
+## 4. Particuliere instellingenpagina — `src/pages/account/AccountSettings.tsx`
+Boven de bestaande `Tabs` één nieuw blok "Mijn activiteiten" toevoegen — compacte kaarten-rij met dezelfde 4 quick-links als bij de dealer (Mijn advertenties, Zoekalerts, Recent bekeken, Favorieten). Geen wijziging aan de tabs zelf. Zo verliest een particulier geen navigatie nu "Mijn activiteiten" uit de sheet verdwijnt.
 
-## Globale verificatie
-Na de wijzigingen één keer draaien:
-```bash
-rg -nP "[\x{1F300}-\x{1FAFF}\x{2600}-\x{27BF}\x{1F000}-\x{1F2FF}]" -g '!*.lock' -g '!dist' -g '!node_modules' .
-```
-Verwacht: 0 resultaten. Indien rest → in dezelfde sweep opruimen.
+## Routes
+Geen nieuwe routes nodig — alle bestemmingen bestaan al in `src/App.tsx`.
 
 ## Niet in scope
-- Componentstructuur of layout van pagina's wijzigen.
-- Nieuwe vlag-SVG's of brand-logo-assets toevoegen (brand-logo wordt generieke `Car`-icoon).
-- Backend-businesslogica (alleen tekst in prompts/insights).
-- SalesAI JSON-contract; we voegen wel `"Gebruik geen emoji's"` toe aan beide system prompts in `chat/index.ts`.
+- Desktop-header dropdown (`Account`) — behoudt huidige items; deze plan-iteratie focust op mobiele bottom nav + sheet.
+- Visueel herontwerp van de Instellingen-rows; we hergebruiken de bestaande `SettingsRow` en `Section`-componenten.
+- Splitsing per rol op consumer-pagina — particulier ziet eenvoudig de tabs + activiteitenblok.
 
-## Bestanden die bewerkt worden
-- `supabase/functions/chat/index.ts`
-- `supabase/functions/_shared/dealer-summary.ts`
-- `src/hooks/useChat.ts`
-- `src/pages/dealer/SalesAI.tsx`
-- `src/components/dealer/salesai/InsightList.tsx`
-- `src/modules/chat/ChatMessage.tsx`
-- `src/modules/chat/ChatWidget.tsx`
-- `src/modules/chat/AIChatSection.tsx`
-- `src/data/mockListings.ts` + consumer (CategoryGrid indien `logo` gerenderd wordt — checken bij implementatie)
-- `src/modules/listings/ListingGrid.tsx`
-- `src/pages/ListingDetail.tsx`
-- `src/pages/Compare.tsx`
-- `src/pages/Dealers.tsx`
-- `src/pages/Auth.tsx`
-- `src/pages/Sell.tsx`
+## Bestanden
+- `src/components/BottomNav.tsx`
+- `src/layouts/Header.tsx`
+- `src/pages/dealer/Settings.tsx`
+- `src/pages/account/AccountSettings.tsx`
