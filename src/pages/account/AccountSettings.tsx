@@ -143,8 +143,8 @@ export default function AccountSettings({ defaultTab = 'profiel' }: Props) {
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {([
             { to: '/account/advertenties', icon: Megaphone, label: 'Mijn advertenties' },
-            { to: '/account/zoekalerts', icon: BellIcon, label: 'Zoekalerts' },
-            { to: '/account/recent', icon: Clock, label: 'Recent bekeken' },
+            { to: '/favorieten?tab=alerts', icon: BellIcon, label: 'Zoekalerts' },
+            { to: '/favorieten?tab=recent', icon: Clock, label: 'Recent bekeken' },
             { to: '/favorieten', icon: Heart, label: 'Favorieten', count: favorites.size },
           ] as const).map((it) => (
             <Link

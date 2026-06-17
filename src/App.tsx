@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "./layouts/AppLayout";
@@ -38,8 +38,6 @@ const AutoWaarde = lazy(() => import("./pages/AutoWaarde"));
 const DealerInventory = lazy(() => import("./pages/DealerInventory"));
 const Dealers = lazy(() => import("./pages/Dealers"));
 const MyListings = lazy(() => import("./pages/account/MyListings"));
-const SearchAlerts = lazy(() => import("./pages/account/SearchAlerts"));
-const RecentlyViewed = lazy(() => import("./pages/account/RecentlyViewed"));
 const AccountSettings = lazy(() => import("./pages/account/AccountSettings"));
 const Help = lazy(() => import("./pages/Help"));
 const Contact = lazy(() => import("./pages/Contact"));
@@ -85,8 +83,8 @@ const App = () => (
                 <Route path="/dealer/:slug" element={<DealerInventory />} />
                 <Route path="/dealers" element={<Dealers />} />
                 <Route path="/account/advertenties" element={<ProtectedRoute><MyListings /></ProtectedRoute>} />
-                <Route path="/account/zoekalerts" element={<ProtectedRoute><SearchAlerts /></ProtectedRoute>} />
-                <Route path="/account/recent" element={<RecentlyViewed />} />
+                <Route path="/account/zoekalerts" element={<Navigate to="/favorieten?tab=alerts" replace />} />
+                <Route path="/account/recent" element={<Navigate to="/favorieten?tab=recent" replace />} />
                 <Route path="/account/profiel" element={<ProtectedRoute><AccountSettings defaultTab="profiel" /></ProtectedRoute>} />
                 <Route path="/account/meldingen" element={<ProtectedRoute><AccountSettings defaultTab="meldingen" /></ProtectedRoute>} />
                 <Route path="/account/privacy" element={<ProtectedRoute><AccountSettings defaultTab="privacy" /></ProtectedRoute>} />
