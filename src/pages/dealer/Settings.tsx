@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import {
   Pencil,
-  Rocket,
   ChevronRight,
   Link2,
   ShoppingBag,
@@ -27,7 +26,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import AutoScoutPanel from '@/modules/dealer/AutoScoutPanel';
-import { BoostDialog } from '@/components/boost/BoostDialog';
 import { cn } from '@/lib/utils';
 
 type RowProps = {
@@ -97,7 +95,6 @@ export default function DealerSettings() {
   const { profile } = useProfile();
   const { toast } = useToast();
   const [autoScoutOpen, setAutoScoutOpen] = useState(false);
-  const [boostOpen, setBoostOpen] = useState(false);
 
   const soon = () =>
     toast({ title: 'Binnenkort beschikbaar', description: 'Deze functie is in ontwikkeling.' });
@@ -112,7 +109,7 @@ export default function DealerSettings() {
       </div>
 
       {/* Bedrijfskaart */}
-      <div className="rounded-xl border border-border/60 bg-card shadow-sm p-4 md:p-5 space-y-3">
+      <div className="rounded-xl border border-border/60 bg-card shadow-sm p-4 md:p-5 flex items-center justify-between gap-4">
         <div className="min-w-0">
           <p className="text-base font-semibold truncate">
             {profile?.dealer_name ?? profile?.full_name ?? 'Test Garage'}
@@ -121,18 +118,12 @@ export default function DealerSettings() {
             BTW: {profile?.vat_number ?? '—'}
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          <Button asChild variant="outline" size="sm" className="gap-1.5">
-            <Link to="/account/profiel">
-              <Pencil className="h-3.5 w-3.5" />
-              Bewerken
-            </Link>
-          </Button>
-          <Button size="sm" className="gap-1.5" onClick={() => setBoostOpen(true)}>
-            <Rocket className="h-3.5 w-3.5" />
-            Boosten
-          </Button>
-        </div>
+        <Button asChild variant="outline" size="sm" className="gap-1.5 shrink-0">
+          <Link to="/account/profiel">
+            <Pencil className="h-3.5 w-3.5" />
+            Profiel bewerken
+          </Link>
+        </Button>
       </div>
 
       <Section title="Koppelingen">
@@ -171,8 +162,6 @@ export default function DealerSettings() {
           </div>
         </SheetContent>
       </Sheet>
-
-      <BoostDialog open={boostOpen} onOpenChange={setBoostOpen} />
     </div>
   );
 }
