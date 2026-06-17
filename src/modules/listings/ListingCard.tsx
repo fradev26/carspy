@@ -124,17 +124,14 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
           </Button>
 
               {/* Status / Premium Badges */}
-              {isPremium && (
-                <Badge className="absolute left-3 bottom-3 bg-premium text-premium-foreground font-semibold gap-1">
-                  <Crown className="h-3 w-3" />
-                  Top
-                </Badge>
-              )}
-              {listing.status === 'reserved' && (
-                <Badge className={cn("absolute bottom-3 bg-warning text-warning-foreground font-medium", isPremium ? "left-20" : "left-3")}>
-                  Gereserveerd
-                </Badge>
-              )}
+              <div className="absolute left-3 bottom-3 flex items-center gap-1.5">
+                {isPremium && (
+                  <Badge className="bg-premium text-premium-foreground font-semibold gap-1">
+                    <Crown className="h-3 w-3" /> Top
+                  </Badge>
+                )}
+                <StatusBadge status={listing.status} />
+              </div>
             </div>
 
             {/* Content */}
