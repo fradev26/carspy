@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 
 export default function Favorites() {
   const { user } = useAuth();
-  const { favorites, toggle } = useFavorites();
+  const { favorites } = useFavorites();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
