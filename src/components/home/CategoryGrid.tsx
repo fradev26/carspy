@@ -9,8 +9,6 @@ import { cn } from '@/lib/utils';
 interface CategorySectionsProps {
   allListings: Listing[];
   loading: boolean;
-  favorites: Set<string>;
-  onToggle: (id: string) => void;
 }
 
 interface CategoryDef {
@@ -57,7 +55,7 @@ const categories: CategoryDef[] = [
   },
 ];
 
-export function CategorySections({ allListings, loading, favorites, onToggle }: CategorySectionsProps) {
+export function CategorySections({ allListings, loading }: CategorySectionsProps) {
   return (
     <>
       {categories.map((cat, idx) => {
@@ -95,12 +93,7 @@ export function CategorySections({ allListings, loading, favorites, onToggle }: 
                   ))}
                 </div>
               ) : (
-                <ListingGrid
-                  listings={items}
-                  columns={3}
-                  favorites={Array.from(favorites)}
-                  onFavoriteToggle={(id) => onToggle(id)}
-                />
+                <ListingGrid listings={items} columns={3} />
               )}
             </div>
           </section>

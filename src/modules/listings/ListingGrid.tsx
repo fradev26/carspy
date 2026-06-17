@@ -6,18 +6,14 @@ interface ListingGridProps {
   listings: Listing[];
   variant?: 'grid' | 'list';
   columns?: 2 | 3 | 4;
-  onFavoriteToggle?: (id: string, isFavorite: boolean) => void;
-  favorites?: string[];
   className?: string;
 }
 
-export function ListingGrid({ 
-  listings, 
-  variant = 'grid', 
-  columns = 3, 
-  onFavoriteToggle, 
-  favorites = [],
-  className 
+export function ListingGrid({
+  listings,
+  variant = 'grid',
+  columns = 3,
+  className,
 }: ListingGridProps) {
   if (listings.length === 0) {
     return (
@@ -35,13 +31,7 @@ export function ListingGrid({
     return (
       <div className={cn('space-y-4', className)}>
         {listings.map((listing) => (
-          <ListingCard
-            key={listing.id}
-            listing={listing}
-            variant="horizontal"
-            onFavoriteToggle={onFavoriteToggle}
-            isFavorite={favorites.includes(listing.id)}
-          />
+          <ListingCard key={listing.id} listing={listing} variant="horizontal" />
         ))}
       </div>
     );
@@ -58,12 +48,7 @@ export function ListingGrid({
       )}
     >
       {listings.map((listing) => (
-        <ListingCard
-          key={listing.id}
-          listing={listing}
-          onFavoriteToggle={onFavoriteToggle}
-          isFavorite={favorites.includes(listing.id)}
-        />
+        <ListingCard key={listing.id} listing={listing} />
       ))}
     </div>
   );

@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 
 export default function Favorites() {
   const { user } = useAuth();
-  const { favorites, toggle } = useFavorites();
+  const { favorites } = useFavorites();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
@@ -72,9 +72,6 @@ export default function Favorites() {
     };
   }, [user, favorites]);
 
-  const handleFavoriteToggle = async (listingId: string) => {
-    await toggle(listingId);
-  };
 
   // Logged-out gate
   if (!user) {
@@ -136,12 +133,7 @@ export default function Favorites() {
         </div>
       ) : (
         <div className="mt-8">
-          <ListingGrid
-            listings={listings}
-            columns={3}
-            favorites={Array.from(favorites)}
-            onFavoriteToggle={handleFavoriteToggle}
-          />
+          <ListingGrid listings={listings} columns={3} />
         </div>
       )}
     </div>
