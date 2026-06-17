@@ -1,22 +1,41 @@
-# Favoriet-hartje duidelijker zichtbaar maken op ListingCard
+# Favorietstatus overal consistent
 
-De hart-knop toont nu al dat een wagen favoriet is (gevuld hartje, primary achtergrond), maar het visuele signaal kan sterker zodat het opvalt bij het scrollen door listings.
+## Oorzaak
 
-## Wijzigingen
+`ListingGrid` geeft altijd `isFavorite={favorites.includes(id)}` door aan `ListingCard`, ook als de ouder géén `favorites`-prop meegeeft (default `[]`). In `ListingCard` staat:
 
-### `src/modules/listings/ListingCard.tsx`
+```ts
+const favorite = isFavorite ?? isFavGlobal(listing.id);
+```
 
-Beide card-varianten (`horizontal` en `default`) — de **Favorite Button** krijgt een opvallender favoriet-state:
+`false` is niet nullish, dus de globale `useFavorites`-context wordt genegeerd. Op `Search.tsx` en `DealerInventory.tsx` wordt `favorites` niet doorgegeven → harticoon staat altijd "uit", ook al staat de wagen in favorieten.
 
-- **Glow-effect**: `shadow-[0_0_12px_rgba(225,29,72,0.35)]` wanneer favoriet, zodat het hartje subtiel "gloeit".
-- **Groter hart-icoon**: `scale-110` → `scale-125` wanneer favoriet.
-- **Dikkere stroke**: `strokeWidth={favorite ? 2.5 : 2}` voor een voller uiterlijk.
-- **Behoud bestaand**: primary achtergrond, ring, filled heart — die blijven.
+Het is dus geen visueel probleem maar een verkeerde fallback-laag.
 
-## Niet gewijzigd
-- Geen logica-aanpassingen (`useFavorites`, toggle, etc.)
-- Geen andere componenten — ListingCard is het enige weergavepunt.
+## Oplossing — globale context als enige bron van waarheid
 
-## Verificatie
-- TypeScript compileert zonder errors.
-- Preview-check: wagen als favoriet markeren → hartje gloeit subtiel en is duidelijk gevuld op alle kaarten waar deze wagen verschijnt.
+### 1. `src/modules/listings/ListingCard.tsx`
+- Verwijder de props `isFavorite` en `onFavoriteToggle` volledig.
+- Gebruik uitsluitend `useFavorites()` (`isFavorite(id)` + `toggle(id)`) voor lezen en wijzigen.
+- Geen extra badges, borders of card-highlights — alleen het bestaande hartje (gevuld + primary achtergrond) blijft de visuele indicator.
+
+### 2. `src/modules/listings/ListingGrid.tsx`
+- Verwijder de props `favorites` en `onFavoriteToggle` en geef ze niet meer door aan `ListingCard`.
+- Component wordt simpeler: alleen `listings`, `variant`, `columns`, `className`.
+
+### 3. Call sites opschonen
+Verwijder de nu overbodige `favorites=` / `onFavoriteToggle=` props (geen gedragsverandering, alleen dode props):
+- `src/pages/Index.tsx` (regel 318-322 en regel 338)
+- `src/pages/Favorites.tsx` (regel 139-143) — `handleFavoriteToggle` kan weg als hij nergens anders gebruikt wordt
+- `src/components/home/CategoryGrid.tsx` (regel 98-103, props `favorites`/`onToggle` van `CategorySections` worden ongebruikt en kunnen weg)
+- `src/pages/Search.tsx`, `src/pages/DealerInventory.tsx`, `src/pages/ListingDetail.tsx` — geen wijziging nodig (gaven al niets door), profiteren automatisch van de fix.
+
+### Resultaat
+- Eén bron van waarheid: `FavoritesProvider` (al gemount in `App.tsx`).
+- `toggle()` update de context-state optimistisch → alle gemounte `ListingCard`-instanties re-renderen onmiddellijk, ongeacht pagina.
+- Zoekresultaten, gerelateerde voertuigen, dealer-inventory, categorieën: allemaal automatisch in sync.
+- Geen lokale state per pagina meer voor favorieten.
+
+### Verificatie
+- Build + bestaande tests (35/35) groen.
+- Manueel: favoriet toevoegen op homepagina → openen `/zoeken` → hartje is gevuld op dezelfde wagen; unfaven op detail werkt direct terug op alle zichtbare kaarten.
