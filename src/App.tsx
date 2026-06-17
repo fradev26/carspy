@@ -84,6 +84,7 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
       </CompareProvider>
+      </ThemeProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
