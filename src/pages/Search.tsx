@@ -154,8 +154,10 @@ export default function Search() {
           ]
         }}
       />
+      <SaveSearchDialog open={saveGate.open} onOpenChange={saveGate.setOpen} filters={filters} />
       <div className="container py-6">
         <div className="flex gap-8">
+
           {/* Desktop Filters - Sticky Sidebar */}
           <aside className="hidden w-72 flex-shrink-0 lg:block">
             <div className="sticky top-20">
