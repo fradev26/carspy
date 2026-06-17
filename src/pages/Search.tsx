@@ -9,7 +9,9 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger, Drawer
 import { Badge } from '@/components/ui/badge';
 import { FilterPanel, FilterChips, SmartSearchBar } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
+import { MarketCompareBanner } from '@/components/MarketCompareBanner';
 import { useSearchListings } from '@/hooks/useSearchListings';
+import { useListings } from '@/hooks/useListings';
 import {
   SearchFilters,
   SORT_OPTIONS,
