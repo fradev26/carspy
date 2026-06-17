@@ -71,15 +71,16 @@ export default function ListingOperating() {
         setEditStatus(data.status ?? 'active');
       }
 
+      const sb = supabase as any;
       const [{ count: favCount }, { count: msgCount }, eventsRes, autoRes] = await Promise.all([
-        supabase.from('favorites').select('*', { count: 'exact', head: true }).eq('listing_id', id),
-        supabase.from('messages').select('*', { count: 'exact', head: true }).eq('listing_id' as any, id),
-        supabase
+        sb.from('favorites').select('*', { count: 'exact', head: true }).eq('listing_id', id),
+        sb.from('messages').select('*', { count: 'exact', head: true }).eq('listing_id', id),
+        sb
           .from('marketing_events')
           .select('event_type, created_at')
-          .eq('listing_id' as any, id)
+          .eq('listing_id', id)
           .gte('created_at', new Date(Date.now() - 30 * 86400000).toISOString()),
-        supabase
+        sb
           .from('autoscout_listings')
           .select('status, last_sync_at')
           .eq('listing_id', id)
