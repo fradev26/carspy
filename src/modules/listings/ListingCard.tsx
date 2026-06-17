@@ -35,6 +35,20 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
     add(listing);
   };
 
+  const handleMarketCompare = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const params = new URLSearchParams();
+    if (listing.brand) params.set('brand', listing.brand);
+    if (listing.model) params.set('model', listing.model);
+    if (listing.year) {
+      params.set('yearMin', String(listing.year - 1));
+      params.set('yearMax', String(listing.year + 1));
+    }
+    params.set('compareWith', listing.id);
+    navigate(`/zoeken?${params.toString()}`);
+  };
+
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
