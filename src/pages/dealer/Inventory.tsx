@@ -107,7 +107,7 @@ export default function Inventory() {
         <h1 className="text-xl font-semibold tracking-tight">Zakelijk</h1>
         <Button asChild size="sm" className="gap-1.5">
           <Link to="/verkopen">
-            <Plus className="h-4 w-4" /> Wagen te koop
+            <Plus className="h-4 w-4" /> Wagen verkopen
           </Link>
         </Button>
       </div>
