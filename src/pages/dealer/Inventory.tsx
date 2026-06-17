@@ -117,16 +117,46 @@ export default function Inventory() {
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Car className="h-6 w-6 text-primary" /> Voorraad
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            {overview?.activeListings ?? 0} actief · {overview?.totalViews ?? 0} views ·{' '}
-            {overview?.totalFavorites ?? 0} favorieten · {overview?.totalMessages ?? 0} berichten
-          </p>
+          <p className="text-sm text-muted-foreground mt-0.5">Beheer al je voertuigen op één plek.</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button asChild size="sm" className="gap-1.5">
+            <Link to="/verkopen?dealer=1"><Plus className="h-4 w-4" /> Voertuig toevoegen</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm" className="gap-1.5">
+            <Link to="/zakelijk/import"><FileSpreadsheet className="h-4 w-4" /> CSV import</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm" className="gap-1.5">
+            <Link to="/zakelijk/instellingen"><Link2 className="h-4 w-4" /> AutoScout koppelen</Link>
+          </Button>
         </div>
       </div>
 
+      {/* KPI Strip */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { label: 'Actieve voertuigen', value: overview?.activeListings ?? 0, icon: Car },
+          { label: 'Views',              value: overview?.totalViews ?? 0,     icon: Eye },
+          { label: 'Favorieten',         value: overview?.totalFavorites ?? 0, icon: Heart },
+          { label: 'Leads',              value: overview?.totalMessages ?? 0,  icon: MessageCircle },
+        ].map((kpi) => (
+          <Card key={kpi.label} className="border-border/60">
+            <CardContent className="p-3 sm:p-4 flex items-center gap-3">
+              <div className="h-9 w-9 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
+                <kpi.icon className="h-4 w-4 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs text-muted-foreground truncate">{kpi.label}</p>
+                <p className="text-lg font-bold">{kpi.value.toLocaleString('nl-NL')}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
       {/* Filters */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <div className="relative flex-1 min-w-[200px] max-w-md">
+      <div className="space-y-3">
+        <div className="relative max-w-md">
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Zoek op titel, merk, model…"
@@ -135,19 +165,33 @@ export default function Inventory() {
             className="pl-9"
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-44">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Alle statussen</SelectItem>
-            <SelectItem value="active">Actief</SelectItem>
-            <SelectItem value="reserved">Gereserveerd</SelectItem>
-            <SelectItem value="sold">Verkocht</SelectItem>
-            <SelectItem value="draft">Concept</SelectItem>
-            <SelectItem value="inactive">Gepauzeerd</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2 flex-wrap">
+          {[
+            { v: 'all',      label: 'Alle' },
+            { v: 'active',   label: 'Beschikbaar' },
+            { v: 'draft',    label: 'Concept' },
+            { v: 'reserved', label: 'Gereserveerd' },
+            { v: 'sold',     label: 'Verkocht' },
+          ].map((c) => {
+            const count = c.v === 'all' ? listings.length : listings.filter((l) => l.status === c.v).length;
+            const active = statusFilter === c.v;
+            return (
+              <button
+                key={c.v}
+                type="button"
+                onClick={() => setStatusFilter(c.v)}
+                className={cn(
+                  'rounded-full px-3 py-1.5 text-xs font-medium border transition-colors',
+                  active
+                    ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                    : 'bg-card text-muted-foreground border-border/60 hover:bg-muted hover:text-foreground'
+                )}
+              >
+                {c.label} <span className={cn('ml-1 opacity-70', active && 'opacity-90')}>({count})</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Bulk bar */}
