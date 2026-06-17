@@ -1,17 +1,28 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, RotateCcw, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { CAR_BRANDS, CAR_MODELS, FUEL_TYPES, SearchFilters } from '@/types/listing';
 import { cn } from '@/lib/utils';
 import { HomepageFilters } from './HomepageFilters';
 import { FilterChips } from './FilterChips';
 import { RecentSearches } from '@/components/RecentSearches';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
+import { useSavedSearches } from '@/hooks/useSavedSearches';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from '@/hooks/use-toast';
 
 interface SearchBarProps {
   variant?: 'hero' | 'compact';
