@@ -81,22 +81,22 @@ export default function Search() {
 
   const handleRemoveFilter = (key: keyof SearchFilters, value?: string) => {
     const arrayKeys = ['fuelTypes', 'transmissions', 'bodyTypes', 'driveTypes', 'paintTypes', 'colors', 'interiorMaterials', 'features'];
-    
+
     if (value && arrayKeys.includes(key)) {
       const currentValues = filters[key] as string[] | undefined;
-      setFilters({
+      const nextValues = currentValues?.filter((v) => v !== value);
+      writeFiltersToURL({
         ...filters,
-        [key]: currentValues?.filter(v => v !== value),
+        [key]: nextValues && nextValues.length ? nextValues : undefined,
       });
     } else {
       const newFilters = { ...filters };
       delete newFilters[key];
-      // Clear paired filters
       if (key === 'minPrice') delete newFilters.maxPrice;
       if (key === 'minYear') delete newFilters.maxYear;
       if (key === 'minMileage') delete newFilters.maxMileage;
       if (key === 'minPower') delete newFilters.maxPower;
-      setFilters(newFilters);
+      writeFiltersToURL(newFilters);
     }
   };
 
