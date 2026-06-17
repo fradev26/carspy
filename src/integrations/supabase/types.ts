@@ -211,6 +211,86 @@ export type Database = {
         }
         Relationships: []
       }
+      boost_packages: {
+        Row: {
+          code: string
+          created_at: string
+          duration_days: number
+          id: string
+          name: string
+          price_cents: number
+          sort_order: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          duration_days: number
+          id?: string
+          name: string
+          price_cents: number
+          sort_order?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          duration_days?: number
+          id?: string
+          name?: string
+          price_cents?: number
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      boost_usage: {
+        Row: {
+          billing_period: string
+          created_at: string
+          duration_days: number
+          ends_at: string
+          id: string
+          listing_id: string
+          package_code: string
+          price_cents: number
+          source: string
+          starts_at: string
+          user_id: string
+        }
+        Insert: {
+          billing_period?: string
+          created_at?: string
+          duration_days: number
+          ends_at: string
+          id?: string
+          listing_id: string
+          package_code: string
+          price_cents?: number
+          source: string
+          starts_at?: string
+          user_id: string
+        }
+        Update: {
+          billing_period?: string
+          created_at?: string
+          duration_days?: number
+          ends_at?: string
+          id?: string
+          listing_id?: string
+          package_code?: string
+          price_cents?: number
+          source?: string
+          starts_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boost_usage_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           address: string | null
@@ -332,6 +412,47 @@ export type Database = {
           vat_number?: string | null
         }
         Relationships: []
+      }
+      dealer_subscriptions: {
+        Row: {
+          created_at: string
+          id: string
+          period_end: string
+          period_start: string
+          plan_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          period_end?: string
+          period_start?: string
+          plan_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          period_end?: string
+          period_start?: string
+          plan_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dealer_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       favorites: {
         Row: {
@@ -1020,6 +1141,39 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_plans: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          included_nitro: number
+          included_turbo: number
+          monthly_price_cents: number
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          included_nitro?: number
+          included_turbo?: number
+          monthly_price_cents: number
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          included_nitro?: number
+          included_turbo?: number
+          monthly_price_cents?: number
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       support_messages: {
         Row: {
           created_at: string
@@ -1156,12 +1310,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      activate_boost: {
+        Args: { _listing_id: string; _package_code: string }
+        Returns: Json
+      }
       autoscout_get_password: { Args: { _secret_id: string }; Returns: string }
       autoscout_save_password: {
         Args: { _password: string; _user_id: string }
         Returns: string
       }
       cleanup_rate_limits: { Args: never; Returns: undefined }
+      get_current_billing: { Args: { _user_id: string }; Returns: Json }
       get_my_profile: {
         Args: never
         Returns: {

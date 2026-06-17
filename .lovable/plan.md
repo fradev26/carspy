@@ -1,64 +1,74 @@
+# Boost & Abonnement systeem
 
-# Herontwerp Instellingen — VATUUR Zakelijk
+## 1. Instellingen-pagina (snelle UI-wijziging)
 
-Een complete rebuild van `src/pages/dealer/Settings.tsx` naar een compacte, rij-gebaseerde lijststijl à la Stripe/Linear/Notion, passend in de bestaande donkere VATUUR-stijl.
+`src/pages/dealer/Settings.tsx` — bedrijfskaart:
+- "Profiel bewerken" knop op `w-1/2` (of in `grid grid-cols-2 gap-2`).
+- Nieuwe knop ernaast: **"Boosten"** (zelfde stijl, secondary). Opent `BoostDialog` met overzicht + selectie van een wagen uit eigen voorraad.
+- Nieuwe rij in sectie **Account**: "Abonnement" → `/zakelijk/abonnement` (vervangt huidige `soon()`-actie).
 
-## Structuur
+## 2. Database (migration)
 
-1. **SEOHead** (ongewijzigd, noindex).
-2. **Bedrijfskaart** (bovenaan, licht verhoogd):
-   - Bedrijfsnaam (`profile.dealer_name` → fallback `full_name` → "Test Garage")
-   - BTW (`profile.vat_number`)
-   - Knop "Profiel bewerken" met pencil icoon → `/account/profiel`
-   - Lichte border, `bg-card`, `rounded-xl`, subtiele shadow.
-3. **4 secties** met kleine accent-gekleurde titel, en een container (`rounded-xl border bg-card divide-y`) met rijen:
-   - **Koppelingen**: AutoScout24, Marktplaats, Mobile.de, Facebook Marketplace
-   - **Voorraad**: Voorraadvoorkeuren, Prijsinstellingen, Automatische publicatie
-   - **Account**: Gebruikers beheren, Meldingen, Beveiliging, Abonnement
-   - **Ondersteuning**: Support, Contact, Over VATUUR
+Nieuwe tabellen in `public`:
 
-## Row-component
+```text
+subscription_plans         (catalogus, seeded)
+  id, code, name, monthly_price_cents,
+  included_turbo, included_nitro
 
-Nieuw lokaal component `SettingsRow` (binnen Settings.tsx, geen apart bestand):
-- `<Link>` of `<button>` met `flex items-center justify-between`
-- Hoogte `h-14` (56px), `px-4 md:px-5`
-- Linker icoon (lucide) + label (`text-sm font-medium`), optionele subtitel `text-xs text-muted-foreground`
-- Rechts `ChevronRight` icoon, `text-muted-foreground`
-- Hover: `hover:bg-muted/40`, actieve tap: `active:bg-muted/60`, `transition-colors`
+boost_packages             (catalogus, seeded)
+  id, code, name, duration_days, price_cents
 
-## Routes / acties per rij
+dealer_subscriptions       (1 actief per user)
+  id, user_id, plan_id, status, period_start, period_end
 
-| Rij | Doel |
-|---|---|
-| AutoScout24 | opent AutoScoutPanel in een Sheet/Dialog of inline (zie hieronder) |
-| Marktplaats, Mobile.de, Facebook Marketplace | `disabled`-rij met badge "Binnenkort" |
-| Voorraadvoorkeuren | `/zakelijk/voorraad` |
-| Prijsinstellingen | placeholder (toast "Binnenkort beschikbaar") |
-| Automatische publicatie | placeholder toast |
-| Gebruikers beheren | placeholder toast |
-| Meldingen | `/account/meldingen` |
-| Beveiliging | `/account/privacy` |
-| Abonnement | placeholder toast |
-| Support | `/help` |
-| Contact | `/contact` |
-| Over VATUUR | `/` (of placeholder) |
+boost_usage                (logregel per geactiveerde boost)
+  id, user_id, listing_id, package_code (turbo|nitro),
+  source (included|extra), price_cents, duration_days,
+  starts_at, ends_at, billing_period (date)
+```
 
-`AutoScoutPanel` blijft beschikbaar maar wordt verplaatst naar een Sheet die opent vanaf de AutoScout24-rij, zodat de hoofdpagina compact blijft en alles zichtbaar zonder veel scrollen.
+Seed-data:
+- Plans: `premium_dealer` €49,95 / 10 turbo / 0 nitro · `premium_plus` €149,95 / 40 / 10 · `enterprise` €299,95 / 100 / 30.
+- Packages: `turbo` 7d €4,95 · `nitro` 14d €7,95.
 
-## Stijl-details
+RLS: alle 4 tabellen `enable RLS`. Catalogus (`subscription_plans`, `boost_packages`) → `SELECT` voor `authenticated`. `dealer_subscriptions` + `boost_usage` → user mag enkel eigen rijen lezen/schrijven; `service_role` volledige toegang. GRANTs per regels in projectinstructies.
 
-- Sectietitel: `text-xs font-semibold uppercase tracking-wider text-primary/80 px-1 mb-2`
-- Container: `rounded-xl border border-border/60 bg-card overflow-hidden divide-y divide-border/60`
-- Pagina-wrapper: `container max-w-2xl py-6 space-y-6 pb-24` (bottom-nav clearance)
-- Mobiel-first; werkt ook netjes op desktop door `max-w-2xl`
-- Iconen consistent `h-4 w-4 text-muted-foreground`
-- Animaties: alleen `transition-colors` op rijen, geen scale-effecten (Linear-stijl rust)
+RPC `public.activate_boost(_listing_id uuid, _package_code text)` (security definer):
+1. Check listing eigendom (`is_listing_owner`).
+2. Bepaal huidige periode-verbruik vs. plan-quota.
+3. `source = 'included'` als quota over, anders `'extra'` met `price_cents` uit `boost_packages`.
+4. Insert `boost_usage` + update `listings.boost_until = now() + duration_days` + `is_boosted = true` (bestaande trigger `sync_listing_boost_status` regelt vlag).
+5. Returnt `{ source, remaining_turbo, remaining_nitro, extra_cost_cents }`.
 
-## Bestanden
+View / helper-functie `public.get_current_billing(_user_id uuid)` → maandkost = `plan.monthly_price + sum(extra boost_usage in periode)`.
 
-- **Edit** `src/pages/dealer/Settings.tsx` — volledige rewrite volgens bovenstaande structuur.
-- Geen wijzigingen aan routes, layout, BottomNav of AutoScoutPanel zelf.
+## 3. Frontend
 
-## Out of scope
+### `BoostDialog` (nieuw, `src/components/boost/BoostDialog.tsx`)
+- Header: "Boost een wagen"
+- Toont 2 pakketkaarten (Turbo / Nitro) met prijs + duur + badge "Inclusief in je abonnement" of "+€X,XX extra".
+- Wagen-selector (Combobox van eigen actieve listings).
+- Actieknop → roept RPC `activate_boost` aan, toast met resultaat + eventuele extra kost.
 
-- Echte implementatie van Marktplaats / Mobile.de / Facebook-koppelingen, prijsinstellingen, gebruikersbeheer, abonnementen — deze rijen tonen placeholders/toasts zodat de visuele structuur compleet is.
+### Voorraad
+- `src/pages/dealer/Inventory.tsx`: per kaart een **"Boost"** knop (opent `BoostDialog` met listing prefilled).
+- Bulk: checkboxes + actiebalk "Boost geselecteerde" → opent `BoostDialog` in bulk-modus (looped).
+
+### Nieuwe pagina `/zakelijk/abonnement` (`src/pages/dealer/Subscription.tsx`)
+- Huidig plan-overzicht met inclusieve boosts en gebruik (`x van y turbo gebruikt`).
+- Lijst van extra boost-aankopen deze periode + totaal extra kost.
+- **Totale maandkost = basis + extra's** prominent bovenaan.
+- Plan-wisselaar (UI; schrijft naar `dealer_subscriptions`).
+- Verwijst naar bestaande Instellingen → "Boosten" voor activatie.
+
+## 4. Niet in scope
+- Echte betaling/Stripe.
+- Admin facturatiemodule (komt later — data wordt nu wel correct opgeslagen zodat dit bovenop kan).
+- E-mailmeldingen rond boost-verloop.
+
+## Technische details
+- Geen wijziging aan `BottomNav`, routes elders, of bestaande AutoScout-integratie.
+- Hergebruikt `is_listing_owner`, `sync_listing_boost_status`, `refresh_boosted_status`.
+- Periode-grens: `period_start`/`period_end` op `dealer_subscriptions`; bij ontbrekende sub fallback naar `date_trunc('month', now())`.
+- Bedragen overal in cents (`integer`) opgeslagen, geformatteerd in NL-locale in UI.
