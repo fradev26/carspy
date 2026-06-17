@@ -471,6 +471,7 @@ export type Database = {
           consumption_city: number | null
           consumption_combined: number | null
           consumption_country: number | null
+          cost_price: number | null
           country_version: string | null
           created_at: string
           cross_reference_id: string | null
@@ -504,6 +505,7 @@ export type Database = {
           is_premium: boolean
           leasing_offers: Json | null
           licence_plate: string | null
+          margin: number | null
           marketing: Json | null
           mileage: number
           mileage_unit: string | null
@@ -527,6 +529,8 @@ export type Database = {
           seat_count: number | null
           seats: number | null
           service_history: Json | null
+          sold_at: string | null
+          sold_price: number | null
           source: string | null
           specs: Json | null
           status: string
@@ -566,6 +570,7 @@ export type Database = {
           consumption_city?: number | null
           consumption_combined?: number | null
           consumption_country?: number | null
+          cost_price?: number | null
           country_version?: string | null
           created_at?: string
           cross_reference_id?: string | null
@@ -599,6 +604,7 @@ export type Database = {
           is_premium?: boolean
           leasing_offers?: Json | null
           licence_plate?: string | null
+          margin?: number | null
           marketing?: Json | null
           mileage: number
           mileage_unit?: string | null
@@ -622,6 +628,8 @@ export type Database = {
           seat_count?: number | null
           seats?: number | null
           service_history?: Json | null
+          sold_at?: string | null
+          sold_price?: number | null
           source?: string | null
           specs?: Json | null
           status?: string
@@ -661,6 +669,7 @@ export type Database = {
           consumption_city?: number | null
           consumption_combined?: number | null
           consumption_country?: number | null
+          cost_price?: number | null
           country_version?: string | null
           created_at?: string
           cross_reference_id?: string | null
@@ -694,6 +703,7 @@ export type Database = {
           is_premium?: boolean
           leasing_offers?: Json | null
           licence_plate?: string | null
+          margin?: number | null
           marketing?: Json | null
           mileage?: number
           mileage_unit?: string | null
@@ -717,6 +727,8 @@ export type Database = {
           seat_count?: number | null
           seats?: number | null
           service_history?: Json | null
+          sold_at?: string | null
+          sold_price?: number | null
           source?: string | null
           specs?: Json | null
           status?: string
