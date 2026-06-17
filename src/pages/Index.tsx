@@ -370,29 +370,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="hidden lg:block relative overflow-hidden bg-gradient-to-r from-accent to-accent/90 py-16 md:py-20">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }} />
-        </div>
-        <div className="container relative z-10 text-center">
-          <h2 className="text-2xl font-bold text-accent-foreground md:text-4xl">
-            Auto verkopen in 2 minuten
-          </h2>
-          <p className="mt-3 text-lg text-accent-foreground/90 max-w-md mx-auto">
-            Gratis advertentie, AI-prijssuggestie en directe zichtbaarheid bij duizenden kopers.
-          </p>
-          <Button 
-            asChild 
-            size="lg" 
-            className="mt-8 bg-card text-foreground hover:bg-card/90 shadow-floating text-base px-8"
-          >
-            <Link to="/verkopen">Plaats mijn advertentie</Link>
-          </Button>
-        </div>
-      </section>
       {/* FAQ */}
       <section className="py-12 md:py-20 bg-muted/30">
         <div className="container">
