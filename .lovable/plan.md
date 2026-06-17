@@ -1,13 +1,14 @@
 ## Wijzigingen
 
-1. **`src/layouts/DealerLayout.tsx`**
-   - Vervang de "Voertuig toevoegen" knop (rechtsboven, met Plus icoon) door een "Instellingen" knop met Settings-icoon, linkend naar `/zakelijk/instellingen`.
-   - Verwijder de `Plus` import uit lucide-react (indien niet elders gebruikt).
+1. **`src/components/BottomNav.tsx`**
+   - Vervang `dealerItems` door: Home (`/`), Zoeken (`/zoeken`), AI (center button), Voorraad (`/zakelijk/voorraad`), Instellingen (`/zakelijk/instellingen`).
+   - Verwijder de `moreLinks` array, de `Sheet`-rendering voor "Meer", en de `moreOpen` state.
+   - Ruim ongebruikte imports op: `Store`, `Plus`, `Upload`, `MoreHorizontal`, `BarChart3`, `Inbox`, `Sheet*` componenten.
 
-2. **`src/components/BottomNav.tsx`**
-   - Verwijder `{ icon: Settings, label: 'Instellingen', path: '/zakelijk/instellingen' }` uit de `moreLinks` array.
-   - `Settings` import blijft staan want andere delen van de code gebruiken het mogelijk.
+2. **`src/layouts/DealerLayout.tsx`**
+   - Verwijder de Instellingen-knop rechts in de header (incl. ongebruikte `Settings` import indien niet meer nodig — blijft wel in `tabs`).
+   - Header behoudt alleen brand + dealer-naam + desktop tab-nav.
 
 ## Resultaat
-- Desktop: instellingen bereikbaar via header-knop naast merknaam.
-- Mobiel: instellingen bereikbaar via een directe tab in de bottom-nav (toekomstig idee) of via de header op desktop; voor nu verdwijnt het uit "Meer".
+- Mobiele dealer bottom-nav (l→r): Home · Zoeken · AI · Voorraad · Instellingen.
+- Geen "Meer" sheet meer, geen dubbele Instellingen knop in de header.

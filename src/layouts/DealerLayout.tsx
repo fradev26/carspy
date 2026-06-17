@@ -26,12 +26,6 @@ export default function DealerLayout() {
               {profile?.dealer_name ?? profile?.full_name ?? ''}
             </p>
           </div>
-          <Button asChild size="sm" variant="outline" className="gap-1.5 ml-auto">
-            <Link to="/zakelijk/instellingen">
-              <Settings className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Instellingen</span>
-            </Link>
-          </Button>
         </div>
         <nav
           aria-label="Dealer navigatie"
