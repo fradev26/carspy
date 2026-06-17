@@ -1,98 +1,73 @@
-# Dealer UX herstructurering
+# Opschonen dubbele dealer-navigatie
 
-Doel: een voertuig-centrisch operating system. Dealers zien een eigen bottom nav (Markt / Voorraad / Verkopen / Meer), AI verdwijnt uit de hoofdnav, en elke ListingCard toont overal een statusbadge + "Vergelijk markt".
+## Bevindingen
 
-## 1. Bottom navigation — dealer vs consument
+Bij het doorlopen van `BottomNav.tsx`, `DealerSidebar.tsx` en `DealerLayout.tsx` zie ik vier dubbelingen die dealers in de war brengen:
 
-`src/components/BottomNav.tsx` wordt rol-aware via `useProfile().isDealer`.
+1. **Twee keer "Instellingen" met verschillende bestemmingen**
+   In het mobiele "Meer"-sheet staan zowel:
+   - `Integraties` → `/zakelijk/instellingen`
+   - `Instellingen` → `/account/instellingen` (consumer-account)
+   
+   Dezelfde pagina (`/zakelijk/instellingen`) wordt bovendien al via de sidebar bereikt onder de naam "Instellingen". Drie namen, twee bestemmingen, één pagina.
 
-**Dealer (4 tabs, geen center AI):**
+2. **Verkopen-tab = Voertuig toevoegen (3 plaatsen)**
+   - Bottom-nav tab "Verkopen" → `/verkopen?dealer=1`
+   - Sidebar-footer "Voertuig toevoegen" → `/verkopen?dealer=1`
+   - Header-CTA "Voertuig toevoegen" → `/verkopen?dealer=1`
+   
+   Drie verschillende labels voor exact dezelfde actie.
 
-```text
-[ Markt ]  [ Voorraad* ]  [ Verkopen ]  [ Meer ]
-   Search      Car (default)   Upload     Menu
+3. **Import op 3 plekken met 3 labels**
+   - Sidebar: "Import & Sync" (Upload-icoon)
+   - Header: "Import CSV" (Upload-icoon)
+   - Meer-sheet: "Import (CSV)" (FileSpreadsheet-icoon)
+
+4. **AutoScout-knop in header verwijst naar Instellingen**
+   De header-knop "AutoScout" opent gewoon `/zakelijk/instellingen`. Dat overlapt met Sidebar→Instellingen én met Meer→Integraties.
+
+5. **Favorieten in dealer Meer-sheet**
+   Consumer-concept dat in de dealer-flow weinig betekenis heeft (heart-acties zitten al op cards).
+
+## Voorgestelde opschoning
+
+### Bottom-nav `moreLinks` (mobiel dealer "Meer"-sheet)
+Wordt bewust kort en exact gelijk aan de desktop-sidebar:
+
 ```
-- Markt → `/zoeken`
-- Voorraad → `/zakelijk/voorraad` (default landing — redirect `/` → `/zakelijk/voorraad` voor dealers in `Index.tsx`)
-- Verkopen → `/verkopen?dealer=1`
-- Meer → opent een `Sheet` met links: Instellingen, Import (CSV), Analytics, Integraties (AutoScout), Leads, Berichten, Account, Donker/licht thema
-
-**Consument:** huidige 5-tab nav blijft ongewijzigd (inclusief center AI button). Geen regressie.
-
-AI als hoofdtab vervalt alleen voor dealers; AI blijft beschikbaar als contextuele assistent op listing detail, voorraad, en markt-pagina's (bestaande chat widget/floating button).
-
-## 2. Status badge verplicht op ALLE ListingCards
-
-In `src/modules/listings/ListingCard.tsx`: één gedeelde `StatusBadge` (nieuwe kleine component `src/modules/listings/StatusBadge.tsx`) die altijd rendert in zowel `default` als `horizontal` variant, links-onder de afbeelding, naast de Premium-kroon.
-
-Mapping (token-based, geen hardcoded kleuren):
-| status | label | tint |
-|---|---|---|
-| active | Beschikbaar | `bg-emerald-500/90 text-white` via `--status-available` |
-| draft | Concept | `bg-muted text-muted-foreground` |
-| reserved | Gereserveerd | `bg-warning text-warning-foreground` (al aanwezig) |
-| sold | Verkocht | `bg-destructive/90 text-destructive-foreground` |
-| inactive/expired | Gepauzeerd | `bg-muted text-muted-foreground` |
-
-Tokens worden toegevoegd in `src/index.css` (`--status-available-bg/fg` etc.) voor light + dark.
-
-De bestaande losse "Gereserveerd" badge wordt vervangen door deze unified `StatusBadge` — geen dubbele indicator. Premium kroon blijft apart (niet-status).
-
-Toegepast op: Search, Home (CategoryGrid/featured), Favorites, Compare, Dealer pages, gerelateerde items, ListingDetail thumbnails. Aangezien overal `ListingCard` wordt hergebruikt is dit één bron van waarheid; we verifiëren alleen.
-
-## 3. "Vergelijk markt" knop
-
-Nieuwe CTA per ListingCard (alleen `default` variant, niet `compact` om clutter te vermijden): klein outline-knopje onderaan content, naast locatie/dealer-badge, label "Vergelijk markt" met `BarChart3` icoon. Stop event propagation → navigeert naar `/zoeken?brand=<brand>&model=<model>&yearMin=<year-1>&yearMax=<year+1>&compareWith=<id>`.
-
-In `Search.tsx` lezen we `compareWith` uit URL en tonen bovenaan een banner met "Marktvergelijking voor <titel>" + min/avg/max prijs (berekend client-side uit huidige resultaten) en de positie van de referentie-listing. Geen nieuwe backend nodig.
-
-## 4. Voorraad pagina verbeteringen (`src/pages/dealer/Inventory.tsx`)
-
-**KPI strip** (4 tegels boven de filters):
-```text
-[ Actieve voertuigen ] [ Views ] [ Favorieten ] [ Leads ]
+Analytics       → /zakelijk/analytics
+Import & Sync   → /zakelijk/import
+Leads           → /zakelijk/leads
+Instellingen    → /zakelijk/instellingen
 ```
-Data uit bestaande `useDealerAnalytics().overview`.
 
-**Primary actions** (rechts naast titel): `Voertuig toevoegen`, `CSV import`, `AutoScout koppelen` — bestaande links, nu altijd zichtbaar (niet alleen empty state).
+Verwijderen:
+- `Integraties` (= zelfde pagina als Instellingen)
+- `Instellingen → /account/instellingen` (consumer-pad; account-bewerking blijft bereikbaar via profielmenu in header — niet via dealer-nav)
+- `Favorieten` (geen dealer-actie)
+- `Import (CSV)` als aparte entry — vervangen door één "Import & Sync" zodat label/iconen overal kloppen
 
-**Chip-filters** vervangen de Select:
-```text
-[ Alle ] [ Beschikbaar ] [ Concept ] [ Gereserveerd ] [ Verkocht ]
-```
-Pill-style buttons; actieve chip krijgt `bg-primary text-primary-foreground`. Counts tussen haakjes (uit `listings`).
+### Dealer bottom-tab "Verkopen" → hernoemen naar **"Toevoegen"**
+Label sluit aan op de actie (1 voertuig erbij zetten), niet op consumer-"Verkopen". URL blijft `/verkopen?dealer=1`. Icoon `Plus` ipv `Upload` (Upload reserveren we voor Import).
 
-**Per rij**: kleine "Vergelijk markt" link in actie-kolom (opent dezelfde URL als card-CTA). Prijs-vs-markt indicator (optioneel) komt later — niet in deze sprint.
+### DealerLayout-header opschonen
+- Header-knop **"AutoScout"** verwijderen (zit al onder Instellingen).
+- Header-knop **"Import CSV"** verwijderen (zit in sidebar als "Import & Sync"; op mobiel via Meer-sheet).
+- Behouden: **"Voertuig toevoegen"** primary CTA. Sidebar-footer mag dan ook weg om dubbele primaire CTA te voorkomen — sidebar wordt puur navigatie.
 
-## 5. Favorieten — ongewijzigd
+### Naamgeving uniform
+- Eén pagina = één naam: `/zakelijk/instellingen` heet overal **Instellingen**.
+- Eén pagina = één naam: `/zakelijk/import` heet overal **Import & Sync**.
+- Toevoegen-flow heet overal **Voertuig toevoegen** (header-CTA), behalve in de bottom-tab waar ruimte beperkt is → daar **Toevoegen**.
 
-`useFavorites` blijft single source of truth. Alleen het hartje is visueel indicator. Geen card-styling verschillen voor favorieten — bestaand gedrag.
+## Technische wijzigingen
 
-## 6. AI herpositionering
+| Bestand | Wijziging |
+|---|---|
+| `src/components/BottomNav.tsx` | `moreLinks` reduceren tot Analytics, Import & Sync, Leads, Instellingen. Dealer-tab "Verkopen" hernoemen naar "Toevoegen" met `Plus`-icoon. Imports `User`, `Link2`, `FileSpreadsheet`, `Heart`, `Settings` weghalen waar niet meer nodig. |
+| `src/layouts/DealerLayout.tsx` | "Import CSV"- en "AutoScout"-knoppen uit header verwijderen. |
+| `src/components/dealer/DealerSidebar.tsx` | Sidebar-footer "Voertuig toevoegen" verwijderen (header-CTA blijft de enige primary). |
 
-- Verwijderd uit dealer bottom nav (zie §1)
-- Blijft in consument bottom nav
-- Blijft als floating `ChatWidget` (al actief via `AppLayout`)
-- Geen wijzigingen aan AI logica / edge functions
-
-## Bestanden
-
-**Nieuw:**
-- `src/modules/listings/StatusBadge.tsx`
-- `src/components/dealer/DealerBottomNav.tsx` (of conditioneel in BottomNav)
-- `src/components/MarketCompareBanner.tsx` (Search top-banner)
-
-**Bewerkt:**
-- `src/components/BottomNav.tsx` — rol-switch dealer/consument
-- `src/modules/listings/ListingCard.tsx` — StatusBadge + Vergelijk markt CTA, verwijder oude Gereserveerd badge
-- `src/pages/dealer/Inventory.tsx` — KPI strip, chip-filters, persistent primary actions
-- `src/pages/Index.tsx` — dealer-redirect naar `/zakelijk/voorraad`
-- `src/pages/Search.tsx` — `compareWith` query support + banner
-- `src/index.css` — status color tokens (light + dark)
-
-**Niet aangepast:** backend, RLS, edge functions, FavoritesContext, AI chat, Premium logica.
-
-## Out of scope (deze sprint)
-- Prijs-vs-markt indicator per rij (heuristiek nog te definiëren)
-- AI "deal detection" badge op markt-cards
-- Verkopen-tab als volwaardige publishing-hub (nu nog `/verkopen` wizard)
+## Buiten scope
+- Geen routewijzigingen, geen pagina-merges, geen RLS/backend.
+- Profielmenu / account-instellingen voor dealers blijft bereikbaar via bestaande header/avatar-flows; geen nieuwe entry-points.

@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { Car, Upload, Inbox, BarChart3, Settings, Plus } from 'lucide-react';
+import { Car, Upload, Inbox, BarChart3, Settings } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -59,22 +59,8 @@ export function DealerSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="border-t">
-        {!collapsed && (
-          <Button asChild size="sm" className="w-full gap-2">
-            <Link to="/verkopen?dealer=1">
-              <Plus className="h-4 w-4" /> Voertuig toevoegen
-            </Link>
-          </Button>
-        )}
-        {collapsed && (
-          <Button asChild size="icon" className="w-full">
-            <Link to="/verkopen?dealer=1" aria-label="Voertuig toevoegen">
-              <Plus className="h-4 w-4" />
-            </Link>
-          </Button>
-        )}
-      </SidebarFooter>
+      <SidebarFooter className="border-t" />
+
     </Sidebar>
   );
 }
