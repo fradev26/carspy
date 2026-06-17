@@ -135,9 +135,17 @@ const websiteJsonLd = [
 ];
 
 const Index = () => {
+  const { isDealer, loading: profileLoading } = useProfile();
   const { listings: allListings, loading: listingsLoading } = useListings();
   const latestListings = allListings.slice(0, 6);
   const [faqExpanded, setFaqExpanded] = useState(false);
+
+  // Dealers landen direct in hun voorraad
+  if (!profileLoading && isDealer) {
+    return <Navigate to="/zakelijk/voorraad" replace />;
+  }
+
+
   
 
   return (
