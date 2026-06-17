@@ -233,7 +233,28 @@ export default function Search() {
                   </div>
                 ) : (
                   <div className="mb-5">
-                    <SmartSearchBar variant="compact" />
+                    {aiBarOpen ? (
+                      <div className="space-y-2">
+                        <SmartSearchBar variant="compact" />
+                        <button
+                          type="button"
+                          onClick={() => setAiBarOpen(false)}
+                          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                        >
+                          <ChevronUp className="h-3 w-3" /> Verberg AI-zoekbalk
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setAiBarOpen(true)}
+                        className="group flex w-full items-center gap-3 rounded-xl border border-border/60 bg-card/50 px-4 py-2.5 text-left text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:bg-card hover:text-foreground focus-ring"
+                      >
+                        <Sparkles className="h-4 w-4 text-primary" />
+                        <span className="flex-1 truncate">Vraag het de AI… "BMW automaat onder €25.000"</span>
+                        <ChevronDown className="h-4 w-4 opacity-60 transition-transform group-hover:translate-y-0.5" />
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
