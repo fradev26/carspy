@@ -170,7 +170,7 @@ const Index = () => {
             alt=""
             aria-hidden="true"
             decoding="async"
-            fetchPriority="high"
+            {...({ fetchpriority: 'high' } as Record<string, string>)}
             width={1920}
             height={1080}
             className="absolute inset-0 h-full w-full object-cover object-[65%_center] sm:object-[60%_center] lg:object-center"

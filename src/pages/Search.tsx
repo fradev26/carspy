@@ -1,13 +1,14 @@
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useEffect, useTransition, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { SEOHead } from '@/components/SEOHead';
-import { Grid, List, SlidersHorizontal, Car, Sparkles } from 'lucide-react';
+import { Grid, List, SlidersHorizontal, Car, Sparkles, Bell, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger, DrawerFooter, DrawerClose } from '@/components/ui/drawer';
 import { Badge } from '@/components/ui/badge';
 import { FilterPanel, FilterChips, SmartSearchBar } from '@/modules/search';
+import { SaveSearchDialog, useSaveSearchGate } from '@/modules/search/SaveSearchDialog';
 import { ListingGrid } from '@/modules/listings';
 import { MarketCompareBanner } from '@/components/MarketCompareBanner';
 import { useSearchListings } from '@/hooks/useSearchListings';
@@ -19,20 +20,21 @@ import {
   FUEL_TYPES,
   TRANSMISSION_TYPES,
 } from '@/types/listing';
-import { parseFiltersFromURL } from '@/lib/searchFilters';
+import { parseFiltersFromURL, serializeFiltersToParams } from '@/lib/searchFilters';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
 
-
+// Params we preserve through filter updates (not part of SearchFilters)
+const PRESERVED_PARAMS = ['q', 'aiIntent', 'aiQuery', 'compareWith', 'sort'] as const;
 
 export default function Search() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [filters, setFilters] = useState<SearchFilters>(() => parseFiltersFromURL(searchParams));
-  const [sortBy, setSortBy] = useState('newest');
+  const filters = useMemo(() => parseFiltersFromURL(searchParams), [searchParams]);
+  const sortBy = searchParams.get('sort') || 'newest';
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [isLoading, setIsLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [page, setPage] = useState(1);
+  const [aiBarOpen, setAiBarOpen] = useState(false);
   const perPage = 24;
   const queryParam = searchParams.get('q') ?? undefined;
   const {
@@ -44,51 +46,57 @@ export default function Search() {
   const compareWithId = searchParams.get('compareWith');
   const referenceListing = compareWithId ? pageListings.find((l) => l.id === compareWithId) : undefined;
 
-  // Update filters when URL params change
+  // Reset to page 1 whenever the URL (filters or sort) changes
   useEffect(() => {
-    const newFilters = parseFiltersFromURL(searchParams);
-    setFilters(newFilters);
     setPage(1);
   }, [searchParams]);
 
-  // Reset to first page when filters/sort change locally
-  const handleFiltersChange = (newFilters: SearchFilters) => {
-    setIsLoading(true);
-    setPage(1);
+  // Write filters to URL (preserves q/ai/compareWith/sort)
+  const writeFiltersToURL = (newFilters: SearchFilters) => {
+    const next = new URLSearchParams();
+    // Preserve non-filter params
+    PRESERVED_PARAMS.forEach((k) => {
+      const v = searchParams.get(k);
+      if (v) next.set(k, v);
+    });
+    const serialized = serializeFiltersToParams(newFilters);
+    Object.entries(serialized).forEach(([k, v]) => next.set(k, v));
     startTransition(() => {
-      setFilters(newFilters);
-      setTimeout(() => setIsLoading(false), 200);
+      setSearchParams(next, { replace: false });
     });
   };
 
-  const handleSortChange = (value: string) => {
-    setIsLoading(true);
-    setPage(1);
-    startTransition(() => {
-      setSortBy(value);
-      setTimeout(() => setIsLoading(false), 150);
-    });
+  const handleFiltersChange = (newFilters: SearchFilters) => {
+    writeFiltersToURL(newFilters);
   };
+
+  const handleSortChange = (value: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (value && value !== 'newest') next.set('sort', value);
+    else next.delete('sort');
+    startTransition(() => setSearchParams(next, { replace: false }));
+  };
+
 
 
   const handleRemoveFilter = (key: keyof SearchFilters, value?: string) => {
     const arrayKeys = ['fuelTypes', 'transmissions', 'bodyTypes', 'driveTypes', 'paintTypes', 'colors', 'interiorMaterials', 'features'];
-    
+
     if (value && arrayKeys.includes(key)) {
       const currentValues = filters[key] as string[] | undefined;
-      setFilters({
+      const nextValues = currentValues?.filter((v) => v !== value);
+      writeFiltersToURL({
         ...filters,
-        [key]: currentValues?.filter(v => v !== value),
+        [key]: nextValues && nextValues.length ? nextValues : undefined,
       });
     } else {
       const newFilters = { ...filters };
       delete newFilters[key];
-      // Clear paired filters
       if (key === 'minPrice') delete newFilters.maxPrice;
       if (key === 'minYear') delete newFilters.maxYear;
       if (key === 'minMileage') delete newFilters.maxMileage;
       if (key === 'minPower') delete newFilters.maxPower;
-      setFilters(newFilters);
+      writeFiltersToURL(newFilters);
     }
   };
 
@@ -97,6 +105,8 @@ export default function Search() {
     const value = filters[key as keyof SearchFilters];
     return value !== undefined && value !== '' && (!Array.isArray(value) || value.length > 0);
   }).length;
+
+  const saveGate = useSaveSearchGate(activeFilterCount);
 
   // Mobile filter-first gate: show fullscreen filters until user reveals results
   const hasIncomingIntent =
@@ -144,8 +154,10 @@ export default function Search() {
           ]
         }}
       />
+      <SaveSearchDialog open={saveGate.open} onOpenChange={saveGate.setOpen} filters={filters} />
       <div className="container py-6">
         <div className="flex gap-8">
+
           {/* Desktop Filters - Sticky Sidebar */}
           <aside className="hidden w-72 flex-shrink-0 lg:block">
             <div className="sticky top-20">
@@ -165,7 +177,7 @@ export default function Search() {
                 </p>
               </div>
               <div className="rounded-xl border border-border/60 bg-card p-4 shadow-sm">
-                <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} showPresets={false} />
+                <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} />
               </div>
               <div className="sticky bottom-20 mt-4 pb-2 bg-gradient-to-t from-background via-background to-transparent pt-4 flex flex-col gap-2">
                 <Button
@@ -225,7 +237,28 @@ export default function Search() {
                   </div>
                 ) : (
                   <div className="mb-5">
-                    <SmartSearchBar variant="compact" />
+                    {aiBarOpen ? (
+                      <div className="space-y-2">
+                        <SmartSearchBar variant="compact" />
+                        <button
+                          type="button"
+                          onClick={() => setAiBarOpen(false)}
+                          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                        >
+                          <ChevronUp className="h-3 w-3" /> Verberg AI-zoekbalk
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setAiBarOpen(true)}
+                        className="group flex w-full items-center gap-3 rounded-xl border border-border/60 bg-card/50 px-4 py-2.5 text-left text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:bg-card hover:text-foreground focus-ring"
+                      >
+                        <Sparkles className="h-4 w-4 text-primary" />
+                        <span className="flex-1 truncate">Vraag het de AI… "BMW automaat onder €25.000"</span>
+                        <ChevronDown className="h-4 w-4 opacity-60 transition-transform group-hover:translate-y-0.5" />
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -283,7 +316,7 @@ export default function Search() {
                         </div>
                       )}
                       <div className="overflow-y-auto px-4 py-4">
-                        <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} showPresets={false} />
+                        <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} />
                       </div>
                       <DrawerFooter className="border-t border-border/60 flex-row gap-2">
                         <Button
@@ -302,6 +335,19 @@ export default function Search() {
                       </DrawerFooter>
                     </DrawerContent>
                   </Drawer>
+
+                  {/* Save as alert */}
+                  <Button
+                    variant="outline"
+                    onClick={saveGate.openSave}
+                    aria-label="Zoekopdracht opslaan als alert"
+                    title={activeFilterCount === 0 ? 'Voeg eerst filters toe' : 'Zoekopdracht opslaan als alert'}
+                    className="gap-2 border-border/60 hover:border-primary/40 hover:text-primary"
+                  >
+                    <Bell className="h-4 w-4" />
+                    <span className="hidden md:inline">Opslaan</span>
+                  </Button>
+
 
                   {/* Sort */}
                   <Select value={sortBy} onValueChange={handleSortChange}>
@@ -365,7 +411,7 @@ export default function Search() {
 
 
 
-              {isLoading || isPending || listingsLoading ? (
+              {isPending || listingsLoading ? (
                 <div className={viewMode === 'grid' 
                   ? "grid gap-6 sm:grid-cols-2 lg:grid-cols-3" 
                   : "flex flex-col gap-4"
