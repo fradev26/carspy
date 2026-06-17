@@ -763,9 +763,13 @@ function DescriptionSheet({
   useEffect(() => { setLocal(value); }, [value, open]);
 
   const rewriteAI = async () => {
+    if (!listing.brand || !listing.model || !listing.year || listing.mileage == null || !listing.fuel_type || !listing.transmission) {
+      toast.error('Vul eerst merk, model, jaar, km, brandstof en transmissie in.');
+      return;
+    }
     setAiLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-ad-copy', {
+      const { data, error } = await supabase.functions.invoke('generate-listing', {
         body: {
           brand: listing.brand,
           model: listing.model,
@@ -773,9 +777,9 @@ function DescriptionSheet({
           mileage: listing.mileage,
           fuelType: listing.fuel_type,
           transmission: listing.transmission,
-          power: listing.power,
+          bodyType: listing.body_type ?? 'auto',
           color: listing.color,
-          currentDescription: local,
+          power: listing.power,
         },
       });
       if (error) throw error;
