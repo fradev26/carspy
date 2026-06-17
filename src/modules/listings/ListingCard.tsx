@@ -72,8 +72,7 @@ export function ListingCard({ listing, variant = 'default', onFavoriteToggle, is
       <Link to={`/auto/${listing.id}`} className="block" aria-label={`${listing.title} - ${formatPrice(listing.price)}`}>
         <Card className={cn(
           "group overflow-hidden transition-all duration-300 hover:shadow-card-hover hover:-translate-y-0.5 border-border/60",
-          isPremium && "border-premium/50 shadow-glow-premium ring-1 ring-premium/20",
-          favorite && "bg-primary/[0.03] border-l-2 border-l-primary ring-1 ring-primary/20"
+          isPremium && "border-premium/50 shadow-glow-premium ring-1 ring-premium/20"
         )}>
           <div className="flex flex-col sm:flex-row">
             {/* Image Container */}
