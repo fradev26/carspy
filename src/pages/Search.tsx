@@ -403,6 +403,19 @@ export default function Search() {
 
             {/* Results */}
             <div className="mt-6">
+              {compareWithId && (
+                <MarketCompareBanner
+                  reference={referenceListing}
+                  listings={pageListings}
+                  onClose={() => {
+                    const next = new URLSearchParams(searchParams);
+                    next.delete('compareWith');
+                    setSearchParams(next);
+                  }}
+                />
+              )}
+
+
 
               {isLoading || isPending || listingsLoading ? (
                 <div className={viewMode === 'grid' 
