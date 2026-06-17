@@ -74,6 +74,7 @@ const App = () => (
                   <Route path="leads" element={<div className="container py-6"><MyLeadsPanel /></div>} />
                   <Route path="analytics" element={<DealerAnalytics />} />
                   <Route path="instellingen" element={<DealerSettings />} />
+                  <Route path="abonnement" element={<DealerSubscription />} />
                 </Route>
                 <Route path="/favorieten" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
                 <Route path="/vergelijken" element={<Compare />} />
