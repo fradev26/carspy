@@ -1,6 +1,6 @@
 import { Outlet, Link, NavLink } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Plus, Car, Upload, Inbox, BarChart3, Settings } from 'lucide-react';
+import { Car, Upload, Inbox, BarChart3, Settings } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { cn } from '@/lib/utils';
 
