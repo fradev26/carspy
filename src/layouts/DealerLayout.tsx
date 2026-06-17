@@ -20,16 +20,6 @@ export default function DealerLayout() {
               </p>
             </div>
             <div className="hidden md:flex items-center gap-2">
-              <Button asChild size="sm" variant="outline" className="gap-1.5">
-                <Link to="/zakelijk/import">
-                  <Upload className="h-3.5 w-3.5" /> Import CSV
-                </Link>
-              </Button>
-              <Button asChild size="sm" variant="outline" className="gap-1.5">
-                <Link to="/zakelijk/instellingen">
-                  <Link2 className="h-3.5 w-3.5" /> AutoScout
-                </Link>
-              </Button>
               <Button asChild size="sm" className="gap-1.5">
                 <Link to="/verkopen?dealer=1">
                   <Plus className="h-3.5 w-3.5" /> Voertuig toevoegen
