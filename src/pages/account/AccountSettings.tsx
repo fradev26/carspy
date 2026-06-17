@@ -9,12 +9,15 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Monitor, Sun, Moon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme, type ThemePref } from '@/hooks/useTheme';
 import { useToast } from '@/hooks/use-toast';
 
 interface Props {
-  defaultTab?: 'profiel' | 'meldingen' | 'privacy';
+  defaultTab?: 'profiel' | 'meldingen' | 'privacy' | 'weergave';
 }
 
 const profileSchema = z.object({
