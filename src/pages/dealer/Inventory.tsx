@@ -3,14 +3,13 @@ import { Link } from 'react-router-dom';
 import {
   Eye, Heart, MessageCircle, Car, Crown, Rocket, Pencil, CheckCircle2,
   Search as SearchIcon, ExternalLink, Trash2, Plus, BarChart3,
-  Clock, TrendingUp, Flame, TrendingDown, Wallet, ChevronDown, PlayCircle,
+  Clock, Flame, TrendingDown, PlayCircle,
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { StatusBadge } from '@/modules/listings/StatusBadge';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
