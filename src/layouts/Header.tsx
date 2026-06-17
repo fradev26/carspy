@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Heart, User, Plus, LogOut, MessageCircle, BarChart3, Shield, FileText, Settings, Bell, Megaphone, Clock, Briefcase, HelpCircle, Mail } from 'lucide-react';
+import { Heart, User, Plus, LogOut, MessageCircle, BarChart3, Shield, FileText, Settings, HelpCircle, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -9,7 +9,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
-import { useFavorites } from '@/hooks/useFavorites';
+
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/Logo';
@@ -77,7 +77,7 @@ export function Header() {
   const location = useLocation();
   const { user, signOut } = useAuth();
   const { isDealer, profile } = useProfile();
-  const { favorites } = useFavorites();
+  
   const { count: unreadCount } = useUnreadMessages();
 
   const isHomepage = location.pathname === '/';
@@ -154,25 +154,12 @@ export function Header() {
               {user ? (
                 <>
                   <SectionHeader>Mijn account</SectionHeader>
-                  <SheetLink onClick={() => handleMobileNav('/account/instellingen')} icon={Settings} label="Accountinstellingen" />
-
-                  <SectionHeader>Mijn activiteiten</SectionHeader>
-                  <SheetLink onClick={() => handleMobileNav('/account/advertenties')} icon={Megaphone} label="Mijn advertenties" />
-                  <SheetLink onClick={() => handleMobileNav('/account/zoekalerts')} icon={Bell} label="Zoekalerts" />
-                  <SheetLink onClick={() => handleMobileNav('/account/recent')} icon={Clock} label="Recent bekeken" />
+                  <SheetLink onClick={() => handleMobileNav('/account/instellingen')} icon={User} label="Accountinstellingen" />
                   <SheetLink
-                    onClick={() => handleMobileNav('/favorieten')}
-                    icon={Heart}
-                    label="Favorieten"
-                    trailing={favorites.size > 0 ? String(favorites.size) : undefined}
+                    onClick={() => handleMobileNav(isDealer ? '/zakelijk/instellingen' : '/account/instellingen')}
+                    icon={Settings}
+                    label="Instellingen"
                   />
-
-                  {isDealer && (
-                    <>
-                      <SectionHeader>Dealerfuncties</SectionHeader>
-                      <SheetLink onClick={() => handleMobileNav('/zakelijk')} icon={Briefcase} label="Zakelijk Dashboard" />
-                    </>
-                  )}
 
                   <SectionHeader>Juridisch</SectionHeader>
                   <SheetLink onClick={() => handleMobileNav('/privacy')} icon={Shield} label="Privacybeleid" muted />

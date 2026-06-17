@@ -2,7 +2,7 @@ import { forwardRef, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Home, Search, Heart, Sparkles, Plus,
-  Car, Settings,
+  Car,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -18,11 +18,11 @@ const consumerItems = [
 ];
 
 const dealerItems = [
-  { icon: Home,     label: 'Home',         path: '/' },
-  { icon: Search,   label: 'Zoeken',       path: '/zoeken' },
-  { icon: Sparkles, label: 'AI',           path: '/zakelijk', isAI: true },
-  { icon: Car,      label: 'Voorraad',     path: '/zakelijk/voorraad' },
-  { icon: Settings, label: 'Instellingen', path: '/zakelijk/instellingen' },
+  { icon: Home,     label: 'Home',       path: '/' },
+  { icon: Search,   label: 'Zoeken',     path: '/zoeken' },
+  { icon: Sparkles, label: 'AI',         path: '/zakelijk', isAI: true },
+  { icon: Car,      label: 'Voorraad',   path: '/zakelijk/voorraad' },
+  { icon: Heart,    label: 'Favorieten', path: '/favorieten' },
 ];
 
 export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref) {
