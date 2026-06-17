@@ -1,6 +1,7 @@
 import { Listing } from '@/types/listing';
 import { ListingCard } from './ListingCard';
 import { cn } from '@/lib/utils';
+import { Car } from 'lucide-react';
 
 interface ListingGridProps {
   listings: Listing[];
@@ -18,7 +19,9 @@ export function ListingGrid({
   if (listings.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="text-6xl mb-4">🚗</div>
+        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted text-muted-foreground">
+          <Car className="h-8 w-8" />
+        </div>
         <h3 className="text-lg font-semibold">Geen resultaten gevonden</h3>
         <p className="mt-2 text-muted-foreground">
           Probeer je zoekcriteria aan te passen om meer auto's te vinden.

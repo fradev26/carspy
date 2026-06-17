@@ -145,7 +145,7 @@ export function useChat(options: UseChatOptions = {}) {
       }
     } catch (e) {
       console.error('Chat error:', e);
-      upsertAssistant(`⚠️ ${e instanceof Error ? e.message : 'Er ging iets mis. Probeer het opnieuw.'}`);
+      upsertAssistant(e instanceof Error ? e.message : 'Er ging iets mis. Probeer het opnieuw.');
     } finally {
       setIsLoading(false);
     }

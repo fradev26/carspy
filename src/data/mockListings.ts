@@ -970,14 +970,14 @@ export const mockListings: Listing[] = [
 ];
 
 export const popularBrands = [
-  { name: 'Volkswagen', logo: '🚗', count: 2456 },
-  { name: 'BMW', logo: '🚗', count: 1834 },
-  { name: 'Audi', logo: '🚗', count: 1567 },
-  { name: 'Mercedes-Benz', logo: '🚗', count: 1423 },
-  { name: 'Toyota', logo: '🚗', count: 1289 },
-  { name: 'Ford', logo: '🚗', count: 987 },
-  { name: 'Peugeot', logo: '🚗', count: 876 },
-  { name: 'Renault', logo: '🚗', count: 834 },
+  { name: 'Volkswagen', logo: '', count: 2456 },
+  { name: 'BMW', logo: '', count: 1834 },
+  { name: 'Audi', logo: '', count: 1567 },
+  { name: 'Mercedes-Benz', logo: '', count: 1423 },
+  { name: 'Toyota', logo: '', count: 1289 },
+  { name: 'Ford', logo: '', count: 987 },
+  { name: 'Peugeot', logo: '', count: 876 },
+  { name: 'Renault', logo: '', count: 834 },
 ];
 
 export const getListingById = (id: string): Listing | undefined => {

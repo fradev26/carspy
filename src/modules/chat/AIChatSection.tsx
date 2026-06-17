@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Sparkles, Send, Trash2, Bot, ArrowDown } from 'lucide-react';
+import { Sparkles, Send, Trash2, Bot, ArrowDown, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChatMessage } from './ChatMessage';
@@ -142,7 +142,7 @@ export function AIChatSection() {
                 <ul className="grid gap-1.5 pt-2 border-t border-border/40 text-xs text-muted-foreground sm:grid-cols-3">
                   {FILTER_BENEFITS.map((b) => (
                     <li key={b} className="flex items-start gap-1.5">
-                      <span className="text-primary mt-0.5">✓</span>
+                      <Check className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
                       <span>{b}</span>
                     </li>
                   ))}

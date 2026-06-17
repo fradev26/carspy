@@ -2,7 +2,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   Phone, Mail, MapPin, Calendar, Gauge, Fuel, Settings, Star, Heart, Share2,
   Shield, ShieldCheck, GitCompareArrows, Home, Sparkles, Loader2, Wrench, AlertTriangle, Users,
-  Cog, Leaf, BadgeCheck, ChevronRight, ChevronDown, Calculator, History, Crown, CheckCircle2, Car,
+  Cog, Leaf, BadgeCheck, ChevronRight, ChevronDown, Calculator, History, Crown, CheckCircle2, Car, Check,
 } from 'lucide-react';
 import { EquipmentDialog } from '@/modules/listings/EquipmentDialog';
 import { Button } from '@/components/ui/button';
@@ -894,7 +894,10 @@ export default function ListingDetail() {
                           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Geschikt voor</p>
                           <ul className="mt-1 space-y-1">
                             {vehicleAnalysis.suitability.map((s: string, i: number) => (
-                              <li key={i} className="text-sm text-foreground/80">✓ {s}</li>
+                              <li key={i} className="flex items-start gap-1.5 text-sm text-foreground/80">
+                                <Check className="h-3.5 w-3.5 text-success shrink-0 mt-0.5" />
+                                <span>{s}</span>
+                              </li>
                             ))}
                           </ul>
                         </div>
