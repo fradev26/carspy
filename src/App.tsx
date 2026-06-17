@@ -68,7 +68,7 @@ const App = () => (
                   <Route path="voorraad" element={<DealerInventoryPage />} />
                   <Route path="voorraad/:id" element={<DealerListingOperating />} />
                   <Route path="import" element={<DealerImport />} />
-                  <Route path="leads" element={<MyLeadsPanel />} />
+                  <Route path="leads" element={<div className="container py-6"><MyLeadsPanel /></div>} />
                   <Route path="analytics" element={<DealerAnalytics />} />
                   <Route path="instellingen" element={<DealerSettings />} />
                 </Route>
