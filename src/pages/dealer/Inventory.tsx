@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   Eye, Heart, MessageCircle, Car, Crown, Rocket, Pencil, CheckCircle2,
   Search as SearchIcon, ExternalLink, Trash2, Plus, BarChart3,
-  Clock, Flame, TrendingDown, PlayCircle,
+  Clock, PlayCircle,
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,7 @@ const formatPrice = (price: number) =>
 
 const daysSince = (iso: string) => Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86400000));
 
-type Preset = 'fast' | 'stale' | 'margin' | null;
+type Preset = null;
 
 const STATUS_OPTIONS = [
   { v: 'active',   label: 'Beschikbaar' },
@@ -35,20 +35,11 @@ export default function Inventory() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<Set<string>>(new Set());
-  const [preset, setPreset] = useState<Preset>(null);
-
-  // Median views — alleen nodig voor de "Snel verkopen" preset
-  const medianViews = useMemo(() => {
-    const arr = listings.filter((l) => l.status === 'active').map((l) => l.views).sort((a, b) => a - b);
-    return arr.length ? arr[Math.floor(arr.length / 2)] : 0;
-  }, [listings]);
 
   // ── Filter pipeline ─────────────────────────────────────────────────────
   const filtered = useMemo(() => {
     return listings.filter((l) => {
       if (statusFilter.size > 0 && !statusFilter.has(l.status)) return false;
-      if (preset === 'fast' && !(l.views > medianViews && daysSince(l.createdAt) < 14)) return false;
-      if (preset === 'stale' && daysSince(l.createdAt) < 60) return false;
       if (query) {
         const q = query.toLowerCase();
         if (
@@ -59,7 +50,7 @@ export default function Inventory() {
       }
       return true;
     });
-  }, [listings, query, statusFilter, preset, medianViews]);
+  }, [listings, query, statusFilter]);
 
   // ── Selection & bulk ────────────────────────────────────────────────────
   const toggleSelect = (id: string) => {
@@ -76,7 +67,7 @@ export default function Inventory() {
       return next;
     });
   };
-  const togglePreset = (p: Exclude<Preset, null>) => setPreset((cur) => (cur === p ? null : p));
+  
 
   const bulkAction = async (action: 'premium' | 'boost' | 'sold' | 'delete') => {
     if (selectedIds.size === 0) return;
@@ -109,52 +100,10 @@ export default function Inventory() {
 
   return (
     <div className="container py-6 space-y-5">
-      <SEOHead title="Verkopen — VATUUR. Zakelijk" description="Sales feed voor je voorraad." noindex />
-
-      {/* Header */}
-      <div className="flex items-end justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Car className="h-6 w-6 text-primary" /> Verkopen
-          </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Elke kaart is een beslis-unit. Insight zit waar je actie onderneemt.
-          </p>
-        </div>
-        <Button asChild size="sm" className="gap-1.5">
-          <Link to="/verkopen?dealer=1"><Plus className="h-4 w-4" /> Voertuig toevoegen</Link>
-        </Button>
-      </div>
-
+      <SEOHead title="Zakelijk — VATUUR." description="Sales feed voor je voorraad." noindex />
 
       {/* Filters */}
       <div className="space-y-2.5">
-        {/* Smart presets */}
-        <div className="flex items-center gap-2 overflow-x-auto -mx-1 px-1 pb-1">
-          {[
-            { id: 'fast'   as const, label: 'Snel verkopen',   icon: Flame },
-            { id: 'stale'  as const, label: 'Lang in voorraad', icon: TrendingDown },
-          ].map((p) => {
-            const active = preset === p.id;
-            return (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => togglePreset(p.id)}
-                className={cn(
-                  'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium border whitespace-nowrap transition-colors',
-                  active
-                    ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-                    : 'bg-card text-foreground border-border/60 hover:bg-muted'
-                )}
-              >
-                <p.icon className="h-3.5 w-3.5" />
-                {p.label}
-              </button>
-            );
-          })}
-        </div>
-
         {/* Search + status chips */}
         <div className="flex flex-col sm:flex-row gap-2.5">
           <div className="relative sm:w-72">
