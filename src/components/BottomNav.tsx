@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   Home, Search, Heart, Sparkles, Plus,
   Store, Car, Upload, MoreHorizontal,
-  Settings, BarChart3, Inbox,
+  BarChart3, Inbox,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
