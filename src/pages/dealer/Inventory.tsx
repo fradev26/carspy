@@ -307,6 +307,10 @@ function DealerCard({
               )}
             </Link>
           </Button>
+          <Button variant="outline" size="sm" className="h-9 px-2.5 gap-1.5" title="Boosten" onClick={onBoost}>
+            <Rocket className="h-4 w-4" />
+            <span className="hidden sm:inline text-xs">Boost</span>
+          </Button>
           <Button asChild variant="ghost" size="sm" className="h-9 px-2.5 gap-1.5 text-muted-foreground hover:text-primary" title="Vergelijk markt">
             <Link
               to={`/zoeken?brand=${encodeURIComponent(l.brand ?? '')}&model=${encodeURIComponent(l.model ?? '')}&yearMin=${(l.year ?? 0) - 1}&yearMax=${(l.year ?? 0) + 1}&compareWith=${l.id}`}
