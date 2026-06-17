@@ -47,6 +47,14 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
   // Recent searches
   const { recentSearches, saveSearch, removeSearch, clearAllSearches } = useRecentSearches();
 
+  // Saved searches (zoekalerts)
+  const { user } = useAuth();
+  const navigateRoute = useNavigate();
+  const { save } = useSavedSearches();
+  const [saveOpen, setSaveOpen] = useState(false);
+  const [searchName, setSearchName] = useState('');
+  const [saving, setSaving] = useState(false);
+
   // Sync basic form fields to filters
   useEffect(() => {
     setFilters(prev => ({
