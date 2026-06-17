@@ -74,6 +74,10 @@ export default function Inventory() {
   const bulkAction = async (action: 'premium' | 'boost' | 'sold' | 'delete') => {
     if (selectedIds.size === 0) return;
     const ids = Array.from(selectedIds);
+    if (action === 'boost') {
+      setBoostDialog({ ids });
+      return;
+    }
     if (action === 'delete') {
       if (!confirm(`${ids.length} advertenties verwijderen?`)) return;
       const { error } = await supabase.from('listings').delete().in('id', ids);
@@ -82,7 +86,6 @@ export default function Inventory() {
     } else {
       const updates =
         action === 'premium' ? { is_premium: true } :
-        action === 'boost'   ? { boost_until: new Date(Date.now() + 7 * 86400000).toISOString() } :
                                { status: 'sold' };
       const { error } = await supabase.from('listings').update(updates as any).in('id', ids);
       if (error) return toast.error('Bulkactie mislukt');
