@@ -245,6 +245,50 @@ export default function AccountSettings({ defaultTab = 'profiel' }: Props) {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="weergave" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Weergave</CardTitle>
+              <CardDescription>Kies hoe VATUUR. eruitziet. Je voorkeur wordt op al je toestellen onthouden.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <RadioGroup
+                value={theme}
+                onValueChange={(v) => {
+                  const t = v as ThemePref;
+                  void setTheme(t);
+                  toast({ title: 'Weergave bijgewerkt' });
+                }}
+                className="grid gap-3 sm:grid-cols-3"
+              >
+                {([
+                  ['system', 'Systeem', 'Volgt automatisch je toestel.', Monitor],
+                  ['light', 'Licht', 'Heldere achtergrond, ideaal overdag.', Sun],
+                  ['dark', 'Donker', 'Rustig voor de ogen in donkere omgevingen.', Moon],
+                ] as const).map(([value, label, desc, Icon]) => {
+                  const active = theme === value;
+                  return (
+                    <Label
+                      key={value}
+                      htmlFor={`theme-${value}`}
+                      className={`flex cursor-pointer flex-col gap-2 rounded-md border bg-card p-4 transition-colors hover:bg-accent/40 ${active ? 'border-primary ring-2 ring-primary/30' : 'border-border'}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
+                        <RadioGroupItem id={`theme-${value}`} value={value} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold">{label}</p>
+                        <p className="text-xs text-muted-foreground">{desc}</p>
+                      </div>
+                    </Label>
+                  );
+                })}
+              </RadioGroup>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
