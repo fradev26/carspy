@@ -1,8 +1,9 @@
 import { Outlet, Link, NavLink } from 'react-router-dom';
 
-import { Car, Upload, Inbox, BarChart3, Settings, Sparkles } from 'lucide-react';
+import { Car, Upload, Inbox, BarChart3, Settings, Sparkles, Plus } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 const tabs = [
   { to: '/zakelijk',             label: 'SalesAI',       icon: Sparkles, end: true },
@@ -22,6 +23,11 @@ export default function DealerLayout() {
           <Link to="/zakelijk" className="text-sm font-bold text-primary shrink-0">
             VATUUR. <span className="text-muted-foreground font-medium">Zakelijk</span>
           </Link>
+          <Button asChild size="sm" variant="outline" className="gap-1.5 h-8 text-xs">
+            <Link to="/verkopen">
+              <Plus className="h-3.5 w-3.5" /> Wagen verkopen
+            </Link>
+          </Button>
           <div className="hidden md:block flex-1 min-w-0">
             <p className="text-sm text-muted-foreground truncate">
               {profile?.dealer_name ?? profile?.full_name ?? ''}
