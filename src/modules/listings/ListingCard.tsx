@@ -20,6 +20,7 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [justLiked, setJustLiked] = useState(false);
+  const navigate = useNavigate();
 
   const { isFavorite: isFavGlobal, toggle: toggleFavGlobal } = useFavorites();
   const favorite = isFavGlobal(listing.id);
