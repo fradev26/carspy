@@ -1,52 +1,36 @@
-# Plan: drie regressies op /zoeken oplossen
+# Plan: mobile filter-gate gedraagt zich als beloofd
 
-## Root cause van "Filters doen niets"
+## Probleem
+1. Zodra de gebruiker op mobiel **één** filter aanvinkt, verdwijnt de filter-gate en springt de pagina direct naar de resultatenlijst. Pas na klikken op **Toon alle resultaten** zouden de resultaten zichtbaar mogen worden.
+2. De **Opslaan**-knop is in deze gate niet (duidelijk) zichtbaar — momenteel een klein Bell-icoon naast de primary CTA, makkelijk te missen.
 
-Reproduceerbaar: kies "BMW" in het Merk-dropdown → URL blijft `/zoeken`, niets gebeurt. Checkboxes (Brandstof) wérken wel.
-
-In `src/modules/search/FilterPanel.tsx` doet de Merk-Select **twee** sequentiële `onFiltersChange`-aanroepen in één handler:
-
-```tsx
-onValueChange={(v) => {
-  updateFilter('brand', v === 'all' ? undefined : v);        // call 1
-  if (v === 'all' || v !== filters.brand) updateFilter('model', undefined); // call 2
-}}
+## Root cause
+In `src/pages/Search.tsx`:
+```ts
+const hasIncomingIntent =
+  !!searchParams.get('q') ||
+  !!searchParams.get('aiIntent') ||
+  activeFilterCount > 0;        // ← deze regel dismist de gate bij elke filter
+const showMobileResults = mobileResultsRevealed || hasIncomingIntent;
 ```
+Elke filter zet `activeFilterCount > 0`, waardoor de gate dicht klapt zonder dat de gebruiker op **Toon alle resultaten** heeft geklikt.
 
-Beide calls bouwen `{...filters, ...}` op met dezelfde **stale** `filters`-closure. Call 2 wint en overschrijft de URL zónder de net-gezette `brand`. Sinds filters nu URL-driven zijn is `setSearchParams` async → de tweede call ziet nooit het brand-veld → URL = leeg.
+## Fix 1 — gate alleen via expliciete CTA dismissen
+- `activeFilterCount > 0` weghalen uit `hasIncomingIntent`. De gate verdwijnt dus alleen wanneer:
+  - `q` of `aiIntent` in URL staat (binnenkomende intent vanuit homepage / AI-zoek), **of**
+  - de gebruiker op **Toon alle resultaten** klikt (`mobileResultsRevealed = true`).
+- Counter in de CTA blijft live updaten (`Toon {total} resultaten`) zodat de gebruiker feedback krijgt zonder dat de gate sluit.
 
-## Fix 1 — Filters werken weer (blocker)
-**`src/modules/search/FilterPanel.tsx`**, brand-Select handler combineren tot één update:
+## Fix 2 — Opslaan duidelijk zichtbaar in de gate
+In het sticky-bottom-blok van de mobile gate de huidige icon-only Bell vervangen door een volwaardige outline-knop met label:
 ```tsx
-onValueChange={(v) => {
-  const nextBrand = v === 'all' ? undefined : v;
-  const resetModel = nextBrand !== filters.brand;
-  onFiltersChange({
-    ...filters,
-    brand: nextBrand,
-    model: resetModel ? undefined : filters.model,
-  });
-}}
+<Button variant="outline" onClick={saveGate.openSave} className="w-full min-h-11">
+  <Bell className="h-4 w-4 mr-2" /> Opslaan als zoekalert
+</Button>
 ```
-Snelle grep doen naar andere Selects/handlers in FilterPanel/FilterPresets met meerdere `updateFilter`-calls in één event en hetzelfde patroon toepassen.
-
-## Fix 2 — "Opslaan" altijd bereikbaar bij actieve filters
-- **Mobile filter-gate** (`src/pages/Search.tsx`, blok `!showMobileResults && (...)`): voeg in de sticky bottom-bar een tweede knop `Opslaan als zoekalert` toe, naast/onder "Toon resultaten", zichtbaar zodra `activeFilterCount > 0`. Hergebruikt `saveGate.openSave`.
-- **Mobile filter-Drawer** (`<DrawerFooter>` in zelfde bestand, rond regel 320): voeg een outline-knop `Opslaan` toe links van de "Toon X resultaten"-knop, ook gated op `activeFilterCount > 0`.
-- Header-knop blijft staan voor desktop/post-gate.
-
-## Fix 3 — "Snelle selectie" weer verbergen op mobiel
-Terug naar het oorspronkelijke gedrag: `showPresets={false}` op de twee mobile-instances in `src/pages/Search.tsx`:
-- regel ~165 (mobile gate)
-- regel ~319 (drawer)
-
-Desktop-sidebar blijft `showPresets` standaard `true`.
-
-## Technische notes
-- Geen DB/types-wijziging.
-- Verificatie: na fix kies "BMW" → URL = `?brand=BMW`, telling daalt; check Carrosserie/Body-Select met dezelfde aanpak indien aanwezig.
-- Mobile-presets: bevestig dat de chip-rij in 768px viewport niet meer verschijnt.
+Plaatsing: onder de primary "Toon X resultaten"-knop en boven "Wis alle filters", zichtbaar zodra `activeFilterCount > 0`. Geen 80/20-rij meer in de gate — daar is geen ruimte voor en het label moet leesbaar zijn.
 
 ## Buiten scope
-- Bredere refactor naar functional-update pattern in `writeFiltersToURL` (nice-to-have als andere componenten ooit batch-updaten).
-- Wijzigingen aan DealerInventory (gebruikt al `showPresets={false}`).
+- Header/desktop save-knop (werkt al).
+- Drawer-footer save-knop (al toegevoegd vorige iteratie).
+- Wijzigingen aan `useSearchListings` of URL-sync (filter wordt nog steeds naar URL geschreven zodat resultaten klaarstaan zodra de gebruiker op CTA klikt — dat is gewenst).

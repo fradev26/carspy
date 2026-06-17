@@ -109,10 +109,11 @@ export default function Search() {
   const saveGate = useSaveSearchGate(activeFilterCount);
 
   // Mobile filter-first gate: show fullscreen filters until user reveals results
+  // Only auto-dismiss on incoming intent (homepage/AI search), NOT on filter changes —
+  // the user must click "Toon alle resultaten" explicitly.
   const hasIncomingIntent =
     !!searchParams.get('q') ||
-    !!searchParams.get('aiIntent') ||
-    activeFilterCount > 0;
+    !!searchParams.get('aiIntent');
   const showMobileResults = mobileResultsRevealed || hasIncomingIntent;
 
 
@@ -180,24 +181,21 @@ export default function Search() {
                 <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} showPresets={false} />
               </div>
               <div className="sticky bottom-20 mt-4 pb-2 bg-gradient-to-t from-background via-background to-transparent pt-4 flex flex-col gap-2">
-                <div className="flex w-full items-stretch gap-2">
+                <Button
+                  onClick={() => setMobileResultsRevealed(true)}
+                  className="w-full min-h-12 text-base font-semibold"
+                >
+                  Toon {activeFilterCount > 0 ? `${total} resultaten` : 'alle resultaten'}
+                </Button>
+                {activeFilterCount > 0 && (
                   <Button
-                    onClick={() => setMobileResultsRevealed(true)}
-                    className="flex-1 min-h-12 text-base font-semibold"
+                    variant="outline"
+                    onClick={saveGate.openSave}
+                    className="w-full min-h-11 gap-2"
                   >
-                    Toon {activeFilterCount > 0 ? `${total} resultaten` : 'alle resultaten'}
+                    <Bell className="h-4 w-4" /> Opslaan als zoekalert
                   </Button>
-                  {activeFilterCount > 0 && (
-                    <Button
-                      variant="outline"
-                      onClick={saveGate.openSave}
-                      className="min-h-12 px-3"
-                      aria-label="Opslaan als zoekalert"
-                    >
-                      <Bell className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
+                )}
                 {activeFilterCount > 0 && (
                   <Button
                     variant="ghost"
