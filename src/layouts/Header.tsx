@@ -257,8 +257,7 @@ export function Header() {
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem asChild><Link to="/account/instellingen" className="cursor-pointer">Accountinstellingen</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link to="/account/advertenties" className="cursor-pointer">Mijn advertenties</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild><Link to="/account/zoekalerts" className="cursor-pointer">Zoekalerts</Link></DropdownMenuItem>
-                  <DropdownMenuItem asChild><Link to="/account/recent" className="cursor-pointer">Recent bekeken</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to="/favorieten" className="cursor-pointer">Mijn activiteiten</Link></DropdownMenuItem>
                   {isDealer && (
                     <DropdownMenuItem asChild>
                       <Link to="/zakelijk" className="cursor-pointer flex items-center gap-2">

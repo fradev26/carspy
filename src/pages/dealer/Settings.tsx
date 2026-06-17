@@ -135,8 +135,8 @@ export default function DealerSettings() {
 
       <Section title="Mijn activiteiten">
         <SettingsRow icon={Megaphone} label="Mijn advertenties" to="/account/advertenties" />
-        <SettingsRow icon={Bell} label="Zoekalerts" to="/account/zoekalerts" />
-        <SettingsRow icon={Clock} label="Recent bekeken" to="/account/recent" />
+        <SettingsRow icon={Bell} label="Zoekalerts" to="/favorieten?tab=alerts" />
+        <SettingsRow icon={Clock} label="Recent bekeken" to="/favorieten?tab=recent" />
         <SettingsRow
           icon={Heart}
           label="Favorieten"

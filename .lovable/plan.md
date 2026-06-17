@@ -1,51 +1,88 @@
-# Navigatieherstructurering: Instellingen-hub + bottom nav
+# Plan: /favorieten → "Mijn activiteiten" hub
 
-## Doel
-- Eén volwaardige Instellingen-pagina (zowel particulier als dealer) die alle eerder versnipperde items toont.
-- Sheet-sidebar in de Header opschonen — geen dubbele navigatie meer.
-- Bottom nav: laatste slot wordt overal Favorieten.
+Consolideer Favorieten, Recent bekeken en Zoekalerts op één pagina (`/favorieten`) met tabs. Identiek voor particulier en zakelijk.
 
-## 1. Bottom nav — `src/components/BottomNav.tsx`
-- Consumer: blijft `[Home · Zoeken · AI · Favorieten · Verkopen]` (ongewijzigd).
-- Dealer: was `[Home · Zoeken · AI · Voorraad · Instellingen]` → wordt **`[Home · Zoeken · AI · Voorraad · Favorieten]`** (Heart-icoon, `/favorieten`).
+## 1. Nieuwe paginastructuur (`src/pages/Favorites.tsx`)
 
-## 2. Mobile sheet sidebar — `src/layouts/Header.tsx`
-Volledige nav binnen het `<SheetContent>` herwerken. Behouden secties: **Mijn account**, **Juridisch**, **Support**. Verwijderd: **Mijn activiteiten** en **Dealerfuncties** (die navigatie verhuist naar de Instellingen-hub).
+Hernoem visueel naar **Mijn activiteiten**:
 
-Nieuwe inhoud van "Mijn account":
-- `Accountinstellingen` → `/account/instellingen` (bestaand, profiel/meldingen/privacy/weergave)
-- `Instellingen` → `/zakelijk/instellingen` voor dealers, `/account/instellingen` voor particulieren
+- H1: "Mijn activiteiten"
+- Sub: "Beheer je favoriete voertuigen, recente bezoeken en zoekalerts."
+- `<Tabs defaultValue="favorieten">` met `?tab=` URL-sync zodat diepe links blijven werken (`?tab=alerts`, `?tab=recent`).
+- TabsList sticky onder de header, full-width op mobiel, horizontal scroll bij overflow.
+- Logged-out gate (huidige Heart-card) blijft, met aangepaste copy ("Bewaar wagens, alerts en geschiedenis").
 
-Dealers krijgen dus de hub aangeboden, particulieren landen op de bestaande tabs-pagina (die we hieronder uitbreiden).
+```
+TabsList:
+[ Heart  Favorieten ]  [ Clock  Recent bekeken ]  [ Bell  Zoekalerts ]
+```
 
-## 3. Dealer-instellingenhub — `src/pages/dealer/Settings.tsx`
-Bovenaan de bestaande secties twee nieuwe `Section` blokken invoegen (zelfde `SettingsRow`-component):
+### Tab 1 — Favorieten
+Bestaande logica behouden (Supabase `favorites` + `ListingGrid`). Toevoegen boven de grid:
+- Aantal-badge ("12 wagens")
+- Sorteer-`Select` (Nieuwste / Prijs ↑ / Prijs ↓ / Km ↑ / Bouwjaar ↓) — client-side sort op `listings` state.
+- Knop "Vergelijken" (zichtbaar als `useCompare().items.length > 0`) → `/vergelijken`.
+- Empty state: Heart icon, "Nog geen favorieten", CTA → `/zoeken`.
 
-- **Mijn activiteiten**
-  - `Megaphone` Mijn advertenties → `/account/advertenties`
-  - `Bell` Zoekalerts → `/account/zoekalerts`
-  - `Clock` Recent bekeken → `/account/recent`
-  - `Heart` Favorieten → `/favorieten` (met trailing teller indien beschikbaar via `useFavorites`)
-- **Dealerfuncties** (alleen render voor `isDealer`)
-  - `Briefcase` Zakelijk Dashboard → `/zakelijk`
-  - `BarChart3` Analytics → `/zakelijk/analytics`
-  - `Megaphone` Leads → `/zakelijk/leads`
+(Filterpanel is overkill voor v1 — sorteer + vergelijken volstaan; "Filters" laten we als later toevoeging buiten scope, omdat brief "indien beschikbaar" zegt.)
 
-Bestaande secties (Koppelingen, Voorraad, Account, Ondersteuning) blijven onder de nieuwe twee.
+### Tab 2 — Recent bekeken
+Inline-port van `RecentlyViewed.tsx`:
+- `useRecentlyViewedListings()` hook hergebruiken.
+- Card-grid (zelfde stijl als bestaand): afbeelding, titel, prijs, "Bekeken op {relatieve tijd}" via `Intl.RelativeTimeFormat`.
+- Acties per kaart: Bekijken (link) + Verwijderen (trash).
+- Toolbar boven grid: aantal + "Wis alles".
+- Empty state: Clock icon, copy uit brief, CTA → `/zoeken`.
 
-## 4. Particuliere instellingenpagina — `src/pages/account/AccountSettings.tsx`
-Boven de bestaande `Tabs` één nieuw blok "Mijn activiteiten" toevoegen — compacte kaarten-rij met dezelfde 4 quick-links als bij de dealer (Mijn advertenties, Zoekalerts, Recent bekeken, Favorieten). Geen wijziging aan de tabs zelf. Zo verliest een particulier geen navigatie nu "Mijn activiteiten" uit de sheet verdwijnt.
+### Tab 3 — Zoekalerts
+Inline-port van `SearchAlerts.tsx`:
+- Behoud: `saved_searches` query, pauseren/hervatten, frequentie-select, verwijderen, "Zoeken" actie.
+- Toevoegen badge "Actief"/"Gepauzeerd" links in de kaart.
+- Kop-actie: "Nieuwe zoekalert" → `/zoeken`.
+- Empty state: Bell icon, copy uit brief, CTA → `/zoeken`.
 
-## Routes
-Geen nieuwe routes nodig — alle bestemmingen bestaan al in `src/App.tsx`.
+(Een echte "nieuwe matches sinds laatste bezoek"-badge vereist backend werk; v1 toont `frequency` als badge en `created_at` als "Laatste update" — `last_run_at` kolom is niet beschikbaar, dus geen verzonnen data.)
 
-## Niet in scope
-- Desktop-header dropdown (`Account`) — behoudt huidige items; deze plan-iteratie focust op mobiele bottom nav + sheet.
-- Visueel herontwerp van de Instellingen-rows; we hergebruiken de bestaande `SettingsRow` en `Section`-componenten.
-- Splitsing per rol op consumer-pagina — particulier ziet eenvoudig de tabs + activiteitenblok.
+## 2. Routing (`src/App.tsx`)
 
-## Bestanden
-- `src/components/BottomNav.tsx`
-- `src/layouts/Header.tsx`
-- `src/pages/dealer/Settings.tsx`
-- `src/pages/account/AccountSettings.tsx`
+- Behoud `/favorieten`.
+- Verwijder routes `/account/recent` en `/account/zoekalerts` (de losse pagina's worden niet meer geladen).
+- Bestanden `src/pages/account/RecentlyViewed.tsx` en `src/pages/account/SearchAlerts.tsx` worden verwijderd nadat hun logica geport is.
+
+## 3. Navigatie-opruiming
+
+Vervang alle links naar `/account/recent` of `/account/zoekalerts` door:
+- `/favorieten?tab=recent`
+- `/favorieten?tab=alerts`
+
+Bestanden te updaten:
+- `src/layouts/Header.tsx` (mobiele sheet)
+- `src/pages/Dashboard.tsx`
+- `src/pages/Index.tsx`
+- `src/pages/ListingDetail.tsx`
+- `src/pages/dealer/Settings.tsx` ("Mijn activiteiten" sectie)
+- `src/pages/account/AccountSettings.tsx` ("Mijn activiteiten" sectie)
+- `src/data/faq.ts`
+
+BottomNav blijft ongewijzigd (Favorieten-item wijst al naar `/favorieten`).
+
+## 4. Design
+
+- Donker thema, bestaande shadcn `Tabs` (zelfde styling als overige VATUUR-tabs).
+- Lucide-only iconen (Heart, Clock, Bell, Search, Trash2, Pause, Play, GitCompare).
+- Geen emoji, geen pipes, geen markdown-tabellen.
+- Mobile-first: tabs full-width, kaarten 1-koloms < sm, 2/3 koloms ≥ sm.
+- Actieve tab krijgt `data-[state=active]` styling met primary underline-accent.
+
+## Technische details
+
+- Eén bestand wijzigen (`Favorites.tsx`) + één hook hergebruiken; geen nieuwe componenten nodig behalve evt. lokale `FavoritesTab`, `RecentTab`, `AlertsTab` subcomponenten onderaan hetzelfde bestand voor leesbaarheid.
+- Tab-state via `useSearchParams` zodat back/forward en deep links werken.
+- Geen DB-migraties.
+- Geen edge-function wijzigingen.
+
+## Out of scope (expliciet)
+
+- Echte "nieuwe matches sinds vorige check"-teller (vereist `last_seen_at`/cron, geen mock-data).
+- Server-side filterpanel binnen Favorieten-tab.
+- Wijzigingen aan BottomNav of desktop header dropdown.
