@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useDealerAnalytics, type ListingAnalytics } from '@/hooks/useDealerAnalytics';
+import { BoostDialog } from '@/components/boost/BoostDialog';
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(price);
