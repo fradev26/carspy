@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { ArrowRight, Shield, Zap, Users, Car, CheckCircle2, Star, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HeroSearch, SmartSearchBar } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
 import { useListings } from '@/hooks/useListings';
-import { useProfile } from '@/hooks/useProfile';
 
 import { SEOHead } from '@/components/SEOHead';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
