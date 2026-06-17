@@ -1,61 +1,61 @@
-# Plan: 80/20 "Toon resultaten" + "Zoekopdracht opslaan" combo
+# Plan: wrijving op /zoeken oplossen
 
-Splits de zoekknop op /zoeken in één gecombineerde 80/20 control en zorg dat opslaan écht naar `saved_searches` schrijft.
+Testbevindingen (uit browser-acties + code-review). Twee blockers, drie polish-fixes, plus zichtbare console-warning.
 
-## Scope
+## Kritieke wrijving
 
-Twee plekken in `src/modules/search/SearchBar.tsx` (gebruikt op `/zoeken`):
+### 1. Filterstatus syncroniseert niet met de URL (blocker)
+**Wat ik zag:** Diesel aanvinken laat 3 resultaten zien, maar de URL blijft `/zoeken` — geen `?fuelTypes=diesel`. Gevolgen: refresh wist filters, deelbare/bookmarkbare resultaten kapot, terug/vooruit knop onbetrouwbaar, en de `Bekijk resultaten`-deeplink vanuit Zoekalerts werkt enkel bij eerste mount.
 
-1. **Hoofdbalk** (rond regel 269-279) — bovenste "Toon resultaten" knop.
-2. **Onderkant geavanceerde filters** (rond regel 388-395) — tweede "Toon resultaten" knop.
+**Oorzaak:** `handleFiltersChange` in `src/pages/Search.tsx` zet alleen lokale state (`setFilters`). De `parseFiltersFromURL`-effect schrijft nooit terug.
 
-`ClassicHeroSearch.tsx` (homepage mobile sheet) blijft ongewijzigd; dat is een andere surface.
+**Fix:** maak `filters` URL-driven.
+- Vervang lokale `setFilters` in `handleFiltersChange` (en in `handleRemoveFilter`) door één helper `writeFiltersToURL(newFilters)` die met `setSearchParams` schrijft. Bewaar bestaande `q`, `aiIntent`, `aiQuery`, `compareWith` params.
+- De bestaande `useEffect([searchParams])` updatet `filters` automatisch via `parseFiltersFromURL`, dus state blijft consistent.
+- Idem voor `sortBy` → schrijf naar `?sort=`.
+- Bestaande utility: `src/lib/searchFilters.ts` heeft al de parser; voeg een `serializeFiltersToParams(filters)` helper toe (volledige whitelist conform `SearchFilters`) en gebruik die in `writeFiltersToURL` en in `SearchBar.handleSearch` om duplicatie te schrappen.
 
-## Combined control (per locatie)
+### 2. Geen manier om een zoekopdracht op te slaan vanaf /zoeken (blocker)
+**Wat ik zag:** Het 80/20 "Toon resultaten + Opslaan"-combo zit in `SearchBar.tsx` (hero-variant — homepage), niet in `FilterPanel`. Tijdens vorige cleanup hebben we de "Bewaar zoekopdracht"-knop uit de Search-header weggehaald. Resultaat: op `/zoeken` kan je nu nergens een Zoekalert maken.
 
-```
-[ ─────────────  Toon resultaten  ───────────── ][ Bell ]
-        flex-[4] (≈80%)                          flex-[1] (≈20%)
-        primary, solid                            outline, kleiner
-        rounded-l-md rounded-r-none               rounded-l-none rounded-r-md
-        border-r-0                                -ml-px
-```
+**Fix:** zet één compact "Opslaan als zoekalert"-knop terug, maar dichter bij de filter-acties:
+- In `Search.tsx` header (regel ±232-243, naast de telling/sort/grid-toggle) een `Button variant="outline"` met `Bell`-icon + label "Opslaan". Disabled als `activeFilterCount === 0`, en als niet-ingelogd → toast + redirect `/auth`.
+- Dialog hergebruikt zelfde patroon als in `SearchBar.tsx` (naam-veld met suggestie uit `filters`, `useSavedSearches().save`).
+- Extract de dialog naar `src/modules/search/SaveSearchDialog.tsx` zodat SearchBar (hero) én Search-header dezelfde component delen — geen duplicatie.
 
-- Wrapper: `<div class="flex w-full h-12 items-stretch">`.
-- Primair: bestaande primary styling (`bg-primary`, `font-semibold`, `gap-2`, `Search` icon + tekst). `flex-[4]`, alleen rechts geen radius.
-- Secundair: `variant="outline"`, `flex-[1]`, alleen links geen radius, `-ml-px` om naadloze rand te maken, `border-l border-border/60`, kleiner icon-only (`Bell` h-4) op mobiel met tooltip/aria-label "Zoekopdracht opslaan". Op `sm:` toont het label "Opslaan" naast de bell als de ruimte het toelaat. Hover: zacht `bg-muted`.
-- Beide krijgen dezelfde `h-12` zodat ze als één control voelen.
-- Disabled state voor de save-knop wanneer er geen actieve filters zijn (`activeFilterCount === 0`) of gebruiker niet ingelogd is — dan opent klik een toast "Log in om zoekopdrachten te bewaren" via toast + redirect naar `/auth`.
+## Polish-wrijving
 
-## Save-functionaliteit (echt opslaan)
+### 3. Card-hover-overlay blijft hangen na klik
+**Wat ik zag:** "Bekijk deze deal"-overlay blijft op de eerste kaart staan nadat de pointer ergens anders heen ging (group-hover state stuck door focus-ring na klik).
 
-In `SearchBar.tsx`:
-- Toevoegen: `import { useSavedSearches } from '@/hooks/useSavedSearches'`, `useAuth`, `Dialog*`, `Input`, `Label`, `Bell`, `toast`.
-- Lokale state: `saveOpen`, `searchName`.
-- `const { save } = useSavedSearches();` — die hook doet al `supabase.from('saved_searches').insert(...)` met `user_id`, `name`, `filters` en toont een toast.
-- Opslaan met de huidige `filters` state (synced via bestaande useEffect met basis-velden + advanced filters). Dezelfde inhoud als de huidige Search.tsx dialog (naam-veld, "Opslaan" knop).
-- Default naam-suggestie genereren uit filters (bv. "Audi A4 onder €25.000") als pre-fill, leegmaken na opslaan.
+**Fix in `src/modules/listings/ListingCard.tsx`:** beperk de overlay tot `group-hover:` zonder `group-focus-within:` (of voeg `pointer-events-none` toe op de overlay) en zorg dat hij niet triggert op `:focus-visible` van interne knoppen. Verifieer met re-screenshot.
 
-## Opruimen in `src/pages/Search.tsx`
+### 4. AI-zoekbalk dupliceert filterspoor op /zoeken
+**Wat ik zag:** Bovenaan de results-kolom prijkt nog de volledige `SmartSearchBar` ("Beschrijf je droomwagen") terwijl de gebruiker al midden in het filteren zit. Neemt verticale ruimte weg van resultaten.
 
-- Verwijder de losse `Dialog` met "Bewaar zoekopdracht"-knop in de header (regel ±253-293) en de bijhorende states (`saveDialogOpen`, `searchName`, `useSavedSearches` import en `useAuth` indien verder niet gebruikt). Hiermee voorkomen we dubbele opslagknoppen.
-- Header behoudt dan alleen titel + telling + filters-drawer.
+**Fix:** comprimeer `SmartSearchBar` op `/zoeken` tot een collapsed chip (1 regel, "Vraag het de AI…") die uitklapt bij klik. `variant="chip"` toevoegen aan `SmartSearchBar`, of inline in `Search.tsx` de huidige `variant="compact"`-render vervangen door een collapsible.
 
-## Visuele consistentie
+### 5. "Snelle selectie"-presets zonder labels
+**Wat ik zag:** 5 icon-only chips in de sidebar (zie eerste screenshot) zijn niet te interpreteren zonder hover. Op mobiel zijn ze überhaupt verborgen omdat `showPresets={false}`.
 
-- Gebruik bestaande design-tokens (`bg-primary`, `border-border/60`, `text-primary-foreground`, hover-varianten). Geen hardcoded kleuren.
-- Beide knoppen samen vullen dezelfde breedte als de huidige losse knop (full width binnen kolom).
-- Focus-ring blijft per knop zichtbaar.
-- Geen emoji's; Lucide `Search` + `Bell` iconen.
+**Fix in `src/modules/search/FilterPresets.tsx`:** label naast icoon tonen vanaf `sm:` breedte, en `title`/`aria-label` op alle chips. Mobiel: presets aanzetten in de drawer/gate (`showPresets={true}` op mobiel) — ze zijn juist daar nuttig.
+
+### 6. Console-warning `fetchPriority` (cosmetic)
+**Wat ik zag:** `Warning: React does not recognize the 'fetchPriority' prop` afkomstig van `Index.tsx` (`<img fetchPriority="high">`).
+
+**Fix:** in `src/pages/Index.tsx` vervang `fetchPriority="high"` door `fetchpriority="high"` (lowercase, native HTML attribuut) of laat het weg en gebruik `<link rel="preload">` in `index.html`.
 
 ## Technische details
 
-- Geen DB-migratie nodig (`saved_searches` heeft al `name`, `filters`, `user_id`, `paused`, `frequency`).
-- Geen edge-function wijziging.
-- Bestaande `useSavedSearches.save()` schrijft direct en toont toast — gebruiker ziet de nieuwe alert vervolgens onder `/favorieten?tab=alerts`.
+- **Geen DB-migratie nodig.**
+- Geen edge-function wijzigingen.
+- Nieuwe util: `serializeFiltersToParams` in `src/lib/searchFilters.ts` (whitelist parallel aan `parseFiltersFromURL`).
+- Nieuwe component: `src/modules/search/SaveSearchDialog.tsx` (props: `open`, `onOpenChange`, `filters`, `activeFilterCount`).
+- Test-pad: na fix #1 moet `/zoeken?fuelTypes=diesel` direct 3 resultaten + aangevinkte Diesel-checkbox tonen na refresh.
 
-## Out of scope
+## Buiten scope
 
-- `ClassicHeroSearch.tsx` op homepage (andere surface).
-- Wijzigingen aan filter-logica zelf.
-- Wijzigingen aan favorieten-pagina.
+- Vrije invoer/slider voor prijs/jaar/km (apart project).
+- Herontwerp `FilterPanel` secties.
+- Mobile gate skip-link (los voorstel later).
+- Confirm op "Reset alles" (los voorstel later).
