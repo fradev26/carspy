@@ -207,15 +207,48 @@ export default function Inventory() {
         </div>
       </div>
 
+      {/* Selection toolbar */}
+      {filtered.length > 0 && (
+        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+          <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+            <Checkbox
+              checked={allSelected ? true : someSelected ? 'indeterminate' : false}
+              onCheckedChange={toggleSelectAllFiltered}
+            />
+            <span>
+              {allSelected
+                ? `Alles gedeselecteerd ${filtered.length}`
+                : `Selecteer alle ${filtered.length} zichtbare`}
+            </span>
+          </label>
+          <button
+            type="button"
+            onClick={selectBoostable}
+            className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-1 hover:bg-muted text-foreground"
+          >
+            <Rocket className="h-3 w-3" /> Selecteer boostbare ({filtered.filter(isBoostable).length})
+          </button>
+          {selectedIds.size > 0 && (
+            <button
+              type="button"
+              onClick={() => setSelectedIds(new Set())}
+              className="text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
+            >
+              Selectie wissen
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Bulk bar */}
       {selectedIds.size > 0 && (
         <div className="sticky top-14 z-10 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 backdrop-blur p-2.5 flex-wrap">
           <span className="text-sm font-medium">{selectedIds.size} geselecteerd</span>
+          <Button size="sm" className="gap-1.5" onClick={() => bulkAction('boost')}>
+            <Rocket className="h-3.5 w-3.5" /> Boost {selectedIds.size}
+          </Button>
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => bulkAction('premium')}>
             <Crown className="h-3.5 w-3.5" /> Premium
-          </Button>
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => bulkAction('boost')}>
-            <Rocket className="h-3.5 w-3.5" /> Boost
           </Button>
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => bulkAction('sold')}>
             <CheckCircle2 className="h-3.5 w-3.5" /> Verkocht
