@@ -17,9 +17,6 @@ import {
   LifeBuoy,
   Mail,
   Info,
-  Megaphone,
-  Briefcase,
-  BarChart3,
   LucideIcon,
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
@@ -95,7 +92,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export default function DealerSettings() {
-  const { profile, isDealer } = useProfile();
+  const { profile } = useProfile();
   const { toast } = useToast();
   const [autoScoutOpen, setAutoScoutOpen] = useState(false);
 
@@ -128,14 +125,6 @@ export default function DealerSettings() {
           </Link>
         </Button>
       </div>
-
-      {isDealer && (
-        <Section title="Dealerfuncties">
-          <SettingsRow icon={Briefcase} label="Zakelijk Dashboard" to="/zakelijk" />
-          <SettingsRow icon={BarChart3} label="Analytics" to="/zakelijk/analytics" />
-          <SettingsRow icon={Megaphone} label="Leads" to="/zakelijk/leads" />
-        </Section>
-      )}
 
       <Section title="Koppelingen">
         <SettingsRow icon={Link2} label="AutoScout24" onClick={() => setAutoScoutOpen(true)} />
