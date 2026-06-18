@@ -215,6 +215,21 @@ export function useSearchListings(params: UseSearchListingsParams): UseSearchLis
       if (filters.maxPreviousOwners != null) q = q.lte('previous_owner_count', filters.maxPreviousOwners);
       if (filters.vatDeductible) q = q.eq('vat_deductible', true);
 
+      // Online since
+      if (filters.onlineSince) {
+        const daysMap: Record<string, number> = { today: 1, '3d': 3, '7d': 7, '14d': 14, '30d': 30 };
+        if (filters.onlineSince === '30d+') {
+          const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+          q = q.lt('created_at', cutoff);
+        } else if (daysMap[filters.onlineSince]) {
+          const cutoff = new Date(Date.now() - daysMap[filters.onlineSince] * 24 * 60 * 60 * 1000).toISOString();
+          q = q.gte('created_at', cutoff);
+        }
+      }
+
+      // Interior colors
+      if (filters.interiorColors?.length) q = q.in('interior_color', filters.interiorColors);
+
       // Features array (must contain all)
       if (filters.features?.length) q = q.contains('equipment', filters.features);
 
