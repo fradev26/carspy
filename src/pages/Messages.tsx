@@ -28,10 +28,25 @@ interface Message {
   created_at: string;
 }
 
-const MAX_RENDER = 200;
+const PAGE_SIZE = 100;
+
+function formatBubbleTime(d: string) {
+  const x = new Date(d);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const that = new Date(x.getFullYear(), x.getMonth(), x.getDate());
+  const diff = Math.floor((+today - +that) / 86400000);
+  const hm = x.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+  if (diff === 0) return hm;
+  if (diff === 1) return `Gisteren • ${hm}`;
+  if (x.getFullYear() === now.getFullYear()) {
+    return `${x.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })} • ${hm}`;
+  }
+  return `${x.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })} • ${hm}`;
+}
 
 const Bubble = memo(function Bubble({ msg, mine }: { msg: Message; mine: boolean }) {
-  const time = new Date(msg.created_at).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+  const time = formatBubbleTime(msg.created_at);
   return (
     <div className={cn('flex w-full animate-fade-in', mine ? 'justify-end' : 'justify-start')}>
       <div className={cn('flex flex-col max-w-[75%] min-w-0', mine ? 'items-end' : 'items-start')}>
@@ -69,7 +84,10 @@ function dayLabel(d: string) {
   const diff = Math.floor((+new Date(now.getFullYear(), now.getMonth(), now.getDate()) - +new Date(x.getFullYear(), x.getMonth(), x.getDate())) / 86400000);
   if (diff === 0) return 'Vandaag';
   if (diff === 1) return 'Gisteren';
-  return x.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: x.getFullYear() === now.getFullYear() ? undefined : 'numeric' });
+  if (x.getFullYear() === now.getFullYear()) {
+    return x.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+  }
+  return x.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 export default function Messages() {
