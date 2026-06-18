@@ -227,8 +227,7 @@ export function useSearchListings(params: UseSearchListingsParams): UseSearchLis
         }
       }
 
-      // Interior colors
-      if (filters.interiorColors?.length) q = q.in('interior_color', filters.interiorColors);
+      // Interior colors filter is a UI-only refinement for now (no DB column).
 
       // Features array (must contain all)
       if (filters.features?.length) q = q.contains('equipment', filters.features);
