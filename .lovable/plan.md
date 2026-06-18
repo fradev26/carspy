@@ -1,71 +1,61 @@
-Voeg een lichte, in-card foto-swiper toe aan `ListingCard` voor zowel de default als horizontal variant, met fotocounter-badge, paginatie-dots, mouse/touch drag, keyboard-navigatie en lazy/prefetch laadgedrag. Alleen `src/modules/listings/ListingCard.tsx` wordt aangepast plus één nieuwe component `src/modules/listings/ListingImageCarousel.tsx`.
 
-## Nieuwe component: `ListingImageCarousel`
+# Vergelijkingspagina herontwerp (`/vergelijken`)
 
-Props:
-- `images: string[]`
-- `alt: string`
-- `aspectClass: string` (bv. `aspect-[16/10]` of `aspect-[4/3]`)
-- `priority?: boolean` (eerste afbeelding eager + `fetchpriority="high"`, default false)
-- `className?: string`
-- `children?: ReactNode` (voor overlay-content: prijs, hartje, badges)
+Eén bestand wordt aangepast: `src/pages/Compare.tsx`. Bestaande huisstijl, `useCompare`-hook, routes en `CompareBar` blijven ongewijzigd.
 
-Gedrag:
-- State: `index`, `dragging`, `dragDelta`.
-- Track: `flex` met `translateX(calc(-index*100% + delta))`, `transition-transform` uit tijdens drag.
-- Slide-rendering: per slide één `<div class="w-full shrink-0">` met `<img>`.
-  - Slide 0: `loading="eager"` indien `priority`, anders `loading="lazy"`.
-  - Slide 1+: `loading="lazy"` initieel; zodra `dragging===true` of `index>0` voor het eerst → bewaar `loadedSet` (state Set<number>) waarin index 0,1 en daarna `index-1, index, index+1` zijn opgenomen; render niet-geladen slides als `<div class="bg-muted">` (lege placeholder, geen `<img>` om netwerkverkeer te voorkomen).
-  - Op begin van drag: voeg `index±1` toe aan loadedSet (prefetch volgende).
-- Geen layout shift: alle slides delen dezelfde `aspectClass` op de buitenste track.
+## Nieuwe structuur (top → bottom)
 
-Interactie:
-- Pointer Events (`onPointerDown/Move/Up/Cancel`) — werkt voor muis + touch + pen. Capture pointer.
-- Drempel: `>10 px` horizontale beweging → markeer als "swipe in gang", zet `dragging=true`, registreer dat klik genegeerd moet worden.
-- Op `pointerup`: bepaal eind-index op basis van delta (>25% containerbreedte of snelheid >0.4 px/ms → wissel), clamp naar `[0, images.length-1]` (geen infinite).
-- Verticale drag (deltaY dominant) → laat scrollen, annuleer swipe.
-- Klik-suppressie: als drag gedetecteerd is, `e.preventDefault()` op de eerstvolgende `click` event via een capturing handler op de carousel; geef ouder-`Link` zo geen navigatie. Reset flag na 50 ms.
-- Toetsenbord: container krijgt `tabIndex={0}`, `role="region"`, `aria-roledescription="carousel"`, `aria-label="Foto's van {title}"`. `ArrowLeft/ArrowRight` wisselen index (alleen wanneer carousel zelf focus heeft, niet de hele card).
-- Single image of leeg: render alleen statische `<img>` zonder swipe-laag, dots of counter.
+```text
+[ Sticky page header ]
+ ← Auto's vergelijken                          [Wis alles]
+ 2 van 3 geselecteerd · ☑ Alleen verschillen
 
-Overlay-elementen binnen de carousel (positioned absolute):
-- Fotocounter rechtsonder: `Badge` met `Camera`-icoon + `{index+1}/{images.length}` óf alleen totaal `{images.length}`. Plan: toon `📷 {images.length}` (totaal) wanneer geen interactie, en `{index+1} / {images.length}` zodra de gebruiker swipet (na eerste indexwissel). Stijl: `rounded-full bg-black/55 text-white backdrop-blur-sm text-xs px-2.5 py-1 gap-1.5 inline-flex items-center`. WCAG-contrast door donkere semi-transparante achtergrond.
-- Paginatie-dots onderaan-gecentreerd: alleen tonen bij ≥2 foto's en ≤8 (anders alleen counter). Bullet-rij `flex gap-1`, dot `h-1.5 w-1.5 rounded-full bg-white/60`, actief `w-4 bg-white`. Subtiele drop-shadow voor leesbaarheid.
-- Prev/Next-pijlen (alleen lg, alleen bij hover van de hele card): `h-9 w-9 rounded-full bg-card/90 backdrop-blur` met `ChevronLeft/Right`. Verborgen op mobiel (touch heeft swipe). Klik op pijl → `e.stopPropagation()` + index ±1 binnen grenzen.
-- Bestaande overlays (prijs links boven, favorite/compare rechts, premium/status links onder, hover-CTA) blijven via `children` slot ongewijzigd boven de track gerenderd.
+[ Sticky auto-header (compact, plakt onder page header bij scroll) ]
+ ┌──────┐┌──────┐(+ Auto)
+ │ foto ││ foto │
+ └──────┘└──────┘
+ Audi RS4   BMW M3
+ €22.900    €24.900   [×] [×]
 
-Performance:
-- Eerste card-afbeelding gebruikt `loading="lazy"` zoals nu; alleen slide 0 wordt initieel in DOM gerenderd als `<img>`. Slide 1 wordt vooraf ingeladen wanneer de gebruiker `pointerdown` doet (prefetch). Slide n-1/n/n+1 worden actief gehouden zodra n actief is.
-- `decoding="async"`, `draggable={false}` op alle `<img>` om native HTML5 drag te onderdrukken.
-- `select-none touch-pan-y` op de carousel zodat verticaal scrollen mogelijk blijft maar horizontale swipe door ons wordt afgehandeld.
-- `will-change: transform` alleen tijdens drag.
+[ Specificaties tabel ]  — compact, zebra, winnaar-highlight
+ Prijs        🟢 €22.900     €24.900
+ Bouwjaar        2022        2021
+ Km-stand     🟢 31.000      47.000 ▼niet-winnaar
+ Vermogen        320 pk      🟢 360 pk
+ ...
 
-## ListingCard-aanpassingen
+[ Uitrusting ]  (ongewijzigd qua data, met "alleen verschillen" gefilterd)
 
-- Vervang de huidige `<img>` + shimmer + price/heart/compare/premium-overlays voor zowel `horizontal` als `default` door:
-  ```tsx
-  <ListingImageCarousel images={listing.images} alt={listing.title} aspectClass="aspect-[16/10]">
-    {/* alle bestaande overlay-knoppen en badges */}
-  </ListingImageCarousel>
-  ```
-  De `Link`-wrapper blijft; de carousel onderschept clicks alleen wanneer een swipe is gedetecteerd. Bestaande `e.stopPropagation()` op favorite/compare blijft werken.
-- `imageError`/`imageLoaded` state in `ListingCard` vervalt (verhuist naar carousel).
-- `listing.images.length === 0` → carousel toont `/placeholder.svg`, geen swipe-UI.
-- Horizontal variant gebruikt `aspectClass="aspect-[16/10] sm:aspect-[4/3]"` en `sm:w-72` blijft op de wrapper.
-- Houd `group-hover:scale-105` weg (conflict met carousel transform). Vervang door subtielere `transition-opacity` zoom-fallback: niet doen — laat eruit om sleep-interactie strak te houden.
+[ Onderaan CTA-blok ]
+ [+ Auto toevoegen]   [Deel vergelijking]
+```
 
-## A11y & touch targets
+## Functionele veranderingen
 
-- Pijlknoppen `h-9 w-9` op desktop; mobiel geen pijlen (swipe vervangt ze). Carousel-container is groot genoeg (volledige afbeelding) → swipe-oppervlak >>44 px.
-- Counter-badge en dots zijn niet interactief.
-- `aria-live="polite"` op een visueel verborgen status: "Foto {index+1} van {total}" — geüpdatet bij wisseling, zodat screenreaders het volgen.
+1. **Echte tabel-layout** — labelkolom 120px, dan 1fr per auto. Eén `grid` met `auto-rows-min`, dichter spacing (`py-2.5`), dunne separator-lijnen. Geen losse cards meer per rij.
+2. **Sticky compacte auto-header** — `position: sticky; top: 0` (rekening houdend met bestaande globale header offset via `top-14`). Bij scroll krimpt foto-aspect naar 4:3 op ~96px breed; auto-naam + prijs blijven leesbaar. Op mobiel: foto's kleiner (25-30% minder hoogte) en `gap-2` tussen kolommen.
+3. **"Alleen verschillen tonen"-toggle** — `Switch` bovenaan. Bij actief: filter `specs` waar alle items dezelfde `getValue` retourneren; idem voor features waar alle items dezelfde include-status hebben. Wanneer er maar 1 auto is, toggle uitgrijzen.
+4. **Winnaar-highlight per rij** — per spec optioneel `compare: 'higher' | 'lower' | null`:
+   - `lower`: Prijs, Km-stand
+   - `higher`: Bouwjaar, Vermogen, Motor (engineSize)
+   - `null`: Brandstof, Transmissie, Carrosserie, Kleur, Deuren (geen winnaar)
+   Winnaar krijgt subtiel `text-success font-semibold` + klein groen bolletje (`size-1.5 rounded-full bg-success`). Bij gelijkstand geen highlight.
+5. **Compactere foto-cards** — aspect `16/10` → `4/3` met `max-h-32 md:max-h-40`. `X`-knop verschuift naar onder de prijs (compactere overlay).
+6. **Onderlinge afstand auto-kolommen** — `gap-2 md:gap-3` (was `gap-4`); voelt als één vergelijking.
+7. **Onderste CTA-strip** — `flex` met `+ Auto toevoegen` (outline) en `Deel vergelijking` (primary, gebruikt `navigator.share` met fallback naar `clipboard.writeText(window.location.href)`). Mobiel full-width gestapeld, desktop side-by-side.
+8. **Lege state** — ongewijzigd.
+9. **Accessibility** — Switch heeft label; tabel gebruikt `role="table"`, `role="row"`, `role="cell"`. Sticky header behoudt focus outlines.
 
-## Regressies vermijden
+## Buiten scope
 
-- `useFavorites`, `useCompare`, marketcompare-knop en alle bestaande props blijven onveranderd.
-- Tests: visueel verifiëren via Playwright na build — swipe op `/zoeken` listingcard wisselt foto, klik opent `/auto/:id`, pijltjestoetsen werken wanneer de carousel focus heeft.
+- Swipe tussen auto's (alleen relevant bij 3+ auto's, blijft als horizontale scroll zoals nu).
+- Wijzigingen aan `CompareBar`, `useCompare`-hook, route of detailpagina.
+- AI-vergelijking / nieuwe data uit DB.
 
-## Out of scope
+## Technische details
 
-- `ImageGallery` op de detailpagina blijft onveranderd.
-- Geen DB-, route- of layout-wijzigingen.
+- Geen nieuwe dependencies. `Switch` uit `@/components/ui/switch` is al beschikbaar.
+- Spec-config wordt uitgebreid: `{ label, getValue, getNumeric?, compare?: 'higher'|'lower' }`. Winnaar-bepaling via `Math.min/max` over `getNumeric` resultaten; gelijkstand → geen highlight.
+- Sticky offsets via Tailwind: `sticky top-14 z-30 bg-background/95 backdrop-blur` voor auto-header; bestaande globale header `h-14` blijft intact.
+- Deel-knop: `if (navigator.share) navigator.share({ url }); else { clipboard + toast('Link gekopieerd') }` via bestaande `sonner` toast.
+- Geen wijzigingen aan SEO/`noindex` meta.
