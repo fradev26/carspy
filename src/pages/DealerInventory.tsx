@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FilterPanel, FilterChips } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
 import { SearchFilters, SORT_OPTIONS, Listing } from '@/types/listing';
-import { findDealerBySlug, getDealerListings } from '@/lib/dealers';
+import { findDealerBySlugAsync, getDealerListingsAsync, type DealerSummary } from '@/lib/dealers';
 import { cn } from '@/lib/utils';
 
 const PER_PAGE = 24;
@@ -47,8 +47,8 @@ function applyFiltersAndSort(listings: Listing[], filters: SearchFilters, sortBy
 
 export default function DealerInventory() {
   const { slug = '' } = useParams<{ slug: string }>();
-  const dealer = findDealerBySlug(slug);
-  const allListings = useMemo(() => getDealerListings(slug), [slug]);
+  const [dealer, setDealer] = useState<DealerSummary | null | undefined>(undefined);
+  const [allListings, setAllListings] = useState<Listing[]>([]);
   const activeListings = useMemo(() => allListings.filter((l) => l.status === 'active'), [allListings]);
 
   const [filters, setFilters] = useState<SearchFilters>({});
@@ -58,13 +58,34 @@ export default function DealerInventory() {
 
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'auto' }); }, [slug]);
 
+  useEffect(() => {
+    let cancelled = false;
+    setDealer(undefined);
+    setAllListings([]);
+    (async () => {
+      const d = await findDealerBySlugAsync(slug);
+      if (cancelled) return;
+      if (!d) { setDealer(null); return; }
+      setDealer(d);
+      const list = await getDealerListingsAsync(slug, d.seller.id);
+      if (!cancelled) setAllListings(list);
+    })();
+    return () => { cancelled = true; };
+  }, [slug]);
 
   const filtered = useMemo(
     () => applyFiltersAndSort(activeListings, filters, sortBy),
     [activeListings, filters, sortBy],
   );
 
-  if (!dealer) return <Navigate to="/zoeken" replace />;
+  if (dealer === undefined) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
+  if (dealer === null) return <Navigate to="/zoeken" replace />;
 
   const handleRemoveFilter = (key: keyof SearchFilters, value?: string) => {
     const arrayKeys = ['fuelTypes', 'transmissions', 'bodyTypes', 'driveTypes', 'paintTypes', 'colors', 'interiorMaterials', 'features'];
