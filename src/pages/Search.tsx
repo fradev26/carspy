@@ -80,7 +80,7 @@ export default function Search() {
 
 
   const handleRemoveFilter = (key: keyof SearchFilters, value?: string) => {
-    const arrayKeys = ['fuelTypes', 'transmissions', 'bodyTypes', 'driveTypes', 'paintTypes', 'colors', 'interiorMaterials', 'features'];
+    const arrayKeys = ['fuelTypes', 'transmissions', 'bodyTypes', 'driveTypes', 'paintTypes', 'colors', 'interiorColors', 'interiorMaterials', 'features'];
 
     if (value && arrayKeys.includes(key)) {
       const currentValues = filters[key] as string[] | undefined;
