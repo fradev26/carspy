@@ -56,6 +56,9 @@ export default function DealerInventory() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [page, setPage] = useState(1);
 
+  useEffect(() => { window.scrollTo({ top: 0, behavior: 'auto' }); }, [slug]);
+
+
   const filtered = useMemo(
     () => applyFiltersAndSort(activeListings, filters, sortBy),
     [activeListings, filters, sortBy],
