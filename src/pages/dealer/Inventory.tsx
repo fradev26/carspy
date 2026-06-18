@@ -25,15 +25,20 @@ const daysSince = (iso: string) => Math.max(0, Math.floor((Date.now() - new Date
 type Preset = null;
 
 const STATUS_OPTIONS = [
-  { v: 'active',   label: 'Beschikbaar' },
-  { v: 'draft',    label: 'Concept' },
-  { v: 'reserved', label: 'Gereserveerd' },
-  { v: 'sold',     label: 'Verkocht' },
+  { v: 'active',     label: 'Beschikbaar' },
+  { v: 'boostable',  label: 'Boostbaar' },
+  { v: 'draft',      label: 'Concept' },
+  { v: 'reserved',   label: 'Gereserveerd' },
+  { v: 'sold',       label: 'Verkocht' },
 ] as const;
+
+const isBoostable = (l: ListingAnalytics) =>
+  l.status === 'active' && (!l.boostUntil || new Date(l.boostUntil).getTime() <= Date.now());
 
 export default function Inventory() {
   const { listings, loading, refresh } = useDealerAnalytics();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<Set<string>>(new Set());
   const [boostDialog, setBoostDialog] = useState<{ ids: string[]; title?: string } | null>(null);
@@ -41,7 +46,12 @@ export default function Inventory() {
   // ── Filter pipeline ─────────────────────────────────────────────────────
   const filtered = useMemo(() => {
     return listings.filter((l) => {
-      if (statusFilter.size > 0 && !statusFilter.has(l.status)) return false;
+      if (statusFilter.size > 0) {
+        const match = Array.from(statusFilter).some((s) =>
+          s === 'boostable' ? isBoostable(l) : l.status === s,
+        );
+        if (!match) return false;
+      }
       if (query) {
         const q = query.toLowerCase();
         if (
@@ -54,13 +64,51 @@ export default function Inventory() {
     });
   }, [listings, query, statusFilter]);
 
-  // ── Selection & bulk ────────────────────────────────────────────────────
-  const toggleSelect = (id: string) => {
+  const allSelected = filtered.length > 0 && filtered.every((l) => selectedIds.has(l.id));
+  const someSelected = !allSelected && filtered.some((l) => selectedIds.has(l.id));
+
+  const toggleSelectAllFiltered = () => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
+      if (allSelected) {
+        filtered.forEach((l) => next.delete(l.id));
+      } else {
+        filtered.forEach((l) => next.add(l.id));
+      }
+      return next;
+    });
+  };
+
+  const selectBoostable = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      filtered.filter(isBoostable).forEach((l) => next.add(l.id));
+      return next;
+    });
+  };
+
+  // ── Selection & bulk ────────────────────────────────────────────────────
+  const toggleSelect = (id: string, opts?: { shift?: boolean }) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (opts?.shift && lastSelectedId && lastSelectedId !== id) {
+        const ids = filtered.map((l) => l.id);
+        const a = ids.indexOf(lastSelectedId);
+        const b = ids.indexOf(id);
+        if (a !== -1 && b !== -1) {
+          const [from, to] = a < b ? [a, b] : [b, a];
+          const shouldAdd = !next.has(id);
+          for (let i = from; i <= to; i++) {
+            if (shouldAdd) next.add(ids[i]);
+            else next.delete(ids[i]);
+          }
+          return next;
+        }
+      }
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
+    setLastSelectedId(id);
   };
   const toggleStatus = (v: string) => {
     setStatusFilter((prev) => {
@@ -69,7 +117,6 @@ export default function Inventory() {
       return next;
     });
   };
-  
 
   const bulkAction = async (action: 'premium' | 'boost' | 'sold' | 'delete') => {
     if (selectedIds.size === 0) return;
@@ -94,6 +141,8 @@ export default function Inventory() {
     setSelectedIds(new Set());
     refresh();
   };
+
+
 
   if (loading) {
     return (
