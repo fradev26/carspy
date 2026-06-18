@@ -1,5 +1,7 @@
 import { mockListings } from '@/data/mockListings';
 import { Listing, Seller } from '@/types/listing';
+import { supabase } from '@/integrations/supabase/client';
+import { LISTING_COLUMNS, fetchWithProfileFallback } from '@/hooks/useListings';
 
 export function slugify(value: string): string {
   return value
@@ -55,4 +57,53 @@ export function getDealerListings(slug: string): Listing[] {
 export function dealerSlugFor(seller: Pick<Seller, 'name' | 'type'>): string | null {
   if (seller.type !== 'dealer') return null;
   return slugify(seller.name);
+}
+
+export async function findDealerBySlugAsync(slug: string): Promise<DealerSummary | undefined> {
+  const mock = findDealerBySlug(slug);
+  if (mock) return mock;
+
+  const { data } = await supabase
+    .from('profiles')
+    .select('id, dealer_name, full_name, avatar_url, created_at, is_dealer')
+    .eq('is_dealer', true);
+
+  const match = (data ?? []).find(
+    (p: any) => p.dealer_name && slugify(p.dealer_name) === slug,
+  );
+  if (!match) return undefined;
+
+  // Count active listings for this dealer
+  const { count } = await supabase
+    .from('listings')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', match.id)
+    .eq('status', 'active');
+
+  return {
+    slug,
+    seller: {
+      id: match.id,
+      name: match.dealer_name || match.full_name || 'Dealer',
+      type: 'dealer',
+      avatar: match.avatar_url ?? undefined,
+      memberSince: match.created_at,
+    },
+    listingCount: count ?? 0,
+  };
+}
+
+export async function getDealerListingsAsync(slug: string, sellerId?: string): Promise<Listing[]> {
+  const mock = getDealerListings(slug);
+  if (mock.length > 0) return mock;
+  if (!sellerId) return [];
+
+  const { data } = await supabase
+    .from('listings')
+    .select(LISTING_COLUMNS)
+    .eq('user_id', sellerId)
+    .order('created_at', { ascending: false });
+
+  if (!data || data.length === 0) return [];
+  return fetchWithProfileFallback(data as any);
 }
