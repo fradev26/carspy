@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { useCompare } from '@/hooks/useCompare';
 import { useFavorites } from '@/hooks/useFavorites';
 import { StatusBadge } from './StatusBadge';
+import { ListingImageCarousel } from './ListingImageCarousel';
 
 
 interface ListingCardProps {
