@@ -154,6 +154,8 @@ export default function Sell() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [aiTone, setAiTone] = useState<'kort' | 'uitgebreid' | 'verkoopgericht'>('uitgebreid');
+  const [pendingAiText, setPendingAiText] = useState<string | null>(null);
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [analysisResult, setAnalysisResult] = useState<VehicleAnalysis | null>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
