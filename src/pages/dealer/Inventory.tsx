@@ -25,15 +25,20 @@ const daysSince = (iso: string) => Math.max(0, Math.floor((Date.now() - new Date
 type Preset = null;
 
 const STATUS_OPTIONS = [
-  { v: 'active',   label: 'Beschikbaar' },
-  { v: 'draft',    label: 'Concept' },
-  { v: 'reserved', label: 'Gereserveerd' },
-  { v: 'sold',     label: 'Verkocht' },
+  { v: 'active',     label: 'Beschikbaar' },
+  { v: 'boostable',  label: 'Boostbaar' },
+  { v: 'draft',      label: 'Concept' },
+  { v: 'reserved',   label: 'Gereserveerd' },
+  { v: 'sold',       label: 'Verkocht' },
 ] as const;
+
+const isBoostable = (l: ListingAnalytics) =>
+  l.status === 'active' && (!l.boostUntil || new Date(l.boostUntil).getTime() <= Date.now());
 
 export default function Inventory() {
   const { listings, loading, refresh } = useDealerAnalytics();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<Set<string>>(new Set());
   const [boostDialog, setBoostDialog] = useState<{ ids: string[]; title?: string } | null>(null);
@@ -41,7 +46,12 @@ export default function Inventory() {
   // ── Filter pipeline ─────────────────────────────────────────────────────
   const filtered = useMemo(() => {
     return listings.filter((l) => {
-      if (statusFilter.size > 0 && !statusFilter.has(l.status)) return false;
+      if (statusFilter.size > 0) {
+        const match = Array.from(statusFilter).some((s) =>
+          s === 'boostable' ? isBoostable(l) : l.status === s,
+        );
+        if (!match) return false;
+      }
       if (query) {
         const q = query.toLowerCase();
         if (
@@ -54,13 +64,51 @@ export default function Inventory() {
     });
   }, [listings, query, statusFilter]);
 
-  // ── Selection & bulk ────────────────────────────────────────────────────
-  const toggleSelect = (id: string) => {
+  const allSelected = filtered.length > 0 && filtered.every((l) => selectedIds.has(l.id));
+  const someSelected = !allSelected && filtered.some((l) => selectedIds.has(l.id));
+
+  const toggleSelectAllFiltered = () => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
+      if (allSelected) {
+        filtered.forEach((l) => next.delete(l.id));
+      } else {
+        filtered.forEach((l) => next.add(l.id));
+      }
+      return next;
+    });
+  };
+
+  const selectBoostable = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      filtered.filter(isBoostable).forEach((l) => next.add(l.id));
+      return next;
+    });
+  };
+
+  // ── Selection & bulk ────────────────────────────────────────────────────
+  const toggleSelect = (id: string, opts?: { shift?: boolean }) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (opts?.shift && lastSelectedId && lastSelectedId !== id) {
+        const ids = filtered.map((l) => l.id);
+        const a = ids.indexOf(lastSelectedId);
+        const b = ids.indexOf(id);
+        if (a !== -1 && b !== -1) {
+          const [from, to] = a < b ? [a, b] : [b, a];
+          const shouldAdd = !next.has(id);
+          for (let i = from; i <= to; i++) {
+            if (shouldAdd) next.add(ids[i]);
+            else next.delete(ids[i]);
+          }
+          return next;
+        }
+      }
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
+    setLastSelectedId(id);
   };
   const toggleStatus = (v: string) => {
     setStatusFilter((prev) => {
@@ -69,7 +117,6 @@ export default function Inventory() {
       return next;
     });
   };
-  
 
   const bulkAction = async (action: 'premium' | 'boost' | 'sold' | 'delete') => {
     if (selectedIds.size === 0) return;
@@ -94,6 +141,8 @@ export default function Inventory() {
     setSelectedIds(new Set());
     refresh();
   };
+
+
 
   if (loading) {
     return (
@@ -134,7 +183,9 @@ export default function Inventory() {
               Alle ({listings.length})
             </button>
             {STATUS_OPTIONS.map((c) => {
-              const count = listings.filter((l) => l.status === c.v).length;
+              const count = c.v === 'boostable'
+                ? listings.filter(isBoostable).length
+                : listings.filter((l) => l.status === c.v).length;
               const active = statusFilter.has(c.v);
               return (
                 <button
@@ -156,15 +207,48 @@ export default function Inventory() {
         </div>
       </div>
 
+      {/* Selection toolbar */}
+      {filtered.length > 0 && (
+        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+          <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+            <Checkbox
+              checked={allSelected ? true : someSelected ? 'indeterminate' : false}
+              onCheckedChange={toggleSelectAllFiltered}
+            />
+            <span>
+              {allSelected
+                ? `Alles gedeselecteerd ${filtered.length}`
+                : `Selecteer alle ${filtered.length} zichtbare`}
+            </span>
+          </label>
+          <button
+            type="button"
+            onClick={selectBoostable}
+            className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-1 hover:bg-muted text-foreground"
+          >
+            <Rocket className="h-3 w-3" /> Selecteer boostbare ({filtered.filter(isBoostable).length})
+          </button>
+          {selectedIds.size > 0 && (
+            <button
+              type="button"
+              onClick={() => setSelectedIds(new Set())}
+              className="text-muted-foreground hover:text-foreground underline-offset-2 hover:underline"
+            >
+              Selectie wissen
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Bulk bar */}
       {selectedIds.size > 0 && (
         <div className="sticky top-14 z-10 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 backdrop-blur p-2.5 flex-wrap">
           <span className="text-sm font-medium">{selectedIds.size} geselecteerd</span>
+          <Button size="sm" className="gap-1.5" onClick={() => bulkAction('boost')}>
+            <Rocket className="h-3.5 w-3.5" /> Boost {selectedIds.size}
+          </Button>
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => bulkAction('premium')}>
             <Crown className="h-3.5 w-3.5" /> Premium
-          </Button>
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => bulkAction('boost')}>
-            <Rocket className="h-3.5 w-3.5" /> Boost
           </Button>
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => bulkAction('sold')}>
             <CheckCircle2 className="h-3.5 w-3.5" /> Verkocht
@@ -193,7 +277,7 @@ export default function Inventory() {
               key={l.id}
               listing={l}
               selected={selectedIds.has(l.id)}
-              onSelect={() => toggleSelect(l.id)}
+              onSelect={(shift) => toggleSelect(l.id, { shift })}
               onBoost={() => setBoostDialog({ ids: [l.id], title: l.title })}
               onRelist={async () => {
                 const { error } = await supabase
@@ -235,7 +319,7 @@ function DealerCard({
 }: {
   listing: ListingAnalytics;
   selected: boolean;
-  onSelect: () => void;
+  onSelect: (shift?: boolean) => void;
   onBoost: () => void;
   onRelist: () => void;
 }) {
@@ -262,12 +346,19 @@ function DealerCard({
         </Link>
 
         {/* Checkbox */}
-        <label
+        <button
+          type="button"
+          aria-label={selected ? 'Deselecteer' : 'Selecteer'}
+          title="Shift-klik om een bereik te selecteren"
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            onSelect(e.shiftKey);
+          }}
           className="absolute top-2 left-2 h-7 w-7 rounded-md bg-card/95 backdrop-blur flex items-center justify-center shadow-sm cursor-pointer"
-          onClick={(e) => e.stopPropagation()}
         >
-          <Checkbox checked={selected} onCheckedChange={onSelect} />
-        </label>
+          <Checkbox checked={selected} className="pointer-events-none" />
+        </button>
 
         {/* Status badge top-right */}
         <div className="absolute top-2 right-2 flex items-center gap-1">
