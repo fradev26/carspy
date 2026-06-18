@@ -18,8 +18,6 @@ import {
   Mail,
   Info,
   Megaphone,
-  Clock,
-  Heart,
   Briefcase,
   BarChart3,
   LucideIcon,
@@ -29,7 +27,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useProfile } from '@/hooks/useProfile';
-import { useFavorites } from '@/hooks/useFavorites';
 import { useToast } from '@/hooks/use-toast';
 import AutoScoutPanel from '@/modules/dealer/AutoScoutPanel';
 import { cn } from '@/lib/utils';
@@ -99,7 +96,6 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default function DealerSettings() {
   const { profile, isDealer } = useProfile();
-  const { favorites } = useFavorites();
   const { toast } = useToast();
   const [autoScoutOpen, setAutoScoutOpen] = useState(false);
 
@@ -132,18 +128,6 @@ export default function DealerSettings() {
           </Link>
         </Button>
       </div>
-
-      <Section title="Mijn activiteiten">
-        <SettingsRow icon={Megaphone} label="Mijn advertenties" to="/account/advertenties" />
-        <SettingsRow icon={Bell} label="Zoekalerts" to="/favorieten?tab=alerts" />
-        <SettingsRow icon={Clock} label="Recent bekeken" to="/favorieten?tab=recent" />
-        <SettingsRow
-          icon={Heart}
-          label="Favorieten"
-          to="/favorieten"
-          badge={favorites.size > 0 ? String(favorites.size) : undefined}
-        />
-      </Section>
 
       {isDealer && (
         <Section title="Dealerfuncties">
