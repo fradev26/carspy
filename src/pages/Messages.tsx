@@ -28,10 +28,25 @@ interface Message {
   created_at: string;
 }
 
-const MAX_RENDER = 200;
+const PAGE_SIZE = 100;
+
+function formatBubbleTime(d: string) {
+  const x = new Date(d);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const that = new Date(x.getFullYear(), x.getMonth(), x.getDate());
+  const diff = Math.floor((+today - +that) / 86400000);
+  const hm = x.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+  if (diff === 0) return hm;
+  if (diff === 1) return `Gisteren • ${hm}`;
+  if (x.getFullYear() === now.getFullYear()) {
+    return `${x.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })} • ${hm}`;
+  }
+  return `${x.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })} • ${hm}`;
+}
 
 const Bubble = memo(function Bubble({ msg, mine }: { msg: Message; mine: boolean }) {
-  const time = new Date(msg.created_at).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+  const time = formatBubbleTime(msg.created_at);
   return (
     <div className={cn('flex w-full animate-fade-in', mine ? 'justify-end' : 'justify-start')}>
       <div className={cn('flex flex-col max-w-[75%] min-w-0', mine ? 'items-end' : 'items-start')}>
@@ -69,7 +84,10 @@ function dayLabel(d: string) {
   const diff = Math.floor((+new Date(now.getFullYear(), now.getMonth(), now.getDate()) - +new Date(x.getFullYear(), x.getMonth(), x.getDate())) / 86400000);
   if (diff === 0) return 'Vandaag';
   if (diff === 1) return 'Gisteren';
-  return x.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: x.getFullYear() === now.getFullYear() ? undefined : 'numeric' });
+  if (x.getFullYear() === now.getFullYear()) {
+    return x.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+  }
+  return x.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 export default function Messages() {
@@ -80,9 +98,11 @@ export default function Messages() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const scrollerRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const topSentinelRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -219,12 +239,48 @@ export default function Messages() {
   };
 
   const selectedConversation = conversations.find(c => c.id === selectedConv);
-  const visibleMessages = useMemo(() => messages.slice(-MAX_RENDER), [messages]);
-  const hasOlder = messages.length > MAX_RENDER;
+  const visibleMessages = useMemo(() => messages.slice(-visibleCount), [messages, visibleCount]);
+  const hasOlder = messages.length > visibleCount;
 
-  // Container height: viewport - header(3.5rem+safe-top) - bottomnav(4rem+safe-bottom on mobile)
+  // Reset window on conversation switch
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [selectedConv]);
+
+  // Load more when top sentinel is visible
+  useEffect(() => {
+    const el = topSentinelRef.current;
+    if (!el || !hasOlder) return;
+    const io = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        const scroller = scrollerRef.current;
+        const prevHeight = scroller?.scrollHeight || 0;
+        setVisibleCount((c) => Math.min(c + PAGE_SIZE, messages.length));
+        requestAnimationFrame(() => {
+          if (scroller) {
+            const diff = scroller.scrollHeight - prevHeight;
+            scroller.scrollTop += diff;
+          }
+        });
+      }
+    }, { root: scrollerRef.current, threshold: 0.1 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [hasOlder, messages.length]);
+
+  // Keep latest message visible when container resizes (e.g. keyboard opens)
+  useEffect(() => {
+    const sc = scrollerRef.current;
+    if (!sc) return;
+    const ro = new ResizeObserver(() => {
+      const nearBottom = sc.scrollHeight - sc.scrollTop - sc.clientHeight < 120;
+      if (nearBottom) endRef.current?.scrollIntoView({ block: 'end' });
+    });
+    ro.observe(sc);
+    return () => ro.disconnect();
+  }, [selectedConv]);
+
+  // Container height: viewport - header(3.5rem+safe-top); bottom nav clearance handled on input
   const shellHeight =
-    'h-[calc(100dvh-3.5rem-env(safe-area-inset-top)-4rem-env(safe-area-inset-bottom))] lg:h-[calc(100dvh-4rem)]';
+    'h-[calc(100dvh-3.5rem-env(safe-area-inset-top))] lg:h-[calc(100dvh-4rem)]';
 
   if (loading) {
     return (
@@ -339,9 +395,10 @@ export default function Messages() {
               className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 py-3 space-y-1.5"
               style={{ touchAction: 'pan-y' }}
             >
+              <div ref={topSentinelRef} />
               {hasOlder && (
-                <div className="flex justify-center pb-2">
-                  <span className="text-[11px] text-muted-foreground">{messages.length - MAX_RENDER} oudere berichten verborgen</span>
+                <div className="flex justify-center py-2">
+                  <span className="text-[11px] text-muted-foreground">Oudere berichten laden…</span>
                 </div>
               )}
               {visibleMessages.map((msg, i) => {
@@ -358,10 +415,7 @@ export default function Messages() {
             </div>
 
             {/* Input */}
-            <div
-              className="shrink-0 border-t border-border/60 bg-background/95 backdrop-blur px-2 pt-2"
-              style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
-            >
+            <div className="shrink-0 border-t border-border/60 bg-background/95 backdrop-blur px-2 pt-2 pb-[calc(4rem+max(0.5rem,env(safe-area-inset-bottom)))] lg:pb-2">
               <form
                 onSubmit={(e) => { e.preventDefault(); sendMessage(); }}
                 className="relative flex items-end"
