@@ -192,8 +192,8 @@ export function useSearchListings(params: UseSearchListingsParams): UseSearchLis
       if (filters.maxPrice != null) q = q.lte('price', filters.maxPrice);
       if (filters.minYear != null) q = q.gte('year', filters.minYear);
       if (filters.maxYear != null) q = q.lte('year', filters.maxYear);
-      if (filters.minMileage != null) q = q.gte('mileage', filters.minMileage);
-      if (filters.maxMileage != null) q = q.lte('mileage', filters.maxMileage);
+      if (filters.minMileage != null && filters.minMileage > 0) q = q.gte('mileage', filters.minMileage);
+      if (filters.maxMileage != null && filters.maxMileage > 0) q = q.lte('mileage', filters.maxMileage);
       if (filters.minPower != null) q = q.gte('power', filters.minPower);
       if (filters.maxPower != null) q = q.lte('power', filters.maxPower);
 
