@@ -136,6 +136,7 @@ export default function AccountSettings({ defaultTab = 'profiel' }: Props) {
       <h1 className="text-2xl font-bold">Account instellingen</h1>
       <p className="text-sm text-muted-foreground">Profiel, meldingen en privacyvoorkeuren.</p>
 
+      <Tabs defaultValue={defaultTab} className="mt-6">
         <TabsList>
           <TabsTrigger value="profiel">Profiel</TabsTrigger>
           <TabsTrigger value="meldingen">Meldingen</TabsTrigger>
