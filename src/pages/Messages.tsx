@@ -395,9 +395,10 @@ export default function Messages() {
               className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 py-3 space-y-1.5"
               style={{ touchAction: 'pan-y' }}
             >
+              <div ref={topSentinelRef} />
               {hasOlder && (
-                <div className="flex justify-center pb-2">
-                  <span className="text-[11px] text-muted-foreground">{messages.length - MAX_RENDER} oudere berichten verborgen</span>
+                <div className="flex justify-center py-2">
+                  <span className="text-[11px] text-muted-foreground">Oudere berichten laden…</span>
                 </div>
               )}
               {visibleMessages.map((msg, i) => {
