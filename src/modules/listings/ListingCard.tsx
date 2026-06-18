@@ -72,10 +72,6 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
     return new Intl.NumberFormat('nl-NL').format(mileage);
   };
 
-  const imageUrl = imageError || !listing.images[0] 
-    ? '/placeholder.svg' 
-    : listing.images[0];
-
   if (variant === 'horizontal') {
     return (
       <Link to={`/auto/${listing.id}`} className="block" aria-label={`${listing.title} - ${formatPrice(listing.price)}`}>
@@ -85,52 +81,44 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
         )}>
           <div className="flex flex-col sm:flex-row">
             {/* Image Container */}
-            <div className="relative aspect-[16/10] sm:aspect-[4/3] sm:w-72 overflow-hidden bg-muted">
-              {!imageLoaded && (
-                <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent bg-[length:200%_100%]" />
-              )}
-              <img
-                src={imageUrl}
+            <div className="relative sm:w-72 sm:flex-shrink-0">
+              <ListingImageCarousel
+                images={listing.images}
                 alt={listing.title}
-                loading="lazy"
-                className={cn(
-                  "h-full w-full object-cover transition-all duration-500 group-hover:scale-105",
-                  imageLoaded ? "opacity-100" : "opacity-0"
-                )}
-                onLoad={() => setImageLoaded(true)}
-                onError={() => setImageError(true)}
-              />
-              {/* Price Badge */}
-              <div className="absolute left-3 top-3 rounded-lg bg-card/95 px-3 py-1.5 shadow-elevated backdrop-blur-sm">
-                <span className="text-lg font-bold text-accent">{formatPrice(listing.price)}</span>
-              </div>
+                aspectClass="aspect-[16/10] sm:aspect-[4/3]"
+              >
+                {/* Price Badge */}
+                <div className="absolute left-3 top-3 z-10 rounded-lg bg-card/95 px-3 py-1.5 shadow-elevated backdrop-blur-sm">
+                  <span className="text-lg font-bold text-accent">{formatPrice(listing.price)}</span>
+                </div>
 
-              {/* Favorite Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={favorite ? 'Verwijder uit favorieten' : 'Toevoegen aan favorieten'}
-            aria-pressed={favorite}
-            className={cn(
-              'absolute right-3 top-3 h-9 w-9 rounded-md backdrop-blur-sm shadow-md transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground',
-              favorite
-                ? 'bg-primary text-primary-foreground ring-2 ring-primary/40 ring-offset-1 ring-offset-background'
-                : 'bg-card/90 text-accent'
-            )}
-            onClick={handleFavoriteClick}
-          >
-            <Heart className={cn('h-4 w-4 transition-transform', favorite && 'fill-current scale-110', justLiked && 'animate-heart-pop')} />
-          </Button>
+                {/* Favorite Button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={favorite ? 'Verwijder uit favorieten' : 'Toevoegen aan favorieten'}
+                  aria-pressed={favorite}
+                  className={cn(
+                    'absolute right-3 top-3 z-10 h-9 w-9 rounded-md backdrop-blur-sm shadow-md transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground',
+                    favorite
+                      ? 'bg-primary text-primary-foreground ring-2 ring-primary/40 ring-offset-1 ring-offset-background'
+                      : 'bg-card/90 text-accent'
+                  )}
+                  onClick={handleFavoriteClick}
+                >
+                  <Heart className={cn('h-4 w-4 transition-transform', favorite && 'fill-current scale-110', justLiked && 'animate-heart-pop')} />
+                </Button>
 
-              {/* Status / Premium Badges */}
-              <div className="absolute left-3 bottom-3 flex items-center gap-1.5">
-                {isPremium && (
-                  <Badge className="bg-premium text-premium-foreground font-semibold gap-1">
-                    <Crown className="h-3 w-3" /> Top
-                  </Badge>
-                )}
-                <StatusBadge status={listing.status} />
-              </div>
+                {/* Status / Premium Badges */}
+                <div className="absolute left-3 bottom-3 z-10 flex items-center gap-1.5">
+                  {isPremium && (
+                    <Badge className="bg-premium text-premium-foreground font-semibold gap-1">
+                      <Crown className="h-3 w-3" /> Top
+                    </Badge>
+                  )}
+                  <StatusBadge status={listing.status} />
+                </div>
+              </ListingImageCarousel>
             </div>
 
             {/* Content */}
