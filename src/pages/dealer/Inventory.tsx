@@ -277,7 +277,7 @@ export default function Inventory() {
               key={l.id}
               listing={l}
               selected={selectedIds.has(l.id)}
-              onSelect={() => toggleSelect(l.id)}
+              onSelect={(shift) => toggleSelect(l.id, { shift })}
               onBoost={() => setBoostDialog({ ids: [l.id], title: l.title })}
               onRelist={async () => {
                 const { error } = await supabase
