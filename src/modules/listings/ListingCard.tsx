@@ -226,6 +226,14 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
             )}
             <StatusBadge status={listing.status} />
           </div>
+
+          {/* Hover CTA (desktop only) */}
+          <div className="pointer-events-none absolute inset-x-3 bottom-12 z-10 hidden opacity-0 transition-all duration-300 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 lg:block">
+            <div className="flex items-center justify-center gap-2 rounded-lg bg-primary/95 py-2 text-sm font-medium text-primary-foreground backdrop-blur-sm">
+              <Eye className="h-4 w-4" />
+              Bekijk deze deal
+            </div>
+          </div>
         </ListingImageCarousel>
 
         {/* Content */}
