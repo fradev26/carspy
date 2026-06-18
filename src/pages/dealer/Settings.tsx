@@ -92,7 +92,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export default function DealerSettings() {
-  const { profile, isDealer } = useProfile();
+  const { profile } = useProfile();
   const { toast } = useToast();
   const [autoScoutOpen, setAutoScoutOpen] = useState(false);
 
