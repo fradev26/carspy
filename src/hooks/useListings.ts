@@ -133,7 +133,8 @@ interface ListingRow {
   profiles?: ProfileRow | null;
 }
 
-function mapRow(row: ListingRow): Listing {
+export { LISTING_COLUMNS };
+export function mapRow(row: ListingRow): Listing {
   const profile = row.profiles ?? null;
   const isDealer = profile?.is_dealer ?? false;
   const sellerName =
