@@ -10,9 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Monitor, Sun, Moon, Megaphone, Bell as BellIcon, Clock, Heart } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useFavorites } from '@/hooks/useFavorites';
+import { Monitor, Sun, Moon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme, type ThemePref } from '@/hooks/useTheme';
@@ -138,35 +136,6 @@ export default function AccountSettings({ defaultTab = 'profiel' }: Props) {
       <h1 className="text-2xl font-bold">Account instellingen</h1>
       <p className="text-sm text-muted-foreground">Profiel, meldingen en privacyvoorkeuren.</p>
 
-      <section className="mt-6">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-primary/80 mb-2">Mijn activiteiten</h2>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {([
-            { to: '/account/advertenties', icon: Megaphone, label: 'Mijn advertenties' },
-            { to: '/favorieten?tab=alerts', icon: BellIcon, label: 'Zoekalerts' },
-            { to: '/favorieten?tab=recent', icon: Clock, label: 'Recent bekeken' },
-            { to: '/favorieten', icon: Heart, label: 'Favorieten', count: favorites.size },
-          ] as const).map((it) => (
-            <Link
-              key={it.to}
-              to={it.to}
-              className="flex flex-col items-start gap-2 rounded-xl border border-border/60 bg-card p-3 transition-colors hover:border-primary/40 hover:bg-muted/40"
-            >
-              <div className="flex w-full items-center justify-between">
-                <it.icon className="h-4 w-4 text-primary" />
-                {'count' in it && it.count > 0 && (
-                  <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">
-                    {it.count}
-                  </span>
-                )}
-              </div>
-              <span className="text-xs font-medium leading-tight">{it.label}</span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <Tabs defaultValue={defaultTab} className="mt-6">
         <TabsList>
           <TabsTrigger value="profiel">Profiel</TabsTrigger>
           <TabsTrigger value="meldingen">Meldingen</TabsTrigger>
