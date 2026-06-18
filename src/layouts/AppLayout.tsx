@@ -12,6 +12,10 @@ export function AppLayout() {
   const location = useLocation();
   const isHomepage = location.pathname === '/';
   const isMessages = location.pathname.startsWith('/berichten');
+  const noFooter =
+    location.pathname.startsWith('/zakelijk') ||
+    location.pathname === '/favorieten' ||
+    location.pathname === '/zoeken';
 
   const mainPad = isMessages
     ? 'pt-[calc(3.5rem+env(safe-area-inset-top))] pb-0 lg:pt-16'
@@ -28,7 +32,7 @@ export function AppLayout() {
             <Outlet />
           </div>
         </main>
-        {!isMessages && <Footer />}
+        {!isMessages && !noFooter && <Footer />}
         {!isMessages && <CompareBar />}
         <BottomNav />
         {!isMessages && (
