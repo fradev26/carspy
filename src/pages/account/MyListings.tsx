@@ -95,6 +95,13 @@ export default function MyListings() {
     load();
   }
 
+  async function relist(id: string) {
+    const { error } = await supabase.from('listings').update({ status: 'active', sold_at: null }).eq('id', id);
+    if (error) return toast({ title: 'Opnieuw plaatsen mislukt', variant: 'destructive' });
+    toast({ title: 'Advertentie staat weer te koop' });
+    setListings((prev) => prev.map((l) => (l.id === id ? { ...l, status: 'active' } : l)));
+  }
+
   async function remove(id: string) {
     const { error } = await supabase.from('listings').delete().eq('id', id);
     if (error) return toast({ title: 'Verwijderen mislukt', variant: 'destructive' });
