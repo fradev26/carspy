@@ -32,7 +32,7 @@ export function AppLayout() {
             <Outlet />
           </div>
         </main>
-        {!isMessages && <Footer />}
+        {!isMessages && !noFooter && <Footer />}
         {!isMessages && <CompareBar />}
         <BottomNav />
         {!isMessages && (
