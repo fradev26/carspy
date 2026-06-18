@@ -368,7 +368,7 @@ export default function Sell() {
           brand: formData.brand, model: formData.model, year: formData.year,
           mileage: formData.mileage, fuelType: formData.fuelType,
           transmission: formData.transmission, bodyType: formData.bodyType,
-          power: formData.power,
+          power: formData.power, tone: aiTone,
         }),
       });
       if (!resp.ok) {
@@ -376,14 +376,32 @@ export default function Sell() {
         throw new Error(err.error || 'Genereren mislukt');
       }
       const { description } = await resp.json();
-      update('description', description);
-      toast({ title: 'Beschrijving gegenereerd' });
+      if (formData.description.trim().length > 0) {
+        setPendingAiText(description);
+      } else {
+        update('description', description);
+        toast({ title: 'Beschrijving gegenereerd' });
+      }
     } catch (e) {
       toast({ title: e instanceof Error ? e.message : 'Er ging iets mis', variant: 'destructive' });
     } finally {
       setIsGenerating(false);
     }
   };
+
+  const QUICK_SNIPPETS = [
+    { label: '+ APK / keuring', text: 'Recent gekeurd, APK / autokeuring in orde.' },
+    { label: '+ Onderhoudshistorie', text: 'Volledige onderhoudshistorie aanwezig, altijd op tijd in onderhoud geweest.' },
+    { label: '+ Niet-roker', text: 'Niet-roker, interieur in nette staat.' },
+    { label: '+ Eerste eigenaar', text: 'Eerste eigenaar, altijd zorgvuldig gebruikt.' },
+  ];
+
+  const appendSnippet = (text: string) => {
+    const current = formData.description.trim();
+    const next = current ? `${current}\n${text}` : text;
+    update('description', next);
+  };
+
 
   // ---------- Upload + submit ----------
   const uploadNewPhotos = async (): Promise<string[]> => {
