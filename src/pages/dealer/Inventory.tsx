@@ -231,13 +231,16 @@ function DealerCard({
   selected,
   onSelect,
   onBoost,
+  onRelist,
 }: {
   listing: ListingAnalytics;
   selected: boolean;
   onSelect: () => void;
   onBoost: () => void;
+  onRelist: () => void;
 }) {
   const isDraft = l.status === 'draft';
+  const isSold = l.status === 'sold';
   const ageDays = daysSince(l.createdAt);
 
   return (
