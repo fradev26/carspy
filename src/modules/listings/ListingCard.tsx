@@ -172,27 +172,16 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
         isPremium && "border-premium/50 shadow-glow-premium ring-1 ring-premium/20"
       )}>
         {/* Image Container */}
-        <div className="relative aspect-[16/10] overflow-hidden bg-muted">
-          {!imageLoaded && (
-            <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent bg-[length:200%_100%]" />
-          )}
-          <img
-            src={imageUrl}
-            alt={listing.title}
-            loading="lazy"
-            className={cn(
-              "h-full w-full object-cover transition-all duration-500 group-hover:scale-105",
-              imageLoaded ? "opacity-100" : "opacity-0"
-            )}
-            onLoad={() => setImageLoaded(true)}
-            onError={() => setImageError(true)}
-          />
-          
+        <ListingImageCarousel
+          images={listing.images}
+          alt={listing.title}
+          aspectClass="aspect-[16/10]"
+        >
           {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          
+          <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
           {/* Price Badge */}
-          <div className="absolute left-3 top-3 rounded-lg bg-card/95 px-2.5 py-1 shadow-elevated backdrop-blur-sm">
+          <div className="absolute left-3 top-3 z-10 rounded-lg bg-card/95 px-2.5 py-1 shadow-elevated backdrop-blur-sm">
             <span className="text-base font-bold text-accent">{formatPrice(listing.price)}</span>
           </div>
 
@@ -203,7 +192,7 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
             aria-label={favorite ? 'Verwijder uit favorieten' : 'Toevoegen aan favorieten'}
             aria-pressed={favorite}
             className={cn(
-              'absolute right-3 top-3 h-9 w-9 rounded-md backdrop-blur-sm shadow-md transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground',
+              'absolute right-3 top-3 z-10 h-9 w-9 rounded-md backdrop-blur-sm shadow-md transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground',
               favorite
                 ? 'bg-primary text-primary-foreground ring-2 ring-primary/40 ring-offset-1 ring-offset-background'
                 : 'bg-card/90 text-accent'
@@ -213,14 +202,13 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
             <Heart className={cn('h-4 w-4 transition-transform', favorite && 'fill-current scale-110', justLiked && 'animate-heart-pop')} />
           </Button>
 
-
           {/* Compare Button */}
           <Button
             variant="ghost"
             size="icon"
             aria-label={isComparing ? 'Wordt vergeleken' : 'Vergelijk deze auto'}
             className={cn(
-              'absolute right-3 top-14 h-9 w-9 rounded-md backdrop-blur-sm shadow-md transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground',
+              'absolute right-3 top-14 z-10 h-9 w-9 rounded-md backdrop-blur-sm shadow-md transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground',
               isComparing ? 'bg-primary text-primary-foreground' : 'bg-card/90 text-primary'
             )}
             onClick={handleCompareClick}
@@ -229,9 +217,8 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
             <GitCompareArrows className={cn('h-4 w-4', isComparing && 'scale-110')} />
           </Button>
 
-          
           {/* Status / Premium Badges */}
-          <div className="absolute left-3 bottom-3 flex items-center gap-1.5">
+          <div className="absolute left-3 bottom-3 z-10 flex items-center gap-1.5">
             {isPremium && (
               <Badge className="bg-premium text-premium-foreground font-semibold gap-1">
                 <Crown className="h-3 w-3" /> Top
@@ -239,15 +226,7 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
             )}
             <StatusBadge status={listing.status} />
           </div>
-          
-          {/* Hover CTA (desktop only, never blocks taps on mobile) */}
-          <div className="pointer-events-none absolute inset-x-3 bottom-3 hidden opacity-0 transition-all duration-300 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 lg:block">
-            <div className="flex items-center justify-center gap-2 rounded-lg bg-primary/95 py-2 text-sm font-medium text-primary-foreground backdrop-blur-sm">
-              <Eye className="h-4 w-4" />
-              Bekijk deze deal
-            </div>
-          </div>
-        </div>
+        </ListingImageCarousel>
 
         {/* Content */}
         <CardContent className="p-4">
