@@ -102,8 +102,12 @@ export function parseFiltersFromURL(searchParams: URLSearchParams): SearchFilter
   const postalCode = str('postalCode');
   if (postalCode) filters.postalCode = postalCode;
 
-  const onlineSince = str('onlineSince');
-  if (onlineSince) filters.onlineSince = onlineSince as OnlineSince;
+  const onlineSinceRaw = str('onlineSince');
+  if (onlineSinceRaw) {
+    // Back-compat: legacy '24h' → 'today'
+    const mapped = onlineSinceRaw === '24h' ? 'today' : onlineSinceRaw;
+    filters.onlineSince = mapped as OnlineSince;
+  }
 
   const sellerType = str('sellerType');
   if (sellerType === 'private' || sellerType === 'dealer') filters.sellerType = sellerType;
