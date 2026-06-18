@@ -319,7 +319,7 @@ function DealerCard({
 }: {
   listing: ListingAnalytics;
   selected: boolean;
-  onSelect: () => void;
+  onSelect: (shift?: boolean) => void;
   onBoost: () => void;
   onRelist: () => void;
 }) {
@@ -346,12 +346,19 @@ function DealerCard({
         </Link>
 
         {/* Checkbox */}
-        <label
+        <button
+          type="button"
+          aria-label={selected ? 'Deselecteer' : 'Selecteer'}
+          title="Shift-klik om een bereik te selecteren"
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            onSelect(e.shiftKey);
+          }}
           className="absolute top-2 left-2 h-7 w-7 rounded-md bg-card/95 backdrop-blur flex items-center justify-center shadow-sm cursor-pointer"
-          onClick={(e) => e.stopPropagation()}
         >
-          <Checkbox checked={selected} onCheckedChange={onSelect} />
-        </label>
+          <Checkbox checked={selected} className="pointer-events-none" />
+        </button>
 
         {/* Status badge top-right */}
         <div className="absolute top-2 right-2 flex items-center gap-1">
