@@ -244,9 +244,12 @@ export const EURO_NORMS: { value: EuroNorm; label: string }[] = [
 ];
 
 export const ONLINE_SINCE_OPTIONS: { value: OnlineSince; label: string }[] = [
-  { value: '24h', label: 'Afgelopen 24 uur' },
+  { value: 'today', label: 'Vandaag' },
+  { value: '3d', label: 'Afgelopen 3 dagen' },
   { value: '7d', label: 'Afgelopen 7 dagen' },
+  { value: '14d', label: 'Afgelopen 14 dagen' },
   { value: '30d', label: 'Afgelopen 30 dagen' },
+  { value: '30d+', label: 'Langer dan 30 dagen' },
 ];
 
 export const WARRANTY_OPTIONS: { value: WarrantyOption; label: string }[] = [
@@ -256,8 +259,34 @@ export const WARRANTY_OPTIONS: { value: WarrantyOption; label: string }[] = [
   { value: '36m', label: '36 maanden' },
 ];
 
-export const COLOR_OPTIONS = [
-  'Zwart', 'Wit', 'Grijs', 'Zilver', 'Blauw', 'Rood', 'Groen', 'Bruin', 'Beige', 'Geel', 'Oranje', 'Paars'
+export interface ColorOption {
+  value: string;
+  label: string;
+  hex?: string;
+  /** Special swatch style (gradient, hatch). */
+  swatch?: 'two-tone' | 'other';
+}
+
+export const COLOR_OPTIONS: ColorOption[] = [
+  { value: 'Zwart', label: 'Zwart', hex: '#111111' },
+  { value: 'Wit', label: 'Wit', hex: '#FFFFFF' },
+  { value: 'Grijs', label: 'Grijs', hex: '#7A7A7A' },
+  { value: 'Zilver', label: 'Zilver', hex: '#C6C9CC' },
+  { value: 'Blauw', label: 'Blauw', hex: '#1E40AF' },
+  { value: 'Rood', label: 'Rood', hex: '#DC2626' },
+  { value: 'Groen', label: 'Groen', hex: '#15803D' },
+  { value: 'Geel', label: 'Geel', hex: '#FACC15' },
+  { value: 'Oranje', label: 'Oranje', hex: '#F97316' },
+  { value: 'Bruin', label: 'Bruin', hex: '#78350F' },
+  { value: 'Beige', label: 'Beige', hex: '#D6C7A1' },
+  { value: 'Crème', label: 'Crème', hex: '#F5EBD3' },
+  { value: 'Goud', label: 'Goud', hex: '#C9A227' },
+  { value: 'Paars', label: 'Paars', hex: '#7C3AED' },
+  { value: 'Roze', label: 'Roze', hex: '#EC4899' },
+  { value: 'Turquoise', label: 'Turquoise', hex: '#14B8A6' },
+  { value: 'Bordeaux', label: 'Bordeaux', hex: '#7F1D1D' },
+  { value: 'Tweekleurig', label: 'Tweekleurig', swatch: 'two-tone' },
+  { value: 'Overig', label: 'Overig', swatch: 'other' },
 ];
 
 export const PROVINCES = [
