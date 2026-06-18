@@ -210,6 +210,7 @@ export function BoostDialog({
     setProgress({ done: 0, total: targets.length });
 
     const errors: { id: string; title: string; error: string }[] = [];
+    const succeededIds: string[] = [];
     let extraSum = 0;
     let ok = 0;
 
@@ -230,6 +231,7 @@ export function BoostDialog({
         if (res) {
           extraSum += res.source === 'extra' ? res.price_cents : 0;
           ok += 1;
+          succeededIds.push(id);
         }
       },
       6,
@@ -239,6 +241,14 @@ export function BoostDialog({
     setLoading(false);
     setProgress(null);
     setFailed(errors);
+    // Exclude successes so a retry only targets the failures
+    if (succeededIds.length > 0) {
+      setExcluded((prev) => {
+        const next = new Set(prev);
+        succeededIds.forEach((id) => next.add(id));
+        return next;
+      });
+    }
 
     if (ok > 0) {
       toast.success(
