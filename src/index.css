@@ -246,15 +246,96 @@
   @apply bg-muted-foreground/30;
 }
 
+/* ===== Mobile / native-app shell guards ===== */
 /* Voorkom horizontale scroll zonder content te knippen of sticky te breken.
    `overflow-x: clip` creëert geen containing block en breekt position: sticky niet. */
 html, body {
+  max-width: 100%;
   overflow-x: clip;
+  overscroll-behavior-x: none;
+  -webkit-text-size-adjust: 100%;
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  width: 100%;
+}
+
+#root {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+/* Voorkom dubbel-tap zoom op interactieve elementen (snellere tap respons). */
+button, a, [role="button"], input, select, textarea, label, summary {
+  touch-action: manipulation;
+}
+
+/* Geen ongewenste tekstselectie / callout tijdens swipen op niet-tekst UI. */
+button, [role="button"], [role="tab"], [role="menuitem"], .no-select {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Inputs blijven selecteerbaar/bewerkbaar. */
+input, textarea, [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
+/* Media altijd responsive — nooit breder dan container. */
+img, video, canvas, svg, iframe, picture {
+  max-width: 100%;
+}
+img, video {
+  height: auto;
+}
+
+/* Lange woorden / URL's / titels netjes laten breken. */
+p, h1, h2, h3, h4, h5, h6, li, dd, dt, blockquote, figcaption {
+  overflow-wrap: anywhere;
+}
+
+/* Modals & sheets nooit breder/hoger dan het zichtbare scherm. */
+[role="dialog"] {
+  max-width: calc(100vw - 1rem);
+  max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+}
+
+/* Verberg native scrollbars op touch-devices voor een native app-feel. */
+@media (hover: none) and (pointer: coarse) {
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  html {
+    scrollbar-width: none;
+  }
 }
 
 @layer utilities {
   .break-anywhere {
     overflow-wrap: anywhere;
     word-break: break-word;
+  }
+
+  .min-w-0-all > * {
+    min-width: 0;
+  }
+
+  .tap-target {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .safe-area-inset {
+    padding-top: env(safe-area-inset-top);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
   }
 }
