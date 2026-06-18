@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
 import { ArrowLeft, Car, MapPin, Phone, Shield, SlidersHorizontal, Star, Clock, Grid, List } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
