@@ -46,7 +46,6 @@ export default function AccountSettings({ defaultTab = 'profiel' }: Props) {
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
-  const { favorites } = useFavorites();
   const [profile, setProfile] = useState({ full_name: '', phone: '', location: '', avatar_url: '' as string | null, email: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [savingProfile, setSavingProfile] = useState(false);
