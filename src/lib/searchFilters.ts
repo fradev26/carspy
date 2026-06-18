@@ -166,7 +166,6 @@ export function serializeFiltersToParams(filters: SearchFilters): Record<string,
   setNum('maxPower', filters.maxPower);
   setArr('paintTypes', filters.paintTypes);
   setArr('colors', filters.colors);
-  setArr('colors', filters.colors);
   setArr('interiorColors', filters.interiorColors);
   setArr('interiorMaterials', filters.interiorMaterials);
   setNum('minDoors', filters.minDoors);
