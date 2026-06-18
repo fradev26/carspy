@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Link, useParams, Navigate } from 'react-router-dom';
 import { ArrowLeft, Car, MapPin, Phone, Shield, SlidersHorizontal, Star, Clock, Grid, List } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
@@ -55,6 +55,9 @@ export default function DealerInventory() {
   const [sortBy, setSortBy] = useState('newest');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [page, setPage] = useState(1);
+
+  useEffect(() => { window.scrollTo({ top: 0, behavior: 'auto' }); }, [slug]);
+
 
   const filtered = useMemo(
     () => applyFiltersAndSort(activeListings, filters, sortBy),

@@ -39,6 +39,10 @@ import { BrandModelPicker } from '@/modules/sell/BrandModelPicker';
 import { FeatureCheckboxGrid } from '@/modules/sell/FeatureCheckboxGrid';
 import { PhotoUploader, type PhotoItem } from '@/modules/sell/PhotoUploader';
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   FEATURE_CATALOG,
   FEATURE_CATEGORY_ORDER,
   VEHICLE_INFO_ITEMS,
@@ -154,6 +158,8 @@ export default function Sell() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [aiTone, setAiTone] = useState<'kort' | 'uitgebreid' | 'verkoopgericht'>('uitgebreid');
+  const [pendingAiText, setPendingAiText] = useState<string | null>(null);
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [analysisResult, setAnalysisResult] = useState<VehicleAnalysis | null>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
@@ -366,7 +372,7 @@ export default function Sell() {
           brand: formData.brand, model: formData.model, year: formData.year,
           mileage: formData.mileage, fuelType: formData.fuelType,
           transmission: formData.transmission, bodyType: formData.bodyType,
-          power: formData.power,
+          power: formData.power, tone: aiTone,
         }),
       });
       if (!resp.ok) {
@@ -374,14 +380,32 @@ export default function Sell() {
         throw new Error(err.error || 'Genereren mislukt');
       }
       const { description } = await resp.json();
-      update('description', description);
-      toast({ title: 'Beschrijving gegenereerd' });
+      if (formData.description.trim().length > 0) {
+        setPendingAiText(description);
+      } else {
+        update('description', description);
+        toast({ title: 'Beschrijving gegenereerd' });
+      }
     } catch (e) {
       toast({ title: e instanceof Error ? e.message : 'Er ging iets mis', variant: 'destructive' });
     } finally {
       setIsGenerating(false);
     }
   };
+
+  const QUICK_SNIPPETS = [
+    { label: '+ APK / keuring', text: 'Recent gekeurd, APK / autokeuring in orde.' },
+    { label: '+ Onderhoudshistorie', text: 'Volledige onderhoudshistorie aanwezig, altijd op tijd in onderhoud geweest.' },
+    { label: '+ Niet-roker', text: 'Niet-roker, interieur in nette staat.' },
+    { label: '+ Eerste eigenaar', text: 'Eerste eigenaar, altijd zorgvuldig gebruikt.' },
+  ];
+
+  const appendSnippet = (text: string) => {
+    const current = formData.description.trim();
+    const next = current ? `${current}\n${text}` : text;
+    update('description', next);
+  };
+
 
   // ---------- Upload + submit ----------
   const uploadNewPhotos = async (): Promise<string[]> => {
@@ -928,29 +952,90 @@ export default function Sell() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="sell-description">Opmerkingen / beschrijving</Label>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={generateDescription}
-                    disabled={isGenerating}
-                    className="gap-1.5"
-                  >
-                    {isGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-                    {isGenerating ? 'Bezig...' : 'Genereer met AI'}
-                  </Button>
+              <div className="space-y-3">
+                <div>
+                  <Label htmlFor="sell-description" className="text-base">Verkooptekst</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">Vertel wat jouw auto bijzonder maakt — onderhoud, opties, reden van verkoop.</p>
                 </div>
+
+                {/* Quick snippets */}
+                <div className="flex flex-wrap gap-1.5">
+                  {QUICK_SNIPPETS.map((s) => (
+                    <button
+                      key={s.label}
+                      type="button"
+                      onClick={() => appendSnippet(s.text)}
+                      className="rounded-full border border-border/60 bg-background px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* AI toolbar */}
+                <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border/60 bg-muted/30 p-2">
+                  <span className="text-xs font-medium text-muted-foreground px-1">AI-toon:</span>
+                  <div className="flex rounded-md border border-border/60 bg-background overflow-hidden text-xs">
+                    {(['kort', 'uitgebreid', 'verkoopgericht'] as const).map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setAiTone(t)}
+                        className={cn(
+                          'px-2.5 py-1 capitalize transition-colors',
+                          aiTone === t ? 'bg-primary text-primary-foreground' : 'hover:bg-muted',
+                        )}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="ml-auto flex items-center gap-1.5">
+                    {formData.description.length > 0 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => update('description', '')}
+                        className="h-8 text-xs text-muted-foreground"
+                      >
+                        Wissen
+                      </Button>
+                    )}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={generateDescription}
+                      disabled={isGenerating}
+                      className="h-8 gap-1.5"
+                    >
+                      {isGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                      {isGenerating ? 'Bezig...' : 'Genereer met AI'}
+                    </Button>
+                  </div>
+                </div>
+
                 <Textarea
                   id="sell-description"
                   value={formData.description}
                   onChange={(e) => update('description', e.target.value)}
-                  placeholder="Vertel iets extra over je auto..."
-                  rows={6}
+                  placeholder="Bijv. tweede eigenaar, altijd in onderhoud bij dealer, nieuwe banden in 2024..."
+                  rows={8}
+                  maxLength={1500}
+                  className="min-h-48 resize-y"
                 />
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">Tip: vermeld onderhoud, accessoires en reden van verkoop voor sneller resultaat.</span>
+                  <span className={cn(
+                    'tabular-nums',
+                    formData.description.length > 1300 ? 'text-warning font-medium' : 'text-muted-foreground',
+                  )}>
+                    {formData.description.length} / 1500
+                  </span>
+                </div>
               </div>
+
             </div>
           )}
 
@@ -1014,9 +1099,44 @@ export default function Sell() {
           )}
         </div>
       </div>
+
+      {/* AI overwrite confirmation */}
+      <AlertDialog open={pendingAiText !== null} onOpenChange={(o) => { if (!o) setPendingAiText(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Bestaande tekst vervangen?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Je hebt al een verkooptekst geschreven. Wat wil je doen met de AI-tekst?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col-reverse gap-2 sm:flex-row">
+            <AlertDialogCancel>Annuleren</AlertDialogCancel>
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (pendingAiText) update('description', `${formData.description.trim()}\n\n${pendingAiText}`);
+                setPendingAiText(null);
+                toast({ title: 'Tekst toegevoegd' });
+              }}
+            >
+              Toevoegen aan einde
+            </Button>
+            <AlertDialogAction
+              onClick={() => {
+                if (pendingAiText) update('description', pendingAiText);
+                setPendingAiText(null);
+                toast({ title: 'Beschrijving vervangen' });
+              }}
+            >
+              Vervangen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+
 
 // ────────────────────────────────────────────────────────────
 // Helpers

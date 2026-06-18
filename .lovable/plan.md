@@ -1,61 +1,54 @@
 
-# Vergelijkingspagina herontwerp (`/vergelijken`)
+# Listings backlog — 4 verbeteringen
 
-Eén bestand wordt aangepast: `src/pages/Compare.tsx`. Bestaande huisstijl, `useCompare`-hook, routes en `CompareBar` blijven ongewijzigd.
+## 1. Fotozoom in galerij (`src/modules/listings/ImageGallery.tsx`)
 
-## Nieuwe structuur (top → bottom)
+In de lightbox: tap/dubbelklik om in/uit te zoomen, pinch-to-zoom op touch, en pan wanneer ingezoomd. Geen extra dependency.
 
-```text
-[ Sticky page header ]
- ← Auto's vergelijken                          [Wis alles]
- 2 van 3 geselecteerd · ☑ Alleen verschillen
+- State toevoegen: `scale` (1 / 2.5), `offset {x,y}`, `pinchStart`.
+- Dubbelklik / dubbel-tap op afbeelding → toggle scale tussen 1 en 2.
+- `touchstart` met 2 vingers → bewaar afstand; `touchmove` → `scale = clamp(initialScale * dist/initialDist, 1, 4)`.
+- Bij scale > 1: één-vinger pan via touchmove; muiswiel zoomt (`onWheel`, `preventDefault`); cursor wordt `grab/grabbing`.
+- Bij sluiten lightbox of slidewissel: reset naar `scale=1`, `offset=0`.
+- Bestaande swipe-naar-volgende blokkeren wanneer `scale > 1` (anders conflicteert pan).
+- Toon kleine zoom-hint badge (`ZoomIn`-icoon + "Dubbeltik om te zoomen") gedurende 2s bij openen lightbox.
 
-[ Sticky auto-header (compact, plakt onder page header bij scroll) ]
- ┌──────┐┌──────┐(+ Auto)
- │ foto ││ foto │
- └──────┘└──────┘
- Audi RS4   BMW M3
- €22.900    €24.900   [×] [×]
+## 2. Dubbele sluitknop verwijderen (`src/modules/listings/ImageGallery.tsx`)
 
-[ Specificaties tabel ]  — compact, zebra, winnaar-highlight
- Prijs        🟢 €22.900     €24.900
- Bouwjaar        2022        2021
- Km-stand     🟢 31.000      47.000 ▼niet-winnaar
- Vermogen        320 pk      🟢 360 pk
- ...
+`DialogContent` van shadcn rendert al automatisch een `<X>`-knop rechtsboven. ImageGallery voegt op regel 204 een tweede `<DialogClose>` toe → dat geeft de dubbele knop. Verwijder die extra `DialogClose` (en de `DialogClose`-import). De auto-knop van `DialogContent` blijft; we hertinten 'm via klasse-override op `DialogContent` zodat hij goed leesbaar is op de zwarte lightbox-achtergrond (witte tint, `top-4 right-4`).
 
-[ Uitrusting ]  (ongewijzigd qua data, met "alleen verschillen" gefilterd)
+## 3. "Bekijk volledig aanbod" navigatie (`src/pages/ListingDetail.tsx` + `src/pages/DealerInventory.tsx`)
 
-[ Onderaan CTA-blok ]
- [+ Auto toevoegen]   [Deel vergelijking]
-```
+Link bestaat al twee keer (regels 821 en 982) als `<Link to={`/dealer/${dealerSlugFor(listing.seller)}`}>` en route `/dealer/:slug` is geregistreerd. We zorgen dat:
+- De CTA-knop een expliciete `onClick`/route gebruikt die ook werkt vanuit de mobile sticky bottom-bar (waar overlay-click anders kan blokkeren).
+- `DealerInventory` bovenaan een `window.scrollTo(0,0)` of `useEffect` heeft zodat de gebruiker bovenaan de dealerpagina landt.
+- CTA-label uniform: **"Volledig dealeraanbod bekijken"** (i.p.v. huidige "Bekijk volledig aanbod") en `ChevronRight`-icoon erbij voor duidelijkheid.
+- Test in build mode of beide instanties navigeren naar `/dealer/<slug>`.
 
-## Functionele veranderingen
+## 4. Verkooptekst-editor UX (`src/pages/Sell.tsx` — STAP 5)
 
-1. **Echte tabel-layout** — labelkolom 120px, dan 1fr per auto. Eén `grid` met `auto-rows-min`, dichter spacing (`py-2.5`), dunne separator-lijnen. Geen losse cards meer per rij.
-2. **Sticky compacte auto-header** — `position: sticky; top: 0` (rekening houdend met bestaande globale header offset via `top-14`). Bij scroll krimpt foto-aspect naar 4:3 op ~96px breed; auto-naam + prijs blijven leesbaar. Op mobiel: foto's kleiner (25-30% minder hoogte) en `gap-2` tussen kolommen.
-3. **"Alleen verschillen tonen"-toggle** — `Switch` bovenaan. Bij actief: filter `specs` waar alle items dezelfde `getValue` retourneren; idem voor features waar alle items dezelfde include-status hebben. Wanneer er maar 1 auto is, toggle uitgrijzen.
-4. **Winnaar-highlight per rij** — per spec optioneel `compare: 'higher' | 'lower' | null`:
-   - `lower`: Prijs, Km-stand
-   - `higher`: Bouwjaar, Vermogen, Motor (engineSize)
-   - `null`: Brandstof, Transmissie, Carrosserie, Kleur, Deuren (geen winnaar)
-   Winnaar krijgt subtiel `text-success font-semibold` + klein groen bolletje (`size-1.5 rounded-full bg-success`). Bij gelijkstand geen highlight.
-5. **Compactere foto-cards** — aspect `16/10` → `4/3` met `max-h-32 md:max-h-40`. `X`-knop verschuift naar onder de prijs (compactere overlay).
-6. **Onderlinge afstand auto-kolommen** — `gap-2 md:gap-3` (was `gap-4`); voelt als één vergelijking.
-7. **Onderste CTA-strip** — `flex` met `+ Auto toevoegen` (outline) en `Deel vergelijking` (primary, gebruikt `navigator.share` met fallback naar `clipboard.writeText(window.location.href)`). Mobiel full-width gestapeld, desktop side-by-side.
-8. **Lege state** — ongewijzigd.
-9. **Accessibility** — Switch heeft label; tabel gebruikt `role="table"`, `role="row"`, `role="cell"`. Sticky header behoudt focus outlines.
+Het huidige veld is een kale `Textarea` met één AI-knop. Verbeteringen:
+
+- **Label hernoemen** "Opmerkingen / beschrijving" → **"Verkooptekst"** met subtitel "Vertel wat jouw auto bijzonder maakt".
+- **Tekenteller** rechtsonder (`{n} / 1500`); kleur naar `text-warning` boven 1300.
+- **Min/max hoogte** + auto-resize (`rows={8}`, `min-h-48`, `resize-y`).
+- **AI-toonkeuze** vóór genereren: kleine `ToggleGroup` (Kort / Uitgebreid / Verkoopgericht) — wordt meegestuurd als `tone` in de bestaande `generate-listing`-payload. Edge function negeert onbekende velden veilig; mocht backend nog niets ermee doen, dan blijft output gewoon werken.
+- **Bevestiging vóór overschrijven**: als `description` al inhoud heeft → confirm-dialog "Bestaande tekst vervangen?" met "Vervangen" / "Toevoegen aan einde" / "Annuleren".
+- **"Wissen"-knop** naast de AI-knop (alleen zichtbaar als veld niet leeg is).
+- **Snelle quick-actions chips** boven de textarea: "+ APK genoemd", "+ Onderhoudshistorie", "+ Niet-roker" → voegt korte zin toe aan einde (geen AI-call nodig).
+- **Inline tip** onder veld: "Tip: vermeld onderhoud, accessoires en reden van verkoop voor sneller resultaat."
+- Behoudt huidige `generateDescription`-flow en toasts.
 
 ## Buiten scope
 
-- Swipe tussen auto's (alleen relevant bij 3+ auto's, blijft als horizontale scroll zoals nu).
-- Wijzigingen aan `CompareBar`, `useCompare`-hook, route of detailpagina.
-- AI-vergelijking / nieuwe data uit DB.
+- Geen wijzigingen aan dealer-detailpagina layout zelf.
+- Geen nieuwe editor-library (TipTap/Quill); blijft `<Textarea>` met quality-of-life features.
+- Geen wijzigingen aan AI-prompt/edge function; `tone` wordt enkel meegestuurd.
 
 ## Technische details
 
-- Geen nieuwe dependencies. `Switch` uit `@/components/ui/switch` is al beschikbaar.
-- Spec-config wordt uitgebreid: `{ label, getValue, getNumeric?, compare?: 'higher'|'lower' }`. Winnaar-bepaling via `Math.min/max` over `getNumeric` resultaten; gelijkstand → geen highlight.
-- Sticky offsets via Tailwind: `sticky top-14 z-30 bg-background/95 backdrop-blur` voor auto-header; bestaande globale header `h-14` blijft intact.
-- Deel-knop: `if (navigator.share) navigator.share({ url }); else { clipboard + toast('Link gekopieerd') }` via bestaande `sonner` toast.
-- Geen wijzigingen aan SEO/`noindex` meta.
+- Zoom-state buiten `<img>` via `style={{ transform: `translate(${x}px, ${y}px) scale(${scale})`, transition: dragging ? 'none' : 'transform 200ms' }}`.
+- Wheel/touch handlers met `passive: false` via `useEffect`+`addEventListener` zodat `preventDefault` werkt.
+- ToggleGroup uit `@/components/ui/toggle-group` (al beschikbaar).
+- Confirm dialog via bestaande `AlertDialog`.
+- Geen DB-/route-/type-wijzigingen.

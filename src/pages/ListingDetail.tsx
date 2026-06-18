@@ -816,9 +816,11 @@ export default function ListingDetail() {
                   <MapPin className="h-4 w-4" />
                   {listing.location.city}{listing.location.province ? `, ${listing.location.province}` : ''}
                 </div>
-                {listing.seller.type === 'dealer' && (
+                {listing.seller.type === 'dealer' && dealerSlugFor(listing.seller) && (
                   <Button asChild variant="outline" size="sm" className="mt-3 w-full border-border/60">
-                    <Link to={`/dealer/${dealerSlugFor(listing.seller)}`}>Bekijk volledig aanbod</Link>
+                    <Link to={`/dealer/${dealerSlugFor(listing.seller)}`} className="inline-flex items-center justify-center gap-1">
+                      Volledig dealeraanbod bekijken <ChevronRight className="h-4 w-4" />
+                    </Link>
                   </Button>
                 )}
               </CardContent>
@@ -977,9 +979,11 @@ export default function ListingDetail() {
                     </div>
                   )}
 
-                  {listing.seller.type === 'dealer' && (
+                  {listing.seller.type === 'dealer' && dealerSlugFor(listing.seller) && (
                     <Button asChild variant="outline" size="sm" className="mt-3 w-full border-border/60">
-                      <Link to={`/dealer/${dealerSlugFor(listing.seller)}`}>Bekijk volledig aanbod</Link>
+                      <Link to={`/dealer/${dealerSlugFor(listing.seller)}`} className="inline-flex items-center justify-center gap-1">
+                        Volledig dealeraanbod bekijken <ChevronRight className="h-4 w-4" />
+                      </Link>
                     </Button>
                   )}
                 </div>
