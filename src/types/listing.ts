@@ -131,7 +131,7 @@ export type DriveType = 'fwd' | 'rwd' | 'awd';
 export type PaintType = 'uni' | 'metallic' | 'pearl' | 'matte';
 export type InteriorMaterial = 'fabric' | 'leather' | 'half-leather' | 'alcantara';
 export type EuroNorm = 'euro4' | 'euro5' | 'euro6' | 'euro6d' | 'euro6d-temp';
-export type OnlineSince = '24h' | '7d' | '30d';
+export type OnlineSince = 'today' | '3d' | '7d' | '14d' | '30d' | '30d+';
 export type WarrantyOption = '6m' | '12m' | '24m' | '36m';
 
 export interface SearchFilters {
