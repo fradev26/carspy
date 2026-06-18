@@ -183,7 +183,9 @@ export default function Inventory() {
               Alle ({listings.length})
             </button>
             {STATUS_OPTIONS.map((c) => {
-              const count = listings.filter((l) => l.status === c.v).length;
+              const count = c.v === 'boostable'
+                ? listings.filter(isBoostable).length
+                : listings.filter((l) => l.status === c.v).length;
               const active = statusFilter.has(c.v);
               return (
                 <button
