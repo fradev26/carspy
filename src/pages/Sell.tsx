@@ -39,6 +39,10 @@ import { BrandModelPicker } from '@/modules/sell/BrandModelPicker';
 import { FeatureCheckboxGrid } from '@/modules/sell/FeatureCheckboxGrid';
 import { PhotoUploader, type PhotoItem } from '@/modules/sell/PhotoUploader';
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   FEATURE_CATALOG,
   FEATURE_CATEGORY_ORDER,
   VEHICLE_INFO_ITEMS,
