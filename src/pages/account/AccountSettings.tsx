@@ -95,9 +95,21 @@ export default function AccountSettings({ defaultTab = 'profiel' }: Props) {
 
   async function uploadAvatar(file: File) {
     if (!user) return;
+    const allowed: Record<string, string> = {
+      'image/jpeg': 'jpg',
+      'image/jpg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp',
+      'image/avif': 'avif',
+    };
+    const ext = allowed[file.type] ?? (file.name.match(/\.(jpe?g|png|webp|avif)$/i)?.[1]?.toLowerCase().replace('jpeg', 'jpg') ?? '');
+    if (!ext) {
+      toast({ title: 'Ongeldig bestand', description: 'Gebruik JPG, PNG, WEBP of AVIF.', variant: 'destructive' });
+      return;
+    }
     setUploading(true);
-    const path = `avatars/${user.id}-${Date.now()}-${file.name.replace(/[^\w.-]/g, '_')}`;
-    const { error: upErr } = await supabase.storage.from('listing-images').upload(path, file, { upsert: true });
+    const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+    const { error: upErr } = await supabase.storage.from('listing-images').upload(path, file, { upsert: true, contentType: file.type });
     if (upErr) {
       setUploading(false);
       toast({ title: 'Upload mislukt', description: upErr.message, variant: 'destructive' });
@@ -105,7 +117,12 @@ export default function AccountSettings({ defaultTab = 'profiel' }: Props) {
     }
     const { data: pub } = supabase.storage.from('listing-images').getPublicUrl(path);
     const url = pub.publicUrl;
-    await supabase.from('profiles').update({ avatar_url: url }).eq('id', user.id);
+    const { error: updErr } = await supabase.from('profiles').update({ avatar_url: url }).eq('id', user.id);
+    if (updErr) {
+      setUploading(false);
+      toast({ title: 'Opslaan mislukt', description: updErr.message, variant: 'destructive' });
+      return;
+    }
     setProfile((p) => ({ ...p, avatar_url: url }));
     setUploading(false);
     toast({ title: 'Profielfoto bijgewerkt' });
