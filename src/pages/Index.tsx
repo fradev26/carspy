@@ -331,6 +331,40 @@ const Index = () => {
       </section>
       <CategorySections allListings={allListings} loading={listingsLoading} />
 
+      {/* Sell CTA */}
+      <section className="py-12 md:py-20">
+        <div className="container">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-primary/80 px-6 py-12 md:px-12 md:py-16 text-center text-white shadow-lg">
+            <svg
+              className="pointer-events-none absolute inset-0 h-full w-full opacity-10"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <defs>
+                <pattern id="sell-cta-pattern" width="40" height="40" patternUnits="userSpaceOnUse">
+                  <circle cx="20" cy="20" r="1.5" fill="currentColor" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#sell-cta-pattern)" />
+            </svg>
+            <div className="relative">
+              <h2 className="text-2xl font-semibold md:text-3xl">Auto verkopen in 2 minuten</h2>
+              <p className="mx-auto mt-3 max-w-xl text-sm md:text-base text-white/90">
+                AI schrijft je advertentie, bepaalt een eerlijke prijs en publiceert direct. Jij hoeft alleen je kenteken in te geven.
+              </p>
+              <div className="mt-6">
+                <Link
+                  to="/verkopen"
+                  className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-base font-semibold text-primary shadow-sm hover:bg-white/95 active:scale-95 transition-all min-h-[48px]"
+                >
+                  Plaats mijn advertentie <ArrowRight className="h-5 w-5" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features */}
       <section className="hidden lg:block py-12 md:py-20">
         <div className="container">
