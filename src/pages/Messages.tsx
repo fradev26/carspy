@@ -1,11 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useLayoutEffect, useMemo, memo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { MessageCircle, Send, ArrowLeft } from 'lucide-react';
+import { MessageCircle, Send, ArrowLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -32,6 +28,50 @@ interface Message {
   created_at: string;
 }
 
+const MAX_RENDER = 200;
+
+const Bubble = memo(function Bubble({ msg, mine }: { msg: Message; mine: boolean }) {
+  const time = new Date(msg.created_at).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+  return (
+    <div className={cn('flex w-full animate-fade-in', mine ? 'justify-end' : 'justify-start')}>
+      <div className={cn('flex flex-col max-w-[75%] min-w-0', mine ? 'items-end' : 'items-start')}>
+        <div
+          className={cn(
+            'px-3.5 py-2 text-sm leading-snug break-words whitespace-pre-wrap shadow-sm',
+            mine
+              ? 'bg-primary text-primary-foreground rounded-2xl rounded-br-md'
+              : 'bg-muted text-foreground rounded-2xl rounded-bl-md',
+          )}
+        >
+          {msg.content}
+        </div>
+        <span className="text-[10px] text-muted-foreground mt-1 px-1 select-none">{time}</span>
+      </div>
+    </div>
+  );
+});
+
+function DateSeparator({ label }: { label: string }) {
+  return (
+    <div className="flex justify-center my-2">
+      <span className="text-[11px] text-muted-foreground bg-muted/60 px-2.5 py-0.5 rounded-full">{label}</span>
+    </div>
+  );
+}
+
+function dayKey(d: string) {
+  const x = new Date(d);
+  return `${x.getFullYear()}-${x.getMonth()}-${x.getDate()}`;
+}
+function dayLabel(d: string) {
+  const x = new Date(d);
+  const now = new Date();
+  const diff = Math.floor((+new Date(now.getFullYear(), now.getMonth(), now.getDate()) - +new Date(x.getFullYear(), x.getMonth(), x.getDate())) / 86400000);
+  if (diff === 0) return 'Vandaag';
+  if (diff === 1) return 'Gisteren';
+  return x.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: x.getFullYear() === now.getFullYear() ? undefined : 'numeric' });
+}
+
 export default function Messages() {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
@@ -41,13 +81,15 @@ export default function Messages() {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
 
-  // Auto-select the conversation passed via ?c=<id> (e.g. from ListingDetail "Stuur bericht")
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const endRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
   useEffect(() => {
     const c = searchParams.get('c');
     if (c) setSelectedConv(c);
   }, [searchParams]);
 
-  // Fetch conversations
   useEffect(() => {
     if (!user) return;
     const fetchConversations = async () => {
@@ -57,11 +99,10 @@ export default function Messages() {
         .order('updated_at', { ascending: false });
 
       if (data && data.length) {
-        // Batch fetch all related data in parallel (avoid N+1)
         const convIds = data.map((c: any) => c.id);
         const listingIds = Array.from(new Set(data.map((c: any) => c.listing_id)));
         const otherIds = Array.from(new Set(data.map((c: any) =>
-          c.buyer_id === user.id ? c.seller_id : c.buyer_id
+          c.buyer_id === user.id ? c.seller_id : c.buyer_id,
         )));
 
         const [listingsRes, profilesRes, msgsRes] = await Promise.all([
@@ -103,7 +144,6 @@ export default function Messages() {
     fetchConversations();
   }, [user]);
 
-  // Fetch messages for selected conversation
   useEffect(() => {
     if (!selectedConv) return;
     const fetchMessages = async () => {
@@ -114,7 +154,6 @@ export default function Messages() {
         .order('created_at', { ascending: true });
       if (data) setMessages(data);
 
-      // Mark as read
       await supabase
         .from('messages')
         .update({ read_at: new Date().toISOString() })
@@ -124,7 +163,6 @@ export default function Messages() {
     };
     fetchMessages();
 
-    // Realtime subscription
     const channel = supabase
       .channel(`messages-${selectedConv}`)
       .on('postgres_changes', {
@@ -140,160 +178,233 @@ export default function Messages() {
     return () => { supabase.removeChannel(channel); };
   }, [selectedConv, user]);
 
+  // Scroll to bottom on initial load (instant) and on new message (smooth)
+  const isFirstLoadRef = useRef(true);
+  useLayoutEffect(() => {
+    if (!selectedConv) return;
+    if (isFirstLoadRef.current && messages.length > 0) {
+      endRef.current?.scrollIntoView({ block: 'end' });
+      isFirstLoadRef.current = false;
+    }
+  }, [selectedConv, messages.length]);
+  useEffect(() => {
+    if (!isFirstLoadRef.current) {
+      endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+  }, [messages.length]);
+  useEffect(() => { isFirstLoadRef.current = true; }, [selectedConv]);
+
+  // Auto-grow textarea up to 5 lines
+  useLayoutEffect(() => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    ta.style.height = 'auto';
+    const lineH = 20;
+    const max = lineH * 5 + 16;
+    ta.style.height = Math.min(ta.scrollHeight, max) + 'px';
+  }, [newMessage]);
+
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedConv || !user) return;
+    const content = newMessage.trim();
+    setNewMessage('');
     const { error } = await supabase.from('messages').insert({
       conversation_id: selectedConv,
       sender_id: user.id,
-      content: newMessage.trim(),
+      content,
     });
     if (!error) {
-      setNewMessage('');
-      // Update conversation updated_at
       await supabase.from('conversations').update({ updated_at: new Date().toISOString() }).eq('id', selectedConv);
     }
   };
 
-  const formatTime = (date: string) => {
-    const d = new Date(date);
-    return d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
-  };
-
-  const formatDate = (date: string) => {
-    const d = new Date(date);
-    return d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' });
-  };
-
   const selectedConversation = conversations.find(c => c.id === selectedConv);
+  const visibleMessages = useMemo(() => messages.slice(-MAX_RENDER), [messages]);
+  const hasOlder = messages.length > MAX_RENDER;
+
+  // Container height: viewport - header(3.5rem+safe-top) - bottomnav(4rem+safe-bottom on mobile)
+  const shellHeight =
+    'h-[calc(100dvh-3.5rem-env(safe-area-inset-top)-4rem-env(safe-area-inset-bottom))] lg:h-[calc(100dvh-4rem)]';
 
   if (loading) {
     return (
-      <div className="container py-8 flex justify-center">
+      <div className={cn('flex items-center justify-center', shellHeight)}>
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
 
+  if (conversations.length === 0) {
+    return (
+      <div className={cn('flex items-center justify-center px-6', shellHeight)}>
+        <div className="text-center max-w-sm">
+          <MessageCircle className="h-12 w-12 mx-auto text-muted-foreground/60 mb-4" />
+          <h3 className="text-lg font-semibold">Geen berichten</h3>
+          <p className="text-sm text-muted-foreground mt-2">Stuur een bericht via een autodetailpagina om een gesprek te starten.</p>
+          <Button asChild className="mt-6">
+            <Link to="/zoeken">Auto's bekijken</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container py-6">
-        <h1 className="text-2xl font-bold mb-6">Berichten</h1>
-
-        {conversations.length === 0 ? (
-          <Card>
-            <CardContent className="py-16 text-center">
-              <MessageCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold">Geen berichten</h3>
-              <p className="text-muted-foreground mt-2">Stuur een bericht via een autodetailpagina om een gesprek te starten.</p>
-              <Button asChild className="mt-6">
-                <Link to="/zoeken">Auto's bekijken</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-12rem)]">
-            {/* Conversation List */}
-            <Card className={cn("md:col-span-1 border-border/60 overflow-hidden", selectedConv && "hidden md:block")}>
-              <ScrollArea className="h-full">
-                {conversations.map(conv => (
-                  <button
-                    key={conv.id}
-                    onClick={() => setSelectedConv(conv.id)}
-                    className={cn(
-                      "w-full p-4 text-left border-b border-border/40 hover:bg-muted/50 transition-colors",
-                      selectedConv === conv.id && "bg-muted/70"
+    <div className={cn('flex w-full overflow-hidden bg-background', shellHeight)}>
+      {/* Conversation List */}
+      <aside
+        className={cn(
+          'w-full lg:w-80 lg:border-r border-border/60 flex flex-col min-w-0',
+          selectedConv && 'hidden lg:flex',
+        )}
+      >
+        <div className="px-4 h-12 flex items-center border-b border-border/60 shrink-0">
+          <h1 className="text-base font-semibold">Berichten</h1>
+        </div>
+        <div className="flex-1 overflow-y-auto overscroll-contain">
+          {conversations.map(conv => (
+            <button
+              key={conv.id}
+              onClick={() => setSelectedConv(conv.id)}
+              className={cn(
+                'w-full px-4 py-3 text-left border-b border-border/40 hover:bg-muted/50 active:bg-muted transition-colors min-h-[64px]',
+                selectedConv === conv.id && 'bg-muted/70',
+              )}
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm shrink-0">
+                  {(conv.other_name || '?').slice(0, 1).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-semibold text-sm truncate">{conv.other_name}</span>
+                    <span className="text-[11px] text-muted-foreground shrink-0">
+                      {new Date(conv.updated_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground truncate">{conv.listing_title}</p>
+                  <div className="flex items-center justify-between gap-2 mt-0.5">
+                    <p className="text-xs text-muted-foreground truncate">{conv.last_message || '—'}</p>
+                    {(conv.unread_count || 0) > 0 && (
+                      <span className="inline-flex items-center justify-center text-[10px] font-semibold bg-primary text-primary-foreground rounded-full h-5 min-w-5 px-1.5 shrink-0">
+                        {conv.unread_count}
+                      </span>
                     )}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-sm truncate">{conv.other_name}</span>
-                          {(conv.unread_count || 0) > 0 && (
-                            <Badge className="bg-accent text-accent-foreground text-xs h-5 min-w-5 px-1.5">
-                              {conv.unread_count}
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground truncate mt-0.5">{conv.listing_title}</p>
-                        {conv.last_message && (
-                          <p className="text-xs text-muted-foreground truncate mt-1">{conv.last_message}</p>
-                        )}
-                      </div>
-                      <span className="text-xs text-muted-foreground flex-shrink-0">{formatDate(conv.updated_at)}</span>
-                    </div>
-                  </button>
-                ))}
-              </ScrollArea>
-            </Card>
-
-            {/* Chat Window */}
-            <Card className={cn("md:col-span-2 border-border/60 flex flex-col overflow-hidden", !selectedConv && "hidden md:flex")}>
-              {selectedConv && selectedConversation ? (
-                <>
-                  {/* Chat header */}
-                  <div className="p-4 border-b border-border/40 flex items-center gap-3">
-                    <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setSelectedConv(null)}>
-                      <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                    <div>
-                      <p className="font-semibold text-sm">{selectedConversation.other_name}</p>
-                      <Link to={`/auto/${selectedConversation.listing_id}`} className="text-xs text-muted-foreground hover:text-primary">
-                        {selectedConversation.listing_title}
-                      </Link>
-                    </div>
-                  </div>
-
-                  {/* Messages */}
-                  <ScrollArea className="flex-1 p-4">
-                    <div className="space-y-3">
-                      {messages.map(msg => (
-                        <div key={msg.id} className={cn("flex", msg.sender_id === user?.id ? "justify-end" : "justify-start")}>
-                          <div className={cn(
-                            "max-w-[75%] rounded-2xl px-4 py-2.5 text-sm",
-                            msg.sender_id === user?.id
-                              ? "bg-primary text-primary-foreground rounded-br-md"
-                              : "bg-muted rounded-bl-md"
-                          )}>
-                            <p>{msg.content}</p>
-                            <p className={cn(
-                              "text-[10px] mt-1",
-                              msg.sender_id === user?.id ? "text-primary-foreground/60" : "text-muted-foreground"
-                            )}>
-                              {formatTime(msg.created_at)}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-
-                  {/* Input */}
-                  <div className="p-4 border-t border-border/40">
-                    <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="flex gap-2">
-                      <Input
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        placeholder="Typ een bericht..."
-                        className="flex-1"
-                      />
-                      <Button type="submit" size="icon" disabled={!newMessage.trim()}>
-                        <Send className="h-4 w-4" />
-                      </Button>
-                    </form>
-                  </div>
-                </>
-              ) : (
-                <div className="flex-1 flex items-center justify-center text-muted-foreground">
-                  <div className="text-center">
-                    <MessageCircle className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                    <p>Selecteer een gesprek</p>
                   </div>
                 </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </aside>
+
+      {/* Chat */}
+      <section
+        className={cn(
+          'flex-1 flex flex-col min-w-0 min-h-0',
+          !selectedConv && 'hidden lg:flex',
+        )}
+      >
+        {selectedConv && selectedConversation ? (
+          <>
+            {/* Header */}
+            <header className="sticky top-0 z-10 h-14 px-2 flex items-center gap-2 border-b border-border/60 bg-background/95 backdrop-blur shrink-0">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden h-10 w-10 shrink-0"
+                onClick={() => setSelectedConv(null)}
+                aria-label="Terug"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <Link
+                to={`/auto/${selectedConversation.listing_id}`}
+                className="flex-1 min-w-0 flex items-center gap-3 px-1 py-1 rounded-lg hover:bg-muted/50 transition-colors"
+              >
+                <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-xs shrink-0">
+                  {(selectedConversation.other_name || '?').slice(0, 1).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="font-semibold text-sm truncate">{selectedConversation.listing_title}</p>
+                  <p className="text-[11px] text-muted-foreground truncate">{selectedConversation.other_name}</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+              </Link>
+            </header>
+
+            {/* Messages */}
+            <div
+              ref={scrollerRef}
+              className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 py-3 space-y-1.5"
+              style={{ touchAction: 'pan-y' }}
+            >
+              {hasOlder && (
+                <div className="flex justify-center pb-2">
+                  <span className="text-[11px] text-muted-foreground">{messages.length - MAX_RENDER} oudere berichten verborgen</span>
+                </div>
               )}
-            </Card>
+              {visibleMessages.map((msg, i) => {
+                const prev = visibleMessages[i - 1];
+                const showDate = !prev || dayKey(prev.created_at) !== dayKey(msg.created_at);
+                return (
+                  <div key={msg.id}>
+                    {showDate && <DateSeparator label={dayLabel(msg.created_at)} />}
+                    <Bubble msg={msg} mine={msg.sender_id === user?.id} />
+                  </div>
+                );
+              })}
+              <div ref={endRef} />
+            </div>
+
+            {/* Input */}
+            <div
+              className="shrink-0 border-t border-border/60 bg-background/95 backdrop-blur px-2 pt-2"
+              style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
+            >
+              <form
+                onSubmit={(e) => { e.preventDefault(); sendMessage(); }}
+                className="relative flex items-end"
+              >
+                <textarea
+                  ref={textareaRef}
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      sendMessage();
+                    }
+                  }}
+                  placeholder="Typ een bericht…"
+                  rows={1}
+                  className="w-full resize-none rounded-3xl border border-border/60 bg-muted/40 pl-4 pr-12 py-2.5 text-sm leading-5 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 max-h-[120px]"
+                />
+                <button
+                  type="submit"
+                  disabled={!newMessage.trim()}
+                  aria-label="Verstuur"
+                  className={cn(
+                    'absolute right-1.5 bottom-1.5 h-9 w-9 rounded-full flex items-center justify-center transition-all',
+                    newMessage.trim()
+                      ? 'bg-primary text-primary-foreground scale-100 hover:bg-primary/90'
+                      : 'bg-muted text-muted-foreground scale-90 cursor-not-allowed',
+                  )}
+                >
+                  <Send className="h-4 w-4" />
+                </button>
+              </form>
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 flex items-center justify-center text-muted-foreground">
+            <div className="text-center">
+              <MessageCircle className="h-12 w-12 mx-auto mb-3 opacity-30" />
+              <p className="text-sm">Selecteer een gesprek</p>
+            </div>
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }

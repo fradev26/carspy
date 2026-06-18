@@ -1,53 +1,75 @@
-## Native app-achtige mobiele ervaring
+# Herontwerp Berichtenpagina — Native chat-app feel
 
-Doel: de bestaande huisstijl 100% behouden en alleen de mobiele "shell" verstevigen — viewport lock, geen horizontale overflow, safe areas, en touch-vriendelijke defaults.
+Volledige herwerking van `src/pages/Messages.tsx` zodat de pagina aanvoelt als WhatsApp/iMessage, zonder VATUUR-huisstijl te wijzigen.
 
-### 1. `index.html` — viewport
-Vervang de huidige viewport meta door:
-```
-width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover
-```
-Behoud bestaande PWA-meta's (`apple-mobile-web-app-capable`, theme-color, manifest).
+## Layout
 
-### 2. `src/index.css` — globale mobiele guards
-Toevoegen / aanpassen in een nieuwe `@layer base` blok:
+- Twee modi:
+  - **Desktop (md+)**: split-view, conversatielijst links (max-w-sm), chat rechts. Volledige hoogte `h-[100dvh] - header - bottomnav`.
+  - **Mobile**: één view tegelijk — lijst óf chat (full-screen). Bij geopende chat verbergt de bottom nav niet, maar de inputbalk plakt eronder.
+- Container: vervang huidige `container py-6` door full-bleed `h-[100dvh]` met `flex flex-col`, padding-top voor fixed header (env safe-area-top), padding-bottom voor bottomnav + safe-area-bottom.
+- Geen `Card` wrappers meer — directe surfaces met subtiele `border-b` scheidingen.
 
-- **No horizontal overflow & viewport-fit**:
-  ```css
-  html, body { max-width: 100%; overflow-x: clip; overscroll-behavior-x: none; }
-  body { width: 100%; }
-  #root { max-width: 100%; overflow-x: clip; }
-  ```
-  (huidige `overflow-x: clip` blijft)
-- **Dubbel-tap zoom voorkomen** op interactief: `button, a, [role="button"], input, select, textarea, label { touch-action: manipulation; }`
-- **Geen tekstselectie tijdens swipen** op niet-tekst elementen: `button, [role="button"], .no-select { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }` — inputs/textarea expliciet `user-select: text` houden.
-- **Responsieve media**: `img, video, canvas, svg, iframe { max-width: 100%; height: auto; }`
-- **Lange woorden netjes breken**: `p, h1, h2, h3, h4, h5, h6, a, span, li, td, th { overflow-wrap: anywhere; word-break: normal; }` + utility `.break-anywhere` blijft beschikbaar.
-- **iOS tap highlight uit**: `-webkit-tap-highlight-color: transparent` op `html`.
-- **Min flex children** ter voorkoming van overflow in flex/grid: nieuwe utility `.min-w-0-all > * { min-width: 0; }` (optioneel inzetbaar; geen brede mutatie van bestaande components).
-- **Safe area utilities** (bestaand): `.safe-x`, `.safe-top`, `.safe-bottom`, `.pb-nav` blijven; toevoegen `.safe-area-inset { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }` voor algemene modals.
-- **Tap target minimum**: utility `.tap-target { min-width: 44px; min-height: 44px; }` — niet globaal forceren (zou knoppen te groot maken), maar beschikbaar maken; bestaande knoppen in `BottomNav`/header voldoen al.
-- **Scrollbar verbergen op touch** (cosmetisch native feel): `@media (hover: none) { ::-webkit-scrollbar { display: none; } html { scrollbar-width: none; } }`
+## Header (chat-modus)
 
-### 3. Modals/Drawers viewport-clamp
-Shadcn `DialogContent` en `SheetContent` krijgen een class-override in een centrale utility (`src/components/ui/dialog.tsx`, `sheet.tsx`) of een CSS-regel:
-```css
-[role="dialog"] { max-width: calc(100vw - 1rem); max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
-```
-Alleen toevoegen via CSS — geen component-API wijziging — om regressie te vermijden.
+- Sticky top, compact (h-14): terugknop links, in midden auto-titel (1 regel, truncate) + subtiele subregel (`other_name` of "Online"-stijl placeholder via `last_seen` — voor nu statische "Reageert meestal binnen 1u").
+- Lichte border-bottom, geen schaduw.
+- Klikbaar → navigeert naar `/auto/{listing_id}`.
 
-### 4. PWA manifest check
-`public/manifest.webmanifest` reeds aanwezig. Geen wijzigingen tenzij `display` ontbreekt; alleen aanvullen indien nodig (controleren tijdens implementatie).
+## Berichten
 
-### 5. Regressietest (handmatig in build mode)
-Met Playwright op 375×812 (iPhone) een snelle sweep over kernroutes: `/`, `/zoeken`, `/favorieten`, `/verkopen`, `/auto/:id` (mock), `/dealer/:slug`, `/zakelijk`, `/zakelijk/voorraad`, `/account`, `/auth`. Detecteer `document.documentElement.scrollWidth > clientWidth` per route. Los geconstateerde overflow per route op met minimale, lokale class-toevoegingen (geen redesign, alleen `min-w-0`, `flex-wrap`, `max-w-full`, `truncate`/`break-anywhere`).
+- `flex-1 overflow-y-auto` (geen ScrollArea component — native scroll voor 60fps + momentum).
+- Bubbles: max-w-[75%], rounded-2xl met asymmetrische "tail" hoek, eigen rechts (`bg-primary text-primary-foreground`), ontvangen links (`bg-muted`).
+- Tijdstip in kleine tekst (10px) onder bubble buiten de bubble, of binnen — houden zoals huidige stijl maar verfijnd.
+- Datum-separator (centered chip) bij dagwissel.
+- Nieuwe berichten: `animate-fade-in` (al beschikbaar in Tailwind config).
+- Auto-scroll naar onder: `useEffect` op messages.length → `scrollIntoView({behavior:'smooth', block:'end'})` op een sentinel `<div ref={endRef} />`.
+- `useLayoutEffect` voor instant scroll bij initial load.
 
-### Buiten scope
-- Geen huisstijl-, kleur- of typografie-wijzigingen.
-- Geen nieuwe routes, geen component-redesigns.
-- Geen service worker / offline (PWA installable blijft zoals nu).
-- Geen Capacitor-setup (web-only).
+## Input
 
-### Technische details
-- Bestanden gewijzigd: `index.html`, `src/index.css`, mogelijk gerichte fixes in 1–3 page/components op basis van regressietest output.
-- Geen npm installs.
+- Sticky onderaan binnen chat-container (`sticky bottom-0`), achtergrond `bg-background/95 backdrop-blur`.
+- Eén pill-vormige textarea (rounded-full als 1-regel, rounded-2xl bij meerregels) met geïntegreerde verzendknop rechts (absolute positioned icon button).
+- Textarea auto-grow tot 5 regels via `rows={1}` + scrollHeight measurement (kleine helper).
+- Enter = verzend, Shift+Enter = nieuwe regel.
+- Verzendknop disabled wanneer leeg; subtiele scale-in animatie wanneer actief.
+- `padding-bottom: env(safe-area-inset-bottom)` op de input-wrapper.
+
+## Mobiele UX
+
+- `100dvh` (dynamic viewport) ipv `100vh` zodat keyboard de hoogte aanpast en laatste bericht zichtbaar blijft.
+- `overscroll-behavior: contain` op messages container — geen pull-to-refresh interferentie.
+- `touch-action: pan-y` op messages, `manipulation` op buttons (al globaal aanwezig).
+- Geen horizontale overflow door `min-w-0` op flex children + `break-words` op bubble content.
+- Touch targets ≥ 44×44 via `tap-target` utility (al beschikbaar).
+
+## Performance
+
+- Geen externe virtualizer-library installeren (out of scope per project conventies). In plaats daarvan: render alleen laatste 200 berichten; oudere worden via "Toon oudere berichten"-knop bovenaan geladen. Voor huidige scale (kleine 1-op-1 chats) is dit voldoende native-snel.
+- Memoize bubble component met `React.memo`.
+- `key={msg.id}` voor stable diffs.
+- Geen layout shift: textarea-grow gebeurt boven de input, niet onder — messages scroll past mee.
+
+## Lege staat
+
+- Behoud huidige empty state maar zonder Card — gewoon centered icoon + tekst + CTA naar /zoeken.
+
+## Bestanden
+
+- **edit** `src/pages/Messages.tsx` — volledige rewrite van JSX en kleine helpers (datum-separator, auto-grow textarea via inline hook, scroll-to-bottom). Data-fetching, realtime subscription en `sendMessage` logica blijven onveranderd.
+
+## Out of scope
+
+- Geen huisstijl-, kleur-, of typografie-wijzigingen.
+- Geen nieuwe routes, geen schema-wijzigingen, geen edge functions.
+- Geen virtualizer-dependency, geen Capacitor.
+- `BottomNav` / `Header` / `AppLayout` worden niet aangepast.
+
+## Verificatie
+
+Playwright op 375×812: open `/berichten`, selecteer eerste conversatie, controleer dat:
+- header sticky is en compact (h-14)
+- messages container vult de resterende hoogte
+- input sticky onderaan zit boven bottom nav
+- geen horizontale scrollbar
+- screenshots: lijst-view, chat-view, met getypt bericht (multiline)
