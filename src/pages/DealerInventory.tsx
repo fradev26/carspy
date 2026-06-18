@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FilterPanel, FilterChips } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
 import { SearchFilters, SORT_OPTIONS, Listing } from '@/types/listing';
-import { findDealerBySlug, getDealerListings } from '@/lib/dealers';
+import { findDealerBySlugAsync, getDealerListingsAsync, type DealerSummary } from '@/lib/dealers';
 import { cn } from '@/lib/utils';
 
 const PER_PAGE = 24;
