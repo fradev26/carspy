@@ -239,12 +239,48 @@ export default function Messages() {
   };
 
   const selectedConversation = conversations.find(c => c.id === selectedConv);
-  const visibleMessages = useMemo(() => messages.slice(-MAX_RENDER), [messages]);
-  const hasOlder = messages.length > MAX_RENDER;
+  const visibleMessages = useMemo(() => messages.slice(-visibleCount), [messages, visibleCount]);
+  const hasOlder = messages.length > visibleCount;
 
-  // Container height: viewport - header(3.5rem+safe-top) - bottomnav(4rem+safe-bottom on mobile)
+  // Reset window on conversation switch
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [selectedConv]);
+
+  // Load more when top sentinel is visible
+  useEffect(() => {
+    const el = topSentinelRef.current;
+    if (!el || !hasOlder) return;
+    const io = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        const scroller = scrollerRef.current;
+        const prevHeight = scroller?.scrollHeight || 0;
+        setVisibleCount((c) => Math.min(c + PAGE_SIZE, messages.length));
+        requestAnimationFrame(() => {
+          if (scroller) {
+            const diff = scroller.scrollHeight - prevHeight;
+            scroller.scrollTop += diff;
+          }
+        });
+      }
+    }, { root: scrollerRef.current, threshold: 0.1 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [hasOlder, messages.length]);
+
+  // Keep latest message visible when container resizes (e.g. keyboard opens)
+  useEffect(() => {
+    const sc = scrollerRef.current;
+    if (!sc) return;
+    const ro = new ResizeObserver(() => {
+      const nearBottom = sc.scrollHeight - sc.scrollTop - sc.clientHeight < 120;
+      if (nearBottom) endRef.current?.scrollIntoView({ block: 'end' });
+    });
+    ro.observe(sc);
+    return () => ro.disconnect();
+  }, [selectedConv]);
+
+  // Container height: viewport - header(3.5rem+safe-top); bottom nav clearance handled on input
   const shellHeight =
-    'h-[calc(100dvh-3.5rem-env(safe-area-inset-top)-4rem-env(safe-area-inset-bottom))] lg:h-[calc(100dvh-4rem)]';
+    'h-[calc(100dvh-3.5rem-env(safe-area-inset-top))] lg:h-[calc(100dvh-4rem)]';
 
   if (loading) {
     return (
