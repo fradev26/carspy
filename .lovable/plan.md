@@ -1,112 +1,71 @@
-Optimaliseer de volledige filterervaring op `/zoeken`. Behoud huisstijl, sectie-structuur en URL-state synchronisatie. Werk uitsluitend in `src/modules/search/FilterPanel.tsx`, `src/modules/search/FilterChips.tsx`, `src/types/listing.ts`, `src/lib/searchFilters.ts` en een nieuwe utility/component voor numerieke invoer. `HomepageFilters.tsx` blijft buiten scope (homepage), tenzij type-wijzigingen TS-fouten geven — dan minimaal bijwerken.
+Voeg een lichte, in-card foto-swiper toe aan `ListingCard` voor zowel de default als horizontal variant, met fotocounter-badge, paginatie-dots, mouse/touch drag, keyboard-navigatie en lazy/prefetch laadgedrag. Alleen `src/modules/listings/ListingCard.tsx` wordt aangepast plus één nieuwe component `src/modules/listings/ListingImageCarousel.tsx`.
 
-## 1. Nieuwe numerieke invoercomponent
+## Nieuwe component: `ListingImageCarousel`
 
-Maak `src/components/ui/number-input.tsx`:
-- Wrapper rond `Input` met `inputMode="numeric"`, `pattern="[0-9]*"`, autocomplete off.
-- Props: `value?: number | undefined`, `onValueChange(n: number | undefined)`, `placeholder`, `prefix` (bv. `€`), `suffix` (bv. `km`, `pk`), `min`, `max`, `groupThousands?: boolean` (default true).
-- Live-formatting: tijdens typen worden niet-cijfers verwijderd en duizendtallen met punt-/spatie-scheidingsteken (Nederlands `nl-NL.toLocaleString`) getoond. Lege string → `undefined`.
-- Suffix/prefix als visuele addon binnen het input (rechts/links, `pointer-events-none`).
-- Min hoogte `h-12` (≥44 px), `text-base` om iOS-zoom te vermijden.
+Props:
+- `images: string[]`
+- `alt: string`
+- `aspectClass: string` (bv. `aspect-[16/10]` of `aspect-[4/3]`)
+- `priority?: boolean` (eerste afbeelding eager + `fetchpriority="high"`, default false)
+- `className?: string`
+- `children?: ReactNode` (voor overlay-content: prijs, hartje, badges)
 
-## 2. Type- en optie-uitbreidingen (`src/types/listing.ts`)
+Gedrag:
+- State: `index`, `dragging`, `dragDelta`.
+- Track: `flex` met `translateX(calc(-index*100% + delta))`, `transition-transform` uit tijdens drag.
+- Slide-rendering: per slide één `<div class="w-full shrink-0">` met `<img>`.
+  - Slide 0: `loading="eager"` indien `priority`, anders `loading="lazy"`.
+  - Slide 1+: `loading="lazy"` initieel; zodra `dragging===true` of `index>0` voor het eerst → bewaar `loadedSet` (state Set<number>) waarin index 0,1 en daarna `index-1, index, index+1` zijn opgenomen; render niet-geladen slides als `<div class="bg-muted">` (lege placeholder, geen `<img>` om netwerkverkeer te voorkomen).
+  - Op begin van drag: voeg `index±1` toe aan loadedSet (prefetch volgende).
+- Geen layout shift: alle slides delen dezelfde `aspectClass` op de buitenste track.
 
-- `OnlineSince`: vervang door `'today' | '3d' | '7d' | '14d' | '30d' | '30d+'`.
-- `ONLINE_SINCE_OPTIONS`: Vandaag / Afgelopen 3 dagen / Afgelopen 7 dagen / Afgelopen 14 dagen / Afgelopen 30 dagen / Langer dan 30 dagen.
-- `COLOR_OPTIONS`: uitbreiden naar volledige lijst incl. Zilver, Crème, Goud, Roze, Turquoise, Bordeaux, Tweekleurig, Overig. Voeg `hex` toe als gestructureerd object `{ value, label, hex }` om kleurchips te kunnen renderen (Tweekleurig/Overig krijgen gradient/neutral fallback).
-- `SearchFilters.interiorColors` is al aanwezig — wordt nu in UI ontsloten.
-- `minWarranty` / `WarrantyOption` / `WARRANTY_OPTIONS` markeren als deprecated maar niet verwijderen (back-compat met URL); UI weggehaald.
-- Map mileage in queries: behandel `minMileage === 0` als "geen ondergrens" (al impliciet) en `maxMileage === 0` ook als "geen bovengrens" — toepassen in `useSearchListings` (`maxMileage > 0`).
-- Mapping `useSearchListings` voor nieuwe OnlineSince-waarden: today=1d, 3d, 7d, 14d, 30d, 30d+ (=`lt` op cutoff).
+Interactie:
+- Pointer Events (`onPointerDown/Move/Up/Cancel`) — werkt voor muis + touch + pen. Capture pointer.
+- Drempel: `>10 px` horizontale beweging → markeer als "swipe in gang", zet `dragging=true`, registreer dat klik genegeerd moet worden.
+- Op `pointerup`: bepaal eind-index op basis van delta (>25% containerbreedte of snelheid >0.4 px/ms → wissel), clamp naar `[0, images.length-1]` (geen infinite).
+- Verticale drag (deltaY dominant) → laat scrollen, annuleer swipe.
+- Klik-suppressie: als drag gedetecteerd is, `e.preventDefault()` op de eerstvolgende `click` event via een capturing handler op de carousel; geef ouder-`Link` zo geen navigatie. Reset flag na 50 ms.
+- Toetsenbord: container krijgt `tabIndex={0}`, `role="region"`, `aria-roledescription="carousel"`, `aria-label="Foto's van {title}"`. `ArrowLeft/ArrowRight` wisselen index (alleen wanneer carousel zelf focus heeft, niet de hele card).
+- Single image of leeg: render alleen statische `<img>` zonder swipe-laag, dots of counter.
 
-## 3. Serialisatie (`src/lib/searchFilters.ts`)
+Overlay-elementen binnen de carousel (positioned absolute):
+- Fotocounter rechtsonder: `Badge` met `Camera`-icoon + `{index+1}/{images.length}` óf alleen totaal `{images.length}`. Plan: toon `📷 {images.length}` (totaal) wanneer geen interactie, en `{index+1} / {images.length}` zodra de gebruiker swipet (na eerste indexwissel). Stijl: `rounded-full bg-black/55 text-white backdrop-blur-sm text-xs px-2.5 py-1 gap-1.5 inline-flex items-center`. WCAG-contrast door donkere semi-transparante achtergrond.
+- Paginatie-dots onderaan-gecentreerd: alleen tonen bij ≥2 foto's en ≤8 (anders alleen counter). Bullet-rij `flex gap-1`, dot `h-1.5 w-1.5 rounded-full bg-white/60`, actief `w-4 bg-white`. Subtiele drop-shadow voor leesbaarheid.
+- Prev/Next-pijlen (alleen lg, alleen bij hover van de hele card): `h-9 w-9 rounded-full bg-card/90 backdrop-blur` met `ChevronLeft/Right`. Verborgen op mobiel (touch heeft swipe). Klik op pijl → `e.stopPropagation()` + index ±1 binnen grenzen.
+- Bestaande overlays (prijs links boven, favorite/compare rechts, premium/status links onder, hover-CTA) blijven via `children` slot ongewijzigd boven de track gerenderd.
 
-- `onlineSince`: parse/serialize de nieuwe set (string cast volstaat).
-- Voeg `interiorColors` toe (array, comma-separated zoals `colors`).
-- `minWarranty` blijft parsable maar wordt niet meer in UI gezet.
+Performance:
+- Eerste card-afbeelding gebruikt `loading="lazy"` zoals nu; alleen slide 0 wordt initieel in DOM gerenderd als `<img>`. Slide 1 wordt vooraf ingeladen wanneer de gebruiker `pointerdown` doet (prefetch). Slide n-1/n/n+1 worden actief gehouden zodra n actief is.
+- `decoding="async"`, `draggable={false}` op alle `<img>` om native HTML5 drag te onderdrukken.
+- `select-none touch-pan-y` op de carousel zodat verticaal scrollen mogelijk blijft maar horizontale swipe door ons wordt afgehandeld.
+- `will-change: transform` alleen tijdens drag.
 
-## 4. FilterPanel-herschrijving (`src/modules/search/FilterPanel.tsx`)
+## ListingCard-aanpassingen
 
-Globale visuele update binnen huidige huisstijl:
-- Sectiekoppen `text-base` (was `text-sm`), padding `py-4`, hit-area volle breedte.
-- Labels `text-sm` (was `text-xs`), `font-medium`, niet meer uppercase tracking.
-- Checkbox: vergroot via wrapper-klasse naar `h-5 w-5`, label `text-base`, rij heeft `min-h-11 py-2` voor 44 px hit-target.
-- Verticale spacing tussen velden: `space-y-5`.
-- Sectie-spacing: `border-border/60`, `gap-3`.
+- Vervang de huidige `<img>` + shimmer + price/heart/compare/premium-overlays voor zowel `horizontal` als `default` door:
+  ```tsx
+  <ListingImageCarousel images={listing.images} alt={listing.title} aspectClass="aspect-[16/10]">
+    {/* alle bestaande overlay-knoppen en badges */}
+  </ListingImageCarousel>
+  ```
+  De `Link`-wrapper blijft; de carousel onderschept clicks alleen wanneer een swipe is gedetecteerd. Bestaande `e.stopPropagation()` op favorite/compare blijft werken.
+- `imageError`/`imageLoaded` state in `ListingCard` vervalt (verhuist naar carousel).
+- `listing.images.length === 0` → carousel toont `/placeholder.svg`, geen swipe-UI.
+- Horizontal variant gebruikt `aspectClass="aspect-[16/10] sm:aspect-[4/3]"` en `sm:w-72` blijft op de wrapper.
+- Houd `group-hover:scale-105` weg (conflict met carousel transform). Vervang door subtielere `transition-opacity` zoom-fallback: niet doen — laat eruit om sleep-interactie strak te houden.
 
-Per filter:
+## A11y & touch targets
 
-**Basis**
-- Prijs: 2 × `NumberInput` met `prefix="€"`, placeholders "Min" / "Max", `min={0}`.
-- Bouwjaar: 2 × `NumberInput` met `min={1950}`, `max={currentYear+1}`, placeholders "Van" / "Tot", `groupThousands={false}`. Validatie: clamp on blur naar geldig bereik.
-- Kilometerstand: 2 × `NumberInput` met `suffix="km"`. Helper-tekst onder veld: "Laat leeg voor geen bovengrens." `0` en leeg gedragen identiek (serialisatie laat 0 weg).
-- Brandstof / Carrosserie: bredere grid op desktop (`grid-cols-2`), grotere klikvlak rijen.
+- Pijlknoppen `h-9 w-9` op desktop; mobiel geen pijlen (swipe vervangt ze). Carousel-container is groot genoeg (volledige afbeelding) → swipe-oppervlak >>44 px.
+- Counter-badge en dots zijn niet interactief.
+- `aria-live="polite"` op een visueel verborgen status: "Foto {index+1} van {total}" — geüpdatet bij wisseling, zodat screenreaders het volgen.
 
-**Aandrijving & Prestaties**
-- Vermogen: 2 × `NumberInput` met `suffix="pk"`.
-- Transmissie/Aandrijving: zelfde checkbox-vergroting.
+## Regressies vermijden
 
-**Uiterlijk & Interieur**
-- Exterieurkleur: grid `grid-cols-4 sm:grid-cols-5` met kleurchips: ronde swatch (`h-9 w-9 rounded-full border`) + label eronder of ernaast; geselecteerd → `ring-2 ring-primary`. "Tweekleurig" → conic-gradient, "Overig" → grijze swatch met diagonale streep.
-- Interieurkleur: identieke kleurchip-grid op `filters.interiorColors`.
+- `useFavorites`, `useCompare`, marketcompare-knop en alle bestaande props blijven onveranderd.
+- Tests: visueel verifiëren via Playwright na build — swipe op `/zoeken` listingcard wisselt foto, klik opent `/auto/:id`, pijltjestoetsen werken wanneer de carousel focus heeft.
 
-**Praktisch** — ongewijzigd, alleen visueel groter.
+## Out of scope
 
-**Locatie & Timing**
-- Online sinds: vervang door horizontale segmented chips (radio-stijl) — Vandaag / 3 dagen / 7 dagen / 14 dagen / 30 dagen / 30 dagen+. Component: knoppenrij met `flex flex-wrap gap-2`, actieve knop `bg-primary text-primary-foreground`.
-
-**Historiek & Zekerheid**
-- "Minimale garantie" sectie verwijderen (UI + section count).
-- Vorige eigenaren: vervang Select door chip-rij met `0`, `1`, `2`, `3`, `4+` (waarde `4` betekent `maxPreviousOwners = 4`); 0 → 1e eigenaar mapping behouden (`0` betekent geen vorige eigenaren). Werkt via dezelfde `maxPreviousOwners` field.
-
-**Opties & Extra's** — ongewijzigd, alleen visueel groter.
-
-Toegankelijkheid: alle nieuwe inputs krijgen `aria-label` + zichtbare label, chip-knoppen `role="radio"` binnen `role="radiogroup"`.
-
-## 5. FilterChips
-
-- Tag voor interieurkleur (`interiorColors`) toevoegen met label "Interieur: {kleur}".
-- Tag voor nieuwe OnlineSince labels (label komt uit `ONLINE_SINCE_OPTIONS`).
-- Verwijder garantie-chip (mag blijven voor back-compat met URL, maar zonder UI is hij niet meer triggerbaar — laat code staan).
-
-## 6. Search-pagina (`src/pages/Search.tsx`)
-
-- `handleRemoveFilter`: voeg `'interiorColors'` toe aan `arrayKeys`.
-- Geen layout-wijzigingen verder; sticky CTA op mobile blijft "Toon {n} resultaten".
-
-## 7. Mobiele afronding
-
-- Vermijd horizontaal scrollen: ranges (Prijs/Jaar/KM/Vermogen) gebruiken `grid grid-cols-2 gap-3` i.p.v. flex met em-dash.
-- Alle inputs `text-base`, `h-12`, full-width.
-- Drawer-content houdt onveranderd `overflow-y-auto px-4 py-4`.
-
-## Technische details
-
-- Geen DB/edge-functie wijzigingen vereist; alleen client.
-- `useSearchListings` aanpassen voor `maxMileage > 0` guard en uitgebreide OnlineSince cutoffs (dagen-mapping via switch).
-- `HomepageFilters.tsx` raakt OnlineSince-type aan: voer dezelfde uitbreidende waarden door zodat TS niet breekt; UI blijft daar visueel onveranderd, behalve dat de Select de nieuwe opties toont (acceptabel, scope-light).
-- Backwards-compat: oude URL-waarde `24h` mappen we tijdens parsing naar `today` zodat opgeslagen zoekopdrachten blijven werken.
-
-```text
-Sidebar (desktop)               Drawer (mobile)
-┌───────────────┐               ┌────────────────────┐
-│ Filters    [n]│               │ Filters     [n act]│
-│ ──────────── │               │ ──────────────────│
-│ Basis      ▾  │               │ ▾ Basis            │
-│   Merk        │               │   ...              │
-│   Prijs €min  │               │ ▾ Aandrijving      │
-│   Prijs €max  │               │ ▾ Uiterlijk        │
-│   Jaar van/tot│               │   ⬤⬤⬤⬤⬤ kleurchips │
-│   KM min/max  │               └────────────────────┘
-│ Aandrijving ▸ │               sticky: [Toon n resultaten]
-│ Uiterlijk   ▾ │
-│   Kleurchips  │
-│   Interieur   │
-│ Praktisch   ▸ │
-│ Locatie     ▾ │
-│   [Vandaag][3d][7d][14d][30d][30d+]
-│ Historiek   ▾ │
-│   Eigenaren: [0][1][2][3][4+]
-│ Opties      ▸ │
-└───────────────┘
-```
+- `ImageGallery` op de detailpagina blijft onveranderd.
+- Geen DB-, route- of layout-wijzigingen.
