@@ -190,6 +190,11 @@ export default function MyListings() {
                             <CheckCircle2 className="h-4 w-4" />Verkocht
                           </Button>
                         )}
+                        {key === 'sold' && (
+                          <Button variant="outline" size="sm" className="gap-2" onClick={() => relist(l.id)}>
+                            <RotateCcw className="h-4 w-4" />Terug te koop
+                          </Button>
+                        )}
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="outline" size="sm" className="gap-2 text-destructive"><Trash2 className="h-4 w-4" />Verwijderen</Button>
