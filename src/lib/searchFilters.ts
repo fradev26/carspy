@@ -85,6 +85,8 @@ export function parseFiltersFromURL(searchParams: URLSearchParams): SearchFilter
   if (paintTypes) filters.paintTypes = paintTypes as PaintType[];
   const colors = arr('colors');
   if (colors) filters.colors = colors;
+  const interiorColors = arr('interiorColors');
+  if (interiorColors) filters.interiorColors = interiorColors;
   const interiorMaterials = arr('interiorMaterials');
   if (interiorMaterials) filters.interiorMaterials = interiorMaterials as InteriorMaterial[];
 
@@ -102,8 +104,12 @@ export function parseFiltersFromURL(searchParams: URLSearchParams): SearchFilter
   const postalCode = str('postalCode');
   if (postalCode) filters.postalCode = postalCode;
 
-  const onlineSince = str('onlineSince');
-  if (onlineSince) filters.onlineSince = onlineSince as OnlineSince;
+  const onlineSinceRaw = str('onlineSince');
+  if (onlineSinceRaw) {
+    // Back-compat: legacy '24h' → 'today'
+    const mapped = onlineSinceRaw === '24h' ? 'today' : onlineSinceRaw;
+    filters.onlineSince = mapped as OnlineSince;
+  }
 
   const sellerType = str('sellerType');
   if (sellerType === 'private' || sellerType === 'dealer') filters.sellerType = sellerType;
@@ -160,6 +166,7 @@ export function serializeFiltersToParams(filters: SearchFilters): Record<string,
   setNum('maxPower', filters.maxPower);
   setArr('paintTypes', filters.paintTypes);
   setArr('colors', filters.colors);
+  setArr('interiorColors', filters.interiorColors);
   setArr('interiorMaterials', filters.interiorMaterials);
   setNum('minDoors', filters.minDoors);
   setNum('minSeats', filters.minSeats);

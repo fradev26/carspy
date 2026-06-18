@@ -192,8 +192,8 @@ export function useSearchListings(params: UseSearchListingsParams): UseSearchLis
       if (filters.maxPrice != null) q = q.lte('price', filters.maxPrice);
       if (filters.minYear != null) q = q.gte('year', filters.minYear);
       if (filters.maxYear != null) q = q.lte('year', filters.maxYear);
-      if (filters.minMileage != null) q = q.gte('mileage', filters.minMileage);
-      if (filters.maxMileage != null) q = q.lte('mileage', filters.maxMileage);
+      if (filters.minMileage != null && filters.minMileage > 0) q = q.gte('mileage', filters.minMileage);
+      if (filters.maxMileage != null && filters.maxMileage > 0) q = q.lte('mileage', filters.maxMileage);
       if (filters.minPower != null) q = q.gte('power', filters.minPower);
       if (filters.maxPower != null) q = q.lte('power', filters.maxPower);
 
@@ -214,6 +214,20 @@ export function useSearchListings(params: UseSearchListingsParams): UseSearchLis
       // History
       if (filters.maxPreviousOwners != null) q = q.lte('previous_owner_count', filters.maxPreviousOwners);
       if (filters.vatDeductible) q = q.eq('vat_deductible', true);
+
+      // Online since
+      if (filters.onlineSince) {
+        const daysMap: Record<string, number> = { today: 1, '3d': 3, '7d': 7, '14d': 14, '30d': 30 };
+        if (filters.onlineSince === '30d+') {
+          const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+          q = q.lt('created_at', cutoff);
+        } else if (daysMap[filters.onlineSince]) {
+          const cutoff = new Date(Date.now() - daysMap[filters.onlineSince] * 24 * 60 * 60 * 1000).toISOString();
+          q = q.gte('created_at', cutoff);
+        }
+      }
+
+      // Interior colors filter is a UI-only refinement for now (no DB column).
 
       // Features array (must contain all)
       if (filters.features?.length) q = q.contains('equipment', filters.features);

@@ -97,6 +97,10 @@ export function FilterChips({ filters, onRemoveFilter, onClearAll, className }: 
     chips.push({ key: 'colors', label: color, value: color, category: 'appearance' });
   });
 
+  filters.interiorColors?.forEach((color) => {
+    chips.push({ key: 'interiorColors', label: `Interieur: ${color}`, value: color, category: 'appearance' });
+  });
+
   filters.interiorMaterials?.forEach((material) => {
     const materialLabel = INTERIOR_MATERIALS.find(m => m.value === material)?.label || material;
     chips.push({ key: 'interiorMaterials', label: materialLabel, value: material, category: 'appearance' });

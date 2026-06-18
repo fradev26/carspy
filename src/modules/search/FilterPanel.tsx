@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { ChevronDown, ChevronUp, X, Filter, RotateCcw } from 'lucide-react';
+import { ChevronDown, ChevronUp, Filter, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -7,28 +7,28 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Slider } from '@/components/ui/slider';
-import { 
-  SearchFilters, 
+import {
+  SearchFilters,
   CAR_BRANDS,
   CAR_MODELS,
-  FUEL_TYPES, 
-  TRANSMISSION_TYPES, 
+  FUEL_TYPES,
+  TRANSMISSION_TYPES,
   BODY_TYPES,
   DRIVE_TYPES,
-  PAINT_TYPES,
   INTERIOR_MATERIALS,
   PROVINCES,
   COLOR_OPTIONS,
+  ColorOption,
   ONLINE_SINCE_OPTIONS,
-  WARRANTY_OPTIONS,
   FEATURE_OPTIONS,
   COUNTRY_OPTIONS,
   RADIUS_OPTIONS,
+  OnlineSince,
 } from '@/types/listing';
 import { cn } from '@/lib/utils';
 import { FilterPresets } from './FilterPresets';
 import { Input } from '@/components/ui/input';
+import { NumberInput } from '@/components/ui/number-input';
 
 interface FilterPanelProps {
   filters: SearchFilters;
@@ -37,14 +37,44 @@ interface FilterPanelProps {
   showPresets?: boolean;
 }
 
-type FilterSection = 
-  | 'quick' 
-  | 'performance' 
-  | 'appearance' 
-  | 'practical' 
-  | 'location' 
-  | 'history' 
+type FilterSection =
+  | 'quick'
+  | 'performance'
+  | 'appearance'
+  | 'practical'
+  | 'location'
+  | 'history'
   | 'options';
+
+const OWNERS_OPTIONS = [
+  { value: 0, label: '0' },
+  { value: 1, label: '1' },
+  { value: 2, label: '2' },
+  { value: 3, label: '3' },
+  { value: 4, label: '4+' },
+];
+
+function ColorSwatch({ color, selected }: { color: ColorOption; selected: boolean }) {
+  const style: React.CSSProperties = {};
+  if (color.swatch === 'two-tone') {
+    style.background = 'conic-gradient(from 180deg at 50% 50%, #111 0deg 180deg, #fff 180deg 360deg)';
+  } else if (color.swatch === 'other') {
+    style.background =
+      'repeating-linear-gradient(45deg, hsl(var(--muted)) 0 6px, hsl(var(--muted-foreground)/0.25) 6px 12px)';
+  } else if (color.hex) {
+    style.backgroundColor = color.hex;
+  }
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        'inline-block h-7 w-7 rounded-full border border-border/80 shadow-sm transition-transform',
+        selected && 'ring-2 ring-primary ring-offset-2 ring-offset-background scale-105',
+      )}
+      style={style}
+    />
+  );
+}
 
 export function FilterPanel({ filters, onFiltersChange, className, showPresets = true }: FilterPanelProps) {
   const [openSections, setOpenSections] = useState<Record<FilterSection, boolean>>({
@@ -67,10 +97,7 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
     onFiltersChange({ ...filters, [key]: value });
   };
 
-  const toggleArrayFilter = <T extends string>(
-    key: keyof SearchFilters,
-    value: T
-  ) => {
+  const toggleArrayFilter = <T extends string>(key: keyof SearchFilters, value: T) => {
     const currentValues = (filters[key] as T[] | undefined) || [];
     const newValues = currentValues.includes(value)
       ? currentValues.filter(v => v !== value)
@@ -78,9 +105,7 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
     onFiltersChange({ ...filters, [key]: newValues.length > 0 ? newValues : undefined });
   };
 
-  const clearAllFilters = () => {
-    onFiltersChange({});
-  };
+  const clearAllFilters = () => onFiltersChange({});
 
   const applyPreset = (presetFilters: Partial<SearchFilters>) => {
     const newFilters = { ...filters };
@@ -94,7 +119,6 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
     onFiltersChange(newFilters);
   };
 
-  // Calculate active filter count per section
   const sectionCounts = useMemo(() => {
     return {
       quick: [
@@ -113,6 +137,7 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
       ].filter(Boolean).length,
       appearance: [
         filters.colors?.length,
+        filters.interiorColors?.length,
       ].filter(Boolean).length,
       practical: [
         filters.minDoors,
@@ -127,25 +152,17 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
       ].filter(Boolean).length,
       history: [
         filters.sellerType,
-        filters.maxPreviousOwners,
-        filters.minWarranty,
+        filters.maxPreviousOwners != null ? 1 : 0,
         filters.vatDeductible,
       ].filter(Boolean).length,
-      options: [
-        filters.features?.length,
-      ].filter(Boolean).length,
+      options: [filters.features?.length].filter(Boolean).length,
     };
   }, [filters]);
 
   const totalActiveFilters = Object.values(sectionCounts).reduce((a, b) => a + b, 0);
-
   const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 35 }, (_, i) => currentYear - i);
-
-  // Get available models based on selected brand
   const availableModels = filters.brand ? CAR_MODELS[filters.brand] || [] : [];
 
-  // Group features by category
   const groupedFeatures = useMemo(() => {
     return FEATURE_OPTIONS.reduce((acc, feature) => {
       if (!acc[feature.category]) acc[feature.category] = [];
@@ -170,11 +187,11 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
           )}
         </div>
         {totalActiveFilters > 0 && (
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={clearAllFilters} 
-            className="text-muted-foreground hover:text-foreground h-8 px-2 gap-1"
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearAllFilters}
+            className="text-muted-foreground hover:text-foreground h-9 px-2 gap-1"
           >
             <RotateCcw className="h-3.5 w-3.5" />
             Reset
@@ -182,30 +199,20 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
         )}
       </div>
 
-      {/* Smart Presets */}
       {showPresets && (
         <div className="py-4 border-b border-border/40">
-          <FilterPresets 
-            onApplyPreset={applyPreset} 
-            activeFilters={filters}
-          />
+          <FilterPresets onApplyPreset={applyPreset} activeFilters={filters} />
         </div>
       )}
 
-      {/* 1. Quick Selection */}
-      <FilterSection
-        title="Basis"
-        section="quick"
-        count={sectionCounts.quick}
-        isOpen={openSections.quick}
-        onToggle={() => toggleSection('quick')}
-      >
-        <div className="space-y-4">
+      {/* 1. Basis */}
+      <FilterSection title="Basis" section="quick" count={sectionCounts.quick} isOpen={openSections.quick} onToggle={() => toggleSection('quick')}>
+        <div className="space-y-5">
           {/* Brand */}
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Merk</Label>
-            <Select 
-              value={filters.brand || ''} 
+            <Label className="text-sm font-medium text-foreground">Merk</Label>
+            <Select
+              value={filters.brand || ''}
               onValueChange={(v) => {
                 const nextBrand = v === 'all' ? undefined : v;
                 const resetModel = nextBrand !== filters.brand;
@@ -216,7 +223,7 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
                 });
               }}
             >
-              <SelectTrigger className="border-border/60">
+              <SelectTrigger className="h-12 border-border/60 text-base">
                 <SelectValue placeholder="Alle merken" />
               </SelectTrigger>
               <SelectContent className="bg-card max-h-72">
@@ -228,15 +235,12 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
             </Select>
           </div>
 
-          {/* Model (dynamic) */}
+          {/* Model */}
           {filters.brand && availableModels.length > 0 && (
             <div className="space-y-2 animate-fade-in">
-              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Model</Label>
-              <Select 
-                value={filters.model || ''} 
-                onValueChange={(v) => updateFilter('model', v === 'all' ? undefined : v)}
-              >
-                <SelectTrigger className="border-border/60">
+              <Label className="text-sm font-medium text-foreground">Model</Label>
+              <Select value={filters.model || ''} onValueChange={(v) => updateFilter('model', v === 'all' ? undefined : v)}>
+                <SelectTrigger className="h-12 border-border/60 text-base">
                   <SelectValue placeholder="Alle modellen" />
                 </SelectTrigger>
                 <SelectContent className="bg-card max-h-72">
@@ -251,136 +255,104 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
 
           {/* Price */}
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Prijs</Label>
-            <div className="flex items-center gap-2">
-              <Select value={filters.minPrice?.toString() || ''} onValueChange={(v) => updateFilter('minPrice', v && v !== 'none' ? parseInt(v) : undefined)}>
-                <SelectTrigger className="flex-1 border-border/60">
-                  <SelectValue placeholder="Min" />
-                </SelectTrigger>
-                <SelectContent className="bg-card">
-                  <SelectItem value="none">Geen min</SelectItem>
-                  {[2500, 5000, 7500, 10000, 15000, 20000, 25000, 30000, 40000, 50000].map(p => (
-                    <SelectItem key={p} value={p.toString()}>€ {p.toLocaleString()}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <span className="text-muted-foreground text-sm">—</span>
-              <Select value={filters.maxPrice?.toString() || ''} onValueChange={(v) => updateFilter('maxPrice', v && v !== 'none' ? parseInt(v) : undefined)}>
-                <SelectTrigger className="flex-1 border-border/60">
-                  <SelectValue placeholder="Max" />
-                </SelectTrigger>
-                <SelectContent className="bg-card">
-                  <SelectItem value="none">Geen max</SelectItem>
-                  {[10000, 15000, 20000, 25000, 30000, 40000, 50000, 75000, 100000, 150000].map(p => (
-                    <SelectItem key={p} value={p.toString()}>€ {p.toLocaleString()}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <Label className="text-sm font-medium text-foreground">Prijs</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <NumberInput
+                aria-label="Minimumprijs"
+                prefix="€"
+                placeholder="Min"
+                min={0}
+                value={filters.minPrice}
+                onValueChange={(n) => updateFilter('minPrice', n)}
+              />
+              <NumberInput
+                aria-label="Maximumprijs"
+                prefix="€"
+                placeholder="Max"
+                min={0}
+                value={filters.maxPrice}
+                onValueChange={(n) => updateFilter('maxPrice', n)}
+              />
             </div>
           </div>
 
           {/* Year */}
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Bouwjaar</Label>
-            <div className="flex items-center gap-2">
-              <Select value={filters.minYear?.toString() || ''} onValueChange={(v) => updateFilter('minYear', v && v !== 'none' ? parseInt(v) : undefined)}>
-                <SelectTrigger className="flex-1 border-border/60">
-                  <SelectValue placeholder="Van" />
-                </SelectTrigger>
-                <SelectContent className="bg-card max-h-64">
-                  <SelectItem value="none">Geen min</SelectItem>
-                  {years.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <span className="text-muted-foreground text-sm">—</span>
-              <Select value={filters.maxYear?.toString() || ''} onValueChange={(v) => updateFilter('maxYear', v && v !== 'none' ? parseInt(v) : undefined)}>
-                <SelectTrigger className="flex-1 border-border/60">
-                  <SelectValue placeholder="Tot" />
-                </SelectTrigger>
-                <SelectContent className="bg-card max-h-64">
-                  <SelectItem value="none">Geen max</SelectItem>
-                  {years.map((year) => (
-                    <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <Label className="text-sm font-medium text-foreground">Bouwjaar</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <NumberInput
+                aria-label="Bouwjaar van"
+                placeholder="Van"
+                groupThousands={false}
+                min={1950}
+                max={currentYear + 1}
+                value={filters.minYear}
+                onValueChange={(n) => updateFilter('minYear', n)}
+              />
+              <NumberInput
+                aria-label="Bouwjaar tot"
+                placeholder="Tot"
+                groupThousands={false}
+                min={1950}
+                max={currentYear + 1}
+                value={filters.maxYear}
+                onValueChange={(n) => updateFilter('maxYear', n)}
+              />
             </div>
           </div>
 
           {/* Mileage */}
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Kilometerstand</Label>
-            <div className="flex items-center gap-2">
-              <Select value={filters.minMileage?.toString() || ''} onValueChange={(v) => updateFilter('minMileage', v && v !== 'none' ? parseInt(v) : undefined)}>
-                <SelectTrigger className="flex-1 border-border/60">
-                  <SelectValue placeholder="Min" />
-                </SelectTrigger>
-                <SelectContent className="bg-card">
-                  <SelectItem value="none">Geen min</SelectItem>
-                  {[0, 10000, 25000, 50000, 75000, 100000].map(km => (
-                    <SelectItem key={km} value={km.toString()}>{km === 0 ? '0 km' : `${(km/1000)}k km`}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <span className="text-muted-foreground text-sm">—</span>
-              <Select value={filters.maxMileage?.toString() || ''} onValueChange={(v) => updateFilter('maxMileage', v && v !== 'none' ? parseInt(v) : undefined)}>
-                <SelectTrigger className="flex-1 border-border/60">
-                  <SelectValue placeholder="Max" />
-                </SelectTrigger>
-                <SelectContent className="bg-card">
-                  <SelectItem value="none">Geen max</SelectItem>
-                  {[25000, 50000, 75000, 100000, 150000, 200000, 250000].map(km => (
-                    <SelectItem key={km} value={km.toString()}>Tot {(km/1000)}k km</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <Label className="text-sm font-medium text-foreground">Kilometerstand</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <NumberInput
+                aria-label="Minimum kilometerstand"
+                suffix="km"
+                placeholder="Min"
+                min={0}
+                value={filters.minMileage}
+                onValueChange={(n) => updateFilter('minMileage', n)}
+              />
+              <NumberInput
+                aria-label="Maximum kilometerstand"
+                suffix="km"
+                placeholder="Max"
+                min={0}
+                value={filters.maxMileage}
+                onValueChange={(n) => updateFilter('maxMileage', n)}
+              />
             </div>
+            <p className="text-xs text-muted-foreground">Laat leeg of gebruik 0 voor geen bovengrens.</p>
           </div>
 
-          {/* Fuel Type */}
+          {/* Fuel */}
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Brandstof</Label>
+            <Label className="text-sm font-medium text-foreground">Brandstof</Label>
             <div className="grid grid-cols-2 gap-2">
               {FUEL_TYPES.map((fuel) => (
-                <div key={fuel.value} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`fuel-${fuel.value}`}
-                    checked={filters.fuelTypes?.includes(fuel.value) || false}
-                    onCheckedChange={() => toggleArrayFilter('fuelTypes', fuel.value)}
-                    className="border-border"
-                  />
-                  <Label 
-                    htmlFor={`fuel-${fuel.value}`} 
-                    className="text-sm font-normal cursor-pointer text-foreground/80 hover:text-foreground transition-colors"
-                  >
-                    {fuel.label}
-                  </Label>
-                </div>
+                <CheckboxRow
+                  key={fuel.value}
+                  id={`fuel-${fuel.value}`}
+                  label={fuel.label}
+                  checked={filters.fuelTypes?.includes(fuel.value) || false}
+                  onChange={() => toggleArrayFilter('fuelTypes', fuel.value)}
+                />
               ))}
             </div>
           </div>
 
-          {/* Body Type */}
+          {/* Body */}
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Carrosserie</Label>
+            <Label className="text-sm font-medium text-foreground">Carrosserie</Label>
             <div className="grid grid-cols-2 gap-2">
               {BODY_TYPES.map((body) => (
-                <div key={body.value} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`body-${body.value}`}
-                    checked={filters.bodyTypes?.includes(body.value) || false}
-                    onCheckedChange={() => toggleArrayFilter('bodyTypes', body.value)}
-                    className="border-border"
-                  />
-                  <Label 
-                    htmlFor={`body-${body.value}`} 
-                    className="text-sm font-normal cursor-pointer text-foreground/80 hover:text-foreground transition-colors"
-                  >
-                    {body.label}
-                  </Label>
-                </div>
+                <CheckboxRow
+                  key={body.value}
+                  id={`body-${body.value}`}
+                  label={body.label}
+                  checked={filters.bodyTypes?.includes(body.value) || false}
+                  onChange={() => toggleArrayFilter('bodyTypes', body.value)}
+                />
               ))}
             </div>
           </div>
@@ -388,120 +360,94 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
       </FilterSection>
 
       {/* 2. Performance */}
-      <FilterSection
-        title="Aandrijving & Prestaties"
-        section="performance"
-        count={sectionCounts.performance}
-        isOpen={openSections.performance}
-        onToggle={() => toggleSection('performance')}
-      >
-        <div className="space-y-4">
-          {/* Transmission */}
+      <FilterSection title="Aandrijving & Prestaties" section="performance" count={sectionCounts.performance} isOpen={openSections.performance} onToggle={() => toggleSection('performance')}>
+        <div className="space-y-5">
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Transmissie</Label>
-            <div className="space-y-2">
+            <Label className="text-sm font-medium text-foreground">Transmissie</Label>
+            <div className="space-y-1">
               {TRANSMISSION_TYPES.map((trans) => (
-                <div key={trans.value} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`trans-${trans.value}`}
-                    checked={filters.transmissions?.includes(trans.value) || false}
-                    onCheckedChange={() => toggleArrayFilter('transmissions', trans.value)}
-                    className="border-border"
-                  />
-                  <Label 
-                    htmlFor={`trans-${trans.value}`} 
-                    className="text-sm font-normal cursor-pointer text-foreground/80 hover:text-foreground transition-colors"
-                  >
-                    {trans.label}
-                  </Label>
-                </div>
+                <CheckboxRow
+                  key={trans.value}
+                  id={`trans-${trans.value}`}
+                  label={trans.label}
+                  checked={filters.transmissions?.includes(trans.value) || false}
+                  onChange={() => toggleArrayFilter('transmissions', trans.value)}
+                />
               ))}
             </div>
           </div>
 
-          {/* Drive Type */}
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Aandrijving</Label>
-            <div className="space-y-2">
+            <Label className="text-sm font-medium text-foreground">Aandrijving</Label>
+            <div className="space-y-1">
               {DRIVE_TYPES.map((drive) => (
-                <div key={drive.value} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`drive-${drive.value}`}
-                    checked={filters.driveTypes?.includes(drive.value) || false}
-                    onCheckedChange={() => toggleArrayFilter('driveTypes', drive.value)}
-                    className="border-border"
-                  />
-                  <Label 
-                    htmlFor={`drive-${drive.value}`} 
-                    className="text-sm font-normal cursor-pointer text-foreground/80 hover:text-foreground transition-colors"
-                  >
-                    {drive.label}
-                  </Label>
-                </div>
+                <CheckboxRow
+                  key={drive.value}
+                  id={`drive-${drive.value}`}
+                  label={drive.label}
+                  checked={filters.driveTypes?.includes(drive.value) || false}
+                  onChange={() => toggleArrayFilter('driveTypes', drive.value)}
+                />
               ))}
             </div>
           </div>
 
-          {/* Power */}
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Vermogen (pk)</Label>
-            <div className="flex items-center gap-2">
-              <Select value={filters.minPower?.toString() || ''} onValueChange={(v) => updateFilter('minPower', v && v !== 'none' ? parseInt(v) : undefined)}>
-                <SelectTrigger className="flex-1 border-border/60">
-                  <SelectValue placeholder="Min" />
-                </SelectTrigger>
-                <SelectContent className="bg-card">
-                  <SelectItem value="none">Geen min</SelectItem>
-                  {[50, 75, 100, 125, 150, 175, 200, 250, 300, 400].map(p => (
-                    <SelectItem key={p} value={p.toString()}>{p} pk</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <span className="text-muted-foreground text-sm">—</span>
-              <Select value={filters.maxPower?.toString() || ''} onValueChange={(v) => updateFilter('maxPower', v && v !== 'none' ? parseInt(v) : undefined)}>
-                <SelectTrigger className="flex-1 border-border/60">
-                  <SelectValue placeholder="Max" />
-                </SelectTrigger>
-                <SelectContent className="bg-card">
-                  <SelectItem value="none">Geen max</SelectItem>
-                  {[100, 150, 200, 250, 300, 400, 500, 600].map(p => (
-                    <SelectItem key={p} value={p.toString()}>{p} pk</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <Label className="text-sm font-medium text-foreground">Vermogen</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <NumberInput
+                aria-label="Minimaal vermogen in pk"
+                suffix="pk"
+                placeholder="Min"
+                min={0}
+                value={filters.minPower}
+                onValueChange={(n) => updateFilter('minPower', n)}
+              />
+              <NumberInput
+                aria-label="Maximaal vermogen in pk"
+                suffix="pk"
+                placeholder="Max"
+                min={0}
+                value={filters.maxPower}
+                onValueChange={(n) => updateFilter('maxPower', n)}
+              />
             </div>
           </div>
         </div>
       </FilterSection>
 
       {/* 3. Appearance */}
-      <FilterSection
-        title="Uiterlijk & Interieur"
-        section="appearance"
-        count={sectionCounts.appearance}
-        isOpen={openSections.appearance}
-        onToggle={() => toggleSection('appearance')}
-      >
-        <div className="space-y-4">
-          {/* Exterior Color */}
+      <FilterSection title="Uiterlijk & Interieur" section="appearance" count={sectionCounts.appearance} isOpen={openSections.appearance} onToggle={() => toggleSection('appearance')}>
+        <div className="space-y-5">
+          <div className="space-y-3">
+            <Label className="text-sm font-medium text-foreground">Exterieurkleur</Label>
+            <ColorGrid
+              options={COLOR_OPTIONS}
+              selected={filters.colors || []}
+              onToggle={(v) => toggleArrayFilter('colors', v)}
+            />
+          </div>
+
+          <div className="space-y-3">
+            <Label className="text-sm font-medium text-foreground">Interieurkleur</Label>
+            <ColorGrid
+              options={COLOR_OPTIONS}
+              selected={filters.interiorColors || []}
+              onToggle={(v) => toggleArrayFilter('interiorColors', v)}
+            />
+          </div>
+
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Kleur</Label>
-            <div className="grid grid-cols-3 gap-2">
-              {COLOR_OPTIONS.slice(0, 6).map((color) => (
-                <div key={color} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`color-${color}`}
-                    checked={filters.colors?.includes(color) || false}
-                    onCheckedChange={() => toggleArrayFilter('colors', color)}
-                    className="border-border"
-                  />
-                  <Label
-                    htmlFor={`color-${color}`}
-                    className="text-xs font-normal cursor-pointer"
-                  >
-                    {color}
-                  </Label>
-                </div>
+            <Label className="text-sm font-medium text-foreground">Interieurmateriaal</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {INTERIOR_MATERIALS.map((m) => (
+                <CheckboxRow
+                  key={m.value}
+                  id={`mat-${m.value}`}
+                  label={m.label}
+                  checked={filters.interiorMaterials?.includes(m.value) || false}
+                  onChange={() => toggleArrayFilter('interiorMaterials', m.value)}
+                />
               ))}
             </div>
           </div>
@@ -509,21 +455,12 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
       </FilterSection>
 
       {/* 4. Practical */}
-      <FilterSection
-        title="Praktisch"
-        section="practical"
-        count={sectionCounts.practical}
-        isOpen={openSections.practical}
-        onToggle={() => toggleSection('practical')}
-      >
-        <div className="space-y-4">
-          {/* Doors */}
+      <FilterSection title="Praktisch" section="practical" count={sectionCounts.practical} isOpen={openSections.practical} onToggle={() => toggleSection('practical')}>
+        <div className="space-y-5">
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Min. aantal deuren</Label>
+            <Label className="text-sm font-medium text-foreground">Min. aantal deuren</Label>
             <Select value={filters.minDoors?.toString() || ''} onValueChange={(v) => updateFilter('minDoors', v && v !== 'none' ? parseInt(v) : undefined)}>
-              <SelectTrigger className="border-border/60">
-                <SelectValue placeholder="Alle" />
-              </SelectTrigger>
+              <SelectTrigger className="h-12 border-border/60 text-base"><SelectValue placeholder="Alle" /></SelectTrigger>
               <SelectContent className="bg-card">
                 <SelectItem value="none">Alle</SelectItem>
                 <SelectItem value="2">2+ deuren</SelectItem>
@@ -533,14 +470,10 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
               </SelectContent>
             </Select>
           </div>
-
-          {/* Seats */}
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Min. aantal zitplaatsen</Label>
+            <Label className="text-sm font-medium text-foreground">Min. aantal zitplaatsen</Label>
             <Select value={filters.minSeats?.toString() || ''} onValueChange={(v) => updateFilter('minSeats', v && v !== 'none' ? parseInt(v) : undefined)}>
-              <SelectTrigger className="border-border/60">
-                <SelectValue placeholder="Alle" />
-              </SelectTrigger>
+              <SelectTrigger className="h-12 border-border/60 text-base"><SelectValue placeholder="Alle" /></SelectTrigger>
               <SelectContent className="bg-card">
                 <SelectItem value="none">Alle</SelectItem>
                 <SelectItem value="2">2+ zitplaatsen</SelectItem>
@@ -554,21 +487,12 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
       </FilterSection>
 
       {/* 5. Location & Timing */}
-      <FilterSection
-        title="Locatie & Timing"
-        section="location"
-        count={sectionCounts.location}
-        isOpen={openSections.location}
-        onToggle={() => toggleSection('location')}
-      >
-        <div className="space-y-4">
-          {/* Country */}
+      <FilterSection title="Locatie & Timing" section="location" count={sectionCounts.location} isOpen={openSections.location} onToggle={() => toggleSection('location')}>
+        <div className="space-y-5">
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Land</Label>
+            <Label className="text-sm font-medium text-foreground">Land</Label>
             <Select value={filters.country || ''} onValueChange={(v) => updateFilter('country', v === 'all' ? undefined : v)}>
-              <SelectTrigger className="border-border/60">
-                <SelectValue placeholder="Alle landen" />
-              </SelectTrigger>
+              <SelectTrigger className="h-12 border-border/60 text-base"><SelectValue placeholder="Alle landen" /></SelectTrigger>
               <SelectContent className="bg-card">
                 <SelectItem value="all">Alle landen</SelectItem>
                 {COUNTRY_OPTIONS.map((c) => (
@@ -577,41 +501,31 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
               </SelectContent>
             </Select>
           </div>
-
-          {/* City / Postal Code */}
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Stad of postcode</Label>
+            <Label className="text-sm font-medium text-foreground">Stad of postcode</Label>
             <Input
               placeholder="Bijv. Amsterdam, 1012"
               value={filters.postalCode || ''}
               onChange={(e) => updateFilter('postalCode', e.target.value || undefined)}
-              className="border-border/60"
+              className="h-12 border-border/60 text-base"
             />
           </div>
-
-          {/* Province */}
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Provincie</Label>
+            <Label className="text-sm font-medium text-foreground">Provincie</Label>
             <Select value={filters.province || ''} onValueChange={(v) => updateFilter('province', v === 'all' ? undefined : v)}>
-              <SelectTrigger className="border-border/60">
-                <SelectValue placeholder="Alle provincies" />
-              </SelectTrigger>
+              <SelectTrigger className="h-12 border-border/60 text-base"><SelectValue placeholder="Alle provincies" /></SelectTrigger>
               <SelectContent className="bg-card">
                 <SelectItem value="all">Alle provincies</SelectItem>
-                {PROVINCES.map((province) => (
-                  <SelectItem key={province} value={province}>{province}</SelectItem>
+                {PROVINCES.map((p) => (
+                  <SelectItem key={p} value={p}>{p}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-
-          {/* Radius */}
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Zoekstraal</Label>
+            <Label className="text-sm font-medium text-foreground">Zoekstraal</Label>
             <Select value={filters.radius?.toString() || ''} onValueChange={(v) => updateFilter('radius', v && v !== 'none' ? parseInt(v) : undefined)}>
-              <SelectTrigger className="border-border/60">
-                <SelectValue placeholder="Heel land" />
-              </SelectTrigger>
+              <SelectTrigger className="h-12 border-border/60 text-base"><SelectValue placeholder="Heel land" /></SelectTrigger>
               <SelectContent className="bg-card">
                 <SelectItem value="none">Heel land</SelectItem>
                 {RADIUS_OPTIONS.map((r) => (
@@ -620,41 +534,41 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
               </SelectContent>
             </Select>
           </div>
-
-          {/* Online Since */}
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Online sinds</Label>
-            <Select value={filters.onlineSince || ''} onValueChange={(v) => updateFilter('onlineSince', v === 'all' ? undefined : v as any)}>
-              <SelectTrigger className="border-border/60">
-                <SelectValue placeholder="Alle advertenties" />
-              </SelectTrigger>
-              <SelectContent className="bg-card">
-                <SelectItem value="all">Alle advertenties</SelectItem>
-                {ONLINE_SINCE_OPTIONS.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label className="text-sm font-medium text-foreground">Online sinds</Label>
+            <div role="radiogroup" aria-label="Online sinds" className="flex flex-wrap gap-2">
+              {ONLINE_SINCE_OPTIONS.map((opt) => {
+                const active = filters.onlineSince === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => updateFilter('onlineSince', active ? undefined : (opt.value as OnlineSince))}
+                    className={cn(
+                      'min-h-11 rounded-full border px-4 text-sm font-medium transition-all focus-ring',
+                      active
+                        ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                        : 'border-border/60 bg-background text-foreground/80 hover:border-primary/50 hover:text-foreground',
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </FilterSection>
 
       {/* 6. History & Trust */}
-      <FilterSection
-        title="Historiek & Zekerheid"
-        section="history"
-        count={sectionCounts.history}
-        isOpen={openSections.history}
-        onToggle={() => toggleSection('history')}
-      >
-        <div className="space-y-4">
-          {/* Seller Type */}
+      <FilterSection title="Historiek & Zekerheid" section="history" count={sectionCounts.history} isOpen={openSections.history} onToggle={() => toggleSection('history')}>
+        <div className="space-y-5">
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Verkoper</Label>
-            <Select value={filters.sellerType || ''} onValueChange={(v) => updateFilter('sellerType', v === 'all' ? undefined : v as any)}>
-              <SelectTrigger className="border-border/60">
-                <SelectValue placeholder="Iedereen" />
-              </SelectTrigger>
+            <Label className="text-sm font-medium text-foreground">Verkoper</Label>
+            <Select value={filters.sellerType || ''} onValueChange={(v) => updateFilter('sellerType', v === 'all' ? undefined : v as 'private' | 'dealer')}>
+              <SelectTrigger className="h-12 border-border/60 text-base"><SelectValue placeholder="Iedereen" /></SelectTrigger>
               <SelectContent className="bg-card">
                 <SelectItem value="all">Iedereen</SelectItem>
                 <SelectItem value="dealer">Alleen dealers</SelectItem>
@@ -663,90 +577,65 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
             </Select>
           </div>
 
-          {/* Previous Owners */}
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Max. vorige eigenaren</Label>
-            <Select value={filters.maxPreviousOwners?.toString() || ''} onValueChange={(v) => updateFilter('maxPreviousOwners', v && v !== 'none' ? parseInt(v) : undefined)}>
-              <SelectTrigger className="border-border/60">
-                <SelectValue placeholder="Alle" />
-              </SelectTrigger>
-              <SelectContent className="bg-card">
-                <SelectItem value="none">Alle</SelectItem>
-                <SelectItem value="1">1e eigenaar</SelectItem>
-                <SelectItem value="2">Max. 2 eigenaren</SelectItem>
-                <SelectItem value="3">Max. 3 eigenaren</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Warranty */}
-          <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Minimale garantie</Label>
-            <Select value={filters.minWarranty || ''} onValueChange={(v) => updateFilter('minWarranty', v === 'none' ? undefined : v as any)}>
-              <SelectTrigger className="border-border/60">
-                <SelectValue placeholder="Geen voorkeur" />
-              </SelectTrigger>
-              <SelectContent className="bg-card">
-                <SelectItem value="none">Geen voorkeur</SelectItem>
-                {WARRANTY_OPTIONS.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Toggle filters */}
-          <div className="space-y-3 pt-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="vat" className="text-sm font-normal cursor-pointer">
-                BTW aftrekbaar
-              </Label>
-              <Switch
-                id="vat"
-                checked={filters.vatDeductible || false}
-                onCheckedChange={(v) => updateFilter('vatDeductible', v || undefined)}
-              />
+            <Label className="text-sm font-medium text-foreground">Max. vorige eigenaren</Label>
+            <div role="radiogroup" aria-label="Max. vorige eigenaren" className="flex flex-wrap gap-2">
+              {OWNERS_OPTIONS.map((opt) => {
+                const active = filters.maxPreviousOwners === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => updateFilter('maxPreviousOwners', active ? undefined : opt.value)}
+                    className={cn(
+                      'min-h-11 min-w-12 rounded-full border px-4 text-sm font-semibold transition-all focus-ring',
+                      active
+                        ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                        : 'border-border/60 bg-background text-foreground/80 hover:border-primary/50 hover:text-foreground',
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
             </div>
+            <p className="text-xs text-muted-foreground">0 = jij wordt de eerste eigenaar na de fabrikant.</p>
+          </div>
+
+          <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-4 py-3">
+            <Label htmlFor="vat" className="text-sm font-medium cursor-pointer">BTW aftrekbaar</Label>
+            <Switch
+              id="vat"
+              checked={filters.vatDeductible || false}
+              onCheckedChange={(v) => updateFilter('vatDeductible', v || undefined)}
+            />
           </div>
         </div>
       </FilterSection>
 
       {/* 7. Options & Features */}
-      <FilterSection
-        title="Opties & Extra's"
-        section="options"
-        count={sectionCounts.options}
-        isOpen={openSections.options}
-        onToggle={() => toggleSection('options')}
-      >
+      <FilterSection title="Opties & Extra's" section="options" count={sectionCounts.options} isOpen={openSections.options} onToggle={() => toggleSection('options')}>
         <div className="space-y-4">
-          {/* Popular Features */}
           <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Populaire opties</Label>
-            <div className="grid grid-cols-1 gap-2">
+            <Label className="text-sm font-medium text-foreground">Populaire opties</Label>
+            <div className="grid grid-cols-1 gap-1">
               {popularFeatures.map((feature) => (
-                <div key={feature.value} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`feature-${feature.value}`}
-                    checked={filters.features?.includes(feature.value) || false}
-                    onCheckedChange={() => toggleArrayFilter('features', feature.value)}
-                    className="border-border"
-                  />
-                  <Label 
-                    htmlFor={`feature-${feature.value}`} 
-                    className="text-sm font-normal cursor-pointer"
-                  >
-                    {feature.label}
-                  </Label>
-                </div>
+                <CheckboxRow
+                  key={feature.value}
+                  id={`feature-${feature.value}`}
+                  label={feature.label}
+                  checked={filters.features?.includes(feature.value) || false}
+                  onChange={() => toggleArrayFilter('features', feature.value)}
+                />
               ))}
             </div>
           </div>
 
-          {/* Show More Features */}
           <Collapsible open={showMoreFeatures} onOpenChange={setShowMoreFeatures}>
             <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm" className="w-full justify-between h-8 px-2">
+              <Button variant="ghost" size="sm" className="w-full justify-between min-h-11 px-2">
                 <span className="text-sm">Meer opties tonen</span>
                 {showMoreFeatures ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </Button>
@@ -754,28 +643,21 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
             <CollapsibleContent className="pt-4 space-y-4">
               {Object.entries(groupedFeatures).map(([category, features]) => (
                 <div key={category} className="space-y-2">
-                  <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide capitalize">
-                    {category === 'comfort' ? 'Comfort' : 
-                     category === 'multimedia' ? 'Multimedia' : 
-                     category === 'safety' ? 'Veiligheid' : 
+                  <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    {category === 'comfort' ? 'Comfort' :
+                     category === 'multimedia' ? 'Multimedia' :
+                     category === 'safety' ? 'Veiligheid' :
                      category === 'exterior' ? 'Exterieur' : category}
                   </Label>
-                  <div className="grid grid-cols-1 gap-2">
+                  <div className="grid grid-cols-1 gap-1">
                     {features.filter(f => !popularFeatures.includes(f)).map((feature) => (
-                      <div key={feature.value} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`feature-${feature.value}`}
-                          checked={filters.features?.includes(feature.value) || false}
-                          onCheckedChange={() => toggleArrayFilter('features', feature.value)}
-                          className="border-border"
-                        />
-                        <Label 
-                          htmlFor={`feature-${feature.value}`} 
-                          className="text-sm font-normal cursor-pointer"
-                        >
-                          {feature.label}
-                        </Label>
-                      </div>
+                      <CheckboxRow
+                        key={feature.value}
+                        id={`feature-${feature.value}`}
+                        label={feature.label}
+                        checked={filters.features?.includes(feature.value) || false}
+                        onChange={() => toggleArrayFilter('features', feature.value)}
+                      />
                     ))}
                   </div>
                 </div>
@@ -784,6 +666,71 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
           </Collapsible>
         </div>
       </FilterSection>
+    </div>
+  );
+}
+
+interface CheckboxRowProps {
+  id: string;
+  label: string;
+  checked: boolean;
+  onChange: () => void;
+}
+
+function CheckboxRow({ id, label, checked, onChange }: CheckboxRowProps) {
+  return (
+    <label
+      htmlFor={id}
+      className={cn(
+        'flex items-center gap-3 rounded-md px-2 py-2 min-h-11 cursor-pointer transition-colors',
+        'hover:bg-muted/60',
+        checked && 'bg-primary/5',
+      )}
+    >
+      <Checkbox
+        id={id}
+        checked={checked}
+        onCheckedChange={onChange}
+        className="h-5 w-5 border-border"
+      />
+      <span className="text-sm text-foreground/90 select-none flex-1">{label}</span>
+    </label>
+  );
+}
+
+function ColorGrid({
+  options,
+  selected,
+  onToggle,
+}: {
+  options: ColorOption[];
+  selected: string[];
+  onToggle: (value: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+      {options.map((color) => {
+        const isSelected = selected.includes(color.value);
+        return (
+          <button
+            key={color.value}
+            type="button"
+            aria-pressed={isSelected}
+            onClick={() => onToggle(color.value)}
+            className={cn(
+              'group flex flex-col items-center gap-1.5 rounded-lg border px-2 py-3 min-h-[72px] transition-all focus-ring',
+              isSelected
+                ? 'border-primary bg-primary/5'
+                : 'border-border/60 bg-background hover:border-primary/40 hover:bg-muted/40',
+            )}
+          >
+            <ColorSwatch color={color} selected={isSelected} />
+            <span className={cn('text-xs leading-tight', isSelected ? 'font-semibold text-foreground' : 'text-foreground/80')}>
+              {color.label}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -800,9 +747,9 @@ interface FilterSectionProps {
 function FilterSection({ title, count, isOpen, onToggle, children }: FilterSectionProps) {
   return (
     <Collapsible open={isOpen} onOpenChange={onToggle} className="border-b border-border/40 py-3">
-      <CollapsibleTrigger className="flex w-full items-center justify-between py-1 group">
+      <CollapsibleTrigger className="flex w-full items-center justify-between py-2 group min-h-11">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+          <span className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">
             {title}
           </span>
           {count > 0 && (
@@ -811,15 +758,9 @@ function FilterSection({ title, count, isOpen, onToggle, children }: FilterSecti
             </Badge>
           )}
         </div>
-        {isOpen ? (
-          <ChevronUp className="h-4 w-4 text-muted-foreground" />
-        ) : (
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
-        )}
+        {isOpen ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
       </CollapsibleTrigger>
-      <CollapsibleContent className="pt-4">
-        {children}
-      </CollapsibleContent>
+      <CollapsibleContent className="pt-4">{children}</CollapsibleContent>
     </Collapsible>
   );
 }
