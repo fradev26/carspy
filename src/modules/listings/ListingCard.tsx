@@ -18,8 +18,6 @@ interface ListingCardProps {
 }
 
 export function ListingCard({ listing, variant = 'default' }: ListingCardProps) {
-  const [imageError, setImageError] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
   const [justLiked, setJustLiked] = useState(false);
   const navigate = useNavigate();
 
