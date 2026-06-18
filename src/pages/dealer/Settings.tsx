@@ -126,14 +126,6 @@ export default function DealerSettings() {
         </Button>
       </div>
 
-      {isDealer && (
-        <Section title="Dealerfuncties">
-          <SettingsRow icon={Briefcase} label="Zakelijk Dashboard" to="/zakelijk" />
-          <SettingsRow icon={BarChart3} label="Analytics" to="/zakelijk/analytics" />
-          <SettingsRow icon={Megaphone} label="Leads" to="/zakelijk/leads" />
-        </Section>
-      )}
-
       <Section title="Koppelingen">
         <SettingsRow icon={Link2} label="AutoScout24" onClick={() => setAutoScoutOpen(true)} />
         <SettingsRow icon={ShoppingBag} label="Marktplaats" disabled badge="Binnenkort" />
