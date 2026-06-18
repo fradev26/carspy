@@ -17,9 +17,6 @@ import {
   LifeBuoy,
   Mail,
   Info,
-  Megaphone,
-  Briefcase,
-  BarChart3,
   LucideIcon,
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
