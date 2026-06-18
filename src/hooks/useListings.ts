@@ -244,7 +244,7 @@ export function mapRow(row: ListingRow): Listing {
   };
 }
 
-async function fetchWithProfileFallback<T extends ListingRow>(rows: T[]): Promise<Listing[]> {
+export async function fetchWithProfileFallback<T extends ListingRow>(rows: T[]): Promise<Listing[]> {
   const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
   if (userIds.length === 0) return rows.map(mapRow);
   // Only public-safe columns — phone/email are PII and require the get_my_profile RPC
