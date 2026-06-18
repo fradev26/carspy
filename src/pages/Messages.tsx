@@ -415,11 +415,7 @@ export default function Messages() {
             </div>
 
             {/* Input */}
-            <div
-              className="shrink-0 border-t border-border/60 bg-background/95 backdrop-blur px-2 py-2"
-              style={{ paddingBottom: 'calc(4rem + max(0.5rem, env(safe-area-inset-bottom)))' }}
-            >
-              <style>{`@media (min-width: 1024px) { .msg-input-pad { padding-bottom: 0.5rem !important; } }`}</style>
+            <div className="shrink-0 border-t border-border/60 bg-background/95 backdrop-blur px-2 pt-2 pb-[calc(4rem+max(0.5rem,env(safe-area-inset-bottom)))] lg:pb-2">
               <form
                 onSubmit={(e) => { e.preventDefault(); sendMessage(); }}
                 className="relative flex items-end"
