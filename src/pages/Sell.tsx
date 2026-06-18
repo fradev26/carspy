@@ -1095,9 +1095,44 @@ export default function Sell() {
           )}
         </div>
       </div>
+
+      {/* AI overwrite confirmation */}
+      <AlertDialog open={pendingAiText !== null} onOpenChange={(o) => { if (!o) setPendingAiText(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Bestaande tekst vervangen?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Je hebt al een verkooptekst geschreven. Wat wil je doen met de AI-tekst?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col-reverse gap-2 sm:flex-row">
+            <AlertDialogCancel>Annuleren</AlertDialogCancel>
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (pendingAiText) update('description', `${formData.description.trim()}\n\n${pendingAiText}`);
+                setPendingAiText(null);
+                toast({ title: 'Tekst toegevoegd' });
+              }}
+            >
+              Toevoegen aan einde
+            </Button>
+            <AlertDialogAction
+              onClick={() => {
+                if (pendingAiText) update('description', pendingAiText);
+                setPendingAiText(null);
+                toast({ title: 'Beschrijving vervangen' });
+              }}
+            >
+              Vervangen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+
 
 // ────────────────────────────────────────────────────────────
 // Helpers
