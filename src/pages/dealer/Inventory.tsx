@@ -195,6 +195,15 @@ export default function Inventory() {
               selected={selectedIds.has(l.id)}
               onSelect={() => toggleSelect(l.id)}
               onBoost={() => setBoostDialog({ ids: [l.id], title: l.title })}
+              onRelist={async () => {
+                const { error } = await supabase
+                  .from('listings')
+                  .update({ status: 'active', sold_at: null })
+                  .eq('id', l.id);
+                if (error) return toast.error('Opnieuw plaatsen mislukt');
+                toast.success('Advertentie staat weer te koop');
+                refresh();
+              }}
             />
           ))}
         </div>
