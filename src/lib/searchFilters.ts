@@ -85,6 +85,8 @@ export function parseFiltersFromURL(searchParams: URLSearchParams): SearchFilter
   if (paintTypes) filters.paintTypes = paintTypes as PaintType[];
   const colors = arr('colors');
   if (colors) filters.colors = colors;
+  const interiorColors = arr('interiorColors');
+  if (interiorColors) filters.interiorColors = interiorColors;
   const interiorMaterials = arr('interiorMaterials');
   if (interiorMaterials) filters.interiorMaterials = interiorMaterials as InteriorMaterial[];
 
