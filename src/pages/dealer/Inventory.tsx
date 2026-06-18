@@ -310,19 +310,27 @@ function DealerCard({
 
         {/* Actions */}
         <div className="flex items-center gap-2 pt-1">
-          <Button asChild variant="outline" size="sm" className="flex-1 h-9 gap-1.5">
-            <Link to={`/zakelijk/voorraad/${l.id}`}>
-              {isDraft ? (
-                <><PlayCircle className="h-4 w-4" /> Verkoop starten</>
-              ) : (
-                <><Pencil className="h-4 w-4" /> Bewerken</>
-              )}
-            </Link>
-          </Button>
-          <Button size="sm" className="flex-1 h-9 gap-1.5" title="Boosten" onClick={onBoost}>
-            <Rocket className="h-4 w-4" />
-            Boosten
-          </Button>
+          {isSold ? (
+            <Button size="sm" className="flex-1 h-9 gap-1.5" onClick={onRelist}>
+              <RotateCcw className="h-4 w-4" /> Terug te koop
+            </Button>
+          ) : (
+            <>
+              <Button asChild variant="outline" size="sm" className="flex-1 h-9 gap-1.5">
+                <Link to={`/zakelijk/voorraad/${l.id}`}>
+                  {isDraft ? (
+                    <><PlayCircle className="h-4 w-4" /> Verkoop starten</>
+                  ) : (
+                    <><Pencil className="h-4 w-4" /> Bewerken</>
+                  )}
+                </Link>
+              </Button>
+              <Button size="sm" className="flex-1 h-9 gap-1.5" title="Boosten" onClick={onBoost}>
+                <Rocket className="h-4 w-4" />
+                Boosten
+              </Button>
+            </>
+          )}
           <Button asChild variant="ghost" size="icon" className="h-9 w-9 shrink-0 transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground" title="Vergelijk markt">
             <Link
               to={`/zoeken?brand=${encodeURIComponent(l.brand ?? '')}&model=${encodeURIComponent(l.model ?? '')}&yearMin=${(l.year ?? 0) - 1}&yearMax=${(l.year ?? 0) + 1}&compareWith=${l.id}`}
