@@ -86,11 +86,11 @@ const App = () => (
                 <Route path="/account/advertenties" element={<ProtectedRoute><MyListings /></ProtectedRoute>} />
                 <Route path="/account/zoekalerts" element={<Navigate to="/favorieten?tab=alerts" replace />} />
                 <Route path="/account/recent" element={<Navigate to="/favorieten?tab=recent" replace />} />
-                <Route path="/account/profiel" element={<ProtectedRoute><AccountSettings defaultTab="profiel" /></ProtectedRoute>} />
-                <Route path="/account/meldingen" element={<ProtectedRoute><AccountSettings defaultTab="meldingen" /></ProtectedRoute>} />
-                <Route path="/account/privacy" element={<ProtectedRoute><AccountSettings defaultTab="privacy" /></ProtectedRoute>} />
-                <Route path="/account/weergave" element={<ProtectedRoute><AccountSettings defaultTab="weergave" /></ProtectedRoute>} />
-                <Route path="/account/instellingen" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
+                <Route path="/account/profiel" element={<SettingsRouteGuard requires="private"><AccountSettings defaultTab="profiel" /></SettingsRouteGuard>} />
+                <Route path="/account/meldingen" element={<SettingsRouteGuard requires="private"><AccountSettings defaultTab="meldingen" /></SettingsRouteGuard>} />
+                <Route path="/account/privacy" element={<SettingsRouteGuard requires="private"><AccountSettings defaultTab="privacy" /></SettingsRouteGuard>} />
+                <Route path="/account/weergave" element={<SettingsRouteGuard requires="private"><AccountSettings defaultTab="weergave" /></SettingsRouteGuard>} />
+                <Route path="/account/instellingen" element={<SettingsRouteGuard requires="private"><AccountSettings /></SettingsRouteGuard>} />
                 <Route path="/help" element={<Help />} />
                 <Route path="/contact" element={<Contact />} />
               </Route>
