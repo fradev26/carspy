@@ -168,6 +168,24 @@ export default function AutoScoutPanel() {
     }
   };
 
+  const handleSavePublication = async () => {
+    if (!user) return;
+    setBusy('pub');
+    try {
+      const { error } = await supabase
+        .from('autoscout_credentials')
+        .update(pub as any)
+        .eq('user_id', user.id);
+      if (error) throw error;
+      toast.success('Publicatie-instellingen opgeslagen');
+    } catch (e: any) {
+      toast.error(`Opslaan mislukt: ${e.message}`);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+
   const statusBadge = (status: string | null) => {
     if (status === 'success') return <Badge className="bg-green-100 text-green-800">Succes</Badge>;
     if (status === 'error') return <Badge variant="destructive">Fout</Badge>;
