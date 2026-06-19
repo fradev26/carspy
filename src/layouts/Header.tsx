@@ -272,7 +272,7 @@ export function Header() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem asChild><Link to="/account/instellingen" className="cursor-pointer">Account</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={settingsRoute} className="cursor-pointer">Instellingen</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link to="/account/advertenties" className="cursor-pointer">Mijn advertenties</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link to="/favorieten" className="cursor-pointer">Mijn activiteiten</Link></DropdownMenuItem>
                   {isDealer && (
