@@ -79,6 +79,8 @@ export function Header() {
   const location = useLocation();
   const { user, signOut } = useAuth();
   const { isDealer, profile } = useProfile();
+  const accountType = getAccountType(user, profile);
+  const settingsRoute = getSettingsRoute(accountType);
   
   const { count: unreadCount } = useUnreadMessages();
 
