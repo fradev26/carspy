@@ -954,6 +954,24 @@ export default function Sell() {
                     onChange={(e) => update('availableFrom', e.target.value)}
                   />
                 </div>
+                <div className="sm:col-span-2">
+                  <div className="flex items-start justify-between gap-4 rounded-xl border border-border/60 bg-muted/30 p-4">
+                    <div className="space-y-1">
+                      <Label htmlFor="sell-vat" className="text-base">BTW aftrekbaar</Label>
+                      <p className="text-xs text-muted-foreground">
+                        {formData.vatDeductible
+                          ? 'Vraagprijs is inclusief 21% aftrekbare BTW (BTW-wagen).'
+                          : 'Margeregime — geen BTW aftrekbaar voor de koper.'}
+                      </p>
+                    </div>
+                    <Switch
+                      id="sell-vat"
+                      checked={formData.vatDeductible}
+                      onCheckedChange={(v) => update('vatDeductible', Boolean(v))}
+                      aria-label="BTW aftrekbaar"
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-3">
