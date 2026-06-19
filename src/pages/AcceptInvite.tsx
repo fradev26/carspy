@@ -55,7 +55,7 @@ export default function AcceptInvite() {
     };
     return (
       <div className="container max-w-md py-12">
-        <SEOHead title="Uitnodiging · VATUUR" />
+        <SEOHead title="Uitnodiging · VATUUR" description="Accepteer je uitnodiging om lid te worden van het dealeraccount." />
         <Card>
           <CardHeader><CardTitle className="flex items-center gap-2"><XCircle className="h-5 w-5 text-destructive" /> Niet geldig</CardTitle></CardHeader>
           <CardContent>
@@ -69,7 +69,7 @@ export default function AcceptInvite() {
 
   return (
     <div className="container max-w-md py-12">
-      <SEOHead title={`Uitnodiging · ${peek.company_name}`} />
+      <SEOHead title={`Uitnodiging · ${peek.company_name}`} description="Word lid van een dealeraccount op VATUUR." />
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><Mail className="h-5 w-5 text-primary" /> Je bent uitgenodigd</CardTitle>
