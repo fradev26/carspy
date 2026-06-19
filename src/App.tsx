@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { SettingsRouteGuard } from "@/components/SettingsRouteGuard";
 import { AppLayout } from "./layouts/AppLayout";
 import { CompareProvider } from "./hooks/useCompare";
 import { FavoritesProvider } from "./hooks/useFavorites";
