@@ -52,7 +52,7 @@ export default function AutoScoutPanel() {
     const [{ data: credRow }, { data: runRows }] = await Promise.all([
       supabase
         .from('autoscout_credentials')
-        .select('customer_id, username, last_sync_at, last_sync_status, last_sync_error, password_secret_id')
+        .select('customer_id, username, last_sync_at, last_sync_status, last_sync_error, password_secret_id, auto_publish, sync_direction, publish_new_vehicles, sync_price, sync_photos, sync_description, sync_specs, remove_on_sold, sync_stock, draft_mode, sync_schedule, sync_priority')
         .eq('user_id', user.id)
         .maybeSingle(),
       supabase
