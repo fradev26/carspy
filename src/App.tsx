@@ -26,6 +26,7 @@ const DealerSubscription = lazy(() => import("./pages/dealer/Subscription"));
 const DealerInventoryPreferences = lazy(() => import("./pages/dealer/InventoryPreferences"));
 const DealerUsers = lazy(() => import("./pages/dealer/Users"));
 const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const MyLeadsPanel = lazy(() => import("./components/MyLeadsPanel"));
 const Sell = lazy(() => import("./pages/Sell"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -102,6 +103,7 @@ const App = () => (
               </Route>
               <Route path="/auth" element={<Auth />} />
               <Route path="/wachtwoord-reset" element={<ResetPassword />} />
+              <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
