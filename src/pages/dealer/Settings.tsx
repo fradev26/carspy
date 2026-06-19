@@ -22,6 +22,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import AutoScoutPanel from '@/modules/dealer/AutoScoutPanel';
+import ComingSoonConnectionPanel from '@/components/dealer/ComingSoonConnectionPanel';
 import { cn } from '@/lib/utils';
 
 type RowProps = {
