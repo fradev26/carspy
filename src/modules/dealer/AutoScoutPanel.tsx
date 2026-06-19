@@ -43,7 +43,8 @@ export default function AutoScoutPanel() {
   const [customerId, setCustomerId] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [busy, setBusy] = useState<null | 'save' | 'test' | 'sync'>(null);
+  const [busy, setBusy] = useState<null | 'save' | 'test' | 'sync' | 'pub'>(null);
+  const [pub, setPub] = useState<PublicationSettings>(DEFAULT_PUBLICATION_SETTINGS);
 
   const load = async () => {
     if (!user) return;
