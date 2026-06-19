@@ -268,10 +268,9 @@ export function useListings() {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const joined = `${LISTING_COLUMNS}, profiles:profiles!listings_user_id_fkey (id, full_name, dealer_name, is_dealer, avatar_url, created_at)`;
       const { data, error } = await supabase
         .from('listings')
-        .select(joined)
+        .select(LISTING_COLUMNS)
         .eq('status', 'active')
         .order('created_at', { ascending: false })
         .limit(24);
@@ -279,24 +278,14 @@ export function useListings() {
       if (cancelled) return;
 
       if (error) {
-        const { data: d2, error: e2 } = await supabase
-          .from('listings')
-          .select(LISTING_COLUMNS)
-          .eq('status', 'active')
-          .order('created_at', { ascending: false })
-          .limit(24);
-        if (e2) {
-          setError(e2.message);
-          setLoading(false);
-          return;
-        }
-        const mapped = await fetchWithProfileFallback((d2 ?? []) as unknown as ListingRow[]);
-        setListings(mapped);
+        setError(error.message);
         setLoading(false);
         return;
       }
 
-      setListings(((data ?? []) as unknown as ListingRow[]).map(mapRow));
+      const mapped = await fetchWithProfileFallback((data ?? []) as unknown as ListingRow[]);
+      if (cancelled) return;
+      setListings(mapped);
       setLoading(false);
     })();
     return () => {
