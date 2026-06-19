@@ -283,7 +283,7 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
               {listing.location.city}
             </span>
             <Badge variant="secondary" className="text-xs font-medium">
-              {listing.seller.type === 'dealer' ? 'Dealer' : 'Particulier'}
+              {getSellerLabel(listing)}
             </Badge>
           </div>
 
