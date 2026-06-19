@@ -275,10 +275,10 @@ export function useSearchListings(params: UseSearchListingsParams): UseSearchLis
       let profilesById = new Map<string, ProfileRow>();
       if (userIds.length > 0) {
         const { data: profs } = await supabase
-          .from('profiles')
+          .from('public_profiles' as any)
           .select('id, full_name, dealer_name, is_dealer, avatar_url, created_at')
           .in('id', userIds);
-        profilesById = new Map(((profs ?? []) as ProfileRow[]).map((p) => [p.id, p]));
+        profilesById = new Map(((profs ?? []) as unknown as ProfileRow[]).map((p) => [p.id, p]));
       }
 
       if (cancelled) return;
