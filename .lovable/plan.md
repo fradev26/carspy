@@ -1,77 +1,104 @@
-# Fix: dealeradvertenties tonen als "Particulier" bij niet-eigenaars
+# Rolafhankelijke instellingennavigatie
 
-## Hoofdoorzaak
+## Probleem
 
-De RLS-policy op `public.profiles` staat alleen lezen van het **eigen** profiel toe (`auth.uid() = id`). Alle advertentie-fetches doen een join `profiles!listings_user_id_fkey` om `is_dealer`, `dealer_name`, `full_name`, `avatar_url` op te halen. Voor elke bezoeker die niet de eigenaar is — particulier, andere dealer, of niet-ingelogd — geeft die join `profiles = null` terug. De mappers (`src/hooks/useListings.ts` en `src/hooks/useSearchListings.ts`) vallen dan terug op `is_dealer = false` en zetten `seller.type = 'private'`, met "Verkoper" als naam. Hierdoor verschijnen dealeradvertenties als particulier voor iedereen behalve de eigenaar zelf. Logica baseren op `useProfile()` van de bezoeker is dus niet eens nodig — de mapping zelf is al stuk.
+`/account/instellingen` en `/zakelijk/instellingen` worden vandaag los van elkaar gerouteerd, maar de keuze tussen beide is verspreid over de codebase met ad-hoc `isDealer ? ... : ...` checks (Header mobiel) en hardcoded links (Header dropdown, BusinessDashboard, dealer Subscription, dealer ListingOperating). De Header dropdown linkt voor dealers nog steeds naar `/account/instellingen`, en geen enkele route blokkeert het tegenovergestelde accounttype — een particulier kan `/zakelijk/instellingen` openen en omgekeerd.
 
 ## Aanpak
 
-Twee delen: (1) backend levert publieke verkoperinfo onafhankelijk van wie ingelogd is, (2) frontend gebruikt overal één helper die de eigenaar als bron van waarheid neemt.
+### 1. Eén centrale helper
 
-### 1. Backend: publieke verkoperinfo
-
-Migratie (apart, vereist goedkeuring):
-- View `public.public_profiles` met enkel niet-PII velden: `id, full_name, dealer_name, is_dealer, avatar_url, created_at`. Gemaakt met `security_invoker = on` zodat de view zelf RLS van de eigenaar respecteert — en daarbovenop een nieuwe SELECT-policy op `profiles`: "Anyone can read public profile via view" voor `anon, authenticated` (omdat de view enkel veilige kolommen exporteert). Alternatief en veiliger: view als `SECURITY DEFINER` functie `get_public_profiles(user_ids uuid[])` die een tabel teruggeeft. Kies de view-variant met dedicated policy + expliciete column GRANT enkel op de zes safe kolommen — zo blijven PII-kolommen (phone, email) ontoegankelijk via REST.
-- GRANT SELECT op `public.public_profiles` aan `anon` en `authenticated`.
-- Foreign-key alias toevoegen zodat PostgREST embed `public_profiles!listings_user_id_fkey` werkt, of de join op clientzijde doen via een tweede query op `public_profiles`.
-
-### 2. Frontend: centrale helper
-
-Nieuwe file `src/lib/sellerType.ts`:
+Nieuwe file `src/lib/settingsRoute.ts`:
 ```ts
-export type SellerType = 'dealer' | 'private';
-export function getListingSellerType(listing: { seller?: { type?: SellerType } }): SellerType {
-  return listing.seller?.type === 'dealer' ? 'dealer' : 'private';
+export type AccountType = 'guest' | 'private' | 'dealer';
+
+export function getAccountType(profile, user): AccountType {
+  if (!user) return 'guest';
+  return profile?.is_dealer ? 'dealer' : 'private';
 }
-export function getSellerLabel(listing): string {
-  return getListingSellerType(listing) === 'dealer' ? 'Dealer' : 'Particulier';
+
+export const SETTINGS_ROUTE = {
+  private: '/account/instellingen',
+  dealer:  '/zakelijk/instellingen',
+} as const;
+
+export function getSettingsRoute(accountType: AccountType): string {
+  return accountType === 'dealer' ? SETTINGS_ROUTE.dealer : SETTINGS_ROUTE.private;
+}
+
+export function isSettingsPathAllowed(path: string, accountType: AccountType): boolean {
+  if (accountType === 'dealer') return !path.startsWith('/account/'); // alle /account/* settings verboden voor dealer
+  return !path.startsWith('/zakelijk');                                // /zakelijk verboden voor particulier
 }
 ```
 
-Refactor alle plekken die `listing.seller.type === 'dealer'` of `isDealer` (van `useProfile`) gebruiken om de advertentie te beschrijven:
-- `src/modules/listings/ListingCard.tsx` (2x label)
-- `src/pages/ListingDetail.tsx` (8 plekken: JSON-LD, badges, contactgegevens, dealer-link, verificatie)
-- `src/lib/dealers.ts`
+Bron van waarheid is `useProfile()` (al gekoppeld aan `auth.user` + `profiles.is_dealer`), nooit `location.pathname`.
 
-Alle plekken die `useProfile().isDealer` van de **bezoeker** gebruiken voor advertentieweergave krijgen review; momenteel zijn dat enkel layout/nav beslissingen (`Header`, `BottomNav`, `DesktopNav`, `Dashboard`-banner, `Sell` redirect) — die mogen blijven want ze gaan over de bezoeker, niet over advertenties. Bevestigen dat geen advertentie-component `useProfile` injecteert.
+### 2. Route-guards
 
-### 3. Mapping aanpassen
+Nieuwe component `src/components/SettingsRouteGuard.tsx`:
+- Wacht tot `useAuth` + `useProfile` klaar zijn (toon skeleton tijdens load — geen lege pagina).
+- Niet-ingelogd → redirect naar `/auth?redirect=<huidig pad>`.
+- Bezoekt een dealer `/account/instellingen` (of subroute `/account/profiel|meldingen|privacy|weergave`) → `<Navigate to="/zakelijk/instellingen" replace />`.
+- Bezoekt een particulier `/zakelijk/instellingen` → `<Navigate to="/account/instellingen" replace />`.
+- Anders: render `children`.
 
-`useListings.ts` en `useSearchListings.ts`:
-- Vervang de join `profiles:profiles!...` door `public_profiles:public_profiles!listings_user_id_fkey (...)` (of fallback-query op `public_profiles` met `.in('id', userIds)`).
-- `fetchWithProfileFallback` gebruikt nu `public_profiles` i.p.v. `profiles`.
-- `mapRow` blijft hetzelfde — krijgt nu wel voor élke bezoeker correcte data.
-- Behoud `get_my_profile` RPC voor het eigen profiel (PII).
+Update `src/App.tsx`:
+- Wikkel alle `/account/{instellingen,profiel,meldingen,privacy,weergave}` routes in `<SettingsRouteGuard requires="private">`.
+- Wikkel de `/zakelijk` nested `instellingen` route in `<SettingsRouteGuard requires="dealer">`.
 
-`src/lib/dealers.ts` `resolveDealerProfile`: switch naar `public_profiles`.
+Dit beschermt deeplinks, refreshes en directe URL-toegang.
 
-`src/pages/Messages.tsx` profielfetch: switch naar `public_profiles` (anders zien gebruikers "Verkoper" in plaats van dealer/particulier naam in conversaties).
+### 3. Hardcoded links vervangen
 
-### 4. Regressietests
+Vervang **elke** verwijzing naar `/account/instellingen` of `/zakelijk/instellingen` door `getSettingsRoute(accountType)`:
 
-`src/lib/sellerType.test.ts`: unit-tests op de helper.
+- `src/layouts/Header.tsx` line 158 "Account" mobile link (was: altijd `/account/instellingen`)
+- `src/layouts/Header.tsx` line 160 "Instellingen" mobile link (was: inline ternary)
+- `src/layouts/Header.tsx` line 272 dropdown "Account" item (was: altijd `/account/instellingen`)
+- `src/pages/BusinessDashboard.tsx` line 14 (dealer-only, blijft `/zakelijk/instellingen` via helper)
+- `src/pages/dealer/Subscription.tsx` line 193 (idem)
+- `src/pages/dealer/ListingOperating.tsx` line 740 (idem)
 
-`src/hooks/useSearchListings.sellerType.test.ts`: mock supabase client, test mapping voor:
-- Particulier bezoekt dealeradvertentie → `seller.type === 'dealer'`, label "Dealer"
-- Dealer bezoekt dealeradvertentie → idem
-- Particulier bezoekt particuliere → `'private'`, label "Particulier"
-- Dealer bezoekt particuliere → idem
-- Niet-ingelogd bezoekt beide → idem als hierboven
+Daarnaast: verberg in de Header dropdown ook de losse "Account"-link voor dealers — die wijst naar consumer-instellingen. Dropdown krijgt één "Instellingen"-item dat `getSettingsRoute(accountType)` gebruikt. "Mijn advertenties" en "Favorieten" blijven voor beide rollen ongewijzigd (buiten scope).
 
-Tests rendert mockdata door `mapRow` met de eigenaar-`public_profiles`-row en bevestigt dat de output identiek is ongeacht een gesimuleerde `useProfile`-context.
+Mobile sheet: de "Account" rij wordt samengevoegd met "Instellingen" — één item dat altijd naar de juiste settings-route gaat. Voorkomt dat een particulier een "zakelijk" item ziet of vice versa.
 
-`src/modules/listings/ListingCard.test.tsx`: render dealer-listing in een wrapper die `useProfile` mockt als particulier én als dealer; in beide gevallen moet "Dealer" badge zichtbaar zijn.
+### 4. DealerLayout sidebar / BottomNav
+
+Sidebar in `src/layouts/DealerLayout.tsx` (instellingen-link) en `src/components/BottomNav.tsx` / `DesktopNav.tsx` (selectie tussen `consumerNavItems` / `dealerNavItems`) draaien al volledig op `useProfile().isDealer` — geen instellingen-leak. Bevestigen tijdens implementatie en eventueel de sidebar-link via helper laten lopen voor consistentie.
+
+### 5. Regressietests
+
+`src/lib/settingsRoute.test.ts`:
+- `getAccountType` returns `guest` / `private` / `dealer` voor de drie scenario's.
+- `getSettingsRoute` mapt correct.
+- `isSettingsPathAllowed` weigert kruislings.
+
+`src/components/SettingsRouteGuard.test.tsx` met `MemoryRouter`:
+- Gast op `/account/instellingen` → redirect naar `/auth`.
+- Particulier op `/account/instellingen` → render content.
+- Particulier op `/zakelijk/instellingen` → redirect naar `/account/instellingen`.
+- Dealer op `/zakelijk/instellingen` → render content.
+- Dealer op `/account/instellingen` → redirect naar `/zakelijk/instellingen`.
+- Wisselen van rol (mock `useProfile`) → guard re-evalueert en navigeert opnieuw.
+- Loading state → toont skeleton, niet redirect (anders flikkering).
+
+`src/layouts/Header.settings.test.tsx`:
+- Render Header met dealer-profile → dropdown "Instellingen" link href = `/zakelijk/instellingen`, géén losse consumer "Account"-link met `/account/instellingen`.
+- Render Header met particulier-profile → link href = `/account/instellingen`, geen `/zakelijk/...` link zichtbaar.
+- Mobile sheet idem.
+
+Mock-strategie: `vi.mock('@/hooks/useProfile')` per test om accounttypes te simuleren zonder Supabase.
 
 ## Out of scope
 
-- Geen wijzigingen aan permissies voor `phone`/`email` — die blijven via `get_my_profile`.
-- Geen redesign van de detailpagina of cards.
-- Geen wijziging aan bezoeker-rol-gebaseerde nav/layout (correct gedrag).
+- Andere `/account/*` en `/zakelijk/*` pagina's (advertenties, dashboard, voorraad) — alleen settings-routing wordt rolgescheiden.
+- DB-RLS — al correct.
+- Nieuwe instellingenfuncties; enkel routing/zichtbaarheid.
 
-## Volgorde van uitvoering
+## Bestanden
 
-1. Migratie `public_profiles` view + grants + FK alias → wacht op goedkeuring.
-2. Helper `sellerType.ts` + refactor componenten.
-3. Mappers en `dealers.ts` overzetten naar `public_profiles`.
-4. Tests toevoegen, vitest runnen.
-5. Handmatig verifiëren in preview met een particulier account dat een dealeradvertentie bekijkt.
+Nieuw: `src/lib/settingsRoute.ts`, `src/lib/settingsRoute.test.ts`, `src/components/SettingsRouteGuard.tsx`, `src/components/SettingsRouteGuard.test.tsx`, `src/layouts/Header.settings.test.tsx`.
+
+Gewijzigd: `src/App.tsx`, `src/layouts/Header.tsx`, `src/pages/BusinessDashboard.tsx`, `src/pages/dealer/Subscription.tsx`, `src/pages/dealer/ListingOperating.tsx`, eventueel `src/layouts/DealerLayout.tsx`.

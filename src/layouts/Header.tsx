@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { getAccountType, getSettingsRoute } from '@/lib/settingsRoute';
 
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { cn } from '@/lib/utils';
@@ -78,6 +79,8 @@ export function Header() {
   const location = useLocation();
   const { user, signOut } = useAuth();
   const { isDealer, profile } = useProfile();
+  const accountType = getAccountType(user, profile);
+  const settingsRoute = getSettingsRoute(accountType);
   
   const { count: unreadCount } = useUnreadMessages();
 
@@ -155,12 +158,12 @@ export function Header() {
               {user ? (
                 <>
                   <SectionHeader>Mijn account</SectionHeader>
-                  <SheetLink onClick={() => handleMobileNav('/account/instellingen')} icon={User} label="Account" />
                   <SheetLink
-                    onClick={() => handleMobileNav(isDealer ? '/zakelijk/instellingen' : '/account/instellingen')}
+                    onClick={() => handleMobileNav(settingsRoute)}
                     icon={Settings}
                     label="Instellingen"
                   />
+
 
                   <SectionHeader>Juridisch</SectionHeader>
                   <SheetLink onClick={() => handleMobileNav('/privacy')} icon={Shield} label="Privacybeleid" muted />
@@ -269,7 +272,7 @@ export function Header() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem asChild><Link to="/account/instellingen" className="cursor-pointer">Account</Link></DropdownMenuItem>
+                  <DropdownMenuItem asChild><Link to={settingsRoute} className="cursor-pointer">Instellingen</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link to="/account/advertenties" className="cursor-pointer">Mijn advertenties</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link to="/favorieten" className="cursor-pointer">Mijn activiteiten</Link></DropdownMenuItem>
                   {isDealer && (
