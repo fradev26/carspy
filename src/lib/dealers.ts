@@ -64,7 +64,7 @@ export async function findDealerBySlugAsync(slug: string): Promise<DealerSummary
   if (mock) return mock;
 
   const { data } = await supabase
-    .from('profiles')
+    .from('public_profiles' as any)
     .select('id, dealer_name, full_name, avatar_url, created_at, is_dealer')
     .eq('is_dealer', true);
 
