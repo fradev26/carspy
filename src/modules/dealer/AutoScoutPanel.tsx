@@ -275,6 +275,16 @@ export default function AutoScoutPanel() {
         </CardContent>
       </Card>
 
+      <ConnectionPublicationCard
+        value={pub}
+        onChange={setPub}
+        onSave={handleSavePublication}
+        saving={busy === 'pub'}
+        disabled={!cred?.has_password}
+        disabledMessage={!cred?.has_password ? 'Sla eerst je AutoScout24-credentials op om publicatie-instellingen te activeren.' : undefined}
+      />
+
+
       <Card className="border-border/60">
         <CardHeader>
           <CardTitle className="text-base">Recente sync-runs</CardTitle>
