@@ -1292,6 +1292,7 @@ function SummaryReview({
       <Section title="Verkoopinformatie" step={4}>
         {row('Vraagprijs', data.price ? `€ ${parseInt(data.price).toLocaleString('nl-BE')}` : null)}
         {row('Onderhandelbaar', data.priceNegotiable === 'yes' ? 'Ja' : data.priceNegotiable === 'no' ? 'Nee' : null)}
+        {row('BTW aftrekbaar', data.vatDeductible ? 'Ja' : 'Nee')}
         {row('Beschikbaar vanaf', data.availableFrom)}
       </Section>
 
