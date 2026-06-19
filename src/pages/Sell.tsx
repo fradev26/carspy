@@ -451,6 +451,7 @@ export default function Sell() {
       price: formData.price ? parseInt(formData.price) : 0,
       price_public: formData.price ? parseInt(formData.price) : null,
       price_negotiable: formData.priceNegotiable === 'yes' ? true : formData.priceNegotiable === 'no' ? false : null,
+      vat_deductible: formData.vatDeductible,
       fuel_type: formData.fuelType,
       transmission: formData.transmission,
       body_type: formData.bodyType,
