@@ -72,7 +72,7 @@ const App = () => (
                   <Route path="import" element={<DealerImport />} />
                   <Route path="leads" element={<div className="container py-6"><MyLeadsPanel /></div>} />
                   <Route path="analytics" element={<DealerAnalytics />} />
-                  <Route path="instellingen" element={<DealerSettings />} />
+                  <Route path="instellingen" element={<SettingsRouteGuard requires="dealer"><DealerSettings /></SettingsRouteGuard>} />
                   <Route path="abonnement" element={<DealerSubscription />} />
                 </Route>
                 <Route path="/favorieten" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
