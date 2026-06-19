@@ -368,8 +368,17 @@ export default function DealerUsers() {
                       </div>
                       {perms.canManageUsers && (
                         <div className="flex gap-1">
-                          <Button variant="outline" size="sm" onClick={() => callRpc('resend_invitation', { _invitation_id: inv.id }, 'Opnieuw verstuurd')}>
-                            <Send className="h-3.5 w-3.5 mr-1" /> Opnieuw versturen
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={resendingId === inv.id || inv.send_count >= 5}
+                            title={`${inv.send_count}/5 verstuurd · laatst ${formatDistanceToNow(new Date(inv.last_sent_at), { locale: nl, addSuffix: true })}`}
+                            onClick={() => resendInvite(inv)}
+                          >
+                            {resendingId === inv.id
+                              ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                              : <Send className="h-3.5 w-3.5 mr-1" />}
+                            Opnieuw versturen
                           </Button>
                           <Button variant="ghost" size="icon" onClick={() => setConfirm({ kind: 'revoke', targetId: inv.id, label: inv.email })}>
                             <Trash2 className="h-4 w-4" />
