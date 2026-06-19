@@ -80,7 +80,7 @@ const App = () => (
                   <Route path="abonnement" element={<DealerSubscription />} />
                   <Route path="gebruikers" element={<SettingsRouteGuard requires="dealer"><DealerUsers /></SettingsRouteGuard>} />
                 </Route>
-                <Route path="/uitnodiging" element={<AcceptInvite />
+                <Route path="/uitnodiging" element={<AcceptInvite />} />
                 <Route path="/favorieten" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
                 <Route path="/vergelijken" element={<Compare />} />
                 <Route path="/privacy" element={<Privacy />} />
