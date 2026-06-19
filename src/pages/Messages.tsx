@@ -127,7 +127,7 @@ export default function Messages() {
 
         const [listingsRes, profilesRes, msgsRes] = await Promise.all([
           supabase.from('listings').select('id, title').in('id', listingIds),
-          supabase.from('profiles').select('id, full_name, dealer_name').in('id', otherIds),
+          supabase.from('public_profiles' as any).select('id, full_name, dealer_name').in('id', otherIds),
           supabase
             .from('messages')
             .select('conversation_id, sender_id, content, read_at, created_at')

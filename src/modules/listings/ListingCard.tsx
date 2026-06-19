@@ -8,6 +8,7 @@ import { Listing } from '@/types/listing';
 import { cn } from '@/lib/utils';
 import { useCompare } from '@/hooks/useCompare';
 import { useFavorites } from '@/hooks/useFavorites';
+import { getSellerLabel } from '@/lib/sellerType';
 import { StatusBadge } from './StatusBadge';
 import { ListingImageCarousel } from './ListingImageCarousel';
 
@@ -155,7 +156,7 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
                   {listing.location.city}
                 </span>
                 <Badge variant="secondary" className="font-medium">
-                  {listing.seller.type === 'dealer' ? 'Dealer' : 'Particulier'}
+                  {getSellerLabel(listing)}
                 </Badge>
               </div>
             </CardContent>
@@ -282,7 +283,7 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
               {listing.location.city}
             </span>
             <Badge variant="secondary" className="text-xs font-medium">
-              {listing.seller.type === 'dealer' ? 'Dealer' : 'Particulier'}
+              {getSellerLabel(listing)}
             </Badge>
           </div>
 
