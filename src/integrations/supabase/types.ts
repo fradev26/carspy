@@ -44,6 +44,62 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_logs: {
+        Row: {
+          action: string
+          category: string
+          company_id: string | null
+          created_at: string
+          id: string
+          ip: string | null
+          metadata: Json
+          role_at_time: Database["public"]["Enums"]["company_role"] | null
+          target_id: string | null
+          target_label: string | null
+          target_table: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          category?: string
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          ip?: string | null
+          metadata?: Json
+          role_at_time?: Database["public"]["Enums"]["company_role"] | null
+          target_id?: string | null
+          target_label?: string | null
+          target_table?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          category?: string
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          ip?: string | null
+          metadata?: Json
+          role_at_time?: Database["public"]["Enums"]["company_role"] | null
+          target_id?: string | null
+          target_label?: string | null
+          target_table?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       autoscout_credentials: {
         Row: {
           auto_publish: boolean
@@ -368,6 +424,121 @@ export type Database = {
           website?: string | null
         }
         Relationships: []
+      }
+      company_invitations: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          company_id: string
+          created_at: string
+          email: string
+          expires_at: string
+          full_name: string | null
+          id: string
+          invited_by: string | null
+          last_sent_at: string
+          revoked_at: string | null
+          role: Database["public"]["Enums"]["company_role"]
+          send_count: number
+          token_hash: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          company_id: string
+          created_at?: string
+          email: string
+          expires_at?: string
+          full_name?: string | null
+          id?: string
+          invited_by?: string | null
+          last_sent_at?: string
+          revoked_at?: string | null
+          role?: Database["public"]["Enums"]["company_role"]
+          send_count?: number
+          token_hash: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          company_id?: string
+          created_at?: string
+          email?: string
+          expires_at?: string
+          full_name?: string | null
+          id?: string
+          invited_by?: string | null
+          last_sent_at?: string
+          revoked_at?: string | null
+          role?: Database["public"]["Enums"]["company_role"]
+          send_count?: number
+          token_hash?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_invitations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_members: {
+        Row: {
+          company_id: string
+          created_at: string
+          deactivated_at: string | null
+          id: string
+          invited_at: string | null
+          invited_by: string | null
+          joined_at: string
+          last_active_at: string | null
+          role: Database["public"]["Enums"]["company_role"]
+          status: Database["public"]["Enums"]["member_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          deactivated_at?: string | null
+          id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          joined_at?: string
+          last_active_at?: string | null
+          role?: Database["public"]["Enums"]["company_role"]
+          status?: Database["public"]["Enums"]["member_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          deactivated_at?: string | null
+          id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          joined_at?: string
+          last_active_at?: string | null
+          role?: Database["public"]["Enums"]["company_role"]
+          status?: Database["public"]["Enums"]["member_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_members_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       conversations: {
         Row: {
@@ -1464,6 +1635,7 @@ export type Database = {
       }
     }
     Functions: {
+      accept_invitation: { Args: { _token: string }; Returns: Json }
       activate_boost: {
         Args: { _listing_id: string; _package_code: string }
         Returns: Json
@@ -1473,7 +1645,24 @@ export type Database = {
         Args: { _password: string; _user_id: string }
         Returns: string
       }
+      can_boost: { Args: { _user_id: string }; Returns: boolean }
+      can_delete_listings: { Args: { _user_id: string }; Returns: boolean }
+      can_edit_company: { Args: { _user_id: string }; Returns: boolean }
+      can_edit_listings: { Args: { _user_id: string }; Returns: boolean }
+      can_manage_billing: { Args: { _user_id: string }; Returns: boolean }
+      can_manage_users: { Args: { _user_id: string }; Returns: boolean }
+      can_view_leads: { Args: { _user_id: string }; Returns: boolean }
+      change_member_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["company_role"]
+          _user_id: string
+        }
+        Returns: undefined
+      }
       cleanup_rate_limits: { Args: never; Returns: undefined }
+      current_company_id: { Args: never; Returns: string }
+      deactivate_member: { Args: { _user_id: string }; Returns: undefined }
+      ensure_company_membership: { Args: never; Returns: string }
       get_current_billing: { Args: { _user_id: string }; Returns: Json }
       get_my_profile: {
         Args: never
@@ -1531,6 +1720,13 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      has_company_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["company_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1538,12 +1734,62 @@ export type Database = {
         }
         Returns: boolean
       }
+      invite_member: {
+        Args: {
+          _email: string
+          _full_name?: string
+          _role: Database["public"]["Enums"]["company_role"]
+        }
+        Returns: Json
+      }
+      is_company_owner: { Args: { _user_id: string }; Returns: boolean }
       is_listing_owner: { Args: { listing_id: string }; Returns: boolean }
+      list_company_members: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          email: string
+          full_name: string
+          invited_at: string
+          joined_at: string
+          last_active_at: string
+          role: Database["public"]["Enums"]["company_role"]
+          status: Database["public"]["Enums"]["member_status"]
+          user_id: string
+        }[]
+      }
+      log_audit_event: {
+        Args: {
+          _action: string
+          _category?: string
+          _ip?: string
+          _metadata?: Json
+          _target_id?: string
+          _target_label?: string
+          _target_table?: string
+          _user_agent?: string
+        }
+        Returns: string
+      }
       mark_dealer_eligible_leads: { Args: never; Returns: number }
+      member_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["company_role"]
+      }
+      peek_invitation: { Args: { _token: string }; Returns: Json }
+      reactivate_member: { Args: { _user_id: string }; Returns: undefined }
       refresh_boosted_status: { Args: never; Returns: number }
+      remove_member: { Args: { _user_id: string }; Returns: undefined }
+      resend_invitation: { Args: { _invitation_id: string }; Returns: Json }
+      revoke_invitation: {
+        Args: { _invitation_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "stock_manager"
+      company_role: "owner" | "manager" | "seller" | "marketing"
+      member_status: "active" | "invited" | "blocked"
       vehicle_lead_status:
         | "analyzed"
         | "account_created"
@@ -1678,6 +1924,8 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "stock_manager"],
+      company_role: ["owner", "manager", "seller", "marketing"],
+      member_status: ["active", "invited", "blocked"],
       vehicle_lead_status: [
         "analyzed",
         "account_created",
