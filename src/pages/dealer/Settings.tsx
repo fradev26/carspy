@@ -92,6 +92,13 @@ export default function DealerSettings() {
   const { profile } = useProfile();
   const { toast } = useToast();
   const [autoScoutOpen, setAutoScoutOpen] = useState(false);
+  const [stubOpen, setStubOpen] = useState<null | 'marktplaats' | 'mobile' | 'facebook'>(null);
+
+  const STUBS = {
+    marktplaats: { name: 'Marktplaats', description: 'Synchroniseer je voorraad met Marktplaats.nl.' },
+    mobile: { name: 'Mobile.de', description: 'Synchroniseer je voorraad met Mobile.de.' },
+    facebook: { name: 'Facebook Marketplace', description: 'Publiceer je voorraad op Facebook Marketplace.' },
+  } as const;
 
   const soon = () =>
     toast({ title: 'Binnenkort beschikbaar', description: 'Deze functie is in ontwikkeling.' });
