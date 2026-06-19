@@ -134,7 +134,7 @@ const EMPTY_FORM: FormState = {
   features: EMPTY_FEATURES,
   conditionOverall: '', damagePresent: '', damageDescription: '',
   technicalPresent: '', technicalDescription: '',
-  price: '', priceNegotiable: '', availableFrom: '', description: '',
+  price: '', priceNegotiable: '', vatDeductible: false, availableFrom: '', description: '',
   name: '', email: '', phone: '', postalCode: '', city: '',
   confirmCorrect: false, acceptPrivacy: false,
 };
