@@ -8,6 +8,10 @@ import { toast } from 'sonner';
 import { Loader2, RefreshCw, Link2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import ConnectionPublicationCard, {
+  DEFAULT_PUBLICATION_SETTINGS,
+  type PublicationSettings,
+} from '@/components/dealer/ConnectionPublicationCard';
 
 interface Credential {
   customer_id: string;
