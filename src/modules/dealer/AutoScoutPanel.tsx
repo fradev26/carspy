@@ -73,8 +73,24 @@ export default function AutoScoutPanel() {
       });
       setCustomerId((credRow as any).customer_id ?? '');
       setUsername((credRow as any).username ?? '');
+      const r = credRow as any;
+      setPub({
+        auto_publish: r.auto_publish ?? false,
+        sync_direction: r.sync_direction ?? 'import_only',
+        publish_new_vehicles: r.publish_new_vehicles ?? false,
+        sync_price: r.sync_price ?? true,
+        sync_photos: r.sync_photos ?? true,
+        sync_description: r.sync_description ?? true,
+        sync_specs: r.sync_specs ?? true,
+        remove_on_sold: r.remove_on_sold ?? true,
+        sync_stock: r.sync_stock ?? true,
+        draft_mode: r.draft_mode ?? false,
+        sync_schedule: r.sync_schedule ?? 'manual',
+        sync_priority: r.sync_priority ?? 'normal',
+      });
     } else {
       setCred(null);
+      setPub(DEFAULT_PUBLICATION_SETTINGS);
     }
     setRuns((runRows ?? []) as any);
     setLoading(false);
