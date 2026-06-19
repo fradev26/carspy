@@ -24,6 +24,8 @@ const DealerAnalytics = lazy(() => import("./pages/dealer/Analytics"));
 const DealerSettings = lazy(() => import("./pages/dealer/Settings"));
 const DealerSubscription = lazy(() => import("./pages/dealer/Subscription"));
 const DealerInventoryPreferences = lazy(() => import("./pages/dealer/InventoryPreferences"));
+const DealerUsers = lazy(() => import("./pages/dealer/Users"));
+const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
 const MyLeadsPanel = lazy(() => import("./components/MyLeadsPanel"));
 const Sell = lazy(() => import("./pages/Sell"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -76,7 +78,9 @@ const App = () => (
                   <Route path="analytics" element={<DealerAnalytics />} />
                   <Route path="instellingen" element={<SettingsRouteGuard requires="dealer"><DealerSettings /></SettingsRouteGuard>} />
                   <Route path="abonnement" element={<DealerSubscription />} />
+                  <Route path="gebruikers" element={<SettingsRouteGuard requires="dealer"><DealerUsers /></SettingsRouteGuard>} />
                 </Route>
+                <Route path="/uitnodiging" element={<AcceptInvite />
                 <Route path="/favorieten" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
                 <Route path="/vergelijken" element={<Compare />} />
                 <Route path="/privacy" element={<Privacy />} />
