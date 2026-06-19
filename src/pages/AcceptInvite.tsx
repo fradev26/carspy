@@ -55,11 +55,11 @@ export default function AcceptInvite() {
     };
     return (
       <div className="container max-w-md py-12">
-        <Helmet><title>Uitnodiging \u2014 VATUUR</title></Helmet>
+        <SEOHead title="Uitnodiging · VATUUR" />
         <Card>
           <CardHeader><CardTitle className="flex items-center gap-2"><XCircle className="h-5 w-5 text-destructive" /> Niet geldig</CardTitle></CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">{reasons[peek.reason]}</p>
+            <p className="text-sm text-muted-foreground">{reasons[(peek as { reason: string }).reason]}</p>
             <Button asChild className="mt-4 w-full"><Link to="/">Naar startpagina</Link></Button>
           </CardContent>
         </Card>
@@ -69,7 +69,7 @@ export default function AcceptInvite() {
 
   return (
     <div className="container max-w-md py-12">
-      <Helmet><title>Uitnodiging \u2014 {peek.company_name}</title></Helmet>
+      <SEOHead title={`Uitnodiging · ${peek.company_name}`} />
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><Mail className="h-5 w-5 text-primary" /> Je bent uitgenodigd</CardTitle>
