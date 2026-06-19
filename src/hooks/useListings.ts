@@ -311,36 +311,25 @@ export function useListing(id: string | undefined) {
     (async () => {
       setLoading(true);
       setError(null);
-      const joined = `${LISTING_COLUMNS}, profiles:profiles!listings_user_id_fkey (id, full_name, dealer_name, is_dealer, avatar_url, created_at)`;
       const { data, error } = await supabase
         .from('listings')
-        .select(joined)
+        .select(LISTING_COLUMNS)
         .eq('id', id)
         .eq('status', 'active')
         .maybeSingle();
 
       if (cancelled) return;
 
-      if (error) {
-        const { data: d2, error: e2 } = await supabase
-          .from('listings')
-          .select(LISTING_COLUMNS)
-          .eq('id', id)
-          .eq('status', 'active')
-          .maybeSingle();
-        if (e2 || !d2) {
-          setError(e2?.message ?? null);
-          setListing(null);
-          setLoading(false);
-          return;
-        }
-        const mapped = await fetchWithProfileFallback([d2 as unknown as ListingRow]);
-        setListing(mapped[0] ?? null);
+      if (error || !data) {
+        setError(error?.message ?? null);
+        setListing(null);
         setLoading(false);
         return;
       }
 
-      setListing(data ? mapRow(data as unknown as ListingRow) : null);
+      const mapped = await fetchWithProfileFallback([data as unknown as ListingRow]);
+      if (cancelled) return;
+      setListing(mapped[0] ?? null);
       setLoading(false);
     })();
     return () => {
