@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   Eye, Heart, MessageCircle, Car, Crown, Rocket, Pencil, CheckCircle2,
   Search as SearchIcon, ExternalLink, Trash2, Plus, BarChart3,
-  Clock, PlayCircle, RotateCcw,
+  Clock, PlayCircle, RotateCcw, Settings as SettingsIcon,
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
@@ -155,6 +155,19 @@ export default function Inventory() {
   return (
     <div className="container py-6 space-y-5">
       <SEOHead title="Zakelijk — VATUUR." description="Sales feed voor je voorraad." noindex />
+
+      {/* Page header */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight">Voorraad</h1>
+          <p className="text-xs text-muted-foreground">{listings.length} advertenties</p>
+        </div>
+        <Button asChild variant="outline" size="sm" className="gap-1.5">
+          <Link to="/zakelijk/voorraad-instellingen">
+            <SettingsIcon className="h-3.5 w-3.5" /> Voorkeuren
+          </Link>
+        </Button>
+      </div>
 
       {/* Filters */}
       <div className="space-y-2.5">

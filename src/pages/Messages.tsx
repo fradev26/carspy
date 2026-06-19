@@ -228,6 +228,8 @@ export default function Messages() {
     if (!newMessage.trim() || !selectedConv || !user) return;
     const content = newMessage.trim();
     setNewMessage('');
+    const conv = conversations.find((c) => c.id === selectedConv);
+    const isFirstOutbound = messages.filter((m) => m.sender_id === user.id).length === 0;
     const { error } = await supabase.from('messages').insert({
       conversation_id: selectedConv,
       sender_id: user.id,
@@ -235,6 +237,12 @@ export default function Messages() {
     });
     if (!error) {
       await supabase.from('conversations').update({ updated_at: new Date().toISOString() }).eq('id', selectedConv);
+      // First outbound from buyer → request reservation on the listing
+      if (isFirstOutbound && conv && conv.buyer_id === user.id && conv.listing_id) {
+        supabase.functions
+          .invoke('reserve-listing', { body: { listing_id: conv.listing_id } })
+          .catch(() => undefined);
+      }
     }
   };
 

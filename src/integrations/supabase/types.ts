@@ -368,6 +368,75 @@ export type Database = {
           },
         ]
       }
+      dealer_inventory_preferences: {
+        Row: {
+          allow_backorders: boolean
+          allow_negative_stock: boolean
+          archive_after_days: number
+          auto_generate_vin_ref: boolean
+          auto_mark_sold: boolean
+          auto_relist_on_cancel: boolean
+          auto_update_enabled: boolean
+          created_at: string
+          default_listing_status: string
+          low_stock_email: boolean
+          low_stock_push: boolean
+          low_stock_threshold: number
+          on_sold_action: string
+          relist_delay_minutes: number
+          reservation_enabled: boolean
+          reservation_minutes: number
+          sync_interval_minutes: number
+          update_method: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          allow_backorders?: boolean
+          allow_negative_stock?: boolean
+          archive_after_days?: number
+          auto_generate_vin_ref?: boolean
+          auto_mark_sold?: boolean
+          auto_relist_on_cancel?: boolean
+          auto_update_enabled?: boolean
+          created_at?: string
+          default_listing_status?: string
+          low_stock_email?: boolean
+          low_stock_push?: boolean
+          low_stock_threshold?: number
+          on_sold_action?: string
+          relist_delay_minutes?: number
+          reservation_enabled?: boolean
+          reservation_minutes?: number
+          sync_interval_minutes?: number
+          update_method?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          allow_backorders?: boolean
+          allow_negative_stock?: boolean
+          archive_after_days?: number
+          auto_generate_vin_ref?: boolean
+          auto_mark_sold?: boolean
+          auto_relist_on_cancel?: boolean
+          auto_update_enabled?: boolean
+          created_at?: string
+          default_listing_status?: string
+          low_stock_email?: boolean
+          low_stock_push?: boolean
+          low_stock_threshold?: number
+          on_sold_action?: string
+          relist_delay_minutes?: number
+          reservation_enabled?: boolean
+          reservation_minutes?: number
+          sync_interval_minutes?: number
+          update_method?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       dealer_leads: {
         Row: {
           company: string | null
@@ -584,6 +653,7 @@ export type Database = {
           alloy_wheel_size_unit: string | null
           as24_listing_id: string | null
           as24_publication_status: string | null
+          auto_archive_at: string | null
           availability: Json | null
           body_type: string
           boost_until: string | null
@@ -654,6 +724,8 @@ export type Database = {
           publication: Json | null
           publication_channels: string[] | null
           raw_autoscout: Json | null
+          reserved_by: string | null
+          reserved_until: string | null
           seat_count: number | null
           seats: number | null
           service_history: Json | null
@@ -683,6 +755,7 @@ export type Database = {
           alloy_wheel_size_unit?: string | null
           as24_listing_id?: string | null
           as24_publication_status?: string | null
+          auto_archive_at?: string | null
           availability?: Json | null
           body_type: string
           boost_until?: string | null
@@ -753,6 +826,8 @@ export type Database = {
           publication?: Json | null
           publication_channels?: string[] | null
           raw_autoscout?: Json | null
+          reserved_by?: string | null
+          reserved_until?: string | null
           seat_count?: number | null
           seats?: number | null
           service_history?: Json | null
@@ -782,6 +857,7 @@ export type Database = {
           alloy_wheel_size_unit?: string | null
           as24_listing_id?: string | null
           as24_publication_status?: string | null
+          auto_archive_at?: string | null
           availability?: Json | null
           body_type?: string
           boost_until?: string | null
@@ -852,6 +928,8 @@ export type Database = {
           publication?: Json | null
           publication_channels?: string[] | null
           raw_autoscout?: Json | null
+          reserved_by?: string | null
+          reserved_until?: string | null
           seat_count?: number | null
           seats?: number | null
           service_history?: Json | null
@@ -1382,6 +1460,37 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      get_or_create_inventory_preferences: {
+        Args: never
+        Returns: {
+          allow_backorders: boolean
+          allow_negative_stock: boolean
+          archive_after_days: number
+          auto_generate_vin_ref: boolean
+          auto_mark_sold: boolean
+          auto_relist_on_cancel: boolean
+          auto_update_enabled: boolean
+          created_at: string
+          default_listing_status: string
+          low_stock_email: boolean
+          low_stock_push: boolean
+          low_stock_threshold: number
+          on_sold_action: string
+          relist_delay_minutes: number
+          reservation_enabled: boolean
+          reservation_minutes: number
+          sync_interval_minutes: number
+          update_method: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "dealer_inventory_preferences"
           isOneToOne: true
           isSetofReturn: false
         }
