@@ -23,6 +23,7 @@ const DealerImport = lazy(() => import("./pages/dealer/Import"));
 const DealerAnalytics = lazy(() => import("./pages/dealer/Analytics"));
 const DealerSettings = lazy(() => import("./pages/dealer/Settings"));
 const DealerSubscription = lazy(() => import("./pages/dealer/Subscription"));
+const DealerInventoryPreferences = lazy(() => import("./pages/dealer/InventoryPreferences"));
 const MyLeadsPanel = lazy(() => import("./components/MyLeadsPanel"));
 const Sell = lazy(() => import("./pages/Sell"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
