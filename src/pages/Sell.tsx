@@ -26,6 +26,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { FUEL_TYPES, TRANSMISSION_TYPES, BODY_TYPES } from '@/types/listing';
 import { supabase } from '@/integrations/supabase/client';
@@ -106,6 +107,7 @@ interface FormState {
   // step 5
   price: string;
   priceNegotiable: 'yes' | 'no' | '';
+  vatDeductible: boolean;
   availableFrom: string;
   description: string;
   // step 6
@@ -132,7 +134,7 @@ const EMPTY_FORM: FormState = {
   features: EMPTY_FEATURES,
   conditionOverall: '', damagePresent: '', damageDescription: '',
   technicalPresent: '', technicalDescription: '',
-  price: '', priceNegotiable: '', availableFrom: '', description: '',
+  price: '', priceNegotiable: '', vatDeductible: false, availableFrom: '', description: '',
   name: '', email: '', phone: '', postalCode: '', city: '',
   confirmCorrect: false, acceptPrivacy: false,
 };
@@ -220,6 +222,7 @@ export default function Sell() {
         modelVersion: data.model_version || '',
         price: data.price ? String(data.price) : '',
         priceNegotiable: data.price_negotiable === true ? 'yes' : data.price_negotiable === false ? 'no' : '',
+        vatDeductible: data.vat_deductible === true,
         description: data.description || '',
         city: data.city || '',
         features: { ...EMPTY_FEATURES, ...featuresFromSpecs },
@@ -448,6 +451,7 @@ export default function Sell() {
       price: formData.price ? parseInt(formData.price) : 0,
       price_public: formData.price ? parseInt(formData.price) : null,
       price_negotiable: formData.priceNegotiable === 'yes' ? true : formData.priceNegotiable === 'no' ? false : null,
+      vat_deductible: formData.vatDeductible,
       fuel_type: formData.fuelType,
       transmission: formData.transmission,
       body_type: formData.bodyType,
@@ -950,6 +954,24 @@ export default function Sell() {
                     onChange={(e) => update('availableFrom', e.target.value)}
                   />
                 </div>
+                <div className="sm:col-span-2">
+                  <div className="flex items-start justify-between gap-4 rounded-xl border border-border/60 bg-muted/30 p-4">
+                    <div className="space-y-1">
+                      <Label htmlFor="sell-vat" className="text-base">BTW aftrekbaar</Label>
+                      <p className="text-xs text-muted-foreground">
+                        {formData.vatDeductible
+                          ? 'Vraagprijs is inclusief 21% aftrekbare BTW (BTW-wagen).'
+                          : 'Margeregime — geen BTW aftrekbaar voor de koper.'}
+                      </p>
+                    </div>
+                    <Switch
+                      id="sell-vat"
+                      checked={formData.vatDeductible}
+                      onCheckedChange={(v) => update('vatDeductible', Boolean(v))}
+                      aria-label="BTW aftrekbaar"
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-3">
@@ -1270,6 +1292,7 @@ function SummaryReview({
       <Section title="Verkoopinformatie" step={4}>
         {row('Vraagprijs', data.price ? `€ ${parseInt(data.price).toLocaleString('nl-BE')}` : null)}
         {row('Onderhandelbaar', data.priceNegotiable === 'yes' ? 'Ja' : data.priceNegotiable === 'no' ? 'Nee' : null)}
+        {row('BTW aftrekbaar', data.vatDeductible ? 'Ja' : 'Nee')}
         {row('Beschikbaar vanaf', data.availableFrom)}
       </Section>
 

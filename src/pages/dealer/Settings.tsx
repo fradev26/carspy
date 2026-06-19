@@ -8,7 +8,7 @@ import {
   Car,
   Facebook,
   Settings as SettingsIcon,
-  Tag,
+  
   Send,
   Users,
   CreditCard,
@@ -133,7 +133,7 @@ export default function DealerSettings() {
 
       <Section title="Voorraad">
         <SettingsRow icon={SettingsIcon} label="Voorraadvoorkeuren" to="/zakelijk/voorraad-instellingen" />
-        <SettingsRow icon={Tag} label="Prijsinstellingen" onClick={soon} />
+        
         <SettingsRow icon={Send} label="Automatische publicatie" onClick={soon} />
       </Section>
 
