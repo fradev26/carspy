@@ -69,6 +69,7 @@ const App = () => (
                   <Route index element={<DealerSalesAI />} />
                   <Route path="dashboard" element={<BusinessDashboard />} />
                   <Route path="voorraad" element={<DealerInventoryPage />} />
+                  <Route path="voorraad-instellingen" element={<SettingsRouteGuard requires="dealer"><DealerInventoryPreferences /></SettingsRouteGuard>} />
                   <Route path="voorraad/:id" element={<DealerListingOperating />} />
                   <Route path="import" element={<DealerImport />} />
                   <Route path="leads" element={<div className="container py-6"><MyLeadsPanel /></div>} />
