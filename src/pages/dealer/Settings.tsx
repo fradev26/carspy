@@ -8,7 +8,7 @@ import {
   Car,
   Facebook,
   Settings as SettingsIcon,
-  Tag,
+  
   Send,
   Users,
   CreditCard,
