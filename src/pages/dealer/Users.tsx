@@ -7,7 +7,7 @@ import {
   Clock, Crown, Loader2, Trash2, UserX, UserCheck, Send, RefreshCw,
   ChevronRight, FileText,
 } from 'lucide-react';
-import { Helmet } from 'react-helmet-async';
+import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -208,7 +208,7 @@ export default function DealerUsers() {
 
   return (
     <>
-      <Helmet><title>Gebruikers beheren · VATUUR</title></Helmet>
+      <SEOHead title="Gebruikers beheren · VATUUR" description="Beheer medewerkers, rollen en activiteit van je dealeraccount." />
       <div className="container max-w-6xl py-6 space-y-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
