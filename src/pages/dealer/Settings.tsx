@@ -123,16 +123,14 @@ export default function DealerSettings() {
       </div>
 
       <Section title="Koppelingen">
-        <SettingsRow icon={Link2} label="AutoScout24" onClick={() => setAutoScoutOpen(true)} />
-        <SettingsRow icon={ShoppingBag} label="Marktplaats" disabled badge="Binnenkort" />
-        <SettingsRow icon={Car} label="Mobile.de" disabled badge="Binnenkort" />
-        <SettingsRow icon={Facebook} label="Facebook Marketplace" disabled badge="Binnenkort" />
+        <SettingsRow icon={Link2} label="AutoScout24" subtitle="Publicatie-instellingen per koppeling" onClick={() => setAutoScoutOpen(true)} />
+        <SettingsRow icon={ShoppingBag} label="Marktplaats" badge="Binnenkort" onClick={() => setStubOpen('marktplaats')} />
+        <SettingsRow icon={Car} label="Mobile.de" badge="Binnenkort" onClick={() => setStubOpen('mobile')} />
+        <SettingsRow icon={Facebook} label="Facebook Marketplace" badge="Binnenkort" onClick={() => setStubOpen('facebook')} />
       </Section>
 
       <Section title="Voorraad">
         <SettingsRow icon={SettingsIcon} label="Voorraadvoorkeuren" to="/zakelijk/voorraad-instellingen" />
-        
-        <SettingsRow icon={Send} label="Automatische publicatie" onClick={soon} />
       </Section>
 
       <Section title="Account">
