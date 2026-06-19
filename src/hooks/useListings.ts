@@ -254,7 +254,7 @@ export async function fetchWithProfileFallback<T extends ListingRow>(rows: T[]):
     .select('id, full_name, dealer_name, is_dealer, avatar_url, created_at')
     .in('id', userIds);
   const byId = new Map<string, ProfileRow>(
-    ((profs ?? []) as ProfileRow[]).map((p) => [p.id, p]),
+    ((profs ?? []) as unknown as ProfileRow[]).map((p) => [p.id, p]),
   );
   return rows.map((r) => mapRow({ ...r, profiles: byId.get(r.user_id) ?? null }));
 }
