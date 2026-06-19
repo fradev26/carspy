@@ -8,6 +8,10 @@ import { toast } from 'sonner';
 import { Loader2, RefreshCw, Link2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import ConnectionPublicationCard, {
+  DEFAULT_PUBLICATION_SETTINGS,
+  type PublicationSettings,
+} from '@/components/dealer/ConnectionPublicationCard';
 
 interface Credential {
   customer_id: string;
@@ -39,7 +43,8 @@ export default function AutoScoutPanel() {
   const [customerId, setCustomerId] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [busy, setBusy] = useState<null | 'save' | 'test' | 'sync'>(null);
+  const [busy, setBusy] = useState<null | 'save' | 'test' | 'sync' | 'pub'>(null);
+  const [pub, setPub] = useState<PublicationSettings>(DEFAULT_PUBLICATION_SETTINGS);
 
   const load = async () => {
     if (!user) return;
@@ -47,7 +52,7 @@ export default function AutoScoutPanel() {
     const [{ data: credRow }, { data: runRows }] = await Promise.all([
       supabase
         .from('autoscout_credentials')
-        .select('customer_id, username, last_sync_at, last_sync_status, last_sync_error, password_secret_id')
+        .select('customer_id, username, last_sync_at, last_sync_status, last_sync_error, password_secret_id, auto_publish, sync_direction, publish_new_vehicles, sync_price, sync_photos, sync_description, sync_specs, remove_on_sold, sync_stock, draft_mode, sync_schedule, sync_priority')
         .eq('user_id', user.id)
         .maybeSingle(),
       supabase
@@ -68,8 +73,24 @@ export default function AutoScoutPanel() {
       });
       setCustomerId((credRow as any).customer_id ?? '');
       setUsername((credRow as any).username ?? '');
+      const r = credRow as any;
+      setPub({
+        auto_publish: r.auto_publish ?? false,
+        sync_direction: r.sync_direction ?? 'import_only',
+        publish_new_vehicles: r.publish_new_vehicles ?? false,
+        sync_price: r.sync_price ?? true,
+        sync_photos: r.sync_photos ?? true,
+        sync_description: r.sync_description ?? true,
+        sync_specs: r.sync_specs ?? true,
+        remove_on_sold: r.remove_on_sold ?? true,
+        sync_stock: r.sync_stock ?? true,
+        draft_mode: r.draft_mode ?? false,
+        sync_schedule: r.sync_schedule ?? 'manual',
+        sync_priority: r.sync_priority ?? 'normal',
+      });
     } else {
       setCred(null);
+      setPub(DEFAULT_PUBLICATION_SETTINGS);
     }
     setRuns((runRows ?? []) as any);
     setLoading(false);
@@ -146,6 +167,24 @@ export default function AutoScoutPanel() {
       setBusy(null);
     }
   };
+
+  const handleSavePublication = async () => {
+    if (!user) return;
+    setBusy('pub');
+    try {
+      const { error } = await supabase
+        .from('autoscout_credentials')
+        .update(pub as any)
+        .eq('user_id', user.id);
+      if (error) throw error;
+      toast.success('Publicatie-instellingen opgeslagen');
+    } catch (e: any) {
+      toast.error(`Opslaan mislukt: ${e.message}`);
+    } finally {
+      setBusy(null);
+    }
+  };
+
 
   const statusBadge = (status: string | null) => {
     if (status === 'success') return <Badge className="bg-green-100 text-green-800">Succes</Badge>;
@@ -235,6 +274,16 @@ export default function AutoScoutPanel() {
           )}
         </CardContent>
       </Card>
+
+      <ConnectionPublicationCard
+        value={pub}
+        onChange={setPub}
+        onSave={handleSavePublication}
+        saving={busy === 'pub'}
+        disabled={!cred?.has_password}
+        disabledMessage={!cred?.has_password ? 'Sla eerst je AutoScout24-credentials op om publicatie-instellingen te activeren.' : undefined}
+      />
+
 
       <Card className="border-border/60">
         <CardHeader>

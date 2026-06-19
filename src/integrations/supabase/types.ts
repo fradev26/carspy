@@ -46,34 +46,70 @@ export type Database = {
       }
       autoscout_credentials: {
         Row: {
+          auto_publish: boolean
           created_at: string
           customer_id: string
+          draft_mode: boolean
           last_sync_at: string | null
           last_sync_error: string | null
           last_sync_status: string | null
           password_secret_id: string | null
+          publish_new_vehicles: boolean
+          remove_on_sold: boolean
+          sync_description: boolean
+          sync_direction: string
+          sync_photos: boolean
+          sync_price: boolean
+          sync_priority: string
+          sync_schedule: string
+          sync_specs: boolean
+          sync_stock: boolean
           updated_at: string
           user_id: string
           username: string
         }
         Insert: {
+          auto_publish?: boolean
           created_at?: string
           customer_id: string
+          draft_mode?: boolean
           last_sync_at?: string | null
           last_sync_error?: string | null
           last_sync_status?: string | null
           password_secret_id?: string | null
+          publish_new_vehicles?: boolean
+          remove_on_sold?: boolean
+          sync_description?: boolean
+          sync_direction?: string
+          sync_photos?: boolean
+          sync_price?: boolean
+          sync_priority?: string
+          sync_schedule?: string
+          sync_specs?: boolean
+          sync_stock?: boolean
           updated_at?: string
           user_id: string
           username: string
         }
         Update: {
+          auto_publish?: boolean
           created_at?: string
           customer_id?: string
+          draft_mode?: boolean
           last_sync_at?: string | null
           last_sync_error?: string | null
           last_sync_status?: string | null
           password_secret_id?: string | null
+          publish_new_vehicles?: boolean
+          remove_on_sold?: boolean
+          sync_description?: boolean
+          sync_direction?: string
+          sync_photos?: boolean
+          sync_price?: boolean
+          sync_priority?: string
+          sync_schedule?: string
+          sync_specs?: boolean
+          sync_stock?: boolean
           updated_at?: string
           user_id?: string
           username?: string

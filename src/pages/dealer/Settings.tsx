@@ -8,8 +8,6 @@ import {
   Car,
   Facebook,
   Settings as SettingsIcon,
-  
-  Send,
   Users,
   CreditCard,
   LifeBuoy,
@@ -24,6 +22,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import AutoScoutPanel from '@/modules/dealer/AutoScoutPanel';
+import ComingSoonConnectionPanel from '@/components/dealer/ComingSoonConnectionPanel';
 import { cn } from '@/lib/utils';
 
 type RowProps = {
@@ -93,6 +92,13 @@ export default function DealerSettings() {
   const { profile } = useProfile();
   const { toast } = useToast();
   const [autoScoutOpen, setAutoScoutOpen] = useState(false);
+  const [stubOpen, setStubOpen] = useState<null | 'marktplaats' | 'mobile' | 'facebook'>(null);
+
+  const STUBS = {
+    marktplaats: { name: 'Marktplaats', description: 'Synchroniseer je voorraad met Marktplaats.nl.' },
+    mobile: { name: 'Mobile.de', description: 'Synchroniseer je voorraad met Mobile.de.' },
+    facebook: { name: 'Facebook Marketplace', description: 'Publiceer je voorraad op Facebook Marketplace.' },
+  } as const;
 
   const soon = () =>
     toast({ title: 'Binnenkort beschikbaar', description: 'Deze functie is in ontwikkeling.' });
@@ -125,16 +131,14 @@ export default function DealerSettings() {
       </div>
 
       <Section title="Koppelingen">
-        <SettingsRow icon={Link2} label="AutoScout24" onClick={() => setAutoScoutOpen(true)} />
-        <SettingsRow icon={ShoppingBag} label="Marktplaats" disabled badge="Binnenkort" />
-        <SettingsRow icon={Car} label="Mobile.de" disabled badge="Binnenkort" />
-        <SettingsRow icon={Facebook} label="Facebook Marketplace" disabled badge="Binnenkort" />
+        <SettingsRow icon={Link2} label="AutoScout24" subtitle="Publicatie-instellingen per koppeling" onClick={() => setAutoScoutOpen(true)} />
+        <SettingsRow icon={ShoppingBag} label="Marktplaats" badge="Binnenkort" onClick={() => setStubOpen('marktplaats')} />
+        <SettingsRow icon={Car} label="Mobile.de" badge="Binnenkort" onClick={() => setStubOpen('mobile')} />
+        <SettingsRow icon={Facebook} label="Facebook Marketplace" badge="Binnenkort" onClick={() => setStubOpen('facebook')} />
       </Section>
 
       <Section title="Voorraad">
         <SettingsRow icon={SettingsIcon} label="Voorraadvoorkeuren" to="/zakelijk/voorraad-instellingen" />
-        
-        <SettingsRow icon={Send} label="Automatische publicatie" onClick={soon} />
       </Section>
 
       <Section title="Account">
@@ -155,6 +159,17 @@ export default function DealerSettings() {
           </SheetHeader>
           <div className="mt-4">
             <AutoScoutPanel />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      <Sheet open={stubOpen !== null} onOpenChange={(v) => !v && setStubOpen(null)}>
+        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>{stubOpen ? STUBS[stubOpen].name : ''} koppeling</SheetTitle>
+          </SheetHeader>
+          <div className="mt-4">
+            {stubOpen && <ComingSoonConnectionPanel name={STUBS[stubOpen].name} description={STUBS[stubOpen].description} />}
           </div>
         </SheetContent>
       </Sheet>
