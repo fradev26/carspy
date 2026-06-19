@@ -107,6 +107,7 @@ interface FormState {
   // step 5
   price: string;
   priceNegotiable: 'yes' | 'no' | '';
+  vatDeductible: boolean;
   availableFrom: string;
   description: string;
   // step 6
