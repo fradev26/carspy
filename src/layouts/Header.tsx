@@ -158,12 +158,12 @@ export function Header() {
               {user ? (
                 <>
                   <SectionHeader>Mijn account</SectionHeader>
-                  <SheetLink onClick={() => handleMobileNav('/account/instellingen')} icon={User} label="Account" />
                   <SheetLink
-                    onClick={() => handleMobileNav(isDealer ? '/zakelijk/instellingen' : '/account/instellingen')}
+                    onClick={() => handleMobileNav(settingsRoute)}
                     icon={Settings}
                     label="Instellingen"
                   />
+
 
                   <SectionHeader>Juridisch</SectionHeader>
                   <SheetLink onClick={() => handleMobileNav('/privacy')} icon={Shield} label="Privacybeleid" muted />
