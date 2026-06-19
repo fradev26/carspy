@@ -8,8 +8,6 @@ import {
   Car,
   Facebook,
   Settings as SettingsIcon,
-  
-  Send,
   Users,
   CreditCard,
   LifeBuoy,
