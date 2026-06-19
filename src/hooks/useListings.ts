@@ -247,9 +247,10 @@ export function mapRow(row: ListingRow): Listing {
 export async function fetchWithProfileFallback<T extends ListingRow>(rows: T[]): Promise<Listing[]> {
   const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
   if (userIds.length === 0) return rows.map(mapRow);
-  // Only public-safe columns — phone/email are PII and require the get_my_profile RPC
+  // Use the public_profiles view so dealer/particulier info is visible to every
+  // viewer (not just the owner). PII (phone/email) is NOT in this view.
   const { data: profs } = await supabase
-    .from('profiles')
+    .from('public_profiles' as any)
     .select('id, full_name, dealer_name, is_dealer, avatar_url, created_at')
     .in('id', userIds);
   const byId = new Map<string, ProfileRow>(
