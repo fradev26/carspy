@@ -1,104 +1,96 @@
-# Rolafhankelijke instellingennavigatie
+# Redesign /zakelijk/abonnement — premium en conversie-gericht
 
 ## Probleem
 
-`/account/instellingen` en `/zakelijk/instellingen` worden vandaag los van elkaar gerouteerd, maar de keuze tussen beide is verspreid over de codebase met ad-hoc `isDealer ? ... : ...` checks (Header mobiel) en hardcoded links (Header dropdown, BusinessDashboard, dealer Subscription, dealer ListingOperating). De Header dropdown linkt voor dealers nog steeds naar `/account/instellingen`, en geen enkele route blokkeert het tegenovergestelde accounttype — een particulier kan `/zakelijk/instellingen` openen en omgekeerd.
+Huidige pagina toont een eenvoudige opsomming van plannen + quota, met de globale "Auto verkopen"-sticky bovenop, geen duidelijke focus-CTA, geen facturatieblok, geen FAQ, geen hiërarchie tussen status / aanbod / verbruik. De abonnementenkaarten missen vergelijking, voordelen-bullets en aanbevelingsbadges. Op mobiel concurreert de "Auto verkopen"-CTA met de abonnements-CTA.
 
 ## Aanpak
 
-### 1. Eén centrale helper
+### 1. Focus & navigatie (P1)
 
-Nieuwe file `src/lib/settingsRoute.ts`:
-```ts
-export type AccountType = 'guest' | 'private' | 'dealer';
+`src/layouts/DealerLayout.tsx`: verberg de sticky "Auto verkopen"-knop op `/zakelijk/abonnement` via `useLocation()`. Andere dealer-pagina's behouden hem. De enige primaire CTA op de abonnementspagina is plan-gerelateerd (Activeer / Upgrade / Beheer).
 
-export function getAccountType(profile, user): AccountType {
-  if (!user) return 'guest';
-  return profile?.is_dealer ? 'dealer' : 'private';
-}
+### 2. Statusoverzicht (hero card)
 
-export const SETTINGS_ROUTE = {
-  private: '/account/instellingen',
-  dealer:  '/zakelijk/instellingen',
-} as const;
+Eén premium overzichtskaart bovenaan:
+- Linkerkolom: huidige plan-naam (of "Geen actief abonnement"), badge "Actief"/"Inactief", maandkosten als hero-prijs, basis + extra-boost-kosten uitgesplitst, factuurperiode (start → eind), volgende factuurdatum (period_end + 1 dag).
+- Rechterkolom (desktop) / onder elkaar (mobiel): twee `QuotaBar`s voor Turbo en Nitro met gebruik, totaal en restant.
+- Single primaire CTA naast hero: `Beheer abonnement` (scroll naar plannen) als er een actief plan is, anders `Activeer Premium` (scroll naar aanbevolen plan).
+- Subtiele premium gradient + `shadow-elegant`, geen rode vlakken (huisstijl).
 
-export function getSettingsRoute(accountType: AccountType): string {
-  return accountType === 'dealer' ? SETTINGS_ROUTE.dealer : SETTINGS_ROUTE.private;
-}
+### 3. Abonnementskaarten
 
-export function isSettingsPathAllowed(path: string, accountType: AccountType): boolean {
-  if (accountType === 'dealer') return !path.startsWith('/account/'); // alle /account/* settings verboden voor dealer
-  return !path.startsWith('/zakelijk');                                // /zakelijk verboden voor particulier
-}
-```
+`PlanCard`-component met:
+- Plannaam, korte tagline (afgeleid van plan-code: Starter/Premium/Pro).
+- Maandprijs (groot) + `/maand`.
+- Voordelen als bullets met `Check` icoon: turbo/nitro-quota, geschatte besparingen vs extra-boost-prijs, prioriteit in zoekresultaten (premium/boost), AI-prijsanalyse.
+- Aanbevelingsbadge: `Meest gekozen` op middelste plan, `Beste waarde` op duurste; via `recommended_badge` lookup in component (geen DB-wijziging nodig).
+- Prominente full-width CTA: `Activeer <plan>` / `Upgrade naar <plan>` / `Huidig plan` (disabled, outline).
+- Actief plan krijgt `ring-2 ring-primary/40` + `shadow-glow-premium`.
+- Layout: grid `md:grid-cols-3`, op mobiel onder elkaar (stack) met aanbevolen plan eerst.
 
-Bron van waarheid is `useProfile()` (al gekoppeld aan `auth.user` + `profiles.is_dealer`), nooit `location.pathname`.
+### 4. Gebruiksstatistieken
 
-### 2. Route-guards
+Nieuwe sectie "Jouw gebruik deze periode" — 4-tegel grid:
+- Turbo boosts: gebruikt / inbegrepen, restant in fractie.
+- Nitro boosts: idem.
+- Actieve advertenties: count uit `listings` (`status='active' AND user_id=auth.uid()`, lichte query).
+- Geboosted nu: count waar `boost_until > now()`.
 
-Nieuwe component `src/components/SettingsRouteGuard.tsx`:
-- Wacht tot `useAuth` + `useProfile` klaar zijn (toon skeleton tijdens load — geen lege pagina).
-- Niet-ingelogd → redirect naar `/auth?redirect=<huidig pad>`.
-- Bezoekt een dealer `/account/instellingen` (of subroute `/account/profiel|meldingen|privacy|weergave`) → `<Navigate to="/zakelijk/instellingen" replace />`.
-- Bezoekt een particulier `/zakelijk/instellingen` → `<Navigate to="/account/instellingen" replace />`.
-- Anders: render `children`.
+Compacte tegels (icoon + getal + label), responsive grid `grid-cols-2 md:grid-cols-4`.
 
-Update `src/App.tsx`:
-- Wikkel alle `/account/{instellingen,profiel,meldingen,privacy,weergave}` routes in `<SettingsRouteGuard requires="private">`.
-- Wikkel de `/zakelijk` nested `instellingen` route in `<SettingsRouteGuard requires="dealer">`.
+### 5. Facturatie
 
-Dit beschermt deeplinks, refreshes en directe URL-toegang.
+Sectie "Facturatie":
+- Betaalmethode-rij: placeholder "Nog niet geconfigureerd" + `Beheer betaalmethode` button (linkt naar `/zakelijk/instellingen#facturatie` met disabled state + tooltip "Binnenkort beschikbaar"). Eerlijk zichtbaar dat geautomatiseerde betaling nog komt — toch een rij om vertrouwen op te bouwen.
+- Volgende incasso: datum + bedrag (`billing.total_cents`).
+- Factuurgeschiedenis: lijst per periode op basis van `boost_usage` aggregaties (max 6 recente periodes) met "Download" disabled-knop / "Coming soon" label. Anders fallback "Nog geen facturen beschikbaar".
 
-### 3. Hardcoded links vervangen
+Geen nieuwe DB-velden. Geen koppeling met Stripe/Paddle in deze iteratie — out of scope, dat is een aparte aanvraag (zie payments-pre-enable indien gewenst).
 
-Vervang **elke** verwijzing naar `/account/instellingen` of `/zakelijk/instellingen` door `getSettingsRoute(accountType)`:
+### 6. Compacte FAQ
 
-- `src/layouts/Header.tsx` line 158 "Account" mobile link (was: altijd `/account/instellingen`)
-- `src/layouts/Header.tsx` line 160 "Instellingen" mobile link (was: inline ternary)
-- `src/layouts/Header.tsx` line 272 dropdown "Account" item (was: altijd `/account/instellingen`)
-- `src/pages/BusinessDashboard.tsx` line 14 (dealer-only, blijft `/zakelijk/instellingen` via helper)
-- `src/pages/dealer/Subscription.tsx` line 193 (idem)
-- `src/pages/dealer/ListingOperating.tsx` line 740 (idem)
+`Accordion` (`@/components/ui/accordion`) met 6 vragen:
+- Hoe activeer ik een abonnement?
+- Wat is het verschil tussen Turbo en Nitro?
+- Kan ik op elk moment upgraden of downgraden?
+- Wat gebeurt er met ongebruikte boosts aan het einde van de periode?
+- Hoe zeg ik mijn abonnement op?
+- Wanneer wordt mijn factuur opgesteld?
 
-Daarnaast: verberg in de Header dropdown ook de losse "Account"-link voor dealers — die wijst naar consumer-instellingen. Dropdown krijgt één "Instellingen"-item dat `getSettingsRoute(accountType)` gebruikt. "Mijn advertenties" en "Favorieten" blijven voor beide rollen ongewijzigd (buiten scope).
+Antwoorden statisch, in `nl-BE` tone. Plaats onderaan, voor visuele afsluiting.
 
-Mobile sheet: de "Account" rij wordt samengevoegd met "Instellingen" — één item dat altijd naar de juiste settings-route gaat. Voorkomt dat een particulier een "zakelijk" item ziet of vice versa.
+### 7. Layout, spacing & responsiviteit
 
-### 4. DealerLayout sidebar / BottomNav
+- Container: `max-w-4xl` (i.p.v. `3xl` — meer ademruimte voor 3 kaarten naast elkaar), `py-6 md:py-10`, `space-y-8`.
+- Pagina-header met titel `Abonnement` + ondertitel `Beheer je plan en boost-verbruik`.
+- Mobiel: alle secties full-width, kaarten stacken, geen horizontale scroll. `pb-28` voor BottomNav clearance.
+- Spacing-consistentie: secties `space-y-3`, kaarten `p-5` (desktop) / `p-4` (mobiel).
+- Typo: `text-xl md:text-2xl` voor h1, `text-base` voor sectie-koppen (uppercase tracking weghalen voor premium feel), hero-prijs `text-4xl font-bold tabular-nums`.
+- Premium accenten: gradient subtiel op hero (`bg-gradient-to-br from-card via-card to-primary/5`), `shadow-elegant` op hero, `ring-primary/40` op actief plan. Geen grote rode vlakken (memory-rule).
+- Safe-area: behoud `pb-safe` waar relevant via bestaande utilities.
+- Toegankelijkheid: alle interactieve elementen `min-h-11`, `aria-label` op upgrade-knoppen, `aria-live="polite"` op `switching`-state, focus-ring via `.focus-ring`.
 
-Sidebar in `src/layouts/DealerLayout.tsx` (instellingen-link) en `src/components/BottomNav.tsx` / `DesktopNav.tsx` (selectie tussen `consumerNavItems` / `dealerNavItems`) draaien al volledig op `useProfile().isDealer` — geen instellingen-leak. Bevestigen tijdens implementatie en eventueel de sidebar-link via helper laten lopen voor consistentie.
+### 8. Implementatie
 
-### 5. Regressietests
+- `src/pages/dealer/Subscription.tsx`: volledig herschrijven met nieuwe sectie-structuur en componenten.
+- Nieuwe kleine sub-componenten in dezelfde file: `StatusHeroCard`, `PlanCard`, `UsageStats`, `BillingSection`, `SubscriptionFAQ`.
+- Extra query: counts via `supabase.from('listings').select('id', { count: 'exact', head: true })` voor actieve en geboostede listings. Parallel met bestaande fetches in `load()`.
+- `src/layouts/DealerLayout.tsx`: `useLocation` + conditional render van sticky CTA (`hideStickyCta = pathname.startsWith('/zakelijk/abonnement')`).
 
-`src/lib/settingsRoute.test.ts`:
-- `getAccountType` returns `guest` / `private` / `dealer` voor de drie scenario's.
-- `getSettingsRoute` mapt correct.
-- `isSettingsPathAllowed` weigert kruislings.
+### 9. Verificatie
 
-`src/components/SettingsRouteGuard.test.tsx` met `MemoryRouter`:
-- Gast op `/account/instellingen` → redirect naar `/auth`.
-- Particulier op `/account/instellingen` → render content.
-- Particulier op `/zakelijk/instellingen` → redirect naar `/account/instellingen`.
-- Dealer op `/zakelijk/instellingen` → render content.
-- Dealer op `/account/instellingen` → redirect naar `/zakelijk/instellingen`.
-- Wisselen van rol (mock `useProfile`) → guard re-evalueert en navigeert opnieuw.
-- Loading state → toont skeleton, niet redirect (anders flikkering).
-
-`src/layouts/Header.settings.test.tsx`:
-- Render Header met dealer-profile → dropdown "Instellingen" link href = `/zakelijk/instellingen`, géén losse consumer "Account"-link met `/account/instellingen`.
-- Render Header met particulier-profile → link href = `/account/instellingen`, geen `/zakelijk/...` link zichtbaar.
-- Mobile sheet idem.
-
-Mock-strategie: `vi.mock('@/hooks/useProfile')` per test om accounttypes te simuleren zonder Supabase.
+- Build moet groen blijven (geen TS-errors).
+- Playwright snapshot van pagina op desktop (1280) + mobiel (375) om visueel te bevestigen: geen "Auto verkopen"-knop, hero-prijs zichtbaar, 3 plankaarten, FAQ uitklapbaar, geen horizontale scroll op 375px.
+- Tabel met memory-rule check: focus-ring, geen grote rode vlakken, Inter/Montserrat, 12px radius (al via Card).
 
 ## Out of scope
 
-- Andere `/account/*` en `/zakelijk/*` pagina's (advertenties, dashboard, voorraad) — alleen settings-routing wordt rolgescheiden.
-- DB-RLS — al correct.
-- Nieuwe instellingenfuncties; enkel routing/zichtbaarheid.
+- Echte payment-provider-integratie (Stripe/Paddle) — aparte plan-aanvraag.
+- Wijzigingen aan `boost_usage` of `dealer_subscriptions`-schema.
+- Downloaden van PDF-facturen.
+- Nieuwe plan-tiers of prijswijzigingen.
 
 ## Bestanden
 
-Nieuw: `src/lib/settingsRoute.ts`, `src/lib/settingsRoute.test.ts`, `src/components/SettingsRouteGuard.tsx`, `src/components/SettingsRouteGuard.test.tsx`, `src/layouts/Header.settings.test.tsx`.
-
-Gewijzigd: `src/App.tsx`, `src/layouts/Header.tsx`, `src/pages/BusinessDashboard.tsx`, `src/pages/dealer/Subscription.tsx`, `src/pages/dealer/ListingOperating.tsx`, eventueel `src/layouts/DealerLayout.tsx`.
+Gewijzigd: `src/pages/dealer/Subscription.tsx`, `src/layouts/DealerLayout.tsx`.
