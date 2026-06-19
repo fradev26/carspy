@@ -5,7 +5,7 @@ import { nl } from 'date-fns/locale';
 import {
   Users as UsersIcon, UserPlus, Activity, MoreVertical, Mail, Search,
   Clock, Crown, Loader2, Trash2, UserX, UserCheck, Send, RefreshCw,
-  ChevronRight, FileText,
+  ChevronRight, FileText, Copy,
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
@@ -120,6 +120,64 @@ export default function DealerUsers() {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [confirm, setConfirm] = useState<{ kind: 'remove' | 'deactivate' | 'reactivate' | 'revoke'; targetId: string; label: string } | null>(null);
   const [auditDetail, setAuditDetail] = useState<AuditLog | null>(null);
+  const [resendingId, setResendingId] = useState<string | null>(null);
+
+  const resendInvite = async (inv: Invitation) => {
+    setResendingId(inv.id);
+    try {
+      const { data, error } = await supabase.rpc('resend_invitation', { _invitation_id: inv.id });
+      if (error) throw error;
+      const token = (data as { token?: string } | null)?.token;
+      const link = token ? `${window.location.origin}/uitnodiging?token=${token}` : null;
+      if (link && token) {
+        // Fire-and-forget e-mail send; UI keeps copyable link as fallback.
+        try {
+          await supabase.functions.invoke('send-member-invite', {
+            body: {
+              invitation_id: inv.id,
+              token,
+              link,
+              email: inv.email,
+              full_name: inv.full_name,
+              role: inv.role,
+            },
+          });
+        } catch { /* email infra optional */ }
+      }
+      toast({
+        title: `Uitnodiging opnieuw verstuurd naar ${inv.email}`,
+        description: link ? 'Tip: kopieer de link als de e-mail niet aankomt.' : undefined,
+        action: link
+          ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                navigator.clipboard.writeText(link);
+                toast({ title: 'Link gekopieerd' });
+              }}
+            >
+              <Copy className="h-3.5 w-3.5 mr-1" /> Kopieer link
+            </Button>
+          )
+          : undefined,
+      });
+      refresh();
+    } catch (e) {
+      const msg = (e as Error).message ?? '';
+      toast({
+        title: 'Opnieuw versturen mislukt',
+        description: msg.includes('too soon')
+          ? 'Je kan binnen 5 minuten geen tweede uitnodiging sturen.'
+          : msg.includes('send limit')
+            ? 'Maximum aantal herzendingen bereikt. Trek de uitnodiging in en stuur een nieuwe.'
+            : msg,
+        variant: 'destructive',
+      });
+    } finally {
+      setResendingId(null);
+    }
+  };
 
   const membersQ = useQuery({
     queryKey: ['company-members'],
