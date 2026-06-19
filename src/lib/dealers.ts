@@ -68,8 +68,8 @@ export async function findDealerBySlugAsync(slug: string): Promise<DealerSummary
     .select('id, dealer_name, full_name, avatar_url, created_at, is_dealer')
     .eq('is_dealer', true);
 
-  const match = (data ?? []).find(
-    (p: any) => p.dealer_name && slugify(p.dealer_name) === slug,
+  const match = ((data ?? []) as unknown as Array<{ id: string; dealer_name: string | null; full_name: string | null; avatar_url: string | null; created_at: string; is_dealer: boolean }>).find(
+    (p) => p.dealer_name && slugify(p.dealer_name) === slug,
   );
   if (!match) return undefined;
 
