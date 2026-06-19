@@ -8,6 +8,7 @@ import { Listing } from '@/types/listing';
 import { cn } from '@/lib/utils';
 import { useCompare } from '@/hooks/useCompare';
 import { useFavorites } from '@/hooks/useFavorites';
+import { getSellerLabel } from '@/lib/sellerType';
 import { StatusBadge } from './StatusBadge';
 import { ListingImageCarousel } from './ListingImageCarousel';
 
