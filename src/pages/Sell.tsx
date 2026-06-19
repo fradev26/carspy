@@ -222,6 +222,7 @@ export default function Sell() {
         modelVersion: data.model_version || '',
         price: data.price ? String(data.price) : '',
         priceNegotiable: data.price_negotiable === true ? 'yes' : data.price_negotiable === false ? 'no' : '',
+        vatDeductible: data.vat_deductible === true,
         description: data.description || '',
         city: data.city || '',
         features: { ...EMPTY_FEATURES, ...featuresFromSpecs },
