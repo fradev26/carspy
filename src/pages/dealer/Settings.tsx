@@ -162,6 +162,17 @@ export default function DealerSettings() {
           </div>
         </SheetContent>
       </Sheet>
+
+      <Sheet open={stubOpen !== null} onOpenChange={(v) => !v && setStubOpen(null)}>
+        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>{stubOpen ? STUBS[stubOpen].name : ''} koppeling</SheetTitle>
+          </SheetHeader>
+          <div className="mt-4">
+            {stubOpen && <ComingSoonConnectionPanel name={STUBS[stubOpen].name} description={STUBS[stubOpen].description} />}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
