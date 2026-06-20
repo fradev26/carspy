@@ -6,6 +6,10 @@
   <url><loc>https://vatuur.be/dealers</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://vatuur.be/wat-is-mijn-auto-waard</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://vatuur.be/vergelijken</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://vatuur.be/zakelijk</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://vatuur.be/zakelijk/voorraad</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
+  <url><loc>https://vatuur.be/help</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://vatuur.be/contact</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
   <url><loc>https://vatuur.be/privacy</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
   <url><loc>https://vatuur.be/voorwaarden</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
   <url><loc>https://vatuur.be/dealer/autoworld-amsterdam</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
@@ -22,4 +26,27 @@
   <url><loc>https://vatuur.be/dealer/volkswagen-leeuwarden</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://vatuur.be/dealer/bmw-apeldoorn</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://vatuur.be/dealer/mercedes-benz-den-bosch</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://vatuur.be/auto/4189bb29-af2c-4fa7-998f-a5726c7d1d83</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://vatuur.be/auto/ade273cd-3218-469d-a796-48b85768dc09</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://vatuur.be/auto/ae0cbfd0-72b7-4e3e-a2e4-43f1eb085c32</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://vatuur.be/auto/87e3c9f6-039e-4bd3-8998-f0862f0d7345</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://vatuur.be/auto/983f165a-3b7b-4d60-947f-abf4414c0c42</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://vatuur.be/auto/988231e5-03ed-402a-8158-58a3d66e9429</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://vatuur.be/auto/b44a9e90-e47a-44db-888c-c940cb895712</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://vatuur.be/auto/c54b7ace-ac65-4390-9cdf-172d7cfac4f2</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://vatuur.be/auto/3b9dead7-250f-4e22-951d-fa229d6dd20d</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://vatuur.be/auto/1bff8db5-71f3-4c39-bb62-c1dbb78e44ba</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://vatuur.be/auto/c75cab73-2025-4822-b34f-c8d4ae9cddb2</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://vatuur.be/auto/b02e1355-7419-4581-be2b-c15cfb563e13</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://vatuur.be/auto/4d140af6-1d74-4338-b18b-ebac515d2248</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://vatuur.be/auto/7950db98-22ff-4b08-94c1-0183f4b451cb</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://vatuur.be/auto/a6c7e1cc-2241-4666-9f5a-209836a730a4</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://vatuur.be/auto/76d8fef5-61a9-49a8-86da-9c6c434850a4</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://vatuur.be/auto/558488b8-a74e-4348-a08e-11a92a5bca18</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://vatuur.be/auto/f65580af-3d74-435b-b99c-19f8d5ce78b5</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://vatuur.be/auto/cbed2d59-dff7-4b1a-8ce7-1baca55ec8c7</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://vatuur.be/auto/85fb30db-9bef-43fb-954c-b1f805b85628</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://vatuur.be/auto/5735459f-8b5f-4ad4-9109-fbd210fa84fb</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://vatuur.be/auto/3b5586a9-e8e4-4034-9e47-20068ac723aa</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://vatuur.be/auto/aa7f4adc-f1e1-47a2-9c34-e885b661547c</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
 </urlset>

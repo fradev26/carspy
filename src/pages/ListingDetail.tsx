@@ -462,10 +462,10 @@ export default function ListingDetail() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="icon" className={cn("border-border/60", isFavorite && "text-accent")} onClick={handleFavoriteToggle}>
+                  <Button variant="outline" size="icon" aria-label={isFavorite ? "Verwijder uit favorieten" : "Voeg toe aan favorieten"} aria-pressed={isFavorite} className={cn("border-border/60", isFavorite && "text-accent")} onClick={handleFavoriteToggle}>
                     <Heart className={cn("h-5 w-5", isFavorite && "fill-current")} />
                   </Button>
-                  <Button variant="outline" size="icon" className="border-border/60" onClick={handleShare}>
+                  <Button variant="outline" size="icon" aria-label="Deel deze advertentie" className="border-border/60" onClick={handleShare}>
                     <Share2 className="h-5 w-5" />
                   </Button>
                 </div>
@@ -932,13 +932,13 @@ export default function ListingDetail() {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button variant="outline" size="icon" className={cn("border-border/60 flex-shrink-0", isFavorite && "text-accent border-accent")} onClick={handleFavoriteToggle}>
+                  <Button variant="outline" size="icon" aria-label={isFavorite ? "Verwijder uit favorieten" : "Voeg toe aan favorieten"} aria-pressed={isFavorite} className={cn("border-border/60 flex-shrink-0", isFavorite && "text-accent border-accent")} onClick={handleFavoriteToggle}>
                     <Heart className={cn("h-5 w-5", isFavorite && "fill-current")} />
                   </Button>
-                  <Button variant="outline" size="icon" className="border-border/60 flex-shrink-0" onClick={handleShare}>
+                  <Button variant="outline" size="icon" aria-label="Deel deze advertentie" className="border-border/60 flex-shrink-0" onClick={handleShare}>
                     <Share2 className="h-5 w-5" />
                   </Button>
-                  <Button variant={isComparing ? "default" : "outline"} size="icon" className={cn("flex-shrink-0", !isComparing && "border-border/60")} onClick={() => listing && add(listing)} disabled={isComparing}>
+                  <Button variant={isComparing ? "default" : "outline"} size="icon" aria-label={isComparing ? "Toegevoegd aan vergelijking" : "Voeg toe aan vergelijking"} aria-pressed={isComparing} className={cn("flex-shrink-0", !isComparing && "border-border/60")} onClick={() => listing && add(listing)} disabled={isComparing}>
                     <GitCompareArrows className="h-5 w-5" />
                   </Button>
                 </div>

@@ -388,6 +388,8 @@ export default function Search() {
                     <Button
                       variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
                       size="icon"
+                      aria-label="Toon resultaten als rasterweergave"
+                      aria-pressed={viewMode === 'grid'}
                       className="h-8 w-8"
                       onClick={() => setViewMode('grid')}
                     >
@@ -396,6 +398,8 @@ export default function Search() {
                     <Button
                       variant={viewMode === 'list' ? 'secondary' : 'ghost'}
                       size="icon"
+                      aria-label="Toon resultaten als lijstweergave"
+                      aria-pressed={viewMode === 'list'}
                       className="h-8 w-8"
                       onClick={() => setViewMode('list')}
                     >

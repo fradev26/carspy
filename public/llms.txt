@@ -1,37 +1,43 @@
 # VATUUR.
 
-> VATUUR. is een Nederlands platform voor het kopen en verkopen van tweedehands auto's.
+> VATUUR. is een Nederlands platform voor het kopen en verkopen van tweedehands auto's in Nederland en België.
 
 ## Wat is VATUUR?
-VATUUR. is een online marktplaats voor occasions (tweedehands auto's) in Nederland en België. Het platform brengt kopers en verkopers samen en biedt uitgebreide zoek- en vergelijkingsfuncties.
+VATUUR. is een online marktplaats voor occasions (tweedehands auto's) in Nederland en België. Het platform brengt kopers en geverifieerde dealers samen en biedt uitgebreide zoek-, vergelijk- en AI-functies.
+
+## Pages
+- [Home](/): Overzicht van VATUUR. en directe toegang tot zoeken
+- [Auto's zoeken](/zoeken): Doorzoek 25.000+ occasions met filters op merk, model, prijs, brandstof en meer
+- [Auto verkopen](/verkopen): Plaats gratis een advertentie in een paar stappen
+- [Wat is mijn auto waard](/wat-is-mijn-auto-waard): AI-gebaseerde gratis waardebepaling van je voertuig
+- [Vergelijken](/vergelijken): Vergelijk tot 3 wagens naast elkaar op specs, prijs en uitrusting
+- [Dealers](/dealers): Overzicht van geverifieerde autodealers in Nederland en België
+- [Voor dealers](/zakelijk): Zakelijke functies, voorraadbeheer en AI-tools voor autobedrijven
+- [Help](/help): Veelgestelde vragen en ondersteuning
+- [Contact](/contact): Contactgegevens en supportkanalen
 
 ## Belangrijkste functies
 
 ### Zoeken
 - Zoek op merk, model, prijs, bouwjaar, kilometerstand, brandstof, transmissie, carrosserie en meer
 - Geavanceerde filters voor kleur, vermogen, aandrijving, interieur en uitrusting
-- Resultaten sorteren op prijs, bouwjaar, kilometerstand of nieuwste eerst
-- Premium en geboste advertenties worden bovenaan getoond
+- AI-zoekbalk: beschrijf wat je zoekt in gewone taal
 
 ### Vergelijken
-- Vergelijk tot 3 auto's naast elkaar
-- Vergelijk specificaties: prijs, bouwjaar, km-stand, vermogen, brandstof, transmissie
-- Vergelijk uitrusting en features
+- Vergelijk tot 3 auto's naast elkaar op prijs, bouwjaar, km-stand, vermogen, brandstof, transmissie en uitrusting
 
 ### Verkopen
-- Plaats gratis een advertentie in een paar stappen
-- Upload tot 10 foto's
-- AI-gegenereerde beschrijvingen beschikbaar
-- Premium en boost opties voor meer zichtbaarheid
+- Plaats gratis een advertentie, upload tot 10 foto's, AI-gegenereerde beschrijvingen
 
-### Prijsindicatie
-- Elke auto krijgt een prijsindicatie: goede prijs, eerlijke prijs, of boven marktgemiddelde
-- Gebaseerd op vergelijkbare auto's in de database
+### Prijsindicatie & dealscore
+- Elke auto krijgt een prijsindicatie (onder/op/boven marktwaarde) en een AI-dealscore (1–10)
 
 ### Dealers
-- Geverifieerde dealers worden gemarkeerd
-- Dealer reviews en ratings
-- Dealer dashboard met analytics
+- Enkel geverifieerde dealers met handelsgeschiedenis, beoordelingen en contactgegevens
+
+## Optional
+- [Privacy](/privacy): Privacybeleid (GDPR-conform)
+- [Voorwaarden](/voorwaarden): Algemene gebruiksvoorwaarden
 
 ## Technische details
 - Website: https://vatuur.be

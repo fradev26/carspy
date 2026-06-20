@@ -144,13 +144,11 @@ const Index = () => {
   return (
     <div className="flex flex-col">
       <SEOHead
-        title="VATUUR. - Tweedehands auto's kopen en verkopen in Nederland en België"
+        title="VATUUR. — Tweedehands auto's kopen & verkopen in NL & BE"
         description="Doorzoek 25.000+ occasions. Vind jouw perfecte tweedehands auto bij geverifieerde dealers in Nederland en België."
         canonical="https://vatuur.be/"
         jsonLd={websiteJsonLd}
       />
-      {/* Mobile-only H1 for SEO (desktop H1 lives inside hero) */}
-      <h1 className="sr-only lg:hidden">Tweedehands auto's kopen en verkopen in Nederland en België</h1>
 
 
       {/* Hero Section — desktop only */}
