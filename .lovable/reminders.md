@@ -1,5 +1,9 @@
 # Open Reminders
 
+## Productframework = source of truth
+`docs/product/PRODUCTFRAMEWORK.md` (juli 2026) is leidend voor alle feature-werk. Elke PR/feature verwijst naar het A#/B#-nummer uit het framework. Bij conflict met bestaande code wint het framework — behalve waar werkende functionaliteit expliciet niet strijdig is. Zie `docs/product/BACKLOG.md` voor de gefaseerde backlog en `docs/product/OPEN_QUESTIONS.md` voor openstaande beslispunten.
+
+
 ## Handmatige E2E rooktest (uitgesteld op 16 juni 2026)
 Loop `.lovable/sprint2-smoketest.md` door vóór hard-launch:
 1. Register → Login → Logout
