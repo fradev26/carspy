@@ -191,6 +191,7 @@ function FavoritesTab() {
   const { items: compareItems } = useCompare();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [sort, setSort] = useState<SortKey>('recent');
 
   useEffect(() => {
@@ -280,6 +281,18 @@ function FavoritesTab() {
       <div className="flex justify-center py-12">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <EmptyState
+        icon={Heart}
+        title="Favorieten laden mislukt"
+        text={loadError}
+        ctaLabel="Opnieuw proberen"
+        ctaTo="/favorieten"
+      />
     );
   }
 

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useLayoutEffect, useMemo, memo } from 'rea
 import { Link, useSearchParams } from 'react-router-dom';
 import { MessageCircle, Send, ArrowLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
