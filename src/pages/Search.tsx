@@ -458,58 +458,31 @@ export default function Search() {
                     />
                   ))}
                 </div>
-              ) : total > 0 ? (
+              ) : listingsError && pageListings.length === 0 ? (
+                <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 py-12 text-center">
+                  <h3 className="text-lg font-semibold">Zoekresultaten konden niet geladen worden</h3>
+                  <p className="max-w-sm text-sm text-muted-foreground">
+                    Er ging iets mis bij het ophalen van de advertenties. Probeer het opnieuw.
+                  </p>
+                  <Button variant="outline" onClick={() => refetch()}>Opnieuw proberen</Button>
+                </div>
+              ) : pageListings.length > 0 ? (
                 <>
-                  <ListingGrid listings={pageListings} variant={viewMode} columns={3} />
-                  
-                  {/* Pagination */}
-                  {total > perPage && (
-                    <div className="mt-8 flex items-center justify-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={page === 1}
-                        onClick={() => { setPage(p => p - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                        className="border-border/60"
-                      >
-                        Vorige
-                      </Button>
-                      {Array.from({ length: Math.min(Math.ceil(total / perPage), 7) }, (_, i) => {
-                        const totalPages = Math.ceil(total / perPage);
-                        let pageNum: number;
-                        if (totalPages <= 7) {
-                          pageNum = i + 1;
-                        } else if (page <= 4) {
-                          pageNum = i + 1;
-                        } else if (page >= totalPages - 3) {
-                          pageNum = totalPages - 6 + i;
-                        } else {
-                          pageNum = page - 3 + i;
-                        }
-                        return (
-                          <Button
-                            key={pageNum}
-                            variant={page === pageNum ? 'default' : 'outline'}
-                            size="sm"
-                            className={cn("w-9 h-9", page !== pageNum && "border-border/60")}
-                            onClick={() => { setPage(pageNum); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                          >
-                            {pageNum}
-                          </Button>
-                        );
-                      })}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={page >= Math.ceil(total / perPage)}
-                        onClick={() => { setPage(p => p + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                        className="border-border/60"
-                      >
-                        Volgende
-                      </Button>
-                    </div>
-                  )}
+                  <VirtualListingGrid listings={pageListings} variant={viewMode} />
+
+                  <InfiniteFeedFooter
+                    hasNextPage={!!hasNextPage}
+                    isFetchingNextPage={isFetchingNextPage}
+                    error={listingsError}
+                    onLoadMore={() => {
+                      if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+                    }}
+                    onRetry={() => fetchNextPage()}
+                    skeletonVariant={viewMode === 'list' ? 'horizontal' : 'default'}
+                    skeletonCount={viewMode === 'list' ? 2 : 3}
+                  />
                 </>
+
               ) : (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
                   <div className="flex h-16 w-16 items-center justify-center rounded-md bg-muted mb-4">
