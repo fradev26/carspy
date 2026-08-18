@@ -15,7 +15,7 @@ export function QuickChips({ onPick }: { onPick: (prompt: string) => void }) {
         <button
           key={c.label}
           onClick={() => onPick(c.prompt)}
-          className="rounded-full border border-border/60 bg-muted/40 px-3 py-1.5 text-xs font-medium text-foreground/80 transition-all hover:bg-primary/10 hover:text-primary hover:border-primary/30 active:scale-95"
+          className="rounded-full border border-border/60 bg-muted/40 px-3 py-1.5 text-xs font-medium text-foreground/80 transition-all hover:bg-primary/10 hover:text-primary-strong hover:border-primary/30 active:scale-95"
         >
           {c.label}
         </button>

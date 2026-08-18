@@ -71,7 +71,7 @@ export function AIFullscreenChat({ open, onClose }: Props) {
         </Button>
         <div className="flex items-center gap-2 flex-1">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <Sparkles className="h-4 w-4 text-primary-strong" />
           </div>
           <div>
             <p className="text-sm font-semibold">VATUUR. AI</p>
@@ -95,7 +95,7 @@ export function AIFullscreenChat({ open, onClose }: Props) {
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 px-4">
             <div className="flex h-16 w-16 items-center justify-center rounded-md bg-primary/10 mb-5">
-              <Sparkles className="h-8 w-8 text-primary" />
+              <Sparkles className="h-8 w-8 text-primary-strong" />
             </div>
             <h3 className="text-lg font-bold mb-1">Hoi! Ik ben VATUUR. AI</h3>
             <p className="text-sm text-muted-foreground text-center mb-8 max-w-xs">
@@ -106,7 +106,7 @@ export function AIFullscreenChat({ open, onClose }: Props) {
                 <button
                   key={s}
                   onClick={() => send(s)}
-                  className="rounded-md border border-border/60 bg-muted/50 px-3.5 py-2 text-xs text-foreground/80 transition-all hover:bg-primary/10 hover:text-primary hover:border-primary/30 active:scale-95"
+                  className="rounded-md border border-border/60 bg-muted/50 px-3.5 py-2 text-xs text-foreground/80 transition-all hover:bg-primary/10 hover:text-primary-strong hover:border-primary/30 active:scale-95"
                 >
                   {s}
                 </button>
@@ -133,7 +133,7 @@ export function AIFullscreenChat({ open, onClose }: Props) {
       <div className="border-t border-border/60 bg-card p-3 safe-bottom">
         <div className="flex items-end gap-2">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
-            <Bot className="h-5 w-5 text-primary" />
+            <Bot className="h-5 w-5 text-primary-strong" />
           </div>
           <textarea
             ref={inputRef}

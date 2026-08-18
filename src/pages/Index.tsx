@@ -265,7 +265,7 @@ const Index = () => {
               <Link
                 key={brand}
                 to={`/zoeken?brand=${encodeURIComponent(brand)}`}
-                className="rounded-md border border-border/70 bg-muted/50 px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
+                className="rounded-md border border-border/70 bg-muted/50 px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-primary-strong"
               >
                 {brand}
               </Link>
@@ -353,7 +353,7 @@ const Index = () => {
               <div className="mt-6">
                 <Link
                   to="/verkopen"
-                  className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-base font-semibold text-primary shadow-sm hover:bg-white/95 active:scale-95 transition-all min-h-[48px]"
+                  className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-base font-semibold text-primary-strong shadow-sm hover:bg-white/95 active:scale-95 transition-all min-h-[48px]"
                 >
                   Plaats mijn advertentie <ArrowRight className="h-5 w-5" />
                 </Link>
@@ -373,7 +373,7 @@ const Index = () => {
           <div className="grid gap-8 md:grid-cols-3">
             <div className="group text-center p-6 rounded-2xl transition-all duration-300 hover:bg-card hover:shadow-card-hover">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 group-hover:bg-primary/15 transition-colors">
-                <Shield className="h-7 w-7 text-primary" />
+                <Shield className="h-7 w-7 text-primary-strong" />
               </div>
               <h3 className="mt-5 text-lg font-semibold">Geverifieerde dealers</h3>
               <p className="mt-2 text-sm text-muted-foreground leading-relaxed">

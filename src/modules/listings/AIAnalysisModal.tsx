@@ -103,7 +103,7 @@ export function AIAnalysisModal({ listing, open, onOpenChange }: AIAnalysisModal
       <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
+            <Sparkles className="h-5 w-5 text-primary-strong" />
             VATUUR. AI Analyse
           </DialogTitle>
         </DialogHeader>
@@ -113,7 +113,7 @@ export function AIAnalysisModal({ listing, open, onOpenChange }: AIAnalysisModal
 
           {loading && (
             <div className="flex flex-col items-center gap-3 py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <Loader2 className="h-8 w-8 animate-spin text-primary-strong" />
               <p className="text-sm text-muted-foreground">AI analyseert dit voertuig uitgebreid...</p>
             </div>
           )}

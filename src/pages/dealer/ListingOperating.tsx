@@ -188,7 +188,7 @@ export default function ListingOperating() {
   if (loading) {
     return (
       <div className="container py-12 flex justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary-strong" />
       </div>
     );
   }
@@ -285,12 +285,12 @@ export default function ListingOperating() {
               <button
                 type="button"
                 onClick={() => setSheet('description')}
-                className="text-xs font-medium text-primary inline-flex items-center gap-1 hover:underline"
+                className="text-xs font-medium text-primary-strong inline-flex items-center gap-1 hover:underline"
               >
                 Bewerken <ChevronRight className="h-3 w-3" />
               </button>
               <Button variant="ghost" size="sm" className="gap-1.5 h-8 text-xs" onClick={() => setSheet('description')}>
-                <Sparkles className="h-3.5 w-3.5 text-primary" /> Herschrijven met AI
+                <Sparkles className="h-3.5 w-3.5 text-primary-strong" /> Herschrijven met AI
               </Button>
             </div>
           </div>
@@ -486,7 +486,7 @@ function QuickAction({
       )}
     >
       <div className="flex items-center gap-2">
-        <Icon className={cn('h-4 w-4', highlighted ? 'text-primary' : 'text-muted-foreground')} />
+        <Icon className={cn('h-4 w-4', highlighted ? 'text-primary-strong' : 'text-muted-foreground')} />
         <span className="text-sm font-medium">{label}</span>
       </div>
       {sub && <p className="text-xs text-muted-foreground mt-1 truncate">{sub}</p>}
@@ -842,7 +842,7 @@ function DescriptionSheet({
     >
       <Textarea value={local} onChange={(e) => setLocal(e.target.value)} rows={10} className="resize-none" />
       <Button variant="outline" className="w-full gap-1.5" onClick={rewriteAI} disabled={aiLoading}>
-        {aiLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-primary" />}
+        {aiLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-primary-strong" />}
         Herschrijven met AI
       </Button>
     </BottomSheet>

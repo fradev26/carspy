@@ -24,7 +24,7 @@ export function StickySaveBar({
       <div className="border-t border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-[0_-4px_16px_-4px_rgba(0,0,0,0.1)] safe-x">
         <div className="container max-w-6xl flex items-center justify-between gap-3 py-3">
           <div className="flex items-center gap-2 text-sm text-muted-foreground min-w-0">
-            <AlertCircle className="h-4 w-4 text-primary shrink-0" />
+            <AlertCircle className="h-4 w-4 text-primary-strong shrink-0" />
             <span className="truncate">Wijzigingen niet opgeslagen</span>
           </div>
           <div className="flex items-center gap-2 shrink-0">

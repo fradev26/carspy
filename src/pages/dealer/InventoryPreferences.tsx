@@ -102,7 +102,7 @@ export default function InventoryPreferences() {
       <div className={cn('container max-w-6xl py-6 md:py-10 space-y-6', dirty && 'pb-32 md:pb-32')}>
         {/* Header */}
         <header className="space-y-1">
-          <div className="flex items-center gap-2 text-primary">
+          <div className="flex items-center gap-2 text-primary-strong">
             <SettingsIcon className="h-5 w-5" />
             <span className="text-xs font-semibold uppercase tracking-wider">Zakelijk</span>
           </div>
@@ -119,13 +119,13 @@ export default function InventoryPreferences() {
             <Card className="border-border/60 overflow-hidden bg-gradient-to-br from-card via-card to-primary/5 shadow-md">
               <CardContent className="p-5 space-y-4">
                 <div className="flex items-start gap-3">
-                  <div className="rounded-md bg-primary/15 text-primary p-2">
+                  <div className="rounded-md bg-primary/15 text-primary-strong p-2">
                     <CheckCircle2 className="h-5 w-5" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h2 className="text-lg font-semibold">Voorraadbeheer actief</h2>
-                      <Badge className="text-[10px] uppercase tracking-wider bg-primary/15 text-primary border-primary/30 hover:bg-primary/15">
+                      <Badge className="text-[10px] uppercase tracking-wider bg-primary/15 text-primary-strong border-primary/30 hover:bg-primary/15">
                         Aan
                       </Badge>
                     </div>
@@ -426,7 +426,7 @@ export default function InventoryPreferences() {
                       />
                       <div className="flex justify-between text-[10px] text-muted-foreground mt-2">
                         {SYNC_INTERVAL_OPTIONS.map((v) => (
-                          <span key={v} className={draft.sync_interval_minutes === v ? 'text-primary font-semibold' : ''}>
+                          <span key={v} className={draft.sync_interval_minutes === v ? 'text-primary-strong font-semibold' : ''}>
                             {v < 60 ? `${v}m` : `${v / 60}u`}
                           </span>
                         ))}
@@ -486,7 +486,7 @@ function RadioOption({
       <RadioGroupItem id={`opt-${value}`} value={value} className="mt-0.5" />
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium inline-flex items-center gap-1.5">
-          <span className="text-primary">{icon}</span> {label}
+          <span className="text-primary-strong">{icon}</span> {label}
         </p>
         <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">{sub}</p>
       </div>
@@ -511,7 +511,7 @@ function BulkButton({
     return (
       <Button asChild variant="outline" className="min-h-12 justify-start gap-2 font-medium">
         <Link to={to}>
-          <span className="text-primary">{icon}</span>
+          <span className="text-primary-strong">{icon}</span>
           {label}
           <ArrowRight className="h-3.5 w-3.5 ml-auto opacity-50" />
         </Link>
@@ -524,7 +524,7 @@ function BulkButton({
       className="min-h-12 justify-start gap-2 font-medium"
       onClick={onClick}
     >
-      <span className="text-primary">{icon}</span>
+      <span className="text-primary-strong">{icon}</span>
       {label}
     </Button>
   );

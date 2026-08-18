@@ -40,7 +40,7 @@ export default function Unsubscribe() {
     <main className="min-h-screen flex items-center justify-center bg-background p-6">
       <Card className="max-w-md w-full p-8 text-center space-y-4">
         <h1 className="text-2xl font-semibold">
-          VATUUR<span className="text-primary">.</span>
+          VATUUR<span className="text-primary-strong">.</span>
         </h1>
 
         {state === 'loading' && (

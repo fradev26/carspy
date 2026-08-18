@@ -157,7 +157,7 @@ export default function MyListings() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0">
-                            <Link to={`/auto/${l.id}`} className="font-semibold hover:text-primary truncate block">{l.title}</Link>
+                            <Link to={`/auto/${l.id}`} className="font-semibold hover:text-primary-strong truncate block">{l.title}</Link>
                             <p className="text-lg font-bold text-accent">{formatPrice(l.price)}</p>
                           </div>
                           <Badge variant={key === 'active' ? 'default' : key === 'sold' ? 'secondary' : 'outline'}>

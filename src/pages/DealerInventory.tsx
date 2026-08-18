@@ -202,7 +202,7 @@ export default function DealerInventory() {
         <header className="mb-6 rounded-xl border border-border/60 bg-card p-6 shadow-card">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-start gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-md bg-primary/10 text-primary text-2xl font-bold">
+              <div className="flex h-16 w-16 items-center justify-center rounded-md bg-primary/10 text-primary-strong text-2xl font-bold">
                 {dealerName.charAt(0)}
               </div>
               <div>

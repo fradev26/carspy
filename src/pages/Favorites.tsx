@@ -111,7 +111,7 @@ export default function Favorites() {
         />
         <div className="mx-auto max-w-md rounded-2xl border border-border bg-card p-8 text-center shadow-sm">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-            <Heart className="h-7 w-7 text-primary" />
+            <Heart className="h-7 w-7 text-primary-strong" />
           </div>
           <h1 className="mt-4 text-xl font-bold">Bewaar wagens, alerts en geschiedenis</h1>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -388,7 +388,7 @@ function RecentTab() {
             <CardContent className="p-4">
               <Link
                 to={`/auto/${it.id}`}
-                className="line-clamp-1 font-semibold hover:text-primary"
+                className="line-clamp-1 font-semibold hover:text-primary-strong"
               >
                 {it.title}
               </Link>
@@ -787,7 +787,7 @@ function EmptyState({
     <Card className="mt-2">
       <CardContent className="flex flex-col items-center gap-3 py-14 text-center">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-          <Icon className="h-7 w-7 text-primary" />
+          <Icon className="h-7 w-7 text-primary-strong" />
         </div>
         <h2 className="text-lg font-semibold">{title}</h2>
         <p className="max-w-sm text-sm text-muted-foreground">{text}</p>

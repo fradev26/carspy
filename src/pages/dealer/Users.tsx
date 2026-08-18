@@ -97,7 +97,7 @@ function initials(name?: string | null, email?: string | null) {
 
 function Avatar({ name, email, className }: { name?: string | null; email?: string | null; className?: string }) {
   return (
-    <div className={cn('flex items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-semibold shrink-0', className ?? 'h-10 w-10')}>
+    <div className={cn('flex items-center justify-center rounded-full bg-primary/10 text-primary-strong text-sm font-semibold shrink-0', className ?? 'h-10 w-10')}>
       {initials(name, email)}
     </div>
   );

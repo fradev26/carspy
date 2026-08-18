@@ -749,7 +749,7 @@ function FilterSection({ title, count, isOpen, onToggle, children }: FilterSecti
     <Collapsible open={isOpen} onOpenChange={onToggle} className="border-b border-border/40 py-3">
       <CollapsibleTrigger className="flex w-full items-center justify-between py-2 group min-h-11">
         <div className="flex items-center gap-2">
-          <span className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">
+          <span className="text-base font-semibold text-foreground group-hover:text-primary-strong transition-colors">
             {title}
           </span>
           {count > 0 && (

@@ -347,7 +347,7 @@ export default function Messages() {
               )}
             >
               <div className="flex items-center gap-3 min-w-0">
-                <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm shrink-0">
+                <div className="h-10 w-10 rounded-full bg-primary/10 text-primary-strong flex items-center justify-center font-semibold text-sm shrink-0">
                   {(conv.other_name || '?').slice(0, 1).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -397,7 +397,7 @@ export default function Messages() {
                 to={`/auto/${selectedConversation.listing_id}`}
                 className="flex-1 min-w-0 flex items-center gap-3 px-1 py-1 rounded-lg hover:bg-muted/50 transition-colors"
               >
-                <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-xs shrink-0">
+                <div className="h-9 w-9 rounded-full bg-primary/10 text-primary-strong flex items-center justify-center font-semibold text-xs shrink-0">
                   {(selectedConversation.other_name || '?').slice(0, 1).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0 text-left">

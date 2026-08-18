@@ -198,7 +198,7 @@ export default function AutoScoutPanel() {
       <Card className="border-border/60">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Link2 className="h-5 w-5 text-primary" />
+            <Link2 className="h-5 w-5 text-primary-strong" />
             <CardTitle>AutoScout24-koppeling</CardTitle>
           </div>
           <CardDescription>

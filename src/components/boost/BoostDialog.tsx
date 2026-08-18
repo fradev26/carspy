@@ -270,7 +270,7 @@ export function BoostDialog({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Rocket className="h-5 w-5 text-primary" />
+            <Rocket className="h-5 w-5 text-primary-strong" />
             {isBulk ? `${targets.length} wagens boosten` : 'Wagen boosten'}
           </DialogTitle>
           <DialogDescription>
@@ -406,8 +406,8 @@ export function BoostDialog({
                   </span>
                 )}
                 <div className="flex items-center justify-between">
-                  <Icon className={cn('h-4 w-4', isActive ? 'text-primary' : 'text-muted-foreground')} />
-                  {isActive && <Check className="h-4 w-4 text-primary" />}
+                  <Icon className={cn('h-4 w-4', isActive ? 'text-primary-strong' : 'text-muted-foreground')} />
+                  {isActive && <Check className="h-4 w-4 text-primary-strong" />}
                 </div>
                 <div className="mt-2 font-semibold text-sm">{p.name}</div>
                 <div className="text-xs text-muted-foreground">{p.duration_days} dagen</div>

@@ -254,7 +254,7 @@ export default function Subscription() {
 
       {/* Pagina-header */}
       <header className="space-y-1">
-        <div className="flex items-center gap-2 text-primary">
+        <div className="flex items-center gap-2 text-primary-strong">
           <CreditCard className="h-5 w-5" />
           <span className="text-xs font-semibold uppercase tracking-wider">Zakelijk</span>
         </div>
@@ -272,7 +272,7 @@ export default function Subscription() {
                   variant={hasActivePlan ? 'default' : 'outline'}
                   className={cn(
                     'text-[10px] uppercase tracking-wider gap-1',
-                    hasActivePlan && 'bg-primary/10 text-primary border-primary/30 hover:bg-primary/10',
+                    hasActivePlan && 'bg-primary/10 text-primary-strong border-primary/30 hover:bg-primary/10',
                   )}
                 >
                   {hasActivePlan ? <Check className="h-3 w-3" /> : <Sparkles className="h-3 w-3" />}
@@ -295,7 +295,7 @@ export default function Subscription() {
                     {billing.extra_cents > 0 && (
                       <>
                         {' + extra boosts '}
-                        <span className="font-medium text-primary">{formatEUR(billing.extra_cents)}</span>
+                        <span className="font-medium text-primary-strong">{formatEUR(billing.extra_cents)}</span>
                       </>
                     )}
                   </p>
@@ -311,7 +311,7 @@ export default function Subscription() {
                 <div className="space-y-0.5">
                   <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Volgende factuur</p>
                   <p className="text-xs font-medium inline-flex items-center gap-1">
-                    <CalendarDays className="h-3 w-3 text-primary" />
+                    <CalendarDays className="h-3 w-3 text-primary-strong" />
                     {formatDate(nextInvoiceDate)}
                   </p>
                 </div>
@@ -407,7 +407,7 @@ export default function Subscription() {
         </div>
         {recommendedPlan && !hasActivePlan && (
           <p className="text-[11px] text-muted-foreground inline-flex items-center gap-1 px-1">
-            <ShieldCheck className="h-3 w-3 text-primary" />
+            <ShieldCheck className="h-3 w-3 text-primary-strong" />
             Geen verborgen kosten · maandelijks opzegbaar.
           </p>
         )}
@@ -590,7 +590,7 @@ function StatTile({
       <CardContent className="p-4 space-y-1">
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground font-medium">{label}</span>
-          <span className="text-primary">{icon}</span>
+          <span className="text-primary-strong">{icon}</span>
         </div>
         <p className="text-2xl font-bold tabular-nums leading-tight">{value}</p>
         {sub && <p className="text-[11px] text-muted-foreground">{sub}</p>}
@@ -648,7 +648,7 @@ function PlanCard({
           <div className="flex items-center justify-between gap-2">
             <p className="font-semibold text-base">{plan.name}</p>
             {current && (
-              <Badge variant="outline" className="text-[10px] border-primary/40 text-primary gap-1">
+              <Badge variant="outline" className="text-[10px] border-primary/40 text-primary-strong gap-1">
                 <Check className="h-3 w-3" /> Actief
               </Badge>
             )}
@@ -697,7 +697,7 @@ function PlanCard({
 function PlanBenefit({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
   return (
     <li className="flex items-start gap-2 text-muted-foreground">
-      <span className="mt-0.5 text-primary shrink-0">{icon}</span>
+      <span className="mt-0.5 text-primary-strong shrink-0">{icon}</span>
       <span className="leading-snug">{children}</span>
     </li>
   );

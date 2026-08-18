@@ -72,7 +72,7 @@ export default function AcceptInvite() {
       <SEOHead title={`Uitnodiging · ${peek.company_name}`} description="Word lid van een dealeraccount op VATUUR." />
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Mail className="h-5 w-5 text-primary" /> Je bent uitgenodigd</CardTitle>
+          <CardTitle className="flex items-center gap-2"><Mail className="h-5 w-5 text-primary-strong" /> Je bent uitgenodigd</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>

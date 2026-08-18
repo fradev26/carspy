@@ -16,7 +16,7 @@ export function PreferenceCard({ icon, title, description, children, className }
       <CardContent className="p-5 space-y-4">
         <div className="flex items-start gap-3">
           {icon && (
-            <div className="rounded-md bg-primary/10 text-primary p-2 shrink-0">{icon}</div>
+            <div className="rounded-md bg-primary/10 text-primary-strong p-2 shrink-0">{icon}</div>
           )}
           <div className="min-w-0">
             <h3 className="text-base font-semibold leading-tight">{title}</h3>

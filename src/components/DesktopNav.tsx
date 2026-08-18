@@ -65,7 +65,7 @@ export function DesktopNav({ isTransparent }: Props) {
           : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground';
         const activeCls = isTransparent
           ? 'bg-white/15 text-white backdrop-blur-sm'
-          : 'bg-muted text-primary';
+          : 'bg-muted text-primary-strong';
 
         return (
           <Link

@@ -401,7 +401,7 @@ function DealerCard({
         <div className="min-w-0">
           <Link
             to={`/zakelijk/voorraad/${l.id}`}
-            className="block font-semibold text-sm leading-tight truncate hover:text-primary"
+            className="block font-semibold text-sm leading-tight truncate hover:text-primary-strong"
           >
             {l.title}
           </Link>
@@ -473,7 +473,7 @@ function EmptyState() {
     <Card className="border-dashed border-border/60">
       <CardContent className="py-14 text-center space-y-4">
         <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-          <Car className="h-6 w-6 text-primary" />
+          <Car className="h-6 w-6 text-primary-strong" />
         </div>
         <div className="space-y-1">
           <h3 className="text-lg font-semibold">Je eerste auto staat één klik weg</h3>
@@ -483,7 +483,7 @@ function EmptyState() {
           <Button asChild size="lg" className="gap-1.5">
             <Link to="/verkopen?dealer=1"><Plus className="h-4 w-4" /> Eerste voertuig toevoegen</Link>
           </Button>
-          <Button asChild variant="link" className="text-muted-foreground hover:text-primary">
+          <Button asChild variant="link" className="text-muted-foreground hover:text-primary-strong">
             <Link to="/zakelijk/import">Of importeer via CSV</Link>
           </Button>
         </div>

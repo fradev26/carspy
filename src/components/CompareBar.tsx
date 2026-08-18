@@ -13,7 +13,7 @@ export function CompareBar() {
     <div className="fixed bottom-nav-above md:bottom-0 left-0 right-0 z-40 border-t border-border/60 bg-card/95 backdrop-blur-lg shadow-elevated animate-in slide-in-from-bottom-4 duration-300 safe-x md:safe-bottom">
       <div className="container mx-auto flex items-center justify-between gap-3 px-4 py-3">
         <div className="flex items-center gap-3 overflow-x-auto">
-          <GitCompareArrows className="h-5 w-5 shrink-0 text-primary" />
+          <GitCompareArrows className="h-5 w-5 shrink-0 text-primary-strong" />
           <div className="flex items-center gap-2">
             {items.map((item) => (
               <div

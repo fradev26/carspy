@@ -35,7 +35,7 @@ export default function Help() {
       <SEOHead title="Helpcentrum — VATUUR." description="Antwoorden op de meest gestelde vragen over kopen, verkopen en je VATUUR-account." jsonLd={faqJsonLd as any} />
 
       <div className="mx-auto max-w-3xl text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary"><HelpCircle className="h-6 w-6" /></div>
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary-strong"><HelpCircle className="h-6 w-6" /></div>
         <h1 className="mt-4 text-3xl font-bold">Helpcentrum</h1>
         <p className="mt-2 text-muted-foreground">Vind snel antwoorden op je vragen over VATUUR.</p>
         <div className="relative mt-6">
@@ -70,7 +70,7 @@ export default function Help() {
 
       <Card className="mx-auto mt-10 max-w-3xl bg-muted/40">
         <CardContent className="flex flex-col items-center gap-3 py-8 text-center sm:flex-row sm:text-left">
-          <Mail className="h-8 w-8 text-primary" />
+          <Mail className="h-8 w-8 text-primary-strong" />
           <div className="flex-1">
             <h3 className="font-semibold">Geen antwoord gevonden?</h3>
             <p className="text-sm text-muted-foreground">Ons supportteam helpt je graag verder binnen één werkdag.</p>

@@ -77,7 +77,7 @@ function toneClasses(tone: Tone = 'neutral') {
     case 'danger':
       return 'bg-destructive/10 text-destructive border-destructive/20';
     case 'info':
-      return 'bg-primary/10 text-primary border-primary/20';
+      return 'bg-primary/10 text-primary-strong border-primary/20';
     default:
       return 'bg-muted text-muted-foreground border-border';
   }
@@ -92,7 +92,7 @@ function kpiAccent(tone: Tone = 'neutral') {
     case 'danger':
       return 'text-destructive';
     case 'info':
-      return 'text-primary';
+      return 'text-primary-strong';
     default:
       return 'text-foreground';
   }
@@ -141,7 +141,7 @@ export function SalesAIResponse({ rawContent }: Props) {
   if (hasFence && !complete) {
     return (
       <div className="flex items-center gap-2 rounded-xl border border-border/60 bg-card px-3 py-2.5 text-sm text-muted-foreground">
-        <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+        <Sparkles className="h-4 w-4 text-primary-strong animate-pulse" />
         SalesAI denkt na…
       </div>
     );
@@ -178,11 +178,11 @@ export function SalesAIResponse({ rawContent }: Props) {
       {summary && (
         <Card className="border-primary/30 bg-gradient-to-br from-primary/5 via-card to-card shadow-sm">
           <CardContent className="flex gap-3 p-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary-strong">
               <Lightbulb className="h-5 w-5" />
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">SalesAI Advies</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-primary-strong">SalesAI Advies</p>
               <p className="text-sm font-medium leading-snug mt-0.5">{summary}</p>
             </div>
           </CardContent>
@@ -202,7 +202,7 @@ export function SalesAIResponse({ rawContent }: Props) {
                       <CardTitle className="text-base leading-tight truncate">{o.title}</CardTitle>
                       <div className="flex items-baseline gap-3 mt-1">
                         {formatEuro(o.price) && (
-                          <span className="text-sm font-semibold text-primary">{formatEuro(o.price)}</span>
+                          <span className="text-sm font-semibold text-primary-strong">{formatEuro(o.price)}</span>
                         )}
                         {formatEuro(o.margin) && (
                           <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
@@ -214,7 +214,7 @@ export function SalesAIResponse({ rawContent }: Props) {
                     {o.listing_id && (
                       <Link
                         to={`/zakelijk/voorraad/${o.listing_id}`}
-                        className="text-xs text-primary hover:underline shrink-0 inline-flex items-center gap-1"
+                        className="text-xs text-primary-strong hover:underline shrink-0 inline-flex items-center gap-1"
                       >
                         Open <ArrowRight className="h-3 w-3" />
                       </Link>

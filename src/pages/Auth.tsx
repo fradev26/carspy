@@ -130,7 +130,7 @@ function LoginForm() {
           <button
             type="button"
             onClick={() => setMode('forgot')}
-            className="text-xs text-primary hover:underline focus-ring rounded"
+            className="text-xs text-primary-strong hover:underline focus-ring rounded"
           >
             Wachtwoord vergeten?
           </button>
