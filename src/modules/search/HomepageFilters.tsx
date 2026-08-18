@@ -238,8 +238,8 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
                 <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Kilometerstand</Label>
                 <div className="flex items-center gap-2">
                   <Select value={filters.minMileage?.toString() || ''} onValueChange={(v) => updateFilter('minMileage', v && v !== 'none' ? parseInt(v) : undefined)}>
-                    <SelectTrigger className="flex-1 h-9 border-border/60 text-sm">
-                      <SelectValue placeholder="Min" />
+                    <SelectTrigger aria-label="Min" className="flex-1 h-9 border-border/60 text-sm">
+<SelectValue placeholder="Min" />
                     </SelectTrigger>
                     <SelectContent className="bg-card">
                       <SelectItem value="none">Geen min</SelectItem>
@@ -250,8 +250,8 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
                   </Select>
                   <span className="text-muted-foreground text-xs">—</span>
                   <Select value={filters.maxMileage?.toString() || ''} onValueChange={(v) => updateFilter('maxMileage', v && v !== 'none' ? parseInt(v) : undefined)}>
-                    <SelectTrigger className="flex-1 h-9 border-border/60 text-sm">
-                      <SelectValue placeholder="Max" />
+                    <SelectTrigger aria-label="Max" className="flex-1 h-9 border-border/60 text-sm">
+<SelectValue placeholder="Max" />
                     </SelectTrigger>
                     <SelectContent className="bg-card">
                       <SelectItem value="none">Geen max</SelectItem>
@@ -374,8 +374,8 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
                 <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Vermogen (pk)</Label>
                 <div className="flex items-center gap-2">
                   <Select value={filters.minPower?.toString() || ''} onValueChange={(v) => updateFilter('minPower', v && v !== 'none' ? parseInt(v) : undefined)}>
-                    <SelectTrigger className="flex-1 h-9 border-border/60 text-sm">
-                      <SelectValue placeholder="Min pk" />
+                    <SelectTrigger aria-label="Min pk" className="flex-1 h-9 border-border/60 text-sm">
+<SelectValue placeholder="Min pk" />
                     </SelectTrigger>
                     <SelectContent className="bg-card">
                       <SelectItem value="none">Geen min</SelectItem>
@@ -386,8 +386,8 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
                   </Select>
                   <span className="text-muted-foreground text-xs">—</span>
                   <Select value={filters.maxPower?.toString() || ''} onValueChange={(v) => updateFilter('maxPower', v && v !== 'none' ? parseInt(v) : undefined)}>
-                    <SelectTrigger className="flex-1 h-9 border-border/60 text-sm">
-                      <SelectValue placeholder="Max pk" />
+                    <SelectTrigger aria-label="Max pk" className="flex-1 h-9 border-border/60 text-sm">
+<SelectValue placeholder="Max pk" />
                     </SelectTrigger>
                     <SelectContent className="bg-card">
                       <SelectItem value="none">Geen max</SelectItem>
@@ -440,8 +440,8 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
                 <div className="space-y-2">
                   <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Min. deuren</Label>
                   <Select value={filters.minDoors?.toString() || ''} onValueChange={(v) => updateFilter('minDoors', v && v !== 'none' ? parseInt(v) : undefined)}>
-                    <SelectTrigger className="h-9 border-border/60 text-sm">
-                      <SelectValue placeholder="Alle" />
+                    <SelectTrigger aria-label="Alle" className="h-9 border-border/60 text-sm">
+<SelectValue placeholder="Alle" />
                     </SelectTrigger>
                     <SelectContent className="bg-card">
                       <SelectItem value="none">Alle</SelectItem>
@@ -454,8 +454,8 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
                 <div className="space-y-2">
                   <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Min. zitplaatsen</Label>
                   <Select value={filters.minSeats?.toString() || ''} onValueChange={(v) => updateFilter('minSeats', v && v !== 'none' ? parseInt(v) : undefined)}>
-                    <SelectTrigger className="h-9 border-border/60 text-sm">
-                      <SelectValue placeholder="Alle" />
+                    <SelectTrigger aria-label="Alle" className="h-9 border-border/60 text-sm">
+<SelectValue placeholder="Alle" />
                     </SelectTrigger>
                     <SelectContent className="bg-card">
                       <SelectItem value="none">Alle</SelectItem>
@@ -546,8 +546,8 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Provincie</Label>
                 <Select value={filters.province || ''} onValueChange={(v) => updateFilter('province', v === 'all' ? undefined : v)}>
-                  <SelectTrigger className="h-9 border-border/60 text-sm">
-                    <SelectValue placeholder="Alle provincies" />
+                  <SelectTrigger aria-label="Alle provincies" className="h-9 border-border/60 text-sm">
+<SelectValue placeholder="Alle provincies" />
                   </SelectTrigger>
                   <SelectContent className="bg-card max-h-64">
                     <SelectItem value="all">Alle provincies</SelectItem>
@@ -564,8 +564,8 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Zoekstraal</Label>
                 <Select value={filters.radius?.toString() || ''} onValueChange={(v) => updateFilter('radius', v && v !== 'none' ? parseInt(v) : undefined)}>
-                  <SelectTrigger className="h-9 border-border/60 text-sm">
-                    <SelectValue placeholder="Heel land" />
+                  <SelectTrigger aria-label="Heel land" className="h-9 border-border/60 text-sm">
+<SelectValue placeholder="Heel land" />
                   </SelectTrigger>
                   <SelectContent className="bg-card">
                     <SelectItem value="none">Heel land</SelectItem>
@@ -580,8 +580,8 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Online sinds</Label>
                 <Select value={filters.onlineSince || ''} onValueChange={(v) => updateFilter('onlineSince', v === 'all' ? undefined : v as any)}>
-                  <SelectTrigger className="h-9 border-border/60 text-sm">
-                    <SelectValue placeholder="Alle advertenties" />
+                  <SelectTrigger aria-label="Alle advertenties" className="h-9 border-border/60 text-sm">
+<SelectValue placeholder="Alle advertenties" />
                   </SelectTrigger>
                   <SelectContent className="bg-card">
                     <SelectItem value="all">Alle advertenties</SelectItem>
@@ -628,8 +628,8 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Max. eigenaren</Label>
                 <Select value={filters.maxPreviousOwners?.toString() || ''} onValueChange={(v) => updateFilter('maxPreviousOwners', v && v !== 'none' ? parseInt(v) : undefined)}>
-                  <SelectTrigger className="h-9 border-border/60 text-sm">
-                    <SelectValue placeholder="Maakt niet uit" />
+                  <SelectTrigger aria-label="Maakt niet uit" className="h-9 border-border/60 text-sm">
+<SelectValue placeholder="Maakt niet uit" />
                   </SelectTrigger>
                   <SelectContent className="bg-card">
                     <SelectItem value="none">Maakt niet uit</SelectItem>
@@ -644,8 +644,8 @@ export function HomepageFilters({ filters, onFiltersChange, className }: Homepag
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Garantie</Label>
                 <Select value={filters.minWarranty || ''} onValueChange={(v) => updateFilter('minWarranty', v === 'none' ? undefined : v as any)}>
-                  <SelectTrigger className="h-9 border-border/60 text-sm">
-                    <SelectValue placeholder="Maakt niet uit" />
+                  <SelectTrigger aria-label="Maakt niet uit" className="h-9 border-border/60 text-sm">
+<SelectValue placeholder="Maakt niet uit" />
                   </SelectTrigger>
                   <SelectContent className="bg-card">
                     <SelectItem value="none">Maakt niet uit</SelectItem>

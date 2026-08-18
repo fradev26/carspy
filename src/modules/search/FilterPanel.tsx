@@ -223,8 +223,8 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
                 });
               }}
             >
-              <SelectTrigger className="h-12 border-border/60 text-base">
-                <SelectValue placeholder="Alle merken" />
+              <SelectTrigger aria-label="Alle merken" className="h-12 border-border/60 text-base">
+<SelectValue placeholder="Alle merken" />
               </SelectTrigger>
               <SelectContent className="bg-card max-h-72">
                 <SelectItem value="all">Alle merken</SelectItem>
@@ -240,8 +240,8 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
             <div className="space-y-2 animate-fade-in">
               <Label className="text-sm font-medium text-foreground">Model</Label>
               <Select value={filters.model || ''} onValueChange={(v) => updateFilter('model', v === 'all' ? undefined : v)}>
-                <SelectTrigger className="h-12 border-border/60 text-base">
-                  <SelectValue placeholder="Alle modellen" />
+                <SelectTrigger aria-label="Alle modellen" className="h-12 border-border/60 text-base">
+<SelectValue placeholder="Alle modellen" />
                 </SelectTrigger>
                 <SelectContent className="bg-card max-h-72">
                   <SelectItem value="all">Alle modellen</SelectItem>
@@ -460,7 +460,8 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
           <div className="space-y-2">
             <Label className="text-sm font-medium text-foreground">Min. aantal deuren</Label>
             <Select value={filters.minDoors?.toString() || ''} onValueChange={(v) => updateFilter('minDoors', v && v !== 'none' ? parseInt(v) : undefined)}>
-              <SelectTrigger className="h-12 border-border/60 text-base"><SelectValue placeholder="Alle" /></SelectTrigger>
+              <SelectTrigger aria-label="Alle" className="h-12 border-border/60 text-base">
+<SelectValue placeholder="Alle" /></SelectTrigger>
               <SelectContent className="bg-card">
                 <SelectItem value="none">Alle</SelectItem>
                 <SelectItem value="2">2+ deuren</SelectItem>
@@ -473,7 +474,8 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
           <div className="space-y-2">
             <Label className="text-sm font-medium text-foreground">Min. aantal zitplaatsen</Label>
             <Select value={filters.minSeats?.toString() || ''} onValueChange={(v) => updateFilter('minSeats', v && v !== 'none' ? parseInt(v) : undefined)}>
-              <SelectTrigger className="h-12 border-border/60 text-base"><SelectValue placeholder="Alle" /></SelectTrigger>
+              <SelectTrigger aria-label="Alle" className="h-12 border-border/60 text-base">
+<SelectValue placeholder="Alle" /></SelectTrigger>
               <SelectContent className="bg-card">
                 <SelectItem value="none">Alle</SelectItem>
                 <SelectItem value="2">2+ zitplaatsen</SelectItem>
@@ -492,7 +494,8 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
           <div className="space-y-2">
             <Label className="text-sm font-medium text-foreground">Land</Label>
             <Select value={filters.country || ''} onValueChange={(v) => updateFilter('country', v === 'all' ? undefined : v)}>
-              <SelectTrigger className="h-12 border-border/60 text-base"><SelectValue placeholder="Alle landen" /></SelectTrigger>
+              <SelectTrigger aria-label="Alle landen" className="h-12 border-border/60 text-base">
+<SelectValue placeholder="Alle landen" /></SelectTrigger>
               <SelectContent className="bg-card">
                 <SelectItem value="all">Alle landen</SelectItem>
                 {COUNTRY_OPTIONS.map((c) => (
@@ -513,7 +516,8 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
           <div className="space-y-2">
             <Label className="text-sm font-medium text-foreground">Provincie</Label>
             <Select value={filters.province || ''} onValueChange={(v) => updateFilter('province', v === 'all' ? undefined : v)}>
-              <SelectTrigger className="h-12 border-border/60 text-base"><SelectValue placeholder="Alle provincies" /></SelectTrigger>
+              <SelectTrigger aria-label="Alle provincies" className="h-12 border-border/60 text-base">
+<SelectValue placeholder="Alle provincies" /></SelectTrigger>
               <SelectContent className="bg-card">
                 <SelectItem value="all">Alle provincies</SelectItem>
                 {PROVINCES.map((p) => (
@@ -525,7 +529,8 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
           <div className="space-y-2">
             <Label className="text-sm font-medium text-foreground">Zoekstraal</Label>
             <Select value={filters.radius?.toString() || ''} onValueChange={(v) => updateFilter('radius', v && v !== 'none' ? parseInt(v) : undefined)}>
-              <SelectTrigger className="h-12 border-border/60 text-base"><SelectValue placeholder="Heel land" /></SelectTrigger>
+              <SelectTrigger aria-label="Heel land" className="h-12 border-border/60 text-base">
+<SelectValue placeholder="Heel land" /></SelectTrigger>
               <SelectContent className="bg-card">
                 <SelectItem value="none">Heel land</SelectItem>
                 {RADIUS_OPTIONS.map((r) => (
@@ -568,7 +573,8 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
           <div className="space-y-2">
             <Label className="text-sm font-medium text-foreground">Verkoper</Label>
             <Select value={filters.sellerType || ''} onValueChange={(v) => updateFilter('sellerType', v === 'all' ? undefined : v as 'private' | 'dealer')}>
-              <SelectTrigger className="h-12 border-border/60 text-base"><SelectValue placeholder="Iedereen" /></SelectTrigger>
+              <SelectTrigger aria-label="Iedereen" className="h-12 border-border/60 text-base">
+<SelectValue placeholder="Iedereen" /></SelectTrigger>
               <SelectContent className="bg-card">
                 <SelectItem value="all">Iedereen</SelectItem>
                 <SelectItem value="dealer">Alleen dealers</SelectItem>

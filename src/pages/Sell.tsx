@@ -590,7 +590,8 @@ export default function Sell() {
               <div className="space-y-2">
                 <Label htmlFor="sell-year">Jaar eerste registratie *</Label>
                 <Select value={formData.year} onValueChange={(v) => update('year', v)}>
-                  <SelectTrigger id="sell-year"><SelectValue placeholder="Selecteer jaar" /></SelectTrigger>
+                  <SelectTrigger aria-label="Selecteer jaar" id="sell-year">
+<SelectValue placeholder="Selecteer jaar" /></SelectTrigger>
                   <SelectContent>
                     {YEAR_OPTIONS.map((y) => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
                   </SelectContent>
@@ -599,7 +600,8 @@ export default function Sell() {
               <div className="space-y-2">
                 <Label htmlFor="sell-month">Maand</Label>
                 <Select value={formData.month} onValueChange={(v) => update('month', v)}>
-                  <SelectTrigger id="sell-month"><SelectValue placeholder="Selecteer maand" /></SelectTrigger>
+                  <SelectTrigger aria-label="Selecteer maand" id="sell-month">
+<SelectValue placeholder="Selecteer maand" /></SelectTrigger>
                   <SelectContent>
                     {MONTHS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                   </SelectContent>
@@ -608,7 +610,8 @@ export default function Sell() {
               <div className="space-y-2">
                 <Label htmlFor="sell-bodyType">Carrosserievorm *</Label>
                 <Select value={formData.bodyType} onValueChange={(v) => update('bodyType', v)}>
-                  <SelectTrigger id="sell-bodyType"><SelectValue placeholder="Selecteer" /></SelectTrigger>
+                  <SelectTrigger aria-label="Selecteer" id="sell-bodyType">
+<SelectValue placeholder="Selecteer" /></SelectTrigger>
                   <SelectContent>
                     {BODY_FORM_OPTIONS.map((b) => <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>)}
                   </SelectContent>
@@ -617,7 +620,8 @@ export default function Sell() {
               <div className="space-y-2">
                 <Label htmlFor="sell-fuelType">Brandstof *</Label>
                 <Select value={formData.fuelType} onValueChange={(v) => update('fuelType', v)}>
-                  <SelectTrigger id="sell-fuelType"><SelectValue placeholder="Selecteer" /></SelectTrigger>
+                  <SelectTrigger aria-label="Selecteer" id="sell-fuelType">
+<SelectValue placeholder="Selecteer" /></SelectTrigger>
                   <SelectContent>
                     {FUEL_TYPES.map((f) => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}
                   </SelectContent>
@@ -626,7 +630,8 @@ export default function Sell() {
               <div className="space-y-2">
                 <Label htmlFor="sell-transmission">Transmissie *</Label>
                 <Select value={formData.transmission} onValueChange={(v) => update('transmission', v)}>
-                  <SelectTrigger id="sell-transmission"><SelectValue placeholder="Selecteer" /></SelectTrigger>
+                  <SelectTrigger aria-label="Selecteer" id="sell-transmission">
+<SelectValue placeholder="Selecteer" /></SelectTrigger>
                   <SelectContent>
                     {TRANSMISSION_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
                   </SelectContent>

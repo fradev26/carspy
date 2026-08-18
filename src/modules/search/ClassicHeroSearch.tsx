@@ -53,8 +53,8 @@ export function ClassicHeroSearch() {
       <div className="hidden md:flex items-stretch gap-0 rounded-md bg-white shadow-sm overflow-hidden divide-x divide-border/60">
         <div className="flex-1 min-w-0">
           <Select value={brand} onValueChange={(v) => { setBrand(v); setModel(''); }}>
-            <SelectTrigger className="h-14 w-full border-0 rounded-none bg-transparent px-5 text-sm font-medium focus:ring-0 focus:ring-offset-0 shadow-none">
-              <SelectValue placeholder="Alle merken" />
+            <SelectTrigger aria-label="Alle merken" className="h-14 w-full border-0 rounded-none bg-transparent px-5 text-sm font-medium focus:ring-0 focus:ring-offset-0 shadow-none">
+<SelectValue placeholder="Alle merken" />
             </SelectTrigger>
             <SelectContent className="bg-card max-h-72">
               {CAR_BRANDS.map((b) => (
@@ -77,8 +77,8 @@ export function ClassicHeroSearch() {
         </div>
         <div className="flex-1 min-w-0">
           <Select value={maxPrice} onValueChange={setMaxPrice}>
-            <SelectTrigger className="h-14 w-full border-0 rounded-none bg-transparent px-5 text-sm font-medium focus:ring-0 focus:ring-offset-0 shadow-none">
-              <SelectValue placeholder="Elke prijs" />
+            <SelectTrigger aria-label="Elke prijs" className="h-14 w-full border-0 rounded-none bg-transparent px-5 text-sm font-medium focus:ring-0 focus:ring-offset-0 shadow-none">
+<SelectValue placeholder="Elke prijs" />
             </SelectTrigger>
             <SelectContent className="bg-card">
               {PRICE_OPTIONS.map((p) => (
@@ -137,8 +137,8 @@ export function ClassicHeroSearch() {
             </SheetHeader>
             <div className="mt-4 flex flex-col gap-3">
               <Select value={brand} onValueChange={(v) => { setBrand(v); setModel(''); }}>
-                <SelectTrigger className="h-11 bg-background text-sm">
-                  <SelectValue placeholder="Alle merken" />
+                <SelectTrigger aria-label="Alle merken" className="h-11 bg-background text-sm">
+<SelectValue placeholder="Alle merken" />
                 </SelectTrigger>
                 <SelectContent className="bg-card max-h-72">
                   {CAR_BRANDS.map((b) => (
@@ -157,8 +157,8 @@ export function ClassicHeroSearch() {
                 </SelectContent>
               </Select>
               <Select value={maxPrice} onValueChange={setMaxPrice}>
-                <SelectTrigger className="h-11 bg-background text-sm">
-                  <SelectValue placeholder="Elke prijs" />
+                <SelectTrigger aria-label="Elke prijs" className="h-11 bg-background text-sm">
+<SelectValue placeholder="Elke prijs" />
                 </SelectTrigger>
                 <SelectContent className="bg-card">
                   {PRICE_OPTIONS.map((p) => (

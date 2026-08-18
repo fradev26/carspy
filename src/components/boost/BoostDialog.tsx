@@ -284,8 +284,8 @@ export function BoostDialog({
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">Wagen</label>
             <Select value={selectedListing} onValueChange={setSelectedListing}>
-              <SelectTrigger>
-                <SelectValue placeholder="Kies een wagen…" />
+              <SelectTrigger aria-label="Kies een wagen…">
+<SelectValue placeholder="Kies een wagen…" />
               </SelectTrigger>
               <SelectContent>
                 {ownListings.map((l) => (
