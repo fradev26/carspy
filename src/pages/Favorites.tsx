@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 
 import { SEOHead } from '@/components/SEOHead';
+import { LISTING_COLUMNS } from '@/hooks/useListings';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -206,7 +207,7 @@ function FavoritesTab() {
     setLoading(true);
     supabase
       .from('listings')
-      .select('*')
+      .select(LISTING_COLUMNS)
       .in('id', ids)
       .then(({ data, error }) => {
         if (cancelled) return;

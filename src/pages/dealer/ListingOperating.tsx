@@ -185,6 +185,26 @@ export default function ListingOperating() {
     toast.success('Bijgewerkt');
   };
 
+  // Premium is betaalde plaatsing: uitsluitend via de server-side,
+  // abonnements-gecontroleerde RPC (directe kolomwrites zijn geblokkeerd).
+  const togglePremium = async (enabled: boolean) => {
+    if (!listing) return;
+    if (!perms.canEditListings) return toast.error('Je hebt geen rechten om dit voertuig te bewerken');
+    const { error } = await supabase.rpc('set_listing_premium', {
+      _listing_id: listing.id,
+      _enabled: enabled,
+    });
+    if (error) {
+      return toast.error(
+        error.message.includes('paid subscription')
+          ? 'Premium vereist een actief betaald abonnement'
+          : `Opslaan mislukt: ${error.message}`,
+      );
+    }
+    setListing({ ...listing, is_premium: enabled });
+    toast.success('Bijgewerkt');
+  };
+
   if (loading) {
     return (
       <div className="container py-12 flex justify-center">
@@ -393,7 +413,7 @@ export default function ListingOperating() {
         open={sheet === 'feature'}
         onClose={() => setSheet(null)}
         isPremium={!!view.is_premium}
-        onToggle={(v) => saveImmediate({ is_premium: v } as any)}
+        onToggle={(v) => togglePremium(v)}
       />
 
       {sheet?.startsWith('spec:') && (

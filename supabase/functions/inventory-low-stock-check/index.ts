@@ -2,9 +2,14 @@
 // their low_stock_threshold (respecting push/email preferences).
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
+import { requireServiceRole } from '../_shared/service-auth.ts';
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+
+  // Internal cron job: only the service role may trigger this maintenance run.
+  const denied = requireServiceRole(req, corsHeaders);
+  if (denied) return denied;
 
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,

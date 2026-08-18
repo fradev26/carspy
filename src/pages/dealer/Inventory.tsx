@@ -160,12 +160,22 @@ export default function Inventory() {
       toast.success(`${ids.length} verwijderd`);
     } else {
       if (!perms.canEditListings) return toast.error('Je hebt geen rechten om advertenties te bewerken');
-      const updates =
-        action === 'premium' ? { is_premium: true } :
-                               { status: 'sold' };
-      const { error } = await supabase.from('listings').update(updates as any).in('id', ids);
-      if (error) return toast.error('Bulkactie mislukt');
-      toast.success(`${ids.length} bijgewerkt`);
+      if (action === 'premium') {
+        // Betaalde plaatsing: via de abonnements-gecontroleerde RPC per advertentie.
+        const results = await Promise.all(
+          ids.map((listingId) =>
+            supabase.rpc('set_listing_premium', { _listing_id: listingId, _enabled: true }),
+          ),
+        );
+        const failed = results.filter((r) => r.error).length;
+        if (failed === ids.length) return toast.error('Premium vereist een actief betaald abonnement');
+        if (failed > 0) toast.warning(`${ids.length - failed} bijgewerkt, ${failed} mislukt`);
+        else toast.success(`${ids.length} bijgewerkt`);
+      } else {
+        const { error } = await supabase.from('listings').update({ status: 'sold' }).in('id', ids);
+        if (error) return toast.error('Bulkactie mislukt');
+        toast.success(`${ids.length} bijgewerkt`);
+      }
     }
     setSelectedIds(new Set());
     refresh();

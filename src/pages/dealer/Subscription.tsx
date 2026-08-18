@@ -155,45 +155,17 @@ export default function Subscription() {
       return;
     }
     setSwitching(planId);
-    const periodStart = new Date();
-    periodStart.setDate(1);
-    periodStart.setHours(0, 0, 0, 0);
-    const periodEnd = new Date(periodStart);
-    periodEnd.setMonth(periodEnd.getMonth() + 1);
 
-    // Create the new subscription first; only cancel the old one once that
-    // succeeded, so a failure can never leave the dealer without a plan.
-    const { data: created, error } = await supabase
-      .from('dealer_subscriptions')
-      .insert({
-        user_id: user.id,
-        plan_id: planId,
-        status: 'active',
-        period_start: periodStart.toISOString(),
-        period_end: periodEnd.toISOString(),
-      })
-      .select('id')
-      .single();
-
-    if (error || !created) {
-      setSwitching(null);
-      toast.error(`Wijziging mislukt: ${error?.message ?? 'onbekende fout'}`);
-      return;
-    }
-
-    const { error: cancelError } = await supabase
-      .from('dealer_subscriptions')
-      .update({ status: 'cancelled' })
-      .eq('user_id', user.id)
-      .eq('status', 'active')
-      .neq('id', created.id);
+    // Abonnementen worden server-side aangemaakt: de aanvraag wordt pas een
+    // actief abonnement na bevestigde betaling. De client kan geen actieve
+    // abonnementsregel meer schrijven.
+    const { error } = await supabase.rpc('request_plan_change', { _plan_id: planId });
     setSwitching(null);
-    if (cancelError) {
-      toast.error(`Oud abonnement stopzetten mislukt: ${cancelError.message}`);
-      load();
+    if (error) {
+      toast.error(`Wijziging mislukt: ${error.message}`);
       return;
     }
-    toast.success('Abonnement bijgewerkt');
+    toast.success('Aanvraag geregistreerd — het abonnement wordt actief na betaling.');
     load();
   };
 

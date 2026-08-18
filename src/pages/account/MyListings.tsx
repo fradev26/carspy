@@ -87,11 +87,11 @@ export default function MyListings() {
   }
 
   async function extend(id: string) {
-    const until = new Date();
-    until.setDate(until.getDate() + 30);
-    const { error } = await supabase.from('listings').update({ status: 'active', boost_until: until.toISOString() }).eq('id', id);
+    // Heractiveren is gratis; boost is betaald en loopt uitsluitend via de
+    // boost-dialoog (activate_boost), niet via een directe kolomwrite.
+    const { error } = await supabase.from('listings').update({ status: 'active' }).eq('id', id);
     if (error) return toast({ title: 'Verlengen mislukt', variant: 'destructive' });
-    toast({ title: 'Advertentie verlengd met 30 dagen' });
+    toast({ title: 'Advertentie staat weer online' });
     load();
   }
 
