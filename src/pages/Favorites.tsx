@@ -207,8 +207,14 @@ function FavoritesTab() {
       .from('listings')
       .select('*')
       .in('id', ids)
-      .then(({ data }) => {
+      .then(({ data, error }) => {
         if (cancelled) return;
+        if (error) {
+          setLoadError('Favorieten konden niet worden geladen. Probeer het opnieuw.');
+          setLoading(false);
+          return;
+        }
+        setLoadError(null);
         if (data) {
           setListings(
             data.map((l) => ({

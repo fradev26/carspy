@@ -63,12 +63,18 @@ export default function DealerInventory() {
     setDealer(undefined);
     setAllListings([]);
     (async () => {
-      const d = await findDealerBySlugAsync(slug);
-      if (cancelled) return;
-      if (!d) { setDealer(null); return; }
-      setDealer(d);
-      const list = await getDealerListingsAsync(slug, d.seller.id);
-      if (!cancelled) setAllListings(list);
+      try {
+        const d = await findDealerBySlugAsync(slug);
+        if (cancelled) return;
+        if (!d) { setDealer(null); return; }
+        setDealer(d);
+        const list = await getDealerListingsAsync(slug, d.seller.id);
+        if (!cancelled) setAllListings(list);
+      } catch {
+        // Network/DB failure: fall back to the not-found state instead of
+        // leaving the page stuck on an infinite spinner.
+        if (!cancelled) setDealer(null);
+      }
     })();
     return () => { cancelled = true; };
   }, [slug]);

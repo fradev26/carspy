@@ -87,6 +87,7 @@ const PLAN_BADGE: Record<string, string> = {
 
 export default function Subscription() {
   const { user } = useAuth();
+  const perms = usePermissions();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [billing, setBilling] = useState<Billing | null>(null);
   const [usage, setUsage] = useState<UsageRow[]>([]);

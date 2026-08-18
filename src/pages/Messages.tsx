@@ -113,10 +113,16 @@ export default function Messages() {
   useEffect(() => {
     if (!user) return;
     const fetchConversations = async () => {
-      const { data } = await supabase
+      const { data, error: convError } = await supabase
         .from('conversations')
         .select('*')
         .order('updated_at', { ascending: false });
+
+      if (convError) {
+        toast.error('Gesprekken konden niet worden geladen');
+        setLoading(false);
+        return;
+      }
 
       if (data && data.length) {
         const convIds = data.map((c: any) => c.id);
@@ -134,6 +140,10 @@ export default function Messages() {
             .in('conversation_id', convIds)
             .order('created_at', { ascending: false }),
         ]);
+
+        if (listingsRes.error || profilesRes.error || msgsRes.error) {
+          toast.error('Sommige gespreksgegevens konden niet worden geladen');
+        }
 
         const listingMap = new Map((listingsRes.data || []).map((l: any) => [l.id, l.title]));
         const profileMap = new Map((profilesRes.data || []).map((p: any) => [p.id, p]));
