@@ -33,23 +33,32 @@ export default function Search() {
   const sortBy = searchParams.get('sort') || 'newest';
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isPending, startTransition] = useTransition();
-  const [page, setPage] = useState(1);
   const [aiBarOpen, setAiBarOpen] = useState(false);
-  const perPage = 24;
   const queryParam = searchParams.get('q') ?? undefined;
   const {
     listings: pageListings,
     total,
-    loading: listingsLoading,
-  } = useSearchListings({ filters, query: queryParam, sort: sortBy, page, perPage });
+    isLoading: listingsLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    error: listingsError,
+    refetch,
+  } = useSearchListingsInfinite({
+    filters,
+    query: queryParam,
+    sort: sortBy,
+    limit: DEFAULT_PAGE_SIZE,
+  });
   const [mobileResultsRevealed, setMobileResultsRevealed] = useState(false);
   const compareWithId = searchParams.get('compareWith');
   const referenceListing = compareWithId ? pageListings.find((l) => l.id === compareWithId) : undefined;
 
-  // Reset to page 1 whenever the URL (filters or sort) changes
-  useEffect(() => {
-    setPage(1);
-  }, [searchParams]);
+  // Keep scroll position + loaded batches when returning from a detail page.
+  useScrollRestoration(
+    `search:${searchParams.toString()}`,
+    !listingsLoading && pageListings.length > 0,
+  );
 
   // Write filters to URL (preserves q/ai/compareWith/sort)
   const writeFiltersToURL = (newFilters: SearchFilters) => {
