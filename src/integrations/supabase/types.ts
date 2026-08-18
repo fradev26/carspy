@@ -1917,10 +1917,15 @@ export type Database = {
       }
       refresh_boosted_status: { Args: never; Returns: number }
       remove_member: { Args: { _user_id: string }; Returns: undefined }
+      request_plan_change: { Args: { _plan_id: string }; Returns: Json }
       resend_invitation: { Args: { _invitation_id: string }; Returns: Json }
       revoke_invitation: {
         Args: { _invitation_id: string }
         Returns: undefined
+      }
+      set_listing_premium: {
+        Args: { _enabled: boolean; _listing_id: string }
+        Returns: boolean
       }
     }
     Enums: {
