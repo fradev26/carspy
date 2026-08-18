@@ -28,6 +28,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { usePermissions } from '@/hooks/usePermissions';
 import { cn } from '@/lib/utils';
 
 const formatEUR = (cents: number) =>
@@ -148,6 +149,10 @@ export default function Subscription() {
 
   const switchPlan = async (planId: string) => {
     if (!user) return;
+    if (!perms.canManageBilling) {
+      toast.error('Alleen de eigenaar van het bedrijf kan het abonnement wijzigen');
+      return;
+    }
     setSwitching(planId);
     const periodStart = new Date();
     periodStart.setDate(1);
@@ -155,22 +160,36 @@ export default function Subscription() {
     const periodEnd = new Date(periodStart);
     periodEnd.setMonth(periodEnd.getMonth() + 1);
 
-    await supabase
+    // Create the new subscription first; only cancel the old one once that
+    // succeeded, so a failure can never leave the dealer without a plan.
+    const { data: created, error } = await supabase
+      .from('dealer_subscriptions')
+      .insert({
+        user_id: user.id,
+        plan_id: planId,
+        status: 'active',
+        period_start: periodStart.toISOString(),
+        period_end: periodEnd.toISOString(),
+      })
+      .select('id')
+      .single();
+
+    if (error || !created) {
+      setSwitching(null);
+      toast.error(`Wijziging mislukt: ${error?.message ?? 'onbekende fout'}`);
+      return;
+    }
+
+    const { error: cancelError } = await supabase
       .from('dealer_subscriptions')
       .update({ status: 'cancelled' })
       .eq('user_id', user.id)
-      .eq('status', 'active');
-
-    const { error } = await supabase.from('dealer_subscriptions').insert({
-      user_id: user.id,
-      plan_id: planId,
-      status: 'active',
-      period_start: periodStart.toISOString(),
-      period_end: periodEnd.toISOString(),
-    });
+      .eq('status', 'active')
+      .neq('id', created.id);
     setSwitching(null);
-    if (error) {
-      toast.error(`Wijziging mislukt: ${error.message}`);
+    if (cancelError) {
+      toast.error(`Oud abonnement stopzetten mislukt: ${cancelError.message}`);
+      load();
       return;
     }
     toast.success('Abonnement bijgewerkt');
