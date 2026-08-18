@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Eye, Heart, MessageCircle, Car, Crown, Rocket, Pencil, CheckCircle2,
@@ -14,7 +14,13 @@ import { StatusBadge } from '@/modules/listings/StatusBadge';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useDealerAnalytics, type ListingAnalytics } from '@/hooks/useDealerAnalytics';
+import { type ListingAnalytics } from '@/hooks/useDealerAnalytics';
+import { useDealerInventoryInfinite } from '@/hooks/useDealerInventory';
+import { useScrollRestoration } from '@/hooks/useScrollRestoration';
+import { VirtualGrid } from '@/components/VirtualGrid';
+import { InfiniteFeedFooter } from '@/components/InfiniteFeedFooter';
+import { DEFAULT_PAGE_SIZE } from '@/lib/keyset';
+import { SkeletonCard } from '@/components/ui/skeleton-card';
 import { BoostDialog } from '@/components/boost/BoostDialog';
 import { usePermissions } from '@/hooks/usePermissions';
 
@@ -35,34 +41,54 @@ const isBoostable = (l: ListingAnalytics) =>
   l.status === 'active' && (!l.boostUntil || new Date(l.boostUntil).getTime() <= Date.now());
 
 export default function Inventory() {
-  const { listings, loading, refresh } = useDealerAnalytics();
   const perms = usePermissions();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<Set<string>>(new Set());
   const [boostDialog, setBoostDialog] = useState<{ ids: string[]; title?: string } | null>(null);
 
-  // ── Filter pipeline ─────────────────────────────────────────────────────
-  const filtered = useMemo(() => {
-    return listings.filter((l) => {
-      if (statusFilter.size > 0) {
-        const match = Array.from(statusFilter).some((s) =>
-          s === 'boostable' ? isBoostable(l) : l.status === s,
-        );
-        if (!match) return false;
-      }
-      if (query) {
-        const q = query.toLowerCase();
-        if (
-          !l.title.toLowerCase().includes(q) &&
-          !l.brand?.toLowerCase().includes(q) &&
-          !l.model?.toLowerCase().includes(q)
-        ) return false;
-      }
-      return true;
-    });
-  }, [listings, query, statusFilter]);
+  // Debounce the free-text query before it hits the cursor endpoint.
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(query), 300);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  // 'boostable' is a derived state, not a DB status → refine client-side.
+  const serverStatuses = useMemo(
+    () => Array.from(statusFilter).filter((s) => s !== 'boostable'),
+    [statusFilter],
+  );
+
+  const {
+    listings,
+    statusCounts,
+    total,
+    isLoading: loading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    error: feedError,
+    refetch,
+  } = useDealerInventoryInfinite({
+    query: debouncedQuery,
+    statuses: serverStatuses,
+    limit: DEFAULT_PAGE_SIZE,
+  });
+
+  const refresh = () => refetch();
+
+  useScrollRestoration(
+    `inventory:${debouncedQuery}:${serverStatuses.join(',')}`,
+    !loading && listings.length > 0,
+  );
+
+  // ── Client-side refinement (boostable only) ────────────────────────────
+  const filtered = useMemo(
+    () => (statusFilter.has('boostable') ? listings.filter(isBoostable) : listings),
+    [listings, statusFilter],
+  );
 
   const allSelected = filtered.length > 0 && filtered.every((l) => selectedIds.has(l.id));
   const someSelected = !allSelected && filtered.some((l) => selectedIds.has(l.id));
@@ -149,8 +175,23 @@ export default function Inventory() {
 
   if (loading) {
     return (
-      <div className="container py-12 flex justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className="container py-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <SkeletonCard key={i} />
+        ))}
+      </div>
+    );
+  }
+
+  if (feedError && listings.length === 0) {
+    return (
+      <div className="container py-12">
+        <Card className="border-destructive/30 bg-destructive/5">
+          <CardContent className="py-10 flex flex-col items-center gap-3 text-center">
+            <p className="text-sm">Je voorraad kon niet geladen worden.</p>
+            <Button variant="outline" onClick={() => refetch()}>Opnieuw proberen</Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -163,7 +204,7 @@ export default function Inventory() {
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-xl md:text-2xl font-bold tracking-tight">Voorraad</h1>
-          <p className="text-xs text-muted-foreground">{listings.length} advertenties</p>
+          <p className="text-xs text-muted-foreground">{total} advertenties</p>
         </div>
         <Button asChild variant="outline" size="sm" className="gap-1.5">
           <Link to="/zakelijk/voorraad-instellingen">
@@ -196,12 +237,10 @@ export default function Inventory() {
                   : 'bg-card text-muted-foreground border-border/60 hover:bg-muted'
               )}
             >
-              Alle ({listings.length})
+              Alle ({total})
             </button>
             {STATUS_OPTIONS.map((c) => {
-              const count = c.v === 'boostable'
-                ? listings.filter(isBoostable).length
-                : listings.filter((l) => l.status === c.v).length;
+              const count = statusCounts[c.v] ?? 0;
               const active = statusFilter.has(c.v);
               return (
                 <button
@@ -295,27 +334,44 @@ export default function Inventory() {
           </Card>
         )
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-          {filtered.map((l) => (
-            <DealerCard
-              key={l.id}
-              listing={l}
-              selected={selectedIds.has(l.id)}
-              onSelect={(shift) => toggleSelect(l.id, { shift })}
-              onBoost={() => setBoostDialog({ ids: [l.id], title: l.title })}
-              onRelist={async () => {
-                if (!perms.canEditListings) return toast.error('Je hebt geen rechten om advertenties te bewerken');
-                const { error } = await supabase
-                  .from('listings')
-                  .update({ status: 'active', sold_at: null })
-                  .eq('id', l.id);
-                if (error) return toast.error('Opnieuw plaatsen mislukt');
-                toast.success('Advertentie staat weer te koop');
-                refresh();
-              }}
-            />
-          ))}
-        </div>
+        <>
+          <VirtualGrid
+            items={filtered}
+            getKey={(l) => l.id}
+            columns={[1, 2, 3]}
+            estimateRowHeight={370}
+            renderItem={(l) => (
+              <DealerCard
+                listing={l}
+                selected={selectedIds.has(l.id)}
+                onSelect={(shift) => toggleSelect(l.id, { shift })}
+                onBoost={() => setBoostDialog({ ids: [l.id], title: l.title })}
+                onRelist={async () => {
+                  if (!perms.canEditListings) return toast.error('Je hebt geen rechten om advertenties te bewerken');
+                  const { error } = await supabase
+                    .from('listings')
+                    .update({ status: 'active', sold_at: null })
+                    .eq('id', l.id);
+                  if (error) return toast.error('Opnieuw plaatsen mislukt');
+                  toast.success('Advertentie staat weer te koop');
+                  refresh();
+                }}
+              />
+            )}
+          />
+
+          <InfiniteFeedFooter
+            hasNextPage={!!hasNextPage}
+            isFetchingNextPage={isFetchingNextPage}
+            error={feedError}
+            onLoadMore={() => {
+              if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+            }}
+            onRetry={() => fetchNextPage()}
+            skeletonCount={3}
+            endLabel="Je hebt je volledige voorraad gezien"
+          />
+        </>
       )}
 
       <BoostDialog
