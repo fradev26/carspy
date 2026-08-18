@@ -57,17 +57,23 @@ export default function AccountSettings({ defaultTab = 'profiel' }: Props) {
     if (!user) return;
     (async () => {
       const [p, n, pr] = await Promise.all([
-        supabase.from('profiles').select('full_name, phone, location, avatar_url, email').eq('id', user.id).maybeSingle(),
+        // Sensitive columns (email, phone) are not readable via a direct table
+        // select; the security definer RPC returns only the caller's own row.
+        supabase.rpc('get_my_profile'),
         supabase.from('notification_preferences').select('new_messages, search_alerts, listing_status, system, marketing').eq('user_id', user.id).maybeSingle(),
         supabase.from('privacy_preferences').select('profile_public, show_contact, marketing_consent').eq('user_id', user.id).maybeSingle(),
       ]);
-      if (p.data) setProfile({
-        full_name: p.data.full_name ?? '',
-        phone: p.data.phone ?? '',
-        location: (p.data as { location?: string | null }).location ?? '',
-        avatar_url: p.data.avatar_url ?? null,
-        email: p.data.email ?? user.email ?? '',
+      const prof = (Array.isArray(p.data) ? p.data[0] : p.data) as
+        | { full_name?: string | null; phone?: string | null; location?: string | null; avatar_url?: string | null; email?: string | null }
+        | null;
+      if (prof) setProfile({
+        full_name: prof.full_name ?? '',
+        phone: prof.phone ?? '',
+        location: prof.location ?? '',
+        avatar_url: prof.avatar_url ?? null,
+        email: prof.email ?? user.email ?? '',
       });
+
       if (n.data) setNotif(n.data as NotifPrefs);
       if (pr.data) setPriv(pr.data as PrivacyPrefs);
     })();

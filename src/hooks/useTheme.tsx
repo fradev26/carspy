@@ -99,13 +99,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     if (!user) return;
     let cancelled = false;
     (async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('theme_preference')
-        .eq('id', user.id)
-        .maybeSingle();
+      const { data } = await supabase.rpc('get_my_profile');
       if (cancelled) return;
-      const remote = (data as { theme_preference?: ThemePref } | null)?.theme_preference;
+      const row = (Array.isArray(data) ? data[0] : data) as { theme_preference?: ThemePref } | null;
+      const remote = row?.theme_preference;
+
       if (remote && (remote === 'system' || remote === 'light' || remote === 'dark')) {
         window.localStorage.setItem(STORAGE_KEY, remote);
         setThemeState(remote);
