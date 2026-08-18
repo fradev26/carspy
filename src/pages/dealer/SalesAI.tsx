@@ -58,7 +58,7 @@ export default function SalesAI() {
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-border/60">
         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
-          <Sparkles className="h-5 w-5 text-primary" />
+          <Sparkles className="h-5 w-5 text-primary-strong" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold">VATUUR. SalesAI</p>
@@ -104,7 +104,7 @@ export default function SalesAI() {
                     <ul className="space-y-1.5">
                       {summary.attention.slice(0, 5).map((a) => (
                         <li key={a.id} className="text-xs flex justify-between gap-2">
-                          <a href={`/zakelijk/voorraad/${a.id}`} className="text-primary hover:underline truncate">{a.title}</a>
+                          <a href={`/zakelijk/voorraad/${a.id}`} className="text-primary-strong hover:underline truncate">{a.title}</a>
                           <span className="text-muted-foreground shrink-0">{a.days_online}d · €{a.price?.toLocaleString('nl-BE')}</span>
                         </li>
                       ))}

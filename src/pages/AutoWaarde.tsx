@@ -333,12 +333,12 @@ export default function AutoWaarde() {
         <div className="container py-10 md:py-16">
           <div className="grid gap-8 lg:grid-cols-2 lg:items-center">
             <div className="max-w-xl">
-              <div className="inline-flex items-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary mb-4">
+              <div className="inline-flex items-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary-strong mb-4">
                 <Sparkles className="h-3.5 w-3.5" />
                 Gratis · Geen registratie · AI-gedreven
               </div>
               <h1 className="text-3xl font-bold leading-tight md:text-5xl">
-                Wat is mijn auto waard<span className="text-primary">?</span>
+                Wat is mijn auto waard<span className="text-primary-strong">?</span>
               </h1>
               <p className="mt-4 text-base text-muted-foreground md:text-lg">
                 Ontdek in één minuut de eerlijke marktwaarde van je wagen met onze AI —
@@ -347,7 +347,7 @@ export default function AutoWaarde() {
               <ul className="mt-6 grid gap-2 sm:grid-cols-2">
                 {['100% gratis', 'Geen opkoper', 'AI-schatting in seconden', 'Direct online verkopen'].map(t => (
                   <li key={t} className="flex items-center gap-2 text-sm">
-                    <CheckCircle2 className="h-4 w-4 text-primary" /> {t}
+                    <CheckCircle2 className="h-4 w-4 text-primary-strong" /> {t}
                   </li>
                 ))}
               </ul>
@@ -369,7 +369,7 @@ export default function AutoWaarde() {
                 <div>
                   <Label>Merk</Label>
                   <Select value={brand} onValueChange={(v) => { setBrand(v); setModel(''); }}>
-                    <SelectTrigger className="mt-1 h-11"><SelectValue placeholder="Kies merk" /></SelectTrigger>
+                    <SelectTrigger aria-label="Merk" className="mt-1 h-11"><SelectValue placeholder="Kies merk" /></SelectTrigger>
                     <SelectContent className="bg-card max-h-72">
                       {CAR_BRANDS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
                     </SelectContent>
@@ -379,7 +379,7 @@ export default function AutoWaarde() {
                   <Label>Model</Label>
                   {availableModels.length ? (
                     <Select value={model} onValueChange={setModel}>
-                      <SelectTrigger className="mt-1 h-11"><SelectValue placeholder="Kies model" /></SelectTrigger>
+                      <SelectTrigger aria-label="Model" className="mt-1 h-11"><SelectValue placeholder="Kies model" /></SelectTrigger>
                       <SelectContent className="bg-card max-h-72">
                         {availableModels.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                       </SelectContent>
@@ -391,7 +391,7 @@ export default function AutoWaarde() {
                 <div>
                   <Label>Bouwjaar</Label>
                   <Select value={year} onValueChange={setYear}>
-                    <SelectTrigger className="mt-1 h-11"><SelectValue placeholder="Kies jaar" /></SelectTrigger>
+                    <SelectTrigger aria-label="Bouwjaar" className="mt-1 h-11"><SelectValue placeholder="Kies jaar" /></SelectTrigger>
                     <SelectContent className="bg-card max-h-64">
                       {years.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
                     </SelectContent>
@@ -404,7 +404,7 @@ export default function AutoWaarde() {
                 <div>
                   <Label>Brandstof <span className="text-muted-foreground">(optioneel)</span></Label>
                   <Select value={fuelType} onValueChange={setFuelType}>
-                    <SelectTrigger className="mt-1 h-11"><SelectValue placeholder="Kies brandstof" /></SelectTrigger>
+                    <SelectTrigger aria-label="Brandstof" className="mt-1 h-11"><SelectValue placeholder="Kies brandstof" /></SelectTrigger>
                     <SelectContent className="bg-card">
                       {FUELS.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
                     </SelectContent>
@@ -413,7 +413,7 @@ export default function AutoWaarde() {
                 <div>
                   <Label>Versnellingsbak <span className="text-muted-foreground">(optioneel)</span></Label>
                   <Select value={transmission} onValueChange={setTransmission}>
-                    <SelectTrigger className="mt-1 h-11"><SelectValue placeholder="Kies type" /></SelectTrigger>
+                    <SelectTrigger aria-label="Versnellingsbak" className="mt-1 h-11"><SelectValue placeholder="Kies type" /></SelectTrigger>
                     <SelectContent className="bg-card">
                       {TRANSMISSIONS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                     </SelectContent>
@@ -454,7 +454,7 @@ export default function AutoWaarde() {
 
               {!loading && result && (
                 <div className="rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/5 to-accent/5 p-6 md:p-8 shadow-floating animate-fade-in">
-                  <div className="flex items-center gap-2 text-xs font-medium text-primary mb-2">
+                  <div className="flex items-center gap-2 text-xs font-medium text-primary-strong mb-2">
                     <Sparkles className="h-3.5 w-3.5" /> AI-waardebepaling
                   </div>
                   <p className="text-sm text-muted-foreground">Geschatte marktwaarde voor jouw {brand} {model}</p>
@@ -465,7 +465,7 @@ export default function AutoWaarde() {
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Richtprijs</p>
-                      <p className="text-3xl md:text-5xl font-bold text-primary">{formatEuro(result.suggestedPrice)}</p>
+                      <p className="text-3xl md:text-5xl font-bold text-primary-strong">{formatEuro(result.suggestedPrice)}</p>
                     </div>
                     <div>
                       <p className="text-xs text-muted-foreground">Tot</p>
@@ -488,7 +488,7 @@ export default function AutoWaarde() {
                   <div className="mt-5 grid gap-3 sm:grid-cols-2">
                     {result.estimatedSellTime && (
                       <div className="flex items-start gap-2 rounded-lg bg-card/60 border border-border/40 p-3">
-                        <Clock className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                        <Clock className="h-4 w-4 text-primary-strong mt-0.5 flex-shrink-0" />
                         <div>
                           <p className="text-xs text-muted-foreground">Verwachte verkooptijd</p>
                           <p className="text-sm font-semibold">{result.estimatedSellTime}</p>
@@ -497,7 +497,7 @@ export default function AutoWaarde() {
                     )}
                     {result.reliability && (
                       <div className="flex items-start gap-2 rounded-lg bg-card/60 border border-border/40 p-3">
-                        <ShieldCheck className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                        <ShieldCheck className="h-4 w-4 text-primary-strong mt-0.5 flex-shrink-0" />
                         <div>
                           <p className="text-xs text-muted-foreground">Betrouwbaarheid</p>
                           <p className="text-sm font-semibold">{result.reliability}</p>
@@ -535,7 +535,7 @@ export default function AutoWaarde() {
                         <button
                           type="button"
                           onClick={() => setAuthMode(m => m === 'signup' ? 'signin' : 'signup')}
-                          className="text-xs text-primary underline"
+                          className="text-xs text-primary-strong underline"
                         >
                           {authMode === 'signup' ? 'Ik heb al een account' : 'Nieuw account aanmaken'}
                         </button>
@@ -592,7 +592,7 @@ export default function AutoWaarde() {
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {stats.map(s => (
             <div key={s.label} className="rounded-xl border border-border/60 bg-card p-4 text-center">
-              <p className="text-2xl md:text-3xl font-bold text-primary">{s.value}</p>
+              <p className="text-2xl md:text-3xl font-bold text-primary-strong">{s.value}</p>
               <p className="mt-1 text-xs text-muted-foreground">{s.label}</p>
             </div>
           ))}
@@ -613,7 +613,7 @@ export default function AutoWaarde() {
               { n: 3, title: 'Verkoop snel', text: 'Plaats je advertentie en bereik duizenden kopers in België & Nederland.' },
             ].map(step => (
               <div key={step.n} className="rounded-xl border border-border/60 bg-card p-6">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary font-bold mb-3">{step.n}</div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary-strong font-bold mb-3">{step.n}</div>
                 <h3 className="font-semibold">{step.title}</h3>
                 <p className="mt-1 text-sm text-muted-foreground">{step.text}</p>
               </div>
@@ -631,7 +631,7 @@ export default function AutoWaarde() {
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {factors.map(({ icon: Icon, title, text }) => (
             <div key={title} className="rounded-xl border border-border/60 bg-card p-5 shadow-card hover:shadow-floating transition-shadow">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary mb-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary-strong mb-3">
                 <Icon className="h-5 w-5" />
               </div>
               <h3 className="font-semibold">{title}</h3>

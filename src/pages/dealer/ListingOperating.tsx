@@ -27,6 +27,7 @@ import {
   LucideIcon,
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
+import { usePermissions } from '@/hooks/usePermissions';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -100,6 +101,8 @@ export default function ListingOperating() {
   const [messages, setMessages] = useState(0);
   const [autoScout, setAutoScout] = useState<{ status: string; last_sync_at: string | null } | null>(null);
 
+  const perms = usePermissions();
+  const [denied, setDenied] = useState(false);
   const [sheet, setSheet] = useState<SheetKey>(null);
   const [boostOpen, setBoostOpen] = useState(false);
 
@@ -119,11 +122,27 @@ export default function ListingOperating() {
     const { data } = await supabase
       .from('listings')
       .select(
-        'id,title,description,price,status,views,images,brand,model,year,mileage,fuel_type,transmission,power,color,body_type,is_premium,created_at,user_id',
+        'id,title,description,price,status,views,images,brand,model,year,mileage,fuel_type,transmission,power,color,body_type,is_premium,created_at,user_id,company_id',
       )
       .eq('id', id)
       .maybeSingle();
-    if (data) setListing(data as Listing);
+
+    // Ownership guard: only the listing owner or a member of the owning company
+    // may open the management view (defence in depth on top of RLS).
+    if (data) {
+      const row = data as Listing & { company_id?: string | null };
+      let allowed = !!user && row.user_id === user.id;
+      if (!allowed && row.company_id) {
+        const { data: myCompany } = await supabase.rpc('current_company_id');
+        allowed = !!myCompany && myCompany === row.company_id;
+      }
+      if (!allowed) {
+        setDenied(true);
+        setLoading(false);
+        return;
+      }
+      setListing(row as Listing);
+    }
 
     const sb = supabase as any;
     const [{ count: favCount }, { count: msgCount }, autoRes] = await Promise.all([
@@ -140,12 +159,13 @@ export default function ListingOperating() {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [id, user?.id]);
 
   const stagePending = (patch: Partial<Listing>) => setPending((p) => ({ ...p, ...patch }));
 
   const saveAll = async () => {
     if (!listing || !hasPending) return;
+    if (!perms.canEditListings) return toast.error('Je hebt geen rechten om dit voertuig te bewerken');
     setSaving(true);
     const { error } = await supabase.from('listings').update(pending as any).eq('id', listing.id);
     setSaving(false);
@@ -158,6 +178,7 @@ export default function ListingOperating() {
   // Immediate save (no buffer) — for status / publication / feature toggles
   const saveImmediate = async (patch: Partial<Listing>) => {
     if (!listing) return;
+    if (!perms.canEditListings) return toast.error('Je hebt geen rechten om dit voertuig te bewerken');
     const { error } = await supabase.from('listings').update(patch as any).eq('id', listing.id);
     if (error) return toast.error(`Opslaan mislukt: ${error.message}`);
     setListing({ ...listing, ...patch });
@@ -167,7 +188,18 @@ export default function ListingOperating() {
   if (loading) {
     return (
       <div className="container py-12 flex justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary-strong" />
+      </div>
+    );
+  }
+
+  if (denied) {
+    return (
+      <div className="container py-12 text-center">
+        <p className="text-muted-foreground">Je hebt geen toegang tot dit voertuig.</p>
+        <Button asChild className="mt-4">
+          <Link to="/zakelijk/voorraad">Terug naar voorraad</Link>
+        </Button>
       </div>
     );
   }
@@ -204,14 +236,18 @@ export default function ListingOperating() {
 
         {/* Primary actions 50/50 */}
         <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" className="h-11 gap-1.5" onClick={() => setSheet('description')}>
-            <Pencil className="h-4 w-4" />
-            Bewerken
-          </Button>
-          <Button className="h-11 gap-1.5" onClick={() => setBoostOpen(true)}>
-            <Rocket className="h-4 w-4" />
-            Boosten
-          </Button>
+          {perms.canEditListings && (
+            <Button variant="outline" className="h-11 gap-1.5" onClick={() => setSheet('description')}>
+              <Pencil className="h-4 w-4" />
+              Bewerken
+            </Button>
+          )}
+          {perms.canBoost && (
+            <Button className="h-11 gap-1.5" onClick={() => setBoostOpen(true)}>
+              <Rocket className="h-4 w-4" />
+              Boosten
+            </Button>
+          )}
         </div>
 
         {/* Snelle acties */}
@@ -249,12 +285,12 @@ export default function ListingOperating() {
               <button
                 type="button"
                 onClick={() => setSheet('description')}
-                className="text-xs font-medium text-primary inline-flex items-center gap-1 hover:underline"
+                className="text-xs font-medium text-primary-strong inline-flex items-center gap-1 hover:underline"
               >
                 Bewerken <ChevronRight className="h-3 w-3" />
               </button>
               <Button variant="ghost" size="sm" className="gap-1.5 h-8 text-xs" onClick={() => setSheet('description')}>
-                <Sparkles className="h-3.5 w-3.5 text-primary" /> Herschrijven met AI
+                <Sparkles className="h-3.5 w-3.5 text-primary-strong" /> Herschrijven met AI
               </Button>
             </div>
           </div>
@@ -450,7 +486,7 @@ function QuickAction({
       )}
     >
       <div className="flex items-center gap-2">
-        <Icon className={cn('h-4 w-4', highlighted ? 'text-primary' : 'text-muted-foreground')} />
+        <Icon className={cn('h-4 w-4', highlighted ? 'text-primary-strong' : 'text-muted-foreground')} />
         <span className="text-sm font-medium">{label}</span>
       </div>
       {sub && <p className="text-xs text-muted-foreground mt-1 truncate">{sub}</p>}
@@ -806,7 +842,7 @@ function DescriptionSheet({
     >
       <Textarea value={local} onChange={(e) => setLocal(e.target.value)} rows={10} className="resize-none" />
       <Button variant="outline" className="w-full gap-1.5" onClick={rewriteAI} disabled={aiLoading}>
-        {aiLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-primary" />}
+        {aiLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-primary-strong" />}
         Herschrijven met AI
       </Button>
     </BottomSheet>

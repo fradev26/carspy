@@ -55,12 +55,12 @@ export function AIChatSection() {
         <div className="mx-auto max-w-3xl">
           {/* Header */}
           <div className="text-center mb-6">
-            <div className="inline-flex items-center gap-2 rounded-md bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-4">
+            <div className="inline-flex items-center gap-2 rounded-md bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary-strong mb-4">
               <Sparkles className="h-4 w-4" />
               AI-Assistent
             </div>
             <h2 className="text-2xl font-bold md:text-3xl">
-              Filters tonen alles. <span className="text-primary">VATUUR. AI</span> toont wat past.
+              Filters tonen alles. <span className="text-primary-strong">VATUUR. AI</span> toont wat past.
             </h2>
             <p className="mt-2 text-muted-foreground">
               Stel je vraag in normale taal. De assistent vergelijkt prijs, km-stand, opties en marktwaarde — en zegt eerlijk wanneer een wagen géén goede deal is.
@@ -91,7 +91,7 @@ export function AIChatSection() {
             <div className={cn("p-4", expanded && "border-t border-border/40")}>
               <div className="flex items-end gap-2">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                  <Bot className="h-5 w-5 text-primary" />
+                  <Bot className="h-5 w-5 text-primary-strong" />
                 </div>
                 <textarea
                   ref={inputRef}
@@ -133,7 +133,7 @@ export function AIChatSection() {
                     <button
                       key={s}
                       onClick={() => send(s)}
-                      className="rounded-md border border-border/60 bg-muted/50 px-3.5 py-1.5 text-xs text-foreground/80 transition-all hover:bg-primary/10 hover:text-primary hover:border-primary/30 text-left"
+                      className="rounded-md border border-border/60 bg-muted/50 px-3.5 py-1.5 text-xs text-foreground/80 transition-all hover:bg-primary/10 hover:text-primary-strong hover:border-primary/30 text-left"
                     >
                       {s}
                     </button>
@@ -142,7 +142,7 @@ export function AIChatSection() {
                 <ul className="grid gap-1.5 pt-2 border-t border-border/40 text-xs text-muted-foreground sm:grid-cols-3">
                   {FILTER_BENEFITS.map((b) => (
                     <li key={b} className="flex items-start gap-1.5">
-                      <Check className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                      <Check className="h-3.5 w-3.5 text-primary-strong mt-0.5 shrink-0" />
                       <span>{b}</span>
                     </li>
                   ))}

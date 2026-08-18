@@ -320,7 +320,7 @@ export default function ListingDetail() {
   if (loading) {
     return (
       <div className="container py-20 text-center">
-        <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
+        <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary-strong" />
         <p className="mt-4 text-muted-foreground">Advertentie laden...</p>
       </div>
     );
@@ -506,7 +506,7 @@ export default function ListingDetail() {
               <Card className="border-border/60 shadow-card">
                 <CardContent className="p-6">
                   <h2 className="text-lg font-semibold flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-primary" />
+                    <Sparkles className="h-5 w-5 text-primary-strong" />
                     Waarom deze auto interessant is
                   </h2>
                   <ul className="mt-4 space-y-2.5">
@@ -552,7 +552,7 @@ export default function ListingDetail() {
                     )}
                     {listing.warrantyMonths != null && (
                       <div className="flex items-start gap-3">
-                        <Shield className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                        <Shield className="h-5 w-5 text-primary-strong mt-0.5 flex-shrink-0" />
                         <div>
                           <div className="text-xs text-muted-foreground">Garantie</div>
                           <div className="font-medium">{listing.warrantyMonths} {listing.warrantyUnit ?? 'maanden'}{listing.warrantyType ? ` · ${listing.warrantyType}` : ''}</div>
@@ -602,7 +602,7 @@ export default function ListingDetail() {
               <Card className="border-border/60 shadow-card">
                 <CardContent className="p-6">
                   <h2 className="text-lg font-semibold flex items-center gap-2">
-                    <Calculator className="h-5 w-5 text-primary" />
+                    <Calculator className="h-5 w-5 text-primary-strong" />
                     Totale kostprijs
                   </h2>
                   <dl className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -623,7 +623,7 @@ export default function ListingDetail() {
                   </dl>
                   {(listing.vatDeductible != null || listing.vatRate != null) && (
                     <div className="mt-4 flex items-start gap-3 rounded-lg border border-border/40 p-3 text-sm">
-                      <BadgeCheck className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                      <BadgeCheck className="h-4 w-4 text-primary-strong mt-0.5 flex-shrink-0" />
                       <div>
                         <div className="font-medium">Btw-informatie</div>
                         <div className="text-muted-foreground">
@@ -645,7 +645,7 @@ export default function ListingDetail() {
               <Card className="border-border/60 shadow-card">
                 <CardContent className="p-6">
                   <h2 className="text-lg font-semibold flex items-center gap-2">
-                    <Crown className="h-5 w-5 text-primary" />
+                    <Crown className="h-5 w-5 text-primary-strong" />
                     Hoogtepunten uitrusting
                   </h2>
                   {highlights.length > 0 && (
@@ -716,7 +716,7 @@ export default function ListingDetail() {
               <Card className="border-border/60 shadow-card">
                 <CardContent className="p-6">
                   <h2 className="text-lg font-semibold flex items-center gap-2">
-                    <History className="h-5 w-5 text-primary" />
+                    <History className="h-5 w-5 text-primary-strong" />
                     Voertuiggeschiedenis
                   </h2>
                   <ol className="mt-5 space-y-5 border-l border-border/60 pl-5">
@@ -740,7 +740,7 @@ export default function ListingDetail() {
               <Card className="border-border/60 shadow-card">
                 <CardContent className="p-6">
                   <h2 className="text-lg font-semibold flex items-center gap-2">
-                    <Cog className="h-5 w-5 text-primary" />
+                    <Cog className="h-5 w-5 text-primary-strong" />
                     Gedetailleerde specificaties
                   </h2>
 
@@ -789,12 +789,12 @@ export default function ListingDetail() {
             <Card className="lg:hidden border-border/60 shadow-card">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary font-bold text-lg">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary-strong font-bold text-lg">
                     {listing.seller.name.charAt(0)}
                   </div>
                   <div className="min-w-0">
                     {listing.seller.type === 'dealer' ? (
-                      <Link to={`/dealer/${dealerSlugFor(listing.seller)}`} className="font-semibold hover:text-primary transition-colors block truncate">
+                      <Link to={`/dealer/${dealerSlugFor(listing.seller)}`} className="font-semibold hover:text-primary-strong transition-colors block truncate">
                         {listing.seller.name}
                       </Link>
                     ) : (
@@ -833,7 +833,7 @@ export default function ListingDetail() {
             <Card className="border-primary/30 shadow-elevated overflow-hidden">
               <div className="bg-gradient-to-r from-primary/10 to-primary/5 px-6 py-4 border-b border-primary/20">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary" />
+                  <Sparkles className="h-5 w-5 text-primary-strong" />
                   <h3 className="font-semibold text-foreground">VATUUR. AI Analyse</h3>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">Betrouwbaarheid, onderhoud & geschiktheid</p>
@@ -846,7 +846,7 @@ export default function ListingDetail() {
                 )}
                 {analysisLoading && (
                   <div className="flex flex-col items-center gap-3 py-6">
-                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    <Loader2 className="h-6 w-6 animate-spin text-primary-strong" />
                     <p className="text-sm text-muted-foreground">AI analyseert dit voertuig...</p>
                   </div>
                 )}
@@ -860,7 +860,7 @@ export default function ListingDetail() {
                   <div className="space-y-4">
                     {vehicleAnalysis.reliability && (
                       <div className="flex items-start gap-3">
-                        <Shield className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                        <Shield className="h-4 w-4 text-primary-strong mt-0.5 shrink-0" />
                         <div>
                           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Betrouwbaarheid</p>
                           <p className="text-sm text-foreground/80 mt-0.5">{vehicleAnalysis.reliability}</p>
@@ -947,12 +947,12 @@ export default function ListingDetail() {
 
                 <div>
                   <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary font-bold text-lg">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-md bg-primary/10 text-primary-strong font-bold text-lg">
                       {listing.seller.name.charAt(0)}
                     </div>
                     <div>
                       {listing.seller.type === 'dealer' ? (
-                        <Link to={`/dealer/${dealerSlugFor(listing.seller)}`} className="font-semibold hover:text-primary transition-colors">
+                        <Link to={`/dealer/${dealerSlugFor(listing.seller)}`} className="font-semibold hover:text-primary-strong transition-colors">
                           {listing.seller.name}
                         </Link>
                       ) : (

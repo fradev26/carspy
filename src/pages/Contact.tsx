@@ -89,7 +89,7 @@ export default function Contact() {
                 <div>
                   <Label>Onderwerp</Label>
                   <Select value={form.subject} onValueChange={(v) => setForm({ ...form, subject: v as typeof form.subject })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger aria-label="Onderwerp"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {SUBJECTS.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
                     </SelectContent>
@@ -112,24 +112,24 @@ export default function Contact() {
             <Card>
               <CardContent className="space-y-3 p-5">
                 <div className="flex items-start gap-3">
-                  <Mail className="mt-0.5 h-5 w-5 text-primary" />
+                  <Mail className="mt-0.5 h-5 w-5 text-primary-strong" />
                   <div>
                     <p className="text-sm font-semibold">E-mail</p>
-                    <a href="mailto:support@vatuur.be" className="text-sm text-muted-foreground hover:text-primary">support@vatuur.be</a>
+                    <a href="mailto:support@vatuur.be" className="text-sm text-muted-foreground hover:text-primary-strong">support@vatuur.be</a>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <Clock className="mt-0.5 h-5 w-5 text-primary" />
+                  <Clock className="mt-0.5 h-5 w-5 text-primary-strong" />
                   <div>
                     <p className="text-sm font-semibold">Reactietijd</p>
                     <p className="text-sm text-muted-foreground">Binnen 1 werkdag</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <MessageCircle className="mt-0.5 h-5 w-5 text-primary" />
+                  <MessageCircle className="mt-0.5 h-5 w-5 text-primary-strong" />
                   <div>
                     <p className="text-sm font-semibold">Helpcentrum</p>
-                    <a href="/help" className="text-sm text-muted-foreground hover:text-primary">Veelgestelde vragen →</a>
+                    <a href="/help" className="text-sm text-muted-foreground hover:text-primary-strong">Veelgestelde vragen →</a>
                   </div>
                 </div>
               </CardContent>

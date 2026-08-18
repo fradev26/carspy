@@ -135,7 +135,7 @@ export function Header() {
                 {user ? (
                   <div className="flex items-center gap-3">
                     <Avatar className="h-12 w-12">
-                      <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                      <AvatarFallback className="bg-primary/10 text-primary-strong font-semibold">
                         {(profile?.full_name || user.email || '?').slice(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>

@@ -78,7 +78,7 @@ function SettingsRow({ icon: Icon, label, subtitle, to, onClick, disabled, badge
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section>
-      <h2 className="text-xs font-semibold uppercase tracking-wider text-primary/80 px-1 mb-2">
+      <h2 className="text-xs font-semibold uppercase tracking-wider text-primary-strong/80 px-1 mb-2">
         {title}
       </h2>
       <div className="rounded-xl border border-border/60 bg-card overflow-hidden divide-y divide-border/60">
@@ -108,7 +108,7 @@ export default function DealerSettings() {
       <SEOHead title="Instellingen — VATUUR. Zakelijk" description="Dealer-instellingen en koppelingen." noindex />
 
       <div className="flex items-center gap-2">
-        <SettingsIcon className="h-5 w-5 text-primary" />
+        <SettingsIcon className="h-5 w-5 text-primary-strong" />
         <h1 className="text-xl font-bold">Instellingen</h1>
       </div>
 

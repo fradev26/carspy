@@ -97,7 +97,7 @@ function initials(name?: string | null, email?: string | null) {
 
 function Avatar({ name, email, className }: { name?: string | null; email?: string | null; className?: string }) {
   return (
-    <div className={cn('flex items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-semibold shrink-0', className ?? 'h-10 w-10')}>
+    <div className={cn('flex items-center justify-center rounded-full bg-primary/10 text-primary-strong text-sm font-semibold shrink-0', className ?? 'h-10 w-10')}>
       {initials(name, email)}
     </div>
   );
@@ -400,14 +400,14 @@ export default function DealerUsers() {
                 <Input value={activityFilter.q} onChange={(e) => setActivityFilter((f) => ({ ...f, q: e.target.value }))} placeholder="Zoek in activiteiten..." className="pl-9" />
               </div>
               <Select value={activityFilter.user} onValueChange={(v) => setActivityFilter((f) => ({ ...f, user: v }))}>
-                <SelectTrigger className="w-[180px]"><SelectValue placeholder="Gebruiker" /></SelectTrigger>
+                <SelectTrigger aria-label="Filter op gebruiker" className="w-[180px]"><SelectValue placeholder="Gebruiker" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Alle gebruikers</SelectItem>
                   {(membersQ.data ?? []).map((m) => (<SelectItem key={m.user_id} value={m.user_id}>{m.full_name ?? m.email}</SelectItem>))}
                 </SelectContent>
               </Select>
               <Select value={activityFilter.category} onValueChange={(v) => setActivityFilter((f) => ({ ...f, category: v }))}>
-                <SelectTrigger className="w-[160px]"><SelectValue placeholder="Categorie" /></SelectTrigger>
+                <SelectTrigger aria-label="Filter op categorie" className="w-[160px]"><SelectValue placeholder="Categorie" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Alle categorie\u00ebn</SelectItem>
                   {Object.entries(CATEGORY_LABELS).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}

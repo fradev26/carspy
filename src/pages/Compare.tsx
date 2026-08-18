@@ -154,7 +154,7 @@ export default function Compare() {
                       <X className="h-3.5 w-3.5" />
                     </button>
                   </div>
-                  <Link to={`/auto/${item.id}`} className="block mt-1.5 text-xs md:text-sm font-semibold leading-tight line-clamp-1 hover:text-primary transition-colors">
+                  <Link to={`/auto/${item.id}`} className="block mt-1.5 text-xs md:text-sm font-semibold leading-tight line-clamp-1 hover:text-primary-strong transition-colors">
                     {item.title}
                   </Link>
                   <p className="text-sm md:text-base font-bold text-accent leading-tight">{formatPrice(item.price)}</p>

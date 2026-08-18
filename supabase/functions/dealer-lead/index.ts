@@ -53,6 +53,7 @@ serve(async (req) => {
     return jsonResponse({ ok: true, id: data.id });
   } catch (e) {
     console.error("dealer-lead error:", e);
-    return jsonResponse({ error: e instanceof Error ? e.message : "Onbekende fout" }, 500);
+    // Never leak internal error details to unauthenticated callers.
+    return jsonResponse({ error: "Onbekende fout" }, 500);
   }
 });

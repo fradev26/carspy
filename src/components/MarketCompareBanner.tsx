@@ -38,11 +38,11 @@ export function MarketCompareBanner({ reference, listings, onClose }: Props) {
   return (
     <div className="mb-5 rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 to-accent/10 p-4">
       <div className="flex items-start gap-3">
-        <BarChart3 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+        <BarChart3 className="h-5 w-5 text-primary-strong shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-foreground">
             Marktvergelijking voor{' '}
-            <Link to={`/auto/${reference.id}`} className="underline hover:text-primary">
+            <Link to={`/auto/${reference.id}`} className="underline hover:text-primary-strong">
               {reference.title}
             </Link>
           </p>

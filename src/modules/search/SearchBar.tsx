@@ -282,8 +282,8 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Merk</label>
                 <Select value={brand} onValueChange={(v) => { setBrand(v); setModel(''); }}>
-                  <SelectTrigger className="h-12 bg-background border-border/60">
-                    <SelectValue placeholder="Alle merken" />
+                  <SelectTrigger aria-label="Alle merken" className="h-12 bg-background border-border/60">
+<SelectValue placeholder="Alle merken" />
                   </SelectTrigger>
                   <SelectContent className="bg-card max-h-72">
                     <SelectItem value="all">Alle merken</SelectItem>
@@ -299,8 +299,8 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
                 <label className="text-sm font-medium text-foreground">Model</label>
                 {brand && brand !== 'all' && availableModels.length > 0 ? (
                   <Select value={model || 'all'} onValueChange={(v) => setModel(v === 'all' ? '' : v)}>
-                    <SelectTrigger className="h-12 bg-background border-border/60">
-                      <SelectValue placeholder="Alle modellen" />
+                    <SelectTrigger aria-label="Alle modellen" className="h-12 bg-background border-border/60">
+<SelectValue placeholder="Alle modellen" />
                     </SelectTrigger>
                     <SelectContent className="bg-card max-h-72">
                       <SelectItem value="all">Alle modellen</SelectItem>
@@ -324,8 +324,8 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Bouwjaar vanaf</label>
                 <Select value={minYear} onValueChange={setMinYear}>
-                  <SelectTrigger className="h-12 bg-background border-border/60">
-                    <SelectValue placeholder="Alle jaren" />
+                  <SelectTrigger aria-label="Alle jaren" className="h-12 bg-background border-border/60">
+<SelectValue placeholder="Alle jaren" />
                   </SelectTrigger>
                   <SelectContent className="bg-card max-h-64">
                     <SelectItem value="none">Alle jaren</SelectItem>
@@ -340,8 +340,8 @@ export function SearchBar({ variant = 'compact', className }: SearchBarProps) {
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Max. prijs</label>
                 <Select value={maxPrice} onValueChange={setMaxPrice}>
-                  <SelectTrigger className="h-12 bg-background border-border/60">
-                    <SelectValue placeholder="Geen maximum" />
+                  <SelectTrigger aria-label="Geen maximum" className="h-12 bg-background border-border/60">
+<SelectValue placeholder="Geen maximum" />
                   </SelectTrigger>
                   <SelectContent className="bg-card">
                     <SelectItem value="none">Geen maximum</SelectItem>

@@ -228,12 +228,12 @@ export default function Dealers() {
       <section aria-labelledby="dealer-hero" className="relative overflow-hidden bg-gradient-to-b from-primary/5 via-background to-background">
         <div className="container py-12 sm:py-16 lg:py-24">
           <div className="mx-auto max-w-3xl text-center animate-fade-in">
-            <Badge variant="outline" className="mb-5 border-primary/30 bg-primary/5 text-primary">
+            <Badge variant="outline" className="mb-5 border-primary/30 bg-primary/5 text-primary-strong">
               <Sparkles className="mr-1.5 h-3 w-3" /> Voor autobedrijven en dealers
             </Badge>
             <h1 id="dealer-hero" className="text-balance text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
               Meer zichtbaarheid. Meer leads.{' '}
-              <span className="text-primary">Meer autoverkopen.</span>
+              <span className="text-primary-strong">Meer autoverkopen.</span>
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-balance text-base text-muted-foreground sm:text-lg">
               Bereik duizenden actieve autokopers in Nederland en België via VATUUR. Plaats uw voorraad,
@@ -254,7 +254,7 @@ export default function Dealers() {
             <ul className="mx-auto mt-8 grid max-w-2xl grid-cols-2 gap-x-4 gap-y-2 text-sm text-muted-foreground sm:grid-cols-4">
               {['Dealerprofiel', 'Voorraadimport', 'Meer zichtbaarheid', 'Geverifieerde dealerstatus'].map((b) => (
                 <li key={b} className="flex items-center justify-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-primary-strong" />
                   <span className="truncate">{b}</span>
                 </li>
               ))}
@@ -270,7 +270,7 @@ export default function Dealers() {
           {stats.map((s) => (
             <Card key={s.label} className="hover-lift">
               <CardContent className="flex flex-col items-start gap-2 p-4 sm:p-6">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary-strong">
                   <s.icon className="h-5 w-5" />
                 </div>
                 <div className="text-2xl font-bold sm:text-3xl">{s.value}</div>
@@ -297,7 +297,7 @@ export default function Dealers() {
             {whyVatuur.map((w) => (
               <Card key={w.title} className="hover-lift">
                 <CardHeader>
-                  <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary-strong">
                     <w.icon className="h-5 w-5" />
                   </div>
                   <CardTitle className="text-lg">{w.title}</CardTitle>
@@ -373,14 +373,14 @@ export default function Dealers() {
                     <span className="text-sm text-muted-foreground"> / maand</span>
                   </div>
                   {!p.highlight && (
-                    <p className="pt-1 text-xs font-medium text-primary">{p.label}</p>
+                    <p className="pt-1 text-xs font-medium text-primary-strong">{p.label}</p>
                   )}
                 </CardHeader>
                 <CardContent className="flex flex-1 flex-col">
                   <ul className="space-y-2.5">
                     {p.features.map((f) => (
                       <li key={f} className="flex items-start gap-2 text-sm">
-                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary-strong" />
                         <span>{f}</span>
                       </li>
                     ))}
@@ -420,7 +420,7 @@ export default function Dealers() {
                 <TableRow>
                   <TableHead className="min-w-[220px]">Functie</TableHead>
                   <TableHead className="text-center">Premium</TableHead>
-                  <TableHead className="text-center bg-primary/5 text-primary">Premium Plus</TableHead>
+                  <TableHead className="text-center bg-primary/5 text-primary-strong">Premium Plus</TableHead>
                   <TableHead className="text-center">Enterprise</TableHead>
                 </TableRow>
               </TableHeader>
@@ -434,7 +434,7 @@ export default function Dealers() {
                         className={cn('text-center text-sm', i === 1 && 'bg-primary/5 font-medium')}
                       >
                         {v === true ? (
-                          <CheckCircle2 className="mx-auto h-4 w-4 text-primary" />
+                          <CheckCircle2 className="mx-auto h-4 w-4 text-primary-strong" />
                         ) : v === false ? (
                           <Minus className="mx-auto h-4 w-4 text-muted-foreground" />
                         ) : (
@@ -465,7 +465,7 @@ export default function Dealers() {
           <div className="mt-10 grid gap-5 lg:grid-cols-2">
             <Card className="hover-lift">
               <CardHeader>
-                <div className="mb-2 flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <div className="mb-2 flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary-strong">
                   <Zap className="h-6 w-6" />
                 </div>
                 <CardTitle>Turbo Boost</CardTitle>
@@ -478,16 +478,16 @@ export default function Dealers() {
                   aandacht op wilt vestigen.
                 </p>
                 <ul className="mt-4 space-y-2 text-sm">
-                  <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />Hogere positie in zoekresultaten</li>
-                  <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />Tot 3× meer views per advertentie</li>
-                  <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />Inclusief vanaf het Premium-pakket</li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary-strong" />Hogere positie in zoekresultaten</li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary-strong" />Tot 3× meer views per advertentie</li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary-strong" />Inclusief vanaf het Premium-pakket</li>
                 </ul>
               </CardContent>
             </Card>
 
             <Card className="hover-lift border-primary/30">
               <CardHeader>
-                <div className="mb-2 flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <div className="mb-2 flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary-strong">
                   <Rocket className="h-6 w-6" />
                 </div>
                 <CardTitle>Nitro Boost</CardTitle>
@@ -500,9 +500,9 @@ export default function Dealers() {
                   topvoorraad of voertuigen die snel verkocht moeten worden.
                 </p>
                 <ul className="mt-4 space-y-2 text-sm">
-                  <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />Vermelding op de homepage</li>
-                  <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />Topposities in zoekresultaten</li>
-                  <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />Inclusief vanaf Premium Plus</li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary-strong" />Vermelding op de homepage</li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary-strong" />Topposities in zoekresultaten</li>
+                  <li className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary-strong" />Inclusief vanaf Premium Plus</li>
                 </ul>
               </CardContent>
             </Card>
@@ -525,7 +525,7 @@ export default function Dealers() {
           {usps.map((u) => (
             <Card key={u.title} className="hover-lift">
               <CardContent className="p-6">
-                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary-strong">
                   <u.icon className="h-5 w-5" />
                 </div>
                 <h3 className="text-base font-semibold">{u.title}</h3>
@@ -552,15 +552,15 @@ export default function Dealers() {
             {testimonials.map((t) => (
               <Card key={t.name} className="hover-lift">
                 <CardContent className="p-6">
-                  <div className="mb-3 flex items-center gap-1 text-primary">
+                  <div className="mb-3 flex items-center gap-1 text-primary-strong">
                     {Array.from({ length: 5 }).map((_, i) => (
                       <Star key={i} className="h-4 w-4 fill-current" />
                     ))}
                   </div>
-                  <Quote className="mb-2 h-5 w-5 text-primary/40" aria-hidden />
+                  <Quote className="mb-2 h-5 w-5 text-primary-strong/40" aria-hidden />
                   <p className="text-sm text-muted-foreground">"{t.review}"</p>
                   <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary-strong">
                       {t.name.split(' ').map((n) => n[0]).slice(0, 2).join('')}
                     </div>
                     <div>
@@ -609,7 +609,7 @@ export default function Dealers() {
         <div className="container">
           <Card className="mx-auto max-w-3xl border-primary/20">
             <CardContent className="p-8 text-center sm:p-12">
-              <Headphones className="mx-auto mb-4 h-10 w-10 text-primary" />
+              <Headphones className="mx-auto mb-4 h-10 w-10 text-primary-strong" />
               <h2 id="dealer-cta" className="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
                 Klaar om meer auto's te verkopen?
               </h2>

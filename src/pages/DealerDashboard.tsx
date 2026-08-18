@@ -108,7 +108,7 @@ export default function DealerDashboard() {
   }
 
   const statCards = [
-    { label: 'Totaal views', value: overview?.totalViews ?? 0, icon: Eye, color: 'text-primary' },
+    { label: 'Totaal views', value: overview?.totalViews ?? 0, icon: Eye, color: 'text-primary-strong' },
     { label: 'Favorieten', value: overview?.totalFavorites ?? 0, icon: Heart, color: 'text-accent' },
     { label: 'Berichten', value: overview?.totalMessages ?? 0, icon: MessageCircle, color: 'text-success' },
     { label: 'Actieve listings', value: overview?.activeListings ?? 0, icon: Car, color: 'text-warning' },
@@ -135,7 +135,7 @@ export default function DealerDashboard() {
           </Button>
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
-              <BarChart3 className="h-6 w-6 text-primary" />
+              <BarChart3 className="h-6 w-6 text-primary-strong" />
               Dealer Analytics
             </h1>
             <p className="text-sm text-muted-foreground mt-0.5">
@@ -233,7 +233,7 @@ export default function DealerDashboard() {
                     return (
                       <TableRow key={l.id} className={l.isPremium ? 'bg-premium/5' : ''}>
                         <TableCell>
-                          <Link to={`/auto/${l.id}`} className="flex items-center gap-3 hover:text-primary transition-colors">
+                          <Link to={`/auto/${l.id}`} className="flex items-center gap-3 hover:text-primary-strong transition-colors">
                             <img
                               src={l.image || '/placeholder.svg'}
                               alt={l.title}
@@ -273,7 +273,7 @@ export default function DealerDashboard() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className={`h-7 text-xs gap-1 ${isBoosted ? 'text-primary border-primary/50' : ''}`}
+                              className={`h-7 text-xs gap-1 ${isBoosted ? 'text-primary-strong border-primary/50' : ''}`}
                               onClick={() => boostListing(l.id)}
                               disabled={!!isBoosted}
                             >

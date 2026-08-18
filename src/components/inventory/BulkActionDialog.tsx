@@ -112,7 +112,7 @@ export function BulkActionDialog({
         <div className="flex-1 overflow-y-auto space-y-2 -mx-1 px-1">
           {isLoading ? (
             <div className="flex justify-center py-12">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <Loader2 className="h-6 w-6 animate-spin text-primary-strong" />
             </div>
           ) : !listings || listings.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-12">

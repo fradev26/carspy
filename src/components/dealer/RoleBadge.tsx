@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import type { CompanyRole } from '@/hooks/usePermissions';
 
 const META: Record<CompanyRole, { label: string; icon: typeof Crown; cls: string }> = {
-  owner:     { label: 'Eigenaar', icon: Crown,     cls: 'bg-primary/10 text-primary border-primary/30' },
+  owner:     { label: 'Eigenaar', icon: Crown,     cls: 'bg-primary/10 text-primary-strong border-primary/30' },
   manager:   { label: 'Manager',  icon: Shield,    cls: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30' },
   seller:    { label: 'Verkoper', icon: Tag,       cls: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30' },
   marketing: { label: 'Marketing',icon: Megaphone, cls: 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/30' },

@@ -94,7 +94,7 @@ export default function Dashboard() {
         <Card className="mt-6 border-primary/30 bg-primary/5">
           <CardContent className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
-              <BarChart3 className="h-5 w-5 text-primary" />
+              <BarChart3 className="h-5 w-5 text-primary-strong" />
               <div>
                 <p className="font-semibold text-sm">Zakelijk Dashboard</p>
                 <p className="text-xs text-muted-foreground">Bekijk voorraadanalytics, AI-prijsanalyse en meer</p>
@@ -146,7 +146,7 @@ export default function Dashboard() {
                   <div className="flex-1">
                     <div className="flex items-start justify-between">
                       <div>
-                        <Link to={`/auto/${listing.id}`} className="font-semibold hover:text-primary">{listing.title}</Link>
+                        <Link to={`/auto/${listing.id}`} className="font-semibold hover:text-primary-strong">{listing.title}</Link>
                         <p className="text-lg font-bold text-accent">{formatPrice(listing.price)}</p>
                       </div>
                       <Badge variant={listing.status === 'active' ? 'default' : 'secondary'}>

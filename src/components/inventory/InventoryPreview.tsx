@@ -45,7 +45,7 @@ export function InventoryPreview({
           <div className="text-xs space-y-2 border-t border-border/60 pt-3">
             <p className="text-muted-foreground font-medium">Bij verkoop:</p>
             <div className="flex items-center gap-2 text-foreground">
-              <ArrowRight className="h-3 w-3 text-primary" />
+              <ArrowRight className="h-3 w-3 text-primary-strong" />
               {prefs.auto_mark_sold ? (
                 <span>Status automatisch op <Badge variant="outline" className="text-[10px] ml-1">Verkocht</Badge></span>
               ) : (
@@ -53,7 +53,7 @@ export function InventoryPreview({
               )}
             </div>
             <div className="flex items-center gap-2 text-foreground">
-              <ArrowRight className="h-3 w-3 text-primary" />
+              <ArrowRight className="h-3 w-3 text-primary-strong" />
               <span className="inline-flex items-center gap-1">{sold.icon} {sold.label}</span>
             </div>
           </div>
@@ -62,7 +62,7 @@ export function InventoryPreview({
             <div className="text-xs border-t border-border/60 pt-3 space-y-1">
               <p className="text-muted-foreground font-medium">Bij contactname:</p>
               <div className="flex items-center gap-2">
-                <Clock className="h-3 w-3 text-primary" />
+                <Clock className="h-3 w-3 text-primary-strong" />
                 <span>Gereserveerd voor {prefs.reservation_minutes} min</span>
               </div>
             </div>

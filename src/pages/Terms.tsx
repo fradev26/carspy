@@ -38,7 +38,7 @@ export default function Terms() {
           <h2 className="text-lg font-semibold text-foreground">5. Contact</h2>
           <p className="mt-2">
             Voor vragen over deze voorwaarden kunt u contact opnemen via{' '}
-            <a href="mailto:info@vatuur.be" className="text-primary underline">info@vatuur.be</a>.
+            <a href="mailto:info@vatuur.be" className="text-primary-strong underline">info@vatuur.be</a>.
           </p>
         </section>
       </div>

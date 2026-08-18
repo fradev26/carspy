@@ -220,7 +220,7 @@ export default function Search() {
               <div className="hidden lg:block">
                 {searchParams.get('aiIntent') ? (
                   <div className="mb-5 flex items-start gap-3 rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 to-accent/10 p-4">
-                    <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                    <Sparkles className="h-5 w-5 text-primary-strong shrink-0 mt-0.5" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground">
                         {searchParams.get('aiIntent')}
@@ -264,7 +264,7 @@ export default function Search() {
                         onClick={() => setAiBarOpen(true)}
                         className="group flex w-full items-center gap-3 rounded-xl border border-border/60 bg-card/50 px-4 py-2.5 text-left text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:bg-card hover:text-foreground focus-ring"
                       >
-                        <Sparkles className="h-4 w-4 text-primary" />
+                        <Sparkles className="h-4 w-4 text-primary-strong" />
                         <span className="flex-1 truncate">Vraag het de AI… "BMW automaat onder €25.000"</span>
                         <ChevronDown className="h-4 w-4 opacity-60 transition-transform group-hover:translate-y-0.5" />
                       </button>
@@ -362,7 +362,7 @@ export default function Search() {
                     onClick={saveGate.openSave}
                     aria-label="Zoekopdracht opslaan als alert"
                     title={activeFilterCount === 0 ? 'Voeg eerst filters toe' : 'Zoekopdracht opslaan als alert'}
-                    className="gap-2 border-border/60 hover:border-primary/40 hover:text-primary"
+                    className="gap-2 border-border/60 hover:border-primary/40 hover:text-primary-strong"
                   >
                     <Bell className="h-4 w-4" />
                     <span className="hidden md:inline">Opslaan</span>
@@ -371,7 +371,7 @@ export default function Search() {
 
                   {/* Sort */}
                   <Select value={sortBy} onValueChange={handleSortChange}>
-                    <SelectTrigger className="w-44 border-border/60">
+                    <SelectTrigger aria-label="Sorteer zoekresultaten" className="w-44 border-border/60">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-card">

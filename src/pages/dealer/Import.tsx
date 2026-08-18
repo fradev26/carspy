@@ -12,7 +12,7 @@ export default function Import() {
 
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Upload className="h-6 w-6 text-primary" /> Import & Sync
+          <Upload className="h-6 w-6 text-primary-strong" /> Import & Sync
         </h1>
         <p className="text-sm text-muted-foreground mt-0.5">Drie manieren om voertuigen aan je voorraad toe te voegen.</p>
       </div>
@@ -20,7 +20,7 @@ export default function Import() {
       <div className="grid md:grid-cols-3 gap-4">
         <Card className="border-border/60">
           <CardHeader>
-            <FileSpreadsheet className="h-8 w-8 text-primary mb-2" />
+            <FileSpreadsheet className="h-8 w-8 text-primary-strong mb-2" />
             <CardTitle className="text-base">CSV upload</CardTitle>
             <CardDescription>Importeer in bulk via een CSV-bestand met kolom-mapping.</CardDescription>
           </CardHeader>
@@ -31,7 +31,7 @@ export default function Import() {
 
         <Card className="border-border/60">
           <CardHeader>
-            <Link2 className="h-8 w-8 text-primary mb-2" />
+            <Link2 className="h-8 w-8 text-primary-strong mb-2" />
             <CardTitle className="text-base">AutoScout24 sync</CardTitle>
             <CardDescription>Automatische tweewegssynchronisatie met je AutoScout-account.</CardDescription>
           </CardHeader>
@@ -44,7 +44,7 @@ export default function Import() {
 
         <Card className="border-border/60">
           <CardHeader>
-            <Plus className="h-8 w-8 text-primary mb-2" />
+            <Plus className="h-8 w-8 text-primary-strong mb-2" />
             <CardTitle className="text-base">Handmatig toevoegen</CardTitle>
             <CardDescription>Eén voertuig via de geleide wizard met foto's en details.</CardDescription>
           </CardHeader>

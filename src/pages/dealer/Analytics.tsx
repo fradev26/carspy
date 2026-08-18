@@ -82,7 +82,7 @@ export default function Analytics() {
 
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <BarChart3 className="h-6 w-6 text-primary" /> Analytics
+          <BarChart3 className="h-6 w-6 text-primary-strong" /> Analytics
         </h1>
         <p className="text-sm text-muted-foreground mt-0.5">Inzicht in je voorraad en verkoopprestaties.</p>
       </div>
@@ -90,7 +90,7 @@ export default function Analytics() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="border-border/60">
           <CardContent className="p-5">
-            <Euro className="h-5 w-5 text-primary" />
+            <Euro className="h-5 w-5 text-primary-strong" />
             <p className="text-2xl font-bold mt-2">{formatPrice(totalValue)}</p>
             <p className="text-xs text-muted-foreground">Voorraadwaarde (actief)</p>
           </CardContent>
@@ -149,7 +149,7 @@ export default function Analytics() {
                     <img src={l.image || '/placeholder.svg'} alt="" className="h-8 w-12 rounded object-cover" />
                     <span className="text-sm truncate">{l.title}</span>
                   </div>
-                  <span className="text-sm font-semibold text-primary">{rate}%</span>
+                  <span className="text-sm font-semibold text-primary-strong">{rate}%</span>
                 </Link>
               );
             })}

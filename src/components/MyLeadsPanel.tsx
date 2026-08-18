@@ -121,8 +121,8 @@ export default function MyLeadsPanel({ compact = false }: { compact?: boolean })
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-semibold flex items-center gap-2"><Car className="h-4 w-4 text-primary" /> Mijn verkoopstatus</h3>
-        {compact && <Link to="/dashboard" className="text-xs text-primary hover:underline">Alles bekijken →</Link>}
+        <h3 className="text-base font-semibold flex items-center gap-2"><Car className="h-4 w-4 text-primary-strong" /> Mijn verkoopstatus</h3>
+        {compact && <Link to="/dashboard" className="text-xs text-primary-strong hover:underline">Alles bekijken →</Link>}
       </div>
       {leads.map(lead => {
         const badge = statusBadge(lead);
@@ -178,7 +178,7 @@ export default function MyLeadsPanel({ compact = false }: { compact?: boolean })
                   <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {days} dag{days === 1 ? '' : 'en'} online</span>
                 )}
                 {lead.listings?.boost_until && new Date(lead.listings.boost_until) > new Date() && (
-                  <span className="flex items-center gap-1 text-primary"><Rocket className="h-3 w-3" /> boost tot {new Date(lead.listings.boost_until).toLocaleDateString('nl-BE')}</span>
+                  <span className="flex items-center gap-1 text-primary-strong"><Rocket className="h-3 w-3" /> boost tot {new Date(lead.listings.boost_until).toLocaleDateString('nl-BE')}</span>
                 )}
                 {eta && (
                   <span>Beschikbaar voor dealers {eta}</span>

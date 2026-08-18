@@ -19,6 +19,8 @@
     /* Primary - Amber/Rood-roze */
     --primary: 347 77% 50%;
     --primary-foreground: 0 0% 100%;
+    /* Accessible text variant of primary (AA on light surfaces) */
+    --primary-strong: 347 82% 37%;
     
     /* Secondary */
     --secondary: 220 14% 96%;
@@ -26,7 +28,7 @@
     
     /* Muted */
     --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
+    --muted-foreground: 220 10% 40%;
     
     /* Accent */
     --accent: 347 77% 50%;
@@ -42,14 +44,14 @@
     --ring: 347 77% 50%;
     
     /* Success & Warning */
-    --success: 142 71% 45%;
+    --success: 142 72% 29%;
     --success-foreground: 0 0% 100%;
     --warning: 45 93% 47%;
-    --warning-foreground: 0 0% 100%;
+    --warning-foreground: 30 60% 10%;
     
     /* Premium */
     --premium: 45 93% 47%;
-    --premium-foreground: 0 0% 100%;
+    --premium-foreground: 30 60% 10%;
     
     /* Status Colors */
     --status-pending: 45 93% 47%;
@@ -82,16 +84,17 @@
     --popover: 220 16% 12%;
     --popover-foreground: 210 20% 98%;
     
-    --primary: 347 77% 55%;
+    --primary: 347 77% 48%;
     --primary-foreground: 0 0% 100%;
+    --primary-strong: 347 90% 72%;
     
     --secondary: 220 14% 18%;
     --secondary-foreground: 210 20% 90%;
     
     --muted: 220 14% 16%;
-    --muted-foreground: 220 9% 60%;
+    --muted-foreground: 220 12% 68%;
     
-    --accent: 347 77% 55%;
+    --accent: 347 77% 48%;
     --accent-foreground: 0 0% 100%;
     
     --destructive: 0 72% 51%;
@@ -99,9 +102,9 @@
     
     --border: 220 14% 20%;
     --input: 220 14% 20%;
-    --ring: 347 77% 55%;
+    --ring: 347 77% 58%;
     
-    --success: 142 71% 45%;
+    --success: 142 66% 30%;
     --success-foreground: 0 0% 100%;
     --warning: 45 93% 50%;
     --warning-foreground: 0 0% 0%;

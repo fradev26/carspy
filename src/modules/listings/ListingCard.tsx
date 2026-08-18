@@ -126,7 +126,7 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
             <CardContent className="flex flex-1 flex-col justify-between p-5">
 
               <div className="space-y-3">
-                <h3 className="text-lg font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                <h3 className="text-lg font-semibold text-foreground line-clamp-1 group-hover:text-primary-strong transition-colors">
                   {listing.title}
                 </h3>
 
@@ -210,7 +210,7 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
             aria-label={isComparing ? 'Wordt vergeleken' : 'Vergelijk deze auto'}
             className={cn(
               'absolute right-3 top-14 z-10 h-9 w-9 rounded-md backdrop-blur-sm shadow-md transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground',
-              isComparing ? 'bg-primary text-primary-foreground' : 'bg-card/90 text-primary'
+              isComparing ? 'bg-primary text-primary-foreground' : 'bg-card/90 text-primary-strong'
             )}
             onClick={handleCompareClick}
             disabled={isComparing}
@@ -240,7 +240,7 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
         {/* Content */}
         <CardContent className="p-4">
           <h3 className={cn(
-            'font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors',
+            'font-semibold text-foreground line-clamp-1 group-hover:text-primary-strong transition-colors',
             variant === 'compact' ? 'text-sm' : 'text-base'
           )}>
             {listing.title}
@@ -291,7 +291,7 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
             <button
               type="button"
               onClick={handleMarketCompare}
-              className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-md border border-border/60 bg-muted/40 px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary hover:border-primary/30"
+              className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-md border border-border/60 bg-muted/40 px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary-strong hover:border-primary/30"
             >
               <BarChart3 className="h-3.5 w-3.5" />
               Vergelijk markt

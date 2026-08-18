@@ -118,7 +118,7 @@ export function PhotoUploader({ photos, onChange }: Props) {
           }}
           className="hidden"
         />
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary-strong">
           <Upload className="h-6 w-6" />
         </div>
         <p className="mt-3 text-sm font-medium">Sleep foto's hierheen of klik om te uploaden</p>

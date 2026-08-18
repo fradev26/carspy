@@ -63,12 +63,18 @@ export default function DealerInventory() {
     setDealer(undefined);
     setAllListings([]);
     (async () => {
-      const d = await findDealerBySlugAsync(slug);
-      if (cancelled) return;
-      if (!d) { setDealer(null); return; }
-      setDealer(d);
-      const list = await getDealerListingsAsync(slug, d.seller.id);
-      if (!cancelled) setAllListings(list);
+      try {
+        const d = await findDealerBySlugAsync(slug);
+        if (cancelled) return;
+        if (!d) { setDealer(null); return; }
+        setDealer(d);
+        const list = await getDealerListingsAsync(slug, d.seller.id);
+        if (!cancelled) setAllListings(list);
+      } catch {
+        // Network/DB failure: fall back to the not-found state instead of
+        // leaving the page stuck on an infinite spinner.
+        if (!cancelled) setDealer(null);
+      }
     })();
     return () => { cancelled = true; };
   }, [slug]);
@@ -196,7 +202,7 @@ export default function DealerInventory() {
         <header className="mb-6 rounded-xl border border-border/60 bg-card p-6 shadow-card">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-start gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-md bg-primary/10 text-primary text-2xl font-bold">
+              <div className="flex h-16 w-16 items-center justify-center rounded-md bg-primary/10 text-primary-strong text-2xl font-bold">
                 {dealerName.charAt(0)}
               </div>
               <div>
@@ -279,7 +285,7 @@ export default function DealerInventory() {
                 </Sheet>
 
                 <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-44 border-border/60"><SelectValue /></SelectTrigger>
+                  <SelectTrigger aria-label="Sorteer voorraad" className="w-44 border-border/60"><SelectValue /></SelectTrigger>
                   <SelectContent className="bg-card">
                     {SORT_OPTIONS.map((o) => (
                       <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>

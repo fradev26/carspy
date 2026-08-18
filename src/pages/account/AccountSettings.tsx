@@ -167,7 +167,7 @@ export default function AccountSettings({ defaultTab = 'profiel' }: Props) {
               <div className="flex items-center gap-4">
                 <Avatar className="h-16 w-16">
                   {profile.avatar_url && <AvatarImage src={profile.avatar_url} alt="" />}
-                  <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                  <AvatarFallback className="bg-primary/10 text-primary-strong font-semibold">
                     {(profile.full_name || profile.email || '?').slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -292,7 +292,7 @@ export default function AccountSettings({ defaultTab = 'profiel' }: Props) {
                       className={`flex cursor-pointer flex-col gap-2 rounded-md border bg-card p-4 transition-colors hover:bg-accent/40 ${active ? 'border-primary ring-2 ring-primary/30' : 'border-border'}`}
                     >
                       <div className="flex items-center justify-between">
-                        <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
+                        <Icon className="h-5 w-5 text-primary-strong" aria-hidden="true" />
                         <RadioGroupItem id={`theme-${value}`} value={value} />
                       </div>
                       <div>
