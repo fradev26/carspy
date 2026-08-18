@@ -371,7 +371,7 @@ export default function Search() {
 
                   {/* Sort */}
                   <Select value={sortBy} onValueChange={handleSortChange}>
-                    <SelectTrigger className="w-44 border-border/60">
+                    <SelectTrigger aria-label="Sorteer zoekresultaten" className="w-44 border-border/60">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-card">

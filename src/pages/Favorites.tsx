@@ -307,7 +307,7 @@ function FavoritesTab() {
             </Button>
           )}
           <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
-            <SelectTrigger className="h-9 w-[170px]">
+            <SelectTrigger aria-label="Sorteer favorieten" className="h-9 w-[170px]">
               <SelectValue placeholder="Sorteren" />
             </SelectTrigger>
             <SelectContent>

@@ -279,7 +279,7 @@ export default function DealerInventory() {
                 </Sheet>
 
                 <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-44 border-border/60"><SelectValue /></SelectTrigger>
+                  <SelectTrigger aria-label="Sorteer voorraad" className="w-44 border-border/60"><SelectValue /></SelectTrigger>
                   <SelectContent className="bg-card">
                     {SORT_OPTIONS.map((o) => (
                       <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>

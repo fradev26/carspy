@@ -400,14 +400,14 @@ export default function DealerUsers() {
                 <Input value={activityFilter.q} onChange={(e) => setActivityFilter((f) => ({ ...f, q: e.target.value }))} placeholder="Zoek in activiteiten..." className="pl-9" />
               </div>
               <Select value={activityFilter.user} onValueChange={(v) => setActivityFilter((f) => ({ ...f, user: v }))}>
-                <SelectTrigger className="w-[180px]"><SelectValue placeholder="Gebruiker" /></SelectTrigger>
+                <SelectTrigger aria-label="Filter op gebruiker" className="w-[180px]"><SelectValue placeholder="Gebruiker" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Alle gebruikers</SelectItem>
                   {(membersQ.data ?? []).map((m) => (<SelectItem key={m.user_id} value={m.user_id}>{m.full_name ?? m.email}</SelectItem>))}
                 </SelectContent>
               </Select>
               <Select value={activityFilter.category} onValueChange={(v) => setActivityFilter((f) => ({ ...f, category: v }))}>
-                <SelectTrigger className="w-[160px]"><SelectValue placeholder="Categorie" /></SelectTrigger>
+                <SelectTrigger aria-label="Filter op categorie" className="w-[160px]"><SelectValue placeholder="Categorie" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Alle categorie\u00ebn</SelectItem>
                   {Object.entries(CATEGORY_LABELS).map(([k, v]) => (<SelectItem key={k} value={k}>{v}</SelectItem>))}

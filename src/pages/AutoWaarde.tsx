@@ -369,7 +369,7 @@ export default function AutoWaarde() {
                 <div>
                   <Label>Merk</Label>
                   <Select value={brand} onValueChange={(v) => { setBrand(v); setModel(''); }}>
-                    <SelectTrigger className="mt-1 h-11"><SelectValue placeholder="Kies merk" /></SelectTrigger>
+                    <SelectTrigger aria-label="Merk" className="mt-1 h-11"><SelectValue placeholder="Kies merk" /></SelectTrigger>
                     <SelectContent className="bg-card max-h-72">
                       {CAR_BRANDS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
                     </SelectContent>
@@ -379,7 +379,7 @@ export default function AutoWaarde() {
                   <Label>Model</Label>
                   {availableModels.length ? (
                     <Select value={model} onValueChange={setModel}>
-                      <SelectTrigger className="mt-1 h-11"><SelectValue placeholder="Kies model" /></SelectTrigger>
+                      <SelectTrigger aria-label="Model" className="mt-1 h-11"><SelectValue placeholder="Kies model" /></SelectTrigger>
                       <SelectContent className="bg-card max-h-72">
                         {availableModels.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                       </SelectContent>
@@ -391,7 +391,7 @@ export default function AutoWaarde() {
                 <div>
                   <Label>Bouwjaar</Label>
                   <Select value={year} onValueChange={setYear}>
-                    <SelectTrigger className="mt-1 h-11"><SelectValue placeholder="Kies jaar" /></SelectTrigger>
+                    <SelectTrigger aria-label="Bouwjaar" className="mt-1 h-11"><SelectValue placeholder="Kies jaar" /></SelectTrigger>
                     <SelectContent className="bg-card max-h-64">
                       {years.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
                     </SelectContent>
@@ -404,7 +404,7 @@ export default function AutoWaarde() {
                 <div>
                   <Label>Brandstof <span className="text-muted-foreground">(optioneel)</span></Label>
                   <Select value={fuelType} onValueChange={setFuelType}>
-                    <SelectTrigger className="mt-1 h-11"><SelectValue placeholder="Kies brandstof" /></SelectTrigger>
+                    <SelectTrigger aria-label="Brandstof" className="mt-1 h-11"><SelectValue placeholder="Kies brandstof" /></SelectTrigger>
                     <SelectContent className="bg-card">
                       {FUELS.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
                     </SelectContent>
@@ -413,7 +413,7 @@ export default function AutoWaarde() {
                 <div>
                   <Label>Versnellingsbak <span className="text-muted-foreground">(optioneel)</span></Label>
                   <Select value={transmission} onValueChange={setTransmission}>
-                    <SelectTrigger className="mt-1 h-11"><SelectValue placeholder="Kies type" /></SelectTrigger>
+                    <SelectTrigger aria-label="Versnellingsbak" className="mt-1 h-11"><SelectValue placeholder="Kies type" /></SelectTrigger>
                     <SelectContent className="bg-card">
                       {TRANSMISSIONS.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                     </SelectContent>
