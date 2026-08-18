@@ -199,7 +199,11 @@ export default function Sell() {
     (async () => {
       const { data, error } = await supabase
         .from('listings')
-        .select('*')
+        // Expliciete kolomlijst: dealer-financiën (cost_price/sold_price/margin)
+        // zijn niet leesbaar via de Data API.
+        .select(
+          'id, brand, model, model_version, year, first_registration_date, mileage, fuel_type, transmission, body_type, power, power_unit, price, price_negotiable, vat_deductible, description, city, images, specs, condition, status',
+        )
         .eq('id', draftId)
         .eq('user_id', user.id)
         .maybeSingle();
