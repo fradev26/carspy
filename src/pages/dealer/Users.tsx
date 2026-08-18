@@ -136,10 +136,7 @@ export default function DealerUsers() {
             body: {
               invitation_id: inv.id,
               token,
-              link,
-              email: inv.email,
-              full_name: inv.full_name,
-              role: inv.role,
+              origin: window.location.origin,
             },
           });
         } catch { /* email infra optional */ }

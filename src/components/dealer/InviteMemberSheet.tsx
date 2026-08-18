@@ -43,7 +43,7 @@ export default function InviteMemberSheet({ open, onOpenChange }: { open: boolea
       // Fire-and-forget email send (works once email infra is configured)
       try {
         await supabase.functions.invoke('send-member-invite', {
-          body: { invitation_id: data.invitation_id, token: data.token, link, email, full_name: fullName, role },
+          body: { invitation_id: data.invitation_id, token: data.token, origin: window.location.origin },
         });
       } catch { /* ignore — UI shows copyable link */ }
       setStep(3);
