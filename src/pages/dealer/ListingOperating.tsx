@@ -27,7 +27,6 @@ import {
   LucideIcon,
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
-import { useAuth } from '@/hooks/useAuth';
 import { usePermissions } from '@/hooks/usePermissions';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -102,7 +101,6 @@ export default function ListingOperating() {
   const [messages, setMessages] = useState(0);
   const [autoScout, setAutoScout] = useState<{ status: string; last_sync_at: string | null } | null>(null);
 
-  const { user } = useAuth();
   const perms = usePermissions();
   const [denied, setDenied] = useState(false);
   const [sheet, setSheet] = useState<SheetKey>(null);
