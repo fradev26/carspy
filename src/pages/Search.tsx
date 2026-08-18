@@ -9,9 +9,12 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger, Drawer
 import { Badge } from '@/components/ui/badge';
 import { FilterPanel, FilterChips, SmartSearchBar } from '@/modules/search';
 import { SaveSearchDialog, useSaveSearchGate } from '@/modules/search/SaveSearchDialog';
-import { ListingGrid } from '@/modules/listings';
+import { VirtualListingGrid } from '@/modules/listings/VirtualListingGrid';
+import { InfiniteFeedFooter } from '@/components/InfiniteFeedFooter';
 import { MarketCompareBanner } from '@/components/MarketCompareBanner';
-import { useSearchListings } from '@/hooks/useSearchListings';
+import { useSearchListingsInfinite } from '@/hooks/useSearchListings';
+import { useScrollRestoration } from '@/hooks/useScrollRestoration';
+import { DEFAULT_PAGE_SIZE } from '@/lib/keyset';
 import {
   SearchFilters,
   SORT_OPTIONS,
@@ -194,7 +197,7 @@ export default function Search() {
                   onClick={() => setMobileResultsRevealed(true)}
                   className="w-full min-h-12 text-base font-semibold"
                 >
-                  Toon {activeFilterCount > 0 ? `${total} resultaten` : 'alle resultaten'}
+                  Toon {activeFilterCount > 0 ? `${total ?? 0} resultaten` : 'alle resultaten'}
                 </Button>
                 {activeFilterCount > 0 && (
                   <Button
@@ -287,7 +290,7 @@ export default function Search() {
                 <div>
                   <h1 className="text-2xl font-bold md:text-3xl">Auto's zoeken</h1>
                   <p className="mt-1 text-muted-foreground">
-                    <span className="font-semibold text-foreground">{total}</span> resultaten gevonden
+                    <span className="font-semibold text-foreground">{total ?? pageListings.length}</span> resultaten gevonden
                   </p>
                 </div>
 
@@ -358,7 +361,7 @@ export default function Search() {
                         )}
                         <DrawerClose asChild>
                           <Button className="flex-1 min-h-12">
-                            Toon {total} resultaten
+                            Toon {total ?? 0} resultaten
                           </Button>
                         </DrawerClose>
                       </DrawerFooter>
