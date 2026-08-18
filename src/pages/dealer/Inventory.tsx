@@ -16,13 +16,12 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useDealerAnalytics, type ListingAnalytics } from '@/hooks/useDealerAnalytics';
 import { BoostDialog } from '@/components/boost/BoostDialog';
+import { usePermissions } from '@/hooks/usePermissions';
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(price);
 
 const daysSince = (iso: string) => Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86400000));
-
-type Preset = null;
 
 const STATUS_OPTIONS = [
   { v: 'active',     label: 'Beschikbaar' },
@@ -37,6 +36,7 @@ const isBoostable = (l: ListingAnalytics) =>
 
 export default function Inventory() {
   const { listings, loading, refresh } = useDealerAnalytics();
+  const perms = usePermissions();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState('');
@@ -122,15 +122,18 @@ export default function Inventory() {
     if (selectedIds.size === 0) return;
     const ids = Array.from(selectedIds);
     if (action === 'boost') {
+      if (!perms.canBoost) return toast.error('Je hebt geen rechten om te boosten');
       setBoostDialog({ ids });
       return;
     }
     if (action === 'delete') {
+      if (!perms.canDeleteListings) return toast.error('Je hebt geen rechten om advertenties te verwijderen');
       if (!confirm(`${ids.length} advertenties verwijderen?`)) return;
       const { error } = await supabase.from('listings').delete().in('id', ids);
       if (error) return toast.error('Verwijderen mislukt');
       toast.success(`${ids.length} verwijderd`);
     } else {
+      if (!perms.canEditListings) return toast.error('Je hebt geen rechten om advertenties te bewerken');
       const updates =
         action === 'premium' ? { is_premium: true } :
                                { status: 'sold' };
@@ -257,18 +260,26 @@ export default function Inventory() {
       {selectedIds.size > 0 && (
         <div className="sticky top-14 z-10 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 backdrop-blur p-2.5 flex-wrap">
           <span className="text-sm font-medium">{selectedIds.size} geselecteerd</span>
-          <Button size="sm" className="gap-1.5" onClick={() => bulkAction('boost')}>
-            <Rocket className="h-3.5 w-3.5" /> Boost {selectedIds.size}
-          </Button>
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => bulkAction('premium')}>
-            <Crown className="h-3.5 w-3.5" /> Premium
-          </Button>
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => bulkAction('sold')}>
-            <CheckCircle2 className="h-3.5 w-3.5" /> Verkocht
-          </Button>
-          <Button variant="outline" size="sm" className="gap-1.5 text-destructive" onClick={() => bulkAction('delete')}>
-            <Trash2 className="h-3.5 w-3.5" /> Verwijder
-          </Button>
+          {perms.canBoost && (
+            <Button size="sm" className="gap-1.5" onClick={() => bulkAction('boost')}>
+              <Rocket className="h-3.5 w-3.5" /> Boost {selectedIds.size}
+            </Button>
+          )}
+          {perms.canEditListings && (
+            <>
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => bulkAction('premium')}>
+                <Crown className="h-3.5 w-3.5" /> Premium
+              </Button>
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => bulkAction('sold')}>
+                <CheckCircle2 className="h-3.5 w-3.5" /> Verkocht
+              </Button>
+            </>
+          )}
+          {perms.canDeleteListings && (
+            <Button variant="outline" size="sm" className="gap-1.5 text-destructive" onClick={() => bulkAction('delete')}>
+              <Trash2 className="h-3.5 w-3.5" /> Verwijder
+            </Button>
+          )}
         </div>
       )}
 
@@ -293,6 +304,7 @@ export default function Inventory() {
               onSelect={(shift) => toggleSelect(l.id, { shift })}
               onBoost={() => setBoostDialog({ ids: [l.id], title: l.title })}
               onRelist={async () => {
+                if (!perms.canEditListings) return toast.error('Je hebt geen rechten om advertenties te bewerken');
                 const { error } = await supabase
                   .from('listings')
                   .update({ status: 'active', sold_at: null })
