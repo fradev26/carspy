@@ -9,9 +9,12 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger, Drawer
 import { Badge } from '@/components/ui/badge';
 import { FilterPanel, FilterChips, SmartSearchBar } from '@/modules/search';
 import { SaveSearchDialog, useSaveSearchGate } from '@/modules/search/SaveSearchDialog';
-import { ListingGrid } from '@/modules/listings';
+import { VirtualListingGrid } from '@/modules/listings/VirtualListingGrid';
+import { InfiniteFeedFooter } from '@/components/InfiniteFeedFooter';
 import { MarketCompareBanner } from '@/components/MarketCompareBanner';
-import { useSearchListings } from '@/hooks/useSearchListings';
+import { useSearchListingsInfinite } from '@/hooks/useSearchListings';
+import { useScrollRestoration } from '@/hooks/useScrollRestoration';
+import { DEFAULT_PAGE_SIZE } from '@/lib/keyset';
 import {
   SearchFilters,
   SORT_OPTIONS,
@@ -33,23 +36,32 @@ export default function Search() {
   const sortBy = searchParams.get('sort') || 'newest';
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isPending, startTransition] = useTransition();
-  const [page, setPage] = useState(1);
   const [aiBarOpen, setAiBarOpen] = useState(false);
-  const perPage = 24;
   const queryParam = searchParams.get('q') ?? undefined;
   const {
     listings: pageListings,
     total,
-    loading: listingsLoading,
-  } = useSearchListings({ filters, query: queryParam, sort: sortBy, page, perPage });
+    isLoading: listingsLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    error: listingsError,
+    refetch,
+  } = useSearchListingsInfinite({
+    filters,
+    query: queryParam,
+    sort: sortBy,
+    limit: DEFAULT_PAGE_SIZE,
+  });
   const [mobileResultsRevealed, setMobileResultsRevealed] = useState(false);
   const compareWithId = searchParams.get('compareWith');
   const referenceListing = compareWithId ? pageListings.find((l) => l.id === compareWithId) : undefined;
 
-  // Reset to page 1 whenever the URL (filters or sort) changes
-  useEffect(() => {
-    setPage(1);
-  }, [searchParams]);
+  // Keep scroll position + loaded batches when returning from a detail page.
+  useScrollRestoration(
+    `search:${searchParams.toString()}`,
+    !listingsLoading && pageListings.length > 0,
+  );
 
   // Write filters to URL (preserves q/ai/compareWith/sort)
   const writeFiltersToURL = (newFilters: SearchFilters) => {
@@ -185,7 +197,7 @@ export default function Search() {
                   onClick={() => setMobileResultsRevealed(true)}
                   className="w-full min-h-12 text-base font-semibold"
                 >
-                  Toon {activeFilterCount > 0 ? `${total} resultaten` : 'alle resultaten'}
+                  Toon {activeFilterCount > 0 ? `${total ?? 0} resultaten` : 'alle resultaten'}
                 </Button>
                 {activeFilterCount > 0 && (
                   <Button
@@ -278,7 +290,7 @@ export default function Search() {
                 <div>
                   <h1 className="text-2xl font-bold md:text-3xl">Auto's zoeken</h1>
                   <p className="mt-1 text-muted-foreground">
-                    <span className="font-semibold text-foreground">{total}</span> resultaten gevonden
+                    <span className="font-semibold text-foreground">{total ?? pageListings.length}</span> resultaten gevonden
                   </p>
                 </div>
 
@@ -349,7 +361,7 @@ export default function Search() {
                         )}
                         <DrawerClose asChild>
                           <Button className="flex-1 min-h-12">
-                            Toon {total} resultaten
+                            Toon {total ?? 0} resultaten
                           </Button>
                         </DrawerClose>
                       </DrawerFooter>
@@ -449,58 +461,31 @@ export default function Search() {
                     />
                   ))}
                 </div>
-              ) : total > 0 ? (
+              ) : listingsError && pageListings.length === 0 ? (
+                <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 py-12 text-center">
+                  <h3 className="text-lg font-semibold">Zoekresultaten konden niet geladen worden</h3>
+                  <p className="max-w-sm text-sm text-muted-foreground">
+                    Er ging iets mis bij het ophalen van de advertenties. Probeer het opnieuw.
+                  </p>
+                  <Button variant="outline" onClick={() => refetch()}>Opnieuw proberen</Button>
+                </div>
+              ) : pageListings.length > 0 ? (
                 <>
-                  <ListingGrid listings={pageListings} variant={viewMode} columns={3} />
-                  
-                  {/* Pagination */}
-                  {total > perPage && (
-                    <div className="mt-8 flex items-center justify-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={page === 1}
-                        onClick={() => { setPage(p => p - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                        className="border-border/60"
-                      >
-                        Vorige
-                      </Button>
-                      {Array.from({ length: Math.min(Math.ceil(total / perPage), 7) }, (_, i) => {
-                        const totalPages = Math.ceil(total / perPage);
-                        let pageNum: number;
-                        if (totalPages <= 7) {
-                          pageNum = i + 1;
-                        } else if (page <= 4) {
-                          pageNum = i + 1;
-                        } else if (page >= totalPages - 3) {
-                          pageNum = totalPages - 6 + i;
-                        } else {
-                          pageNum = page - 3 + i;
-                        }
-                        return (
-                          <Button
-                            key={pageNum}
-                            variant={page === pageNum ? 'default' : 'outline'}
-                            size="sm"
-                            className={cn("w-9 h-9", page !== pageNum && "border-border/60")}
-                            onClick={() => { setPage(pageNum); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                          >
-                            {pageNum}
-                          </Button>
-                        );
-                      })}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={page >= Math.ceil(total / perPage)}
-                        onClick={() => { setPage(p => p + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                        className="border-border/60"
-                      >
-                        Volgende
-                      </Button>
-                    </div>
-                  )}
+                  <VirtualListingGrid listings={pageListings} variant={viewMode} />
+
+                  <InfiniteFeedFooter
+                    hasNextPage={!!hasNextPage}
+                    isFetchingNextPage={isFetchingNextPage}
+                    error={listingsError}
+                    onLoadMore={() => {
+                      if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+                    }}
+                    onRetry={() => fetchNextPage()}
+                    skeletonVariant={viewMode === 'list' ? 'horizontal' : 'default'}
+                    skeletonCount={viewMode === 'list' ? 2 : 3}
+                  />
                 </>
+
               ) : (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
                   <div className="flex h-16 w-16 items-center justify-center rounded-md bg-muted mb-4">
