@@ -60,12 +60,18 @@ export default function DealerDashboard() {
   };
 
   const togglePremium = async (listingId: string, currentPremium: boolean) => {
-    const { error } = await supabase
-      .from('listings')
-      .update({ is_premium: !currentPremium } as any)
-      .eq('id', listingId);
+    // Premium is betaalde plaatsing: alleen via de server-side, abonnements-
+    // gecontroleerde functie (directe kolomwrites zijn geblokkeerd).
+    const { error } = await supabase.rpc('set_listing_premium', {
+      _listing_id: listingId,
+      _enabled: !currentPremium,
+    });
     if (error) {
-      toast.error('Kon premium status niet wijzigen');
+      toast.error(
+        error.message.includes('paid subscription')
+          ? 'Premium vereist een actief betaald abonnement'
+          : 'Kon premium status niet wijzigen',
+      );
     } else {
       toast.success(!currentPremium ? 'Listing is nu Premium!' : 'Premium uitgeschakeld');
       fetchAnalytics();
@@ -73,12 +79,11 @@ export default function DealerDashboard() {
   };
 
   const boostListing = async (listingId: string) => {
-    const boostUntil = new Date();
-    boostUntil.setDate(boostUntil.getDate() + 7);
-    const { error } = await supabase
-      .from('listings')
-      .update({ boost_until: boostUntil.toISOString() } as any)
-      .eq('id', listingId);
+    // Boost loopt altijd via de facturatie-gecontroleerde RPC (quota + kosten).
+    const { error } = await supabase.rpc('activate_boost', {
+      _listing_id: listingId,
+      _package_code: 'turbo',
+    });
     if (error) {
       toast.error('Kon listing niet boosten');
     } else {

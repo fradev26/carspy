@@ -206,7 +206,7 @@ function FavoritesTab() {
     setLoading(true);
     supabase
       .from('listings')
-      .select('*')
+      .select(LISTING_COLUMNS)
       .in('id', ids)
       .then(({ data, error }) => {
         if (cancelled) return;

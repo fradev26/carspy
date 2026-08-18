@@ -393,7 +393,7 @@ export default function ListingOperating() {
         open={sheet === 'feature'}
         onClose={() => setSheet(null)}
         isPremium={!!view.is_premium}
-        onToggle={(v) => saveImmediate({ is_premium: v } as any)}
+        onToggle={(v) => togglePremium(v)}
       />
 
       {sheet?.startsWith('spec:') && (
