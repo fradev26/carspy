@@ -20,6 +20,47 @@ function encodeCursor(values: unknown[]): string {
   return btoa(JSON.stringify(values));
 }
 
+const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Normaliseert een datumbereik; valt terug op de laatste `fallbackDays` dagen. */
+function resolveRange(
+  from: string | undefined,
+  to: string | undefined,
+  fallbackDays = 30,
+): { from: string; to: string; days: number } {
+  const today = new Date().toISOString().slice(0, 10);
+  let end = to && DAY_RE.test(to) ? to : today;
+  if (end > today) end = today;
+  let start: string;
+  if (from && DAY_RE.test(from)) {
+    start = from;
+  } else {
+    const d = new Date(`${end}T00:00:00.000Z`);
+    d.setUTCDate(d.getUTCDate() - (fallbackDays - 1));
+    start = d.toISOString().slice(0, 10);
+  }
+  if (start > end) [start, end] = [end, start];
+  const days = Math.max(
+    1,
+    Math.round(
+      (new Date(`${end}T00:00:00.000Z`).getTime() - new Date(`${start}T00:00:00.000Z`).getTime()) /
+        86400000,
+    ) + 1,
+  );
+  // Bovengrens tegen enorme reeksen.
+  if (days > 366) {
+    const d = new Date(`${end}T00:00:00.000Z`);
+    d.setUTCDate(d.getUTCDate() - 365);
+    return { from: d.toISOString().slice(0, 10), to: end, days: 366 };
+  }
+  return { from: start, to: end, days };
+}
+
+const inDayRange = (value: string, from: string, to: string) => {
+  const day = value.slice(0, 10);
+  return day >= from && day <= to;
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -40,6 +81,8 @@ serve(async (req) => {
       statuses?: string[];
       listingId?: string;
       days?: number;
+      from?: string;
+      to?: string;
     } = {};
     if (req.method === "POST") {
       try {
@@ -57,7 +100,8 @@ serve(async (req) => {
 
     // ── Per-voertuig drilldown ────────────────────────────────────────────
     if (typeof body.listingId === "string" && body.listingId) {
-      return await listingDrilldown(adminClient, user.id, body.listingId, body.days ?? 30);
+      const range = resolveRange(body.from, body.to, body.days ?? 30);
+      return await listingDrilldown(adminClient, user.id, body.listingId, range);
     }
 
 
