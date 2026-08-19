@@ -23,6 +23,16 @@ import { DEFAULT_PAGE_SIZE } from '@/lib/keyset';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
 import { BoostDialog } from '@/components/boost/BoostDialog';
 import { usePermissions } from '@/hooks/usePermissions';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(price);
@@ -48,6 +58,7 @@ export default function Inventory() {
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<Set<string>>(new Set());
   const [boostDialog, setBoostDialog] = useState<{ ids: string[]; title?: string } | null>(null);
+  const [deleteIds, setDeleteIds] = useState<string[] | null>(null);
 
   // Debounce the free-text query before it hits the cursor endpoint.
   useEffect(() => {
@@ -144,6 +155,17 @@ export default function Inventory() {
     });
   };
 
+  const confirmBulkDelete = async () => {
+    if (!deleteIds) return;
+    const ids = deleteIds;
+    setDeleteIds(null);
+    const { error } = await supabase.from('listings').delete().in('id', ids);
+    if (error) return toast.error('Verwijderen mislukt');
+    toast.success(`${ids.length} advertentie${ids.length === 1 ? '' : 's'} verwijderd`);
+    setSelectedIds(new Set());
+    refresh();
+  };
+
   const bulkAction = async (action: 'premium' | 'boost' | 'sold' | 'delete') => {
     if (selectedIds.size === 0) return;
     const ids = Array.from(selectedIds);
@@ -154,11 +176,10 @@ export default function Inventory() {
     }
     if (action === 'delete') {
       if (!perms.canDeleteListings) return toast.error('Je hebt geen rechten om advertenties te verwijderen');
-      if (!confirm(`${ids.length} advertenties verwijderen?`)) return;
-      const { error } = await supabase.from('listings').delete().in('id', ids);
-      if (error) return toast.error('Verwijderen mislukt');
-      toast.success(`${ids.length} verwijderd`);
-    } else {
+      setDeleteIds(ids);
+      return;
+    }
+    {
       if (!perms.canEditListings) return toast.error('Je hebt geen rechten om advertenties te bewerken');
       if (action === 'premium') {
         // Betaalde plaatsing: via de abonnements-gecontroleerde RPC per advertentie.
@@ -396,6 +417,30 @@ export default function Inventory() {
           refresh();
         }}
       />
+
+      <AlertDialog open={deleteIds !== null} onOpenChange={(v) => !v && setDeleteIds(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {deleteIds?.length === 1
+                ? 'Advertentie verwijderen?'
+                : `${deleteIds?.length ?? 0} advertenties verwijderen?`}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Dit kan niet ongedaan gemaakt worden. De advertenties verdwijnen direct uit het zoekaanbod.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuleren</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmBulkDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Verwijderen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

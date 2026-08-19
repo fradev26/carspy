@@ -48,6 +48,16 @@ import { BoostDialog } from '@/components/boost/BoostDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 
 const formatPrice = (p: number) =>
@@ -622,6 +632,7 @@ function PhotosSheet({
   onChange: (images: string[]) => void;
 }) {
   const [busy, setBusy] = useState(false);
+  const [removeIdx, setRemoveIdx] = useState<number | null>(null);
 
   const move = (idx: number, dir: -1 | 1) => {
     const next = [...images];
@@ -631,10 +642,10 @@ function PhotosSheet({
     onChange(next);
   };
 
-  const remove = (idx: number) => {
-    if (!confirm('Foto verwijderen?')) return;
-    const next = images.filter((_, i) => i !== idx);
-    onChange(next);
+  const confirmRemove = () => {
+    if (removeIdx === null) return;
+    onChange(images.filter((_, i) => i !== removeIdx));
+    setRemoveIdx(null);
   };
 
   const upload = async (files: FileList | null) => {
@@ -669,7 +680,7 @@ function PhotosSheet({
               <button onClick={() => move(i, -1)} disabled={i === 0} className="p-1 disabled:opacity-30">
                 <ArrowUp className="h-3 w-3" />
               </button>
-              <button onClick={() => remove(i)} className="p-1 text-destructive">
+              <button onClick={() => setRemoveIdx(i)} className="p-1 text-destructive" aria-label={`Foto ${i + 1} verwijderen`}>
                 <Trash2 className="h-3 w-3" />
               </button>
               <button onClick={() => move(i, 1)} disabled={i === images.length - 1} className="p-1 disabled:opacity-30">
@@ -684,6 +695,26 @@ function PhotosSheet({
           <input type="file" multiple accept="image/*" className="hidden" onChange={(e) => upload(e.target.files)} />
         </label>
       </div>
+
+      <AlertDialog open={removeIdx !== null} onOpenChange={(v) => !v && setRemoveIdx(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Foto verwijderen?</AlertDialogTitle>
+            <AlertDialogDescription>
+              De foto wordt uit deze advertentie gehaald zodra je de wijzigingen bewaart.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuleren</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmRemove}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Verwijderen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </BottomSheet>
   );
 }

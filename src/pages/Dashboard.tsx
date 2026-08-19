@@ -13,6 +13,16 @@ import { useSavedSearches } from '@/hooks/useSavedSearches';
 import { useProfile } from '@/hooks/useProfile';
 import MyLeadsPanel from '@/components/MyLeadsPanel';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface Listing {
   id: string;
@@ -33,6 +43,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const { savedSearches, remove: removeSavedSearch, loading: searchesLoading } = useSavedSearches();
   const { count: unreadCount } = useUnreadMessages();
+  const [deleteTarget, setDeleteTarget] = useState<Listing | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -56,6 +67,7 @@ export default function Dashboard() {
   };
 
   const handleDelete = async (id: string) => {
+    setDeleteTarget(null);
     const { error } = await supabase
       .from('listings')
       .delete()
@@ -165,7 +177,7 @@ export default function Dashboard() {
                       variant="outline" 
                       size="sm" 
                       className="gap-2 text-destructive"
-                      onClick={() => handleDelete(listing.id)}
+                      onClick={() => setDeleteTarget(listing)}
                     >
                       <Trash2 className="h-4 w-4" />Verwijderen
                     </Button>
@@ -233,6 +245,26 @@ export default function Dashboard() {
           </CardContent></Card>
         </TabsContent>
       </Tabs>
+
+      <AlertDialog open={deleteTarget !== null} onOpenChange={(v) => !v && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Advertentie verwijderen?</AlertDialogTitle>
+            <AlertDialogDescription>
+              &ldquo;{deleteTarget?.title}&rdquo; wordt definitief verwijderd. Dit kan niet ongedaan gemaakt worden.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuleren</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteTarget && handleDelete(deleteTarget.id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Verwijderen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

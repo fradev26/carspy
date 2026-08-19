@@ -75,6 +75,11 @@ export default {
           DEFAULT: "hsl(var(--premium))",
           foreground: "hsl(var(--premium-foreground))",
         },
+        /* Scrim over media/imagery (lightbox, hero photo) */
+        overlay: {
+          DEFAULT: "hsl(var(--overlay))",
+          foreground: "hsl(var(--overlay-foreground))",
+        },
         status: {
           pending: "hsl(var(--status-pending))",
           diagnosing: "hsl(var(--status-diagnosing))",

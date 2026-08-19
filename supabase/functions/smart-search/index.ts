@@ -1,6 +1,6 @@
 // Smart Search edge function — converts natural language to structured filters
 // using Lovable AI Gateway with tool calling.
-import { corsHeaders, jsonResponse, identify, rateLimit, parseJson, z } from "../_shared/ai-guard.ts";
+import { corsHeaders, jsonResponse, identify, guardAiQuota, originGuard, parseJson, z } from "../_shared/ai-guard.ts";
 
 
 const CAR_BRANDS = [
@@ -77,11 +77,14 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
+    const blocked = originGuard(req);
+    if (blocked) return blocked;
     const id = await identify(req);
-    const max = id.isAuth ? 30 : 10;
-    if (!(await rateLimit(id, 'smart-search', max, 60))) {
-      return jsonResponse({ error: 'Te veel verzoeken, probeer zo opnieuw.' }, 429);
-    }
+    const quota = id.isAuth
+      ? { perMinute: 20, perDay: 300, globalPerDay: 25_000 }
+      : { perMinute: 6, perDay: 40, globalPerDay: 6_000 };
+    const denied = await guardAiQuota(id, 'smart-search', quota);
+    if (denied) return denied;
     const v = await parseJson(req, InputSchema);
     if (!v.ok) return v.response;
     const { query } = v.data;

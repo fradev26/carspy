@@ -1,7 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+
 
 export type CompanyRole = 'owner' | 'manager' | 'seller' | 'marketing';
 
@@ -50,11 +52,29 @@ function rolePerms(role: CompanyRole | null): Omit<Permissions, 'loading'> {
 
 export function usePermissions(): Permissions {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Ensure membership exists for dealer users (idempotent)
   useEffect(() => {
     if (!user) return;
-    supabase.rpc('ensure_company_membership').then(() => {});
+    let cancelled = false;
+    supabase.rpc('ensure_company_membership').then(({ error }) => {
+      if (cancelled) return;
+      if (error) {
+        console.error('ensure_company_membership failed', error);
+        toast({
+          title: 'Bedrijfsprofiel kon niet geladen worden',
+          description: 'Sommige zakelijke functies zijn mogelijk niet beschikbaar. Herlaad de pagina of probeer later opnieuw.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      queryClient.invalidateQueries({ queryKey: ['company-role', user.id] });
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [user?.id]);
 
   const { data, isLoading } = useQuery({
@@ -74,3 +94,4 @@ export function usePermissions(): Permissions {
 
   return { ...rolePerms(data ?? null), loading: isLoading };
 }
+
