@@ -210,17 +210,17 @@ const Index = () => {
           </div>
 
           {/* Trust indicators */}
-          <div className="mt-6 hidden md:flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-primary-foreground/90 lg:mt-8">
+          <div className="mt-6 hidden md:flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-overlay-foreground/90 lg:mt-8">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-400" />
+              <CheckCircle2 className="h-5 w-5 text-success-foreground" />
               <span>Alleen geverifieerde verkopers</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-400" />
+              <CheckCircle2 className="h-5 w-5 text-success-foreground" />
               <span>25.000+ actuele occasions</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-400" />
+              <CheckCircle2 className="h-5 w-5 text-success-foreground" />
               <span>Dagelijks vers aanbod</span>
             </div>
           </div>
@@ -229,7 +229,7 @@ const Index = () => {
           <div className="mt-4 flex items-center justify-center gap-2 text-sm text-overlay-foreground/70">
             <div className="flex items-center gap-0.5">
               {[...Array(5)].map((_, i) => (
-                <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                <Star key={i} className="h-4 w-4 fill-premium text-premium" />
               ))}
             </div>
             <span>4.8/5 op basis van 1.200+ reviews</span>
