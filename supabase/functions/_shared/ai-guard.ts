@@ -105,6 +105,76 @@ export async function rateLimit(
   }
 }
 
+/**
+ * Origin allowlist. Blocks browser-based abuse of the public AI endpoints from
+ * third-party sites (rate limits alone only slow that down).
+ */
+const ALLOWED_ORIGIN_RE =
+  /^https?:\/\/(localhost(:\d+)?|127\.0\.0\.1(:\d+)?|([a-z0-9-]+\.)*lovable\.app|([a-z0-9-]+\.)*lovableproject\.com|([a-z0-9-]+\.)*vatuur\.be)$/i;
+
+export function originGuard(req: Request): Response | null {
+  const origin = req.headers.get("origin");
+  // Non-browser callers (no Origin) still pass, but are subject to rate limits.
+  if (!origin) return null;
+  if (ALLOWED_ORIGIN_RE.test(origin)) return null;
+  return jsonResponse({ error: "Origin niet toegestaan" }, 403);
+}
+
+export interface AiQuota {
+  /** Requests per minute for this identity. */
+  perMinute: number;
+  /** Requests per rolling day for this identity. */
+  perDay: number;
+  /** Platform-wide daily ceiling for this endpoint (cost circuit breaker). */
+  globalPerDay: number;
+}
+
+/**
+ * Layered quota for AI-gateway endpoints: per-minute burst, per-identity daily
+ * budget and a platform-wide daily circuit breaker.
+ */
+export async function guardAiQuota(
+  identity: Identity,
+  endpoint: string,
+  quota: AiQuota,
+): Promise<Response | null> {
+  if (!(await rateLimit(identity, endpoint, quota.perMinute, 60))) {
+    return jsonResponse(
+      {
+        error: identity.isAuth
+          ? "Te veel verzoeken. Probeer het zo opnieuw."
+          : "Te veel verzoeken. Wacht even of meld je aan voor een hoger limiet.",
+      },
+      429,
+    );
+  }
+  if (!(await rateLimit(identity, `${endpoint}:day`, quota.perDay, 86_400))) {
+    return jsonResponse(
+      {
+        error: identity.isAuth
+          ? "Daglimiet voor AI-verzoeken bereikt. Probeer morgen opnieuw."
+          : "Daglimiet bereikt. Meld je aan voor een hoger limiet.",
+      },
+      429,
+    );
+  }
+  const globalIdentity: Identity = {
+    ...identity,
+    key: "global",
+  };
+  if (
+    !(await rateLimit(globalIdentity, `${endpoint}:global-day`, quota.globalPerDay, 86_400))
+  ) {
+    console.error(`AI budget circuit breaker tripped for ${endpoint}`);
+    return jsonResponse(
+      { error: "AI is tijdelijk niet beschikbaar wegens hoge belasting." },
+      503,
+    );
+  }
+  return null;
+}
+
+
 export async function parseJson<T>(
   req: Request,
   schema: z.ZodSchema<T>,
