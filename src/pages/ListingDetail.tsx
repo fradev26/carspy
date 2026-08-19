@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { ImageGallery, ListingGrid, PriceIndicator } from '@/modules/listings';
+import { ImageGallery, ListingGrid, PriceIndicator, EmissionsPanel } from '@/modules/listings';
 import { ListingCard } from '@/modules/listings/ListingCard';
 import { useCompare } from '@/hooks/useCompare';
 import { useListing, useRelatedListings } from '@/hooks/useListings';
