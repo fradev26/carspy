@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { corsHeaders, jsonResponse, identify, rateLimit, parseJson, z } from "../_shared/ai-guard.ts";
+import { corsHeaders, jsonResponse, identify, guardAiQuota, originGuard, parseJson, z } from "../_shared/ai-guard.ts";
 import { buildDealerSummary, summaryToPrompt } from "../_shared/dealer-summary.ts";
 
 const MessageSchema = z.object({
@@ -246,11 +246,14 @@ serve(async (req) => {
   }
 
   try {
+    const blocked = originGuard(req);
+    if (blocked) return blocked;
     const id = await identify(req);
-    const max = id.isAuth ? 30 : 8;
-    if (!(await rateLimit(id, "chat", max, 60))) {
-      return jsonResponse({ error: "Te veel verzoeken. Wacht even of meld je aan." }, 429);
-    }
+    const quota = id.isAuth
+      ? { perMinute: 15, perDay: 200, globalPerDay: 20_000 }
+      : { perMinute: 4, perDay: 25, globalPerDay: 4_000 };
+    const denied = await guardAiQuota(id, "chat", quota);
+    if (denied) return denied;
     const v = await parseJson(req, InputSchema);
     if (!v.ok) return v.response;
     const { messages, context } = v.data;
