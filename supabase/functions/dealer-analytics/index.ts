@@ -270,16 +270,16 @@ function dayKey(value: string | Date): string {
   return new Date(value).toISOString().slice(0, 10);
 }
 
-/** Bouwt een reeks van `days` dagen (oud → nieuw) met nullen voor lege dagen. */
+/** Bouwt een reeks dagen (oud → nieuw) met nullen voor lege dagen. */
 function buildSeries(
-  days: number,
+  range: { from: string; to: string; days: number },
   buckets: Record<string, { views: number; favorites: number; conversations: number; messages: number }>,
 ) {
   const out: Array<{ date: string; views: number; favorites: number; conversations: number; messages: number; leads: number }> = [];
-  const today = new Date();
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(today);
-    d.setUTCDate(d.getUTCDate() - i);
+  const start = new Date(`${range.from}T00:00:00.000Z`);
+  for (let i = 0; i < range.days; i++) {
+    const d = new Date(start);
+    d.setUTCDate(d.getUTCDate() + i);
     const key = d.toISOString().slice(0, 10);
     const b = buckets[key] ?? { views: 0, favorites: 0, conversations: 0, messages: 0 };
     out.push({ date: key, ...b, leads: b.favorites + b.conversations });
@@ -291,9 +291,9 @@ async function listingDrilldown(
   admin: ReturnType<typeof createClient>,
   userId: string,
   listingId: string,
-  daysInput: number,
+  range: { from: string; to: string; days: number },
 ): Promise<Response> {
-  const days = [7, 30, 90].includes(daysInput) ? daysInput : 30;
+  const days = range.days;
 
   const { data: listing } = await admin
     .from("listings")
@@ -319,14 +319,23 @@ async function listingDrilldown(
   }
   if (!allowed) return jsonResponse({ error: "Geen toegang tot dit voertuig" }, 403);
 
-  const since = new Date();
-  since.setUTCDate(since.getUTCDate() - (days - 1));
-  const sinceIso = since.toISOString();
-  const sinceDay = sinceIso.slice(0, 10);
+  const sinceDay = range.from;
+  const sinceIso = `${range.from}T00:00:00.000Z`;
+  const untilIso = `${range.to}T23:59:59.999Z`;
 
   const [viewsRes, favRes, convRes] = await Promise.all([
-    admin.from("listing_view_events").select("day").eq("listing_id", listingId).gte("day", sinceDay),
-    admin.from("favorites").select("created_at").eq("listing_id", listingId).gte("created_at", sinceIso),
+    admin
+      .from("listing_view_events")
+      .select("day")
+      .eq("listing_id", listingId)
+      .gte("day", sinceDay)
+      .lte("day", range.to),
+    admin
+      .from("favorites")
+      .select("created_at")
+      .eq("listing_id", listingId)
+      .gte("created_at", sinceIso)
+      .lte("created_at", untilIso),
     admin.from("conversations").select("id, created_at").eq("listing_id", listingId),
   ]);
 
@@ -339,7 +348,7 @@ async function listingDrilldown(
   (viewsRes.data ?? []).forEach((r: any) => bump(dayKey(r.day), "views"));
   (favRes.data ?? []).forEach((r: any) => bump(dayKey(r.created_at), "favorites"));
   (convRes.data ?? [])
-    .filter((c: any) => c.created_at >= sinceIso)
+    .filter((c: any) => inDayRange(c.created_at, range.from, range.to))
     .forEach((c: any) => bump(dayKey(c.created_at), "conversations"));
 
   const convIds = (convRes.data ?? []).map((c: any) => c.id);
@@ -352,14 +361,14 @@ async function listingDrilldown(
       .in("conversation_id", convIds);
     (messages ?? []).forEach((m: any) => {
       totalMessages += 1;
-      if (m.created_at >= sinceIso) {
+      if (inDayRange(m.created_at, range.from, range.to)) {
         messagesInPeriod += 1;
         bump(dayKey(m.created_at), "messages");
       }
     });
   }
 
-  const series = buildSeries(days, buckets);
+  const series = buildSeries(range, buckets);
 
   // Totalen over de volledige looptijd (niet enkel de periode).
   const [{ count: totalViews }, { count: totalFavorites }] = await Promise.all([
@@ -416,6 +425,8 @@ async function listingDrilldown(
     },
     period: {
       days,
+      from: range.from,
+      to: range.to,
       views: series.reduce((s, d) => s + d.views, 0),
       favorites: series.reduce((s, d) => s + d.favorites, 0),
       conversations: series.reduce((s, d) => s + d.conversations, 0),
