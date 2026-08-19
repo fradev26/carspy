@@ -137,8 +137,8 @@ export default function DealerInventory() {
       ...(location && {
         address: {
           '@type': 'PostalAddress',
-          addressLocality: dealer.city,
-          addressRegion: dealer.province,
+          addressLocality: dealerCity,
+          addressRegion: dealerProvince,
           addressCountry: 'NL',
         },
       }),
@@ -260,7 +260,7 @@ export default function DealerInventory() {
         {/* Bedrijfsinformatie: openingsuren, route en reviews */}
         <section aria-label="Informatie over deze dealer" className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <DealerOpeningHours dealerUserId={dealer.seller.id} />
-          <DealerDirections dealerName={dealerName} city={dealer.city} province={dealer.province} />
+          <DealerDirections dealerName={dealerName} city={dealerCity} province={dealerProvince} />
           <div className="md:col-span-2 lg:col-span-1">
             <DealerReviews dealerUserId={dealer.seller.id} dealerName={dealerName} />
           </div>
