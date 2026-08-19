@@ -119,7 +119,11 @@ export default function DealerInventory() {
   }).length;
 
   const dealerName = dealer.seller.name;
-  const location = [dealer.city, dealer.province].filter(Boolean).join(', ');
+  // Val terug op de locatie van de voorraad wanneer het dealerprofiel geen stad bevat.
+  const dealerCity = dealer.city ?? activeListings.find((l) => l.location?.city)?.location.city;
+  const dealerProvince = dealer.province ?? activeListings.find((l) => l.location?.province)?.location.province;
+  const location = [dealerCity, dealerProvince].filter(Boolean).join(', ');
+
   const canonical = `https://vatuur.be/dealer/${dealer.slug}`;
   const description = `Bekijk ${activeListings.length} tweedehands auto's bij ${dealerName}${location ? ` in ${location}` : ''}. Geverifieerde dealer met snelle reactietijd op VATUUR.`;
 
