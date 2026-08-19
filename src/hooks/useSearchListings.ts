@@ -1,6 +1,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Listing, SearchFilters } from '@/types/listing';
+import { mapRow as mapListingRow } from '@/hooks/useListings';
 import {
   DEFAULT_PAGE_SIZE,
   buildKeysetFilter,
