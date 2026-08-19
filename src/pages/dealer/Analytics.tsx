@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { useDealerAnalytics } from '@/hooks/useDealerAnalytics';
+import { DateRangeFilter } from '@/components/dealer/DateRangeFilter';
+import { DEFAULT_RANGE, formatRangeLabel, rangeDays, type AnalyticsRange } from '@/lib/dateRange';
 
 const formatPrice = (p: number) =>
   new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(p);
@@ -20,8 +22,10 @@ const SORTABLE: { key: SortKey; label: string }[] = [
 ];
 
 export default function Analytics() {
-  const { listings, loading } = useDealerAnalytics();
+  const [range, setRange] = useState<AnalyticsRange>(DEFAULT_RANGE);
+  const { listings, loading } = useDealerAnalytics(range);
   const [sort, setSort] = useState<SortKey>('views');
+  const periodLabel = formatRangeLabel(range).toLowerCase();
 
   const sortedListings = useMemo(() => {
     const leads = (l: (typeof listings)[number]) => l.favorites + l.conversations;
@@ -59,11 +63,11 @@ export default function Analytics() {
   );
 
   const slowMovers = useMemo(() => {
-    const cutoff = Date.now() - 30 * 86400000;
+    const cutoff = Date.now() - Math.min(rangeDays(range), 90) * 86400000;
     return listings
       .filter((l) => l.status === 'active' && new Date(l.createdAt).getTime() < cutoff && l.views < 20)
       .slice(0, 5);
-  }, [listings]);
+  }, [listings, range]);
 
   const priceBuckets = useMemo(() => {
     const buckets = [
@@ -103,11 +107,16 @@ export default function Analytics() {
     <div className="container py-6 space-y-6">
       <SEOHead title="Analytics — VATUUR. Zakelijk" description="Dealer-level analytics." noindex />
 
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <BarChart3 className="h-6 w-6 text-primary-strong" /> Analytics
-        </h1>
-        <p className="text-sm text-muted-foreground mt-0.5">Inzicht in je voorraad en verkoopprestaties.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <BarChart3 className="h-6 w-6 text-primary-strong" /> Analytics
+          </h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Inzicht in je voorraad en verkoopprestaties · {formatRangeLabel(range)}
+          </p>
+        </div>
+        <DateRangeFilter value={range} onChange={setRange} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -206,7 +215,7 @@ export default function Analytics() {
       <Card className="border-border/60">
         <CardHeader>
           <CardTitle className="text-base">Alle voertuigen</CardTitle>
-          <CardDescription>Klik een wagen aan voor gedetailleerde statistieken.</CardDescription>
+          <CardDescription>Cijfers voor {periodLabel}. Klik een wagen aan voor details.</CardDescription>
         </CardHeader>
         <CardContent className="overflow-x-auto">
           <table className="w-full text-sm">
