@@ -311,18 +311,19 @@ export default function Messages() {
 
   if (conversations.length === 0) {
     return (
-      <div className={cn('flex items-center justify-center px-6', shellHeight)}>
+      <main className={cn('flex items-center justify-center px-6', shellHeight)}>
         <div className="text-center max-w-sm">
-          <MessageCircle className="h-12 w-12 mx-auto text-muted-foreground/60 mb-4" />
-          <h3 className="text-lg font-semibold">Geen berichten</h3>
+          <MessageCircle className="h-12 w-12 mx-auto text-muted-foreground/60 mb-4" aria-hidden="true" />
+          <h1 className="text-lg font-semibold">Geen berichten</h1>
           <p className="text-sm text-muted-foreground mt-2">Stuur een bericht via een autodetailpagina om een gesprek te starten.</p>
           <Button asChild className="mt-6">
             <Link to="/zoeken">Auto's bekijken</Link>
           </Button>
         </div>
-      </div>
+      </main>
     );
   }
+
 
   return (
     <div className={cn('flex w-full overflow-hidden bg-background', shellHeight)}>
