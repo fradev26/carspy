@@ -16,6 +16,7 @@ import { useCompare } from '@/hooks/useCompare';
 import { useListing, useRelatedListings } from '@/hooks/useListings';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { pushRecentListing } from '@/hooks/useRecentlyViewedListings';
+import { useTrackListingView } from '@/hooks/useTrackListingView';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -173,6 +174,8 @@ export default function ListingDetail() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const relatedListings = useRelatedListings(listing, 6);
+
+  useTrackListingView(listing?.id);
 
   useEffect(() => {
     if (!listing) return;

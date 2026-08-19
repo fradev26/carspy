@@ -143,7 +143,7 @@ export default function Analytics() {
             ) : topPerformers.map((l, i) => {
               const rate = ((l.favorites + l.conversations) / l.views * 100).toFixed(1);
               return (
-                <Link key={l.id} to={`/zakelijk/voorraad/${l.id}`} className="flex items-center justify-between p-2 rounded hover:bg-muted/50">
+                <Link key={l.id} to={`/zakelijk/analytics/${l.id}`} className="flex items-center justify-between p-2 rounded hover:bg-muted/50">
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="text-sm font-bold text-muted-foreground w-5">#{i + 1}</span>
                     <img src={l.image || '/placeholder.svg'} alt="" className="h-8 w-12 rounded object-cover" />
@@ -167,7 +167,7 @@ export default function Analytics() {
             ) : slowMovers.map((l) => {
               const days = Math.round((Date.now() - new Date(l.createdAt).getTime()) / 86400000);
               return (
-                <Link key={l.id} to={`/zakelijk/voorraad/${l.id}`} className="flex items-center justify-between p-2 rounded hover:bg-muted/50">
+                <Link key={l.id} to={`/zakelijk/analytics/${l.id}`} className="flex items-center justify-between p-2 rounded hover:bg-muted/50">
                   <div className="flex items-center gap-2 min-w-0">
                     <img src={l.image || '/placeholder.svg'} alt="" className="h-8 w-12 rounded object-cover" />
                     <span className="text-sm truncate">{l.title}</span>
