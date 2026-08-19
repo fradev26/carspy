@@ -13,11 +13,9 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatusBadge } from '@/modules/listings/StatusBadge';
 import { BoostDialog } from '@/components/boost/BoostDialog';
-import {
-  useListingAnalytics, benchmarkDelta, type AnalyticsPeriod,
-} from '@/hooks/useListingAnalytics';
-
-const PERIODS: AnalyticsPeriod[] = [7, 30, 90];
+import { useListingAnalytics, benchmarkDelta } from '@/hooks/useListingAnalytics';
+import { DateRangeFilter } from '@/components/dealer/DateRangeFilter';
+import { DEFAULT_RANGE, formatRangeLabel, type AnalyticsRange } from '@/lib/dateRange';
 
 const formatPrice = (p: number) =>
   new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(p);
@@ -27,9 +25,10 @@ const formatDay = (iso: string) =>
 
 export default function ListingAnalytics() {
   const { id } = useParams<{ id: string }>();
-  const [days, setDays] = useState<AnalyticsPeriod>(30);
+  const [range, setRange] = useState<AnalyticsRange>(DEFAULT_RANGE);
   const [boostOpen, setBoostOpen] = useState(false);
-  const { data, loading, error, refresh } = useListingAnalytics(id, days);
+  const { data, loading, error, refresh } = useListingAnalytics(id, range);
+  const periodLabel = formatRangeLabel(range).toLowerCase();
 
   if (loading && !data) {
     return (
@@ -57,10 +56,10 @@ export default function ListingAnalytics() {
   const hasData = series.some((p) => p.views + p.leads + p.messages > 0);
 
   const kpis = [
-    { label: 'Weergaven', value: totals.views, icon: Eye, sub: `${period.views} in ${days} dagen` },
-    { label: 'Favorieten', value: totals.favorites, icon: Heart, sub: `${period.favorites} in ${days} dagen` },
-    { label: 'Gesprekken', value: totals.conversations, icon: Users, sub: `${period.conversations} in ${days} dagen` },
-    { label: 'Berichten', value: totals.messages, icon: MessageSquare, sub: `${period.messages} in ${days} dagen` },
+    { label: 'Weergaven', value: totals.views, icon: Eye, sub: `${period.views} · ${periodLabel}` },
+    { label: 'Favorieten', value: totals.favorites, icon: Heart, sub: `${period.favorites} · ${periodLabel}` },
+    { label: 'Gesprekken', value: totals.conversations, icon: Users, sub: `${period.conversations} · ${periodLabel}` },
+    { label: 'Berichten', value: totals.messages, icon: MessageSquare, sub: `${period.messages} · ${periodLabel}` },
   ];
 
   const funnel = [
@@ -129,21 +128,9 @@ export default function ListingAnalytics() {
         <CardHeader className="flex-row items-start justify-between gap-3 space-y-0">
           <div>
             <CardTitle className="text-base">Verloop</CardTitle>
-            <CardDescription>Weergaven en leads per dag.</CardDescription>
+            <CardDescription>Weergaven en leads per dag · {formatRangeLabel(range)}.</CardDescription>
           </div>
-          <div className="flex gap-1" role="group" aria-label="Periode kiezen">
-            {PERIODS.map((p) => (
-              <Button
-                key={p}
-                size="sm"
-                variant={p === days ? 'default' : 'outline'}
-                onClick={() => setDays(p)}
-                aria-pressed={p === days}
-              >
-                {p}d
-              </Button>
-            ))}
-          </div>
+          <DateRangeFilter value={range} onChange={setRange} />
         </CardHeader>
         <CardContent>
           {hasData ? (
