@@ -689,6 +689,75 @@ export type Database = {
         }
         Relationships: []
       }
+      dealer_opening_hours: {
+        Row: {
+          break_end: string | null
+          break_start: string | null
+          closed: boolean
+          closes: string | null
+          opens: string | null
+          updated_at: string
+          user_id: string
+          weekday: number
+        }
+        Insert: {
+          break_end?: string | null
+          break_start?: string | null
+          closed?: boolean
+          closes?: string | null
+          opens?: string | null
+          updated_at?: string
+          user_id: string
+          weekday: number
+        }
+        Update: {
+          break_end?: string | null
+          break_start?: string | null
+          closed?: boolean
+          closes?: string | null
+          opens?: string | null
+          updated_at?: string
+          user_id?: string
+          weekday?: number
+        }
+        Relationships: []
+      }
+      dealer_reviews: {
+        Row: {
+          author_id: string
+          body: string | null
+          created_at: string
+          dealer_user_id: string
+          id: string
+          rating: number
+          status: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          body?: string | null
+          created_at?: string
+          dealer_user_id: string
+          id?: string
+          rating: number
+          status?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string | null
+          created_at?: string
+          dealer_user_id?: string
+          id?: string
+          rating?: number
+          status?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       dealer_subscriptions: {
         Row: {
           created_at: string
