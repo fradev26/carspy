@@ -219,3 +219,169 @@ serve(async (req) => {
     return jsonResponse({ error: "Kon analytics niet laden" }, 500);
   }
 });
+
+// ── Drilldown helpers ───────────────────────────────────────────────────────
+
+function dayKey(value: string | Date): string {
+  return new Date(value).toISOString().slice(0, 10);
+}
+
+/** Bouwt een reeks van `days` dagen (oud → nieuw) met nullen voor lege dagen. */
+function buildSeries(
+  days: number,
+  buckets: Record<string, { views: number; favorites: number; conversations: number; messages: number }>,
+) {
+  const out: Array<{ date: string; views: number; favorites: number; conversations: number; messages: number; leads: number }> = [];
+  const today = new Date();
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(today);
+    d.setUTCDate(d.getUTCDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    const b = buckets[key] ?? { views: 0, favorites: 0, conversations: 0, messages: 0 };
+    out.push({ date: key, ...b, leads: b.favorites + b.conversations });
+  }
+  return out;
+}
+
+async function listingDrilldown(
+  admin: ReturnType<typeof createClient>,
+  userId: string,
+  listingId: string,
+  daysInput: number,
+): Promise<Response> {
+  const days = [7, 30, 90].includes(daysInput) ? daysInput : 30;
+
+  const { data: listing } = await admin
+    .from("listings")
+    .select(
+      "id, title, brand, model, year, mileage, fuel_type, price, status, views, images, created_at, is_premium, boost_until, user_id, company_id",
+    )
+    .eq("id", listingId)
+    .maybeSingle();
+
+  if (!listing) return jsonResponse({ error: "Advertentie niet gevonden" }, 404);
+
+  // Toegang: eigenaar, of een actief lid van hetzelfde bedrijf.
+  let allowed = listing.user_id === userId;
+  if (!allowed && listing.company_id) {
+    const { data: member } = await admin
+      .from("company_members")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("company_id", listing.company_id)
+      .eq("status", "active")
+      .maybeSingle();
+    allowed = !!member;
+  }
+  if (!allowed) return jsonResponse({ error: "Geen toegang tot dit voertuig" }, 403);
+
+  const since = new Date();
+  since.setUTCDate(since.getUTCDate() - (days - 1));
+  const sinceIso = since.toISOString();
+  const sinceDay = sinceIso.slice(0, 10);
+
+  const [viewsRes, favRes, convRes] = await Promise.all([
+    admin.from("listing_view_events").select("day").eq("listing_id", listingId).gte("day", sinceDay),
+    admin.from("favorites").select("created_at").eq("listing_id", listingId).gte("created_at", sinceIso),
+    admin.from("conversations").select("id, created_at").eq("listing_id", listingId),
+  ]);
+
+  const buckets: Record<string, { views: number; favorites: number; conversations: number; messages: number }> = {};
+  const bump = (key: string, field: "views" | "favorites" | "conversations" | "messages") => {
+    buckets[key] ??= { views: 0, favorites: 0, conversations: 0, messages: 0 };
+    buckets[key][field] += 1;
+  };
+
+  (viewsRes.data ?? []).forEach((r: any) => bump(dayKey(r.day), "views"));
+  (favRes.data ?? []).forEach((r: any) => bump(dayKey(r.created_at), "favorites"));
+  (convRes.data ?? [])
+    .filter((c: any) => c.created_at >= sinceIso)
+    .forEach((c: any) => bump(dayKey(c.created_at), "conversations"));
+
+  const convIds = (convRes.data ?? []).map((c: any) => c.id);
+  let messagesInPeriod = 0;
+  let totalMessages = 0;
+  if (convIds.length > 0) {
+    const { data: messages } = await admin
+      .from("messages")
+      .select("created_at")
+      .in("conversation_id", convIds);
+    (messages ?? []).forEach((m: any) => {
+      totalMessages += 1;
+      if (m.created_at >= sinceIso) {
+        messagesInPeriod += 1;
+        bump(dayKey(m.created_at), "messages");
+      }
+    });
+  }
+
+  const series = buildSeries(days, buckets);
+
+  // Totalen over de volledige looptijd (niet enkel de periode).
+  const [{ count: totalViews }, { count: totalFavorites }] = await Promise.all([
+    admin.from("listing_view_events").select("id", { count: "exact", head: true }).eq("listing_id", listingId),
+    admin.from("favorites").select("id", { count: "exact", head: true }).eq("listing_id", listingId),
+  ]);
+
+  // Vergelijking met eigen voorraad in hetzelfde prijssegment (±25%).
+  const ownerFilter = listing.company_id
+    ? { column: "company_id", value: listing.company_id }
+    : { column: "user_id", value: listing.user_id };
+  const { data: peers } = await admin
+    .from("listings")
+    .select("id, views, created_at")
+    .eq(ownerFilter.column, ownerFilter.value)
+    .gte("price", Math.round(listing.price * 0.75))
+    .lte("price", Math.round(listing.price * 1.25))
+    .neq("id", listingId);
+
+  const peerRows = peers ?? [];
+  const nowMs = Date.now();
+  const daysLive = Math.max(1, Math.round((nowMs - new Date(listing.created_at).getTime()) / 86400000));
+  const peerAvgViewsPerDay =
+    peerRows.length > 0
+      ? peerRows.reduce((s: number, p: any) => {
+          const d = Math.max(1, (nowMs - new Date(p.created_at).getTime()) / 86400000);
+          return s + (p.views ?? 0) / d;
+        }, 0) / peerRows.length
+      : null;
+  const ownViewsPerDay = (totalViews ?? 0) / daysLive;
+
+  return jsonResponse({
+    listing: {
+      id: listing.id,
+      title: listing.title,
+      brand: listing.brand,
+      model: listing.model,
+      year: listing.year,
+      mileage: listing.mileage,
+      fuelType: listing.fuel_type,
+      price: listing.price,
+      status: listing.status,
+      image: listing.images?.[0] ?? null,
+      createdAt: listing.created_at,
+      isPremium: listing.is_premium ?? false,
+      boostUntil: listing.boost_until ?? null,
+      daysLive,
+    },
+    totals: {
+      views: totalViews ?? 0,
+      favorites: totalFavorites ?? 0,
+      conversations: convIds.length,
+      messages: totalMessages,
+    },
+    period: {
+      days,
+      views: series.reduce((s, d) => s + d.views, 0),
+      favorites: series.reduce((s, d) => s + d.favorites, 0),
+      conversations: series.reduce((s, d) => s + d.conversations, 0),
+      messages: messagesInPeriod,
+    },
+    series,
+    benchmark: {
+      peerCount: peerRows.length,
+      ownViewsPerDay,
+      peerAvgViewsPerDay,
+    },
+  });
+}
