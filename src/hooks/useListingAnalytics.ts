@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { AnalyticsRange } from '@/lib/dateRange';
 
 export interface AnalyticsPoint {
   date: string;
@@ -28,14 +29,14 @@ export interface ListingDrilldown {
     daysLive: number;
   };
   totals: { views: number; favorites: number; conversations: number; messages: number };
-  period: { days: number; views: number; favorites: number; conversations: number; messages: number };
+  period: { days: number; from: string; to: string; views: number; favorites: number; conversations: number; messages: number };
   series: AnalyticsPoint[];
   benchmark: { peerCount: number; ownViewsPerDay: number; peerAvgViewsPerDay: number | null };
 }
 
 export type AnalyticsPeriod = 7 | 30 | 90;
 
-export function useListingAnalytics(listingId: string | undefined, days: AnalyticsPeriod) {
+export function useListingAnalytics(listingId: string | undefined, range: AnalyticsRange) {
   const [data, setData] = useState<ListingDrilldown | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +47,7 @@ export function useListingAnalytics(listingId: string | undefined, days: Analyti
     setError(null);
     try {
       const { data: res, error: fnError } = await supabase.functions.invoke('dealer-analytics', {
-        body: { listingId, days },
+        body: { listingId, from: range.from, to: range.to },
       });
       if (fnError) throw fnError;
       if ((res as { error?: string })?.error) throw new Error((res as { error: string }).error);
@@ -57,7 +58,7 @@ export function useListingAnalytics(listingId: string | undefined, days: Analyti
     } finally {
       setLoading(false);
     }
-  }, [listingId, days]);
+  }, [listingId, range.from, range.to]);
 
   useEffect(() => {
     refresh();

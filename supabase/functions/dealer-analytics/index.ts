@@ -20,6 +20,47 @@ function encodeCursor(values: unknown[]): string {
   return btoa(JSON.stringify(values));
 }
 
+const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Normaliseert een datumbereik; valt terug op de laatste `fallbackDays` dagen. */
+function resolveRange(
+  from: string | undefined,
+  to: string | undefined,
+  fallbackDays = 30,
+): { from: string; to: string; days: number } {
+  const today = new Date().toISOString().slice(0, 10);
+  let end = to && DAY_RE.test(to) ? to : today;
+  if (end > today) end = today;
+  let start: string;
+  if (from && DAY_RE.test(from)) {
+    start = from;
+  } else {
+    const d = new Date(`${end}T00:00:00.000Z`);
+    d.setUTCDate(d.getUTCDate() - (fallbackDays - 1));
+    start = d.toISOString().slice(0, 10);
+  }
+  if (start > end) [start, end] = [end, start];
+  const days = Math.max(
+    1,
+    Math.round(
+      (new Date(`${end}T00:00:00.000Z`).getTime() - new Date(`${start}T00:00:00.000Z`).getTime()) /
+        86400000,
+    ) + 1,
+  );
+  // Bovengrens tegen enorme reeksen.
+  if (days > 366) {
+    const d = new Date(`${end}T00:00:00.000Z`);
+    d.setUTCDate(d.getUTCDate() - 365);
+    return { from: d.toISOString().slice(0, 10), to: end, days: 366 };
+  }
+  return { from: start, to: end, days };
+}
+
+const inDayRange = (value: string, from: string, to: string) => {
+  const day = value.slice(0, 10);
+  return day >= from && day <= to;
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -40,6 +81,8 @@ serve(async (req) => {
       statuses?: string[];
       listingId?: string;
       days?: number;
+      from?: string;
+      to?: string;
     } = {};
     if (req.method === "POST") {
       try {
@@ -48,6 +91,8 @@ serve(async (req) => {
         body = {};
       }
     }
+    // Optioneel datumbereik voor het overzicht (laatste 7/30/90 dagen of custom).
+    const overviewRange = body.from || body.to ? resolveRange(body.from, body.to) : null;
     const paginated = typeof body.limit === "number" && body.limit > 0;
     const limit = paginated ? Math.min(Math.max(body.limit!, 1), 100) : null;
 
@@ -57,7 +102,8 @@ serve(async (req) => {
 
     // ── Per-voertuig drilldown ────────────────────────────────────────────
     if (typeof body.listingId === "string" && body.listingId) {
-      return await listingDrilldown(adminClient, user.id, body.listingId, body.days ?? 30);
+      const range = resolveRange(body.from, body.to, body.days ?? 30);
+      return await listingDrilldown(adminClient, user.id, body.listingId, range);
     }
 
 
@@ -133,10 +179,13 @@ serve(async (req) => {
     const listingIds = rows.map((l: any) => l.id);
 
     // 2. Favorites per listing in this batch
-    const { data: favCounts } = await adminClient
-      .from("favorites")
-      .select("listing_id")
-      .in("listing_id", listingIds);
+    let favQuery = adminClient.from("favorites").select("listing_id").in("listing_id", listingIds);
+    if (overviewRange) {
+      favQuery = favQuery
+        .gte("created_at", `${overviewRange.from}T00:00:00.000Z`)
+        .lte("created_at", `${overviewRange.to}T23:59:59.999Z`);
+    }
+    const { data: favCounts } = await favQuery;
 
     const favMap: Record<string, number> = {};
     (favCounts || []).forEach((f: any) => {
@@ -144,10 +193,16 @@ serve(async (req) => {
     });
 
     // 3. Conversations & messages per listing in this batch
-    const { data: conversations } = await adminClient
+    let convQuery = adminClient
       .from("conversations")
       .select("id, listing_id")
       .in("listing_id", listingIds);
+    if (overviewRange) {
+      convQuery = convQuery
+        .gte("created_at", `${overviewRange.from}T00:00:00.000Z`)
+        .lte("created_at", `${overviewRange.to}T23:59:59.999Z`);
+    }
+    const { data: conversations } = await convQuery;
 
     const convMap: Record<string, number> = {};
     const convIds: string[] = [];
@@ -158,10 +213,16 @@ serve(async (req) => {
 
     const msgMap: Record<string, number> = {};
     if (convIds.length > 0) {
-      const { data: messages } = await adminClient
+      let msgQuery = adminClient
         .from("messages")
         .select("conversation_id")
         .in("conversation_id", convIds);
+      if (overviewRange) {
+        msgQuery = msgQuery
+          .gte("created_at", `${overviewRange.from}T00:00:00.000Z`)
+          .lte("created_at", `${overviewRange.to}T23:59:59.999Z`);
+      }
+      const { data: messages } = await msgQuery;
 
       const convToListing: Record<string, string> = {};
       (conversations || []).forEach((c: any) => {
@@ -170,6 +231,20 @@ serve(async (req) => {
       (messages || []).forEach((m: any) => {
         const lid = convToListing[m.conversation_id];
         if (lid) msgMap[lid] = (msgMap[lid] || 0) + 1;
+      });
+    }
+
+    // 3b. Weergaven binnen het bereik (anders de levenslange teller op de listing).
+    const rangeViewMap: Record<string, number> = {};
+    if (overviewRange) {
+      const { data: viewRows } = await adminClient
+        .from("listing_view_events")
+        .select("listing_id")
+        .in("listing_id", listingIds)
+        .gte("day", overviewRange.from)
+        .lte("day", overviewRange.to);
+      (viewRows || []).forEach((v: any) => {
+        rangeViewMap[v.listing_id] = (rangeViewMap[v.listing_id] || 0) + 1;
       });
     }
 
@@ -187,7 +262,7 @@ serve(async (req) => {
       features: l.equipment ?? l.features ?? [],
       price: l.price,
       status: l.status,
-      views: l.views,
+      views: overviewRange ? rangeViewMap[l.id] || 0 : l.views,
       image: l.images?.[0] || null,
       createdAt: l.created_at,
       favorites: favMap[l.id] || 0,
@@ -203,7 +278,9 @@ serve(async (req) => {
 
     return jsonResponse({
       overview: {
-        totalViews: (allRows ?? []).reduce((s: number, l: any) => s + (l.views ?? 0), 0),
+        totalViews: overviewRange
+          ? listingAnalytics.reduce((s, l) => s + l.views, 0)
+          : (allRows ?? []).reduce((s: number, l: any) => s + (l.views ?? 0), 0),
         totalFavorites: listingAnalytics.reduce((s, l) => s + l.favorites, 0),
         totalMessages: listingAnalytics.reduce((s, l) => s + l.messages, 0),
         totalListings: allIds.length,
@@ -211,6 +288,7 @@ serve(async (req) => {
       },
       statusCounts: { ...statusCounts, boostable: boostableCount },
       listings: listingAnalytics,
+      range: overviewRange,
       nextCursor,
       total: allIds.length,
     });
@@ -226,16 +304,16 @@ function dayKey(value: string | Date): string {
   return new Date(value).toISOString().slice(0, 10);
 }
 
-/** Bouwt een reeks van `days` dagen (oud → nieuw) met nullen voor lege dagen. */
+/** Bouwt een reeks dagen (oud → nieuw) met nullen voor lege dagen. */
 function buildSeries(
-  days: number,
+  range: { from: string; to: string; days: number },
   buckets: Record<string, { views: number; favorites: number; conversations: number; messages: number }>,
 ) {
   const out: Array<{ date: string; views: number; favorites: number; conversations: number; messages: number; leads: number }> = [];
-  const today = new Date();
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(today);
-    d.setUTCDate(d.getUTCDate() - i);
+  const start = new Date(`${range.from}T00:00:00.000Z`);
+  for (let i = 0; i < range.days; i++) {
+    const d = new Date(start);
+    d.setUTCDate(d.getUTCDate() + i);
     const key = d.toISOString().slice(0, 10);
     const b = buckets[key] ?? { views: 0, favorites: 0, conversations: 0, messages: 0 };
     out.push({ date: key, ...b, leads: b.favorites + b.conversations });
@@ -247,9 +325,9 @@ async function listingDrilldown(
   admin: ReturnType<typeof createClient>,
   userId: string,
   listingId: string,
-  daysInput: number,
+  range: { from: string; to: string; days: number },
 ): Promise<Response> {
-  const days = [7, 30, 90].includes(daysInput) ? daysInput : 30;
+  const days = range.days;
 
   const { data: listing } = await admin
     .from("listings")
@@ -275,14 +353,23 @@ async function listingDrilldown(
   }
   if (!allowed) return jsonResponse({ error: "Geen toegang tot dit voertuig" }, 403);
 
-  const since = new Date();
-  since.setUTCDate(since.getUTCDate() - (days - 1));
-  const sinceIso = since.toISOString();
-  const sinceDay = sinceIso.slice(0, 10);
+  const sinceDay = range.from;
+  const sinceIso = `${range.from}T00:00:00.000Z`;
+  const untilIso = `${range.to}T23:59:59.999Z`;
 
   const [viewsRes, favRes, convRes] = await Promise.all([
-    admin.from("listing_view_events").select("day").eq("listing_id", listingId).gte("day", sinceDay),
-    admin.from("favorites").select("created_at").eq("listing_id", listingId).gte("created_at", sinceIso),
+    admin
+      .from("listing_view_events")
+      .select("day")
+      .eq("listing_id", listingId)
+      .gte("day", sinceDay)
+      .lte("day", range.to),
+    admin
+      .from("favorites")
+      .select("created_at")
+      .eq("listing_id", listingId)
+      .gte("created_at", sinceIso)
+      .lte("created_at", untilIso),
     admin.from("conversations").select("id, created_at").eq("listing_id", listingId),
   ]);
 
@@ -295,7 +382,7 @@ async function listingDrilldown(
   (viewsRes.data ?? []).forEach((r: any) => bump(dayKey(r.day), "views"));
   (favRes.data ?? []).forEach((r: any) => bump(dayKey(r.created_at), "favorites"));
   (convRes.data ?? [])
-    .filter((c: any) => c.created_at >= sinceIso)
+    .filter((c: any) => inDayRange(c.created_at, range.from, range.to))
     .forEach((c: any) => bump(dayKey(c.created_at), "conversations"));
 
   const convIds = (convRes.data ?? []).map((c: any) => c.id);
@@ -308,14 +395,14 @@ async function listingDrilldown(
       .in("conversation_id", convIds);
     (messages ?? []).forEach((m: any) => {
       totalMessages += 1;
-      if (m.created_at >= sinceIso) {
+      if (inDayRange(m.created_at, range.from, range.to)) {
         messagesInPeriod += 1;
         bump(dayKey(m.created_at), "messages");
       }
     });
   }
 
-  const series = buildSeries(days, buckets);
+  const series = buildSeries(range, buckets);
 
   // Totalen over de volledige looptijd (niet enkel de periode).
   const [{ count: totalViews }, { count: totalFavorites }] = await Promise.all([
@@ -372,6 +459,8 @@ async function listingDrilldown(
     },
     period: {
       days,
+      from: range.from,
+      to: range.to,
       views: series.reduce((s, d) => s + d.views, 0),
       favorites: series.reduce((s, d) => s + d.favorites, 0),
       conversations: series.reduce((s, d) => s + d.conversations, 0),

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import type { AnalyticsRange } from '@/lib/dateRange';
 
 export interface ListingAnalytics {
   id: string;
@@ -33,7 +34,7 @@ export interface DealerOverview {
   activeListings: number;
 }
 
-export function useDealerAnalytics() {
+export function useDealerAnalytics(range?: AnalyticsRange) {
   const { user } = useAuth();
   const [overview, setOverview] = useState<DealerOverview | null>(null);
   const [listings, setListings] = useState<ListingAnalytics[]>([]);
@@ -44,7 +45,9 @@ export function useDealerAnalytics() {
     setLoading(true);
     setError(null);
     try {
-      const { data, error: fnError } = await supabase.functions.invoke('dealer-analytics');
+      const { data, error: fnError } = await supabase.functions.invoke('dealer-analytics', {
+        body: range ? { from: range.from, to: range.to } : {},
+      });
       if (fnError) throw fnError;
       setOverview(data.overview);
       setListings(data.listings);
@@ -53,7 +56,7 @@ export function useDealerAnalytics() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [range?.from, range?.to]);
 
   useEffect(() => {
     if (user) refresh();
