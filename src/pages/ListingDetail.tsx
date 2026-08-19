@@ -735,6 +735,16 @@ export default function ListingDetail() {
               </Card>
             )}
 
+            {/* 9b. Milieu, Euronorm & LEZ (A2.2) */}
+            <EmissionsPanel
+              fuelType={listing.fuelType}
+              emissionClass={listing.emissionClass}
+              firstRegistrationDate={listing.firstRegistrationDate}
+              year={listing.year}
+              co2Emissions={listing.co2Emissions}
+              co2EmissionsUnit={listing.co2EmissionsUnit}
+            />
+
             {/* 10/11. Detailed specifications (incl. emissions) */}
             {(engineSpecs.length > 0 || dimensionsSpecs.length > 0 || hasEmissions || identitySpecs.length > 0) && (
               <Card className="border-border/60 shadow-card">
