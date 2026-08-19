@@ -141,6 +141,11 @@ export default function DealerSettings() {
         <SettingsRow icon={SettingsIcon} label="Voorraadvoorkeuren" to="/zakelijk/voorraad-instellingen" />
       </Section>
 
+      <Section title="Dealerpagina">
+        <SettingsRow icon={Clock} label="Openingsuren" subtitle="Zichtbaar op je publieke dealerpagina" onClick={() => setHoursOpen(true)} />
+      </Section>
+
+
       <Section title="Account">
         <SettingsRow icon={Users} label="Gebruikers beheren" to="/zakelijk/gebruikers" subtitle="Medewerkers, rollen & activiteit" />
         <SettingsRow icon={CreditCard} label="Abonnement" to="/zakelijk/abonnement" />
