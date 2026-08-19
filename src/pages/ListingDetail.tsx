@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { ImageGallery, ListingGrid, PriceIndicator } from '@/modules/listings';
+import { ImageGallery, ListingGrid, PriceIndicator, EmissionsPanel } from '@/modules/listings';
 import { ListingCard } from '@/modules/listings/ListingCard';
 import { useCompare } from '@/hooks/useCompare';
 import { useListing, useRelatedListings } from '@/hooks/useListings';
@@ -734,6 +734,16 @@ export default function ListingDetail() {
                 </CardContent>
               </Card>
             )}
+
+            {/* 9b. Milieu, Euronorm & LEZ (A2.2) */}
+            <EmissionsPanel
+              fuelType={listing.fuelType}
+              emissionClass={listing.emissionClass}
+              firstRegistrationDate={listing.firstRegistrationDate}
+              year={listing.year}
+              co2Emissions={listing.co2Emissions}
+              co2EmissionsUnit={listing.co2EmissionsUnit}
+            />
 
             {/* 10/11. Detailed specifications (incl. emissions) */}
             {(engineSpecs.length > 0 || dimensionsSpecs.length > 0 || hasEmissions || identitySpecs.length > 0) && (

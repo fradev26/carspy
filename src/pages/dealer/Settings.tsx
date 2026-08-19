@@ -13,7 +13,9 @@ import {
   LifeBuoy,
   Mail,
   Info,
+  Clock,
   LucideIcon,
+
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
@@ -23,6 +25,8 @@ import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import AutoScoutPanel from '@/modules/dealer/AutoScoutPanel';
 import ComingSoonConnectionPanel from '@/components/dealer/ComingSoonConnectionPanel';
+import OpeningHoursEditor from '@/components/dealer/OpeningHoursEditor';
+
 import { cn } from '@/lib/utils';
 
 type RowProps = {
@@ -93,6 +97,8 @@ export default function DealerSettings() {
   const { toast } = useToast();
   const [autoScoutOpen, setAutoScoutOpen] = useState(false);
   const [stubOpen, setStubOpen] = useState<null | 'marktplaats' | 'mobile' | 'facebook'>(null);
+  const [hoursOpen, setHoursOpen] = useState(false);
+
 
   const STUBS = {
     marktplaats: { name: 'Marktplaats', description: 'Synchroniseer je voorraad met Marktplaats.nl.' },
@@ -141,6 +147,11 @@ export default function DealerSettings() {
         <SettingsRow icon={SettingsIcon} label="Voorraadvoorkeuren" to="/zakelijk/voorraad-instellingen" />
       </Section>
 
+      <Section title="Dealerpagina">
+        <SettingsRow icon={Clock} label="Openingsuren" subtitle="Zichtbaar op je publieke dealerpagina" onClick={() => setHoursOpen(true)} />
+      </Section>
+
+
       <Section title="Account">
         <SettingsRow icon={Users} label="Gebruikers beheren" to="/zakelijk/gebruikers" subtitle="Medewerkers, rollen & activiteit" />
         <SettingsRow icon={CreditCard} label="Abonnement" to="/zakelijk/abonnement" />
@@ -162,6 +173,19 @@ export default function DealerSettings() {
           </div>
         </SheetContent>
       </Sheet>
+
+      <Sheet open={hoursOpen} onOpenChange={setHoursOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Openingsuren</SheetTitle>
+          </SheetHeader>
+          <div className="mt-4">
+            <OpeningHoursEditor />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+
 
       <Sheet open={stubOpen !== null} onOpenChange={(v) => !v && setStubOpen(null)}>
         <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">

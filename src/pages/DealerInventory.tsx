@@ -10,7 +10,11 @@ import { FilterPanel, FilterChips } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
 import { SearchFilters, SORT_OPTIONS, Listing } from '@/types/listing';
 import { findDealerBySlugAsync, getDealerListingsAsync, type DealerSummary } from '@/lib/dealers';
+import { DealerOpeningHours } from '@/components/dealer/DealerOpeningHours';
+import { DealerDirections } from '@/components/dealer/DealerDirections';
+import { DealerReviews } from '@/components/dealer/DealerReviews';
 import { cn } from '@/lib/utils';
+
 
 const PER_PAGE = 24;
 
@@ -248,7 +252,18 @@ export default function DealerInventory() {
           </div>
         </header>
 
+
+        {/* Bedrijfsinformatie: openingsuren, route en reviews */}
+        <section aria-label="Informatie over deze dealer" className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <DealerOpeningHours dealerUserId={dealer.seller.id} />
+          <DealerDirections dealerName={dealerName} city={dealer.city} province={dealer.province} />
+          <div className="md:col-span-2 lg:col-span-1">
+            <DealerReviews dealerUserId={dealer.seller.id} dealerName={dealerName} />
+          </div>
+        </section>
+
         <div className="flex gap-8">
+
           {/* Sidebar filters */}
           <aside className="hidden w-72 flex-shrink-0 lg:block">
             <div className="sticky top-20">
