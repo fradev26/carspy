@@ -38,6 +38,8 @@ serve(async (req) => {
       limit?: number;
       query?: string;
       statuses?: string[];
+      listingId?: string;
+      days?: number;
     } = {};
     if (req.method === "POST") {
       try {
@@ -52,6 +54,13 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
+
+    // ── Per-voertuig drilldown ────────────────────────────────────────────
+    if (typeof body.listingId === "string" && body.listingId) {
+      return await listingDrilldown(adminClient, user.id, body.listingId, body.days ?? 30);
+    }
+
+
 
     // 1a. Lightweight roll-up over the dealer's full inventory (counts stay
     // correct even when only one batch of rows is returned).
