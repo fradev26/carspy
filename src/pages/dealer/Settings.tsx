@@ -174,6 +174,19 @@ export default function DealerSettings() {
         </SheetContent>
       </Sheet>
 
+      <Sheet open={hoursOpen} onOpenChange={setHoursOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Openingsuren</SheetTitle>
+          </SheetHeader>
+          <div className="mt-4">
+            <OpeningHoursEditor />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+
+
       <Sheet open={stubOpen !== null} onOpenChange={(v) => !v && setStubOpen(null)}>
         <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
           <SheetHeader>
