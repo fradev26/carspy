@@ -91,6 +91,8 @@ serve(async (req) => {
         body = {};
       }
     }
+    // Optioneel datumbereik voor het overzicht (laatste 7/30/90 dagen of custom).
+    const overviewRange = body.from || body.to ? resolveRange(body.from, body.to) : null;
     const paginated = typeof body.limit === "number" && body.limit > 0;
     const limit = paginated ? Math.min(Math.max(body.limit!, 1), 100) : null;
 
@@ -177,10 +179,13 @@ serve(async (req) => {
     const listingIds = rows.map((l: any) => l.id);
 
     // 2. Favorites per listing in this batch
-    const { data: favCounts } = await adminClient
-      .from("favorites")
-      .select("listing_id")
-      .in("listing_id", listingIds);
+    let favQuery = adminClient.from("favorites").select("listing_id").in("listing_id", listingIds);
+    if (overviewRange) {
+      favQuery = favQuery
+        .gte("created_at", `${overviewRange.from}T00:00:00.000Z`)
+        .lte("created_at", `${overviewRange.to}T23:59:59.999Z`);
+    }
+    const { data: favCounts } = await favQuery;
 
     const favMap: Record<string, number> = {};
     (favCounts || []).forEach((f: any) => {
@@ -188,10 +193,16 @@ serve(async (req) => {
     });
 
     // 3. Conversations & messages per listing in this batch
-    const { data: conversations } = await adminClient
+    let convQuery = adminClient
       .from("conversations")
       .select("id, listing_id")
       .in("listing_id", listingIds);
+    if (overviewRange) {
+      convQuery = convQuery
+        .gte("created_at", `${overviewRange.from}T00:00:00.000Z`)
+        .lte("created_at", `${overviewRange.to}T23:59:59.999Z`);
+    }
+    const { data: conversations } = await convQuery;
 
     const convMap: Record<string, number> = {};
     const convIds: string[] = [];
@@ -202,10 +213,16 @@ serve(async (req) => {
 
     const msgMap: Record<string, number> = {};
     if (convIds.length > 0) {
-      const { data: messages } = await adminClient
+      let msgQuery = adminClient
         .from("messages")
         .select("conversation_id")
         .in("conversation_id", convIds);
+      if (overviewRange) {
+        msgQuery = msgQuery
+          .gte("created_at", `${overviewRange.from}T00:00:00.000Z`)
+          .lte("created_at", `${overviewRange.to}T23:59:59.999Z`);
+      }
+      const { data: messages } = await msgQuery;
 
       const convToListing: Record<string, string> = {};
       (conversations || []).forEach((c: any) => {
@@ -214,6 +231,20 @@ serve(async (req) => {
       (messages || []).forEach((m: any) => {
         const lid = convToListing[m.conversation_id];
         if (lid) msgMap[lid] = (msgMap[lid] || 0) + 1;
+      });
+    }
+
+    // 3b. Weergaven binnen het bereik (anders de levenslange teller op de listing).
+    const rangeViewMap: Record<string, number> = {};
+    if (overviewRange) {
+      const { data: viewRows } = await adminClient
+        .from("listing_view_events")
+        .select("listing_id")
+        .in("listing_id", listingIds)
+        .gte("day", overviewRange.from)
+        .lte("day", overviewRange.to);
+      (viewRows || []).forEach((v: any) => {
+        rangeViewMap[v.listing_id] = (rangeViewMap[v.listing_id] || 0) + 1;
       });
     }
 
@@ -231,7 +262,7 @@ serve(async (req) => {
       features: l.equipment ?? l.features ?? [],
       price: l.price,
       status: l.status,
-      views: l.views,
+      views: overviewRange ? rangeViewMap[l.id] || 0 : l.views,
       image: l.images?.[0] || null,
       createdAt: l.created_at,
       favorites: favMap[l.id] || 0,
@@ -247,7 +278,9 @@ serve(async (req) => {
 
     return jsonResponse({
       overview: {
-        totalViews: (allRows ?? []).reduce((s: number, l: any) => s + (l.views ?? 0), 0),
+        totalViews: overviewRange
+          ? listingAnalytics.reduce((s, l) => s + l.views, 0)
+          : (allRows ?? []).reduce((s: number, l: any) => s + (l.views ?? 0), 0),
         totalFavorites: listingAnalytics.reduce((s, l) => s + l.favorites, 0),
         totalMessages: listingAnalytics.reduce((s, l) => s + l.messages, 0),
         totalListings: allIds.length,
@@ -255,6 +288,7 @@ serve(async (req) => {
       },
       statusCounts: { ...statusCounts, boostable: boostableCount },
       listings: listingAnalytics,
+      range: overviewRange,
       nextCursor,
       total: allIds.length,
     });
