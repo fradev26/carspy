@@ -26,7 +26,7 @@ function buildData(views: number): ListingDrilldown {
       createdAt: new Date().toISOString(), isPremium: false, boostUntil: null, daysLive: 10,
     },
     totals: { views, favorites: 2, conversations: 1, messages: 3 },
-    period: { days: 30, views, favorites: 2, conversations: 1, messages: 3 },
+    period: { days: 30, from: '2026-07-21', to: '2026-08-19', views, favorites: 2, conversations: 1, messages: 3 },
     series: [{ date: '2026-08-18', views, favorites: 2, conversations: 1, messages: 3, leads: 3 }],
     benchmark: { peerCount: 2, ownViewsPerDay: 1, peerAvgViewsPerDay: 2 },
   };
