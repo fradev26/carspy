@@ -10,8 +10,31 @@ import { useDealerAnalytics } from '@/hooks/useDealerAnalytics';
 const formatPrice = (p: number) =>
   new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(p);
 
+type SortKey = 'views' | 'leads' | 'conversion' | 'age';
+
+const SORTABLE: { key: SortKey; label: string }[] = [
+  { key: 'views', label: 'Weergaven' },
+  { key: 'leads', label: 'Leads' },
+  { key: 'conversion', label: 'Conversie' },
+  { key: 'age', label: 'Leeftijd' },
+];
+
 export default function Analytics() {
   const { listings, loading } = useDealerAnalytics();
+  const [sort, setSort] = useState<SortKey>('views');
+
+  const sortedListings = useMemo(() => {
+    const leads = (l: (typeof listings)[number]) => l.favorites + l.conversations;
+    const conv = (l: (typeof listings)[number]) => (l.views > 0 ? leads(l) / l.views : 0);
+    const age = (l: (typeof listings)[number]) => Date.now() - new Date(l.createdAt).getTime();
+    return [...listings].sort((a, b) => {
+      if (sort === 'views') return b.views - a.views;
+      if (sort === 'leads') return leads(b) - leads(a);
+      if (sort === 'conversion') return conv(b) - conv(a);
+      return age(b) - age(a);
+    });
+  }, [listings, sort]);
+
 
   const totalValue = useMemo(
     () => listings.filter((l) => l.status === 'active').reduce((s, l) => s + (l.price || 0), 0),
