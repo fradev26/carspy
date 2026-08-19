@@ -136,7 +136,7 @@ export default function AutoWaarde() {
           priceMin: ai.priceRange.min, priceMax: ai.priceRange.max,
         }, user?.id);
         setLeadId(id);
-      } catch (err) { console.warn('lead insert failed', err); }
+      } catch { /* lead-registratie is best-effort en mag de schatting niet blokkeren */ }
     } catch {
       const fb = fallbackEstimate({ brand, year: parseInt(year), mileage: parseInt(mileage) });
       setResult(fb);
@@ -151,7 +151,7 @@ export default function AutoWaarde() {
           priceMin: fb.priceRange.min, priceMax: fb.priceRange.max,
         }, user?.id);
         setLeadId(id);
-      } catch (err) { console.warn('lead insert failed', err); }
+      } catch { /* lead-registratie is best-effort en mag de schatting niet blokkeren */ }
     } finally {
       setLoading(false);
       setTimeout(() => document.getElementById('resultaat')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
@@ -176,8 +176,7 @@ export default function AutoWaarde() {
     if (user) {
       setPublishing(true);
       try { await goToDraftWizard(user.id); }
-      catch (e) {
-        console.error(e);
+      catch {
         toast({ title: 'Kon advertentie niet aanmaken', variant: 'destructive' });
       } finally { setPublishing(false); }
     } else {

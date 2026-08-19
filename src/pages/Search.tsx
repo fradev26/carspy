@@ -463,7 +463,7 @@ export default function Search() {
                 </div>
               ) : listingsError && pageListings.length === 0 ? (
                 <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 py-12 text-center">
-                  <h3 className="text-lg font-semibold">Zoekresultaten konden niet geladen worden</h3>
+                  <h2 className="text-lg font-semibold">Zoekresultaten konden niet geladen worden</h2>
                   <p className="max-w-sm text-sm text-muted-foreground">
                     Er ging iets mis bij het ophalen van de advertenties. Probeer het opnieuw.
                   </p>
@@ -491,7 +491,7 @@ export default function Search() {
                   <div className="flex h-16 w-16 items-center justify-center rounded-md bg-muted mb-4">
                     <Car className="h-8 w-8 text-muted-foreground" />
                   </div>
-                  <h3 className="text-lg font-semibold">Geen resultaten gevonden</h3>
+                  <h2 className="text-lg font-semibold">Geen resultaten gevonden</h2>
                   <p className="mt-2 text-muted-foreground max-w-sm">
                     Probeer andere filters of pas je zoekcriteria aan om meer auto's te vinden
                   </p>
