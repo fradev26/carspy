@@ -348,7 +348,11 @@ export default function ListingOperating() {
             <StatCard icon={Heart} label="Favorieten" value={favorites} />
             <StatCard icon={Users} label="Leads" value={messages} />
           </div>
+          <Button asChild variant="outline" size="sm" className="mt-3 w-full">
+            <Link to={`/zakelijk/analytics/${view.id}`}>Bekijk statistieken</Link>
+          </Button>
         </Section>
+
       </div>
 
       {/* Sticky footer */}

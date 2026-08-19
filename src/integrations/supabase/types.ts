@@ -1009,6 +1009,41 @@ export type Database = {
         }
         Relationships: []
       }
+      listing_view_events: {
+        Row: {
+          created_at: string
+          day: string
+          id: string
+          listing_id: string
+          session_hash: string
+          source: string
+        }
+        Insert: {
+          created_at?: string
+          day?: string
+          id?: string
+          listing_id: string
+          session_hash: string
+          source?: string
+        }
+        Update: {
+          created_at?: string
+          day?: string
+          id?: string
+          listing_id?: string
+          session_hash?: string
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_view_events_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listings: {
         Row: {
           additional_fuel_types: string[] | null

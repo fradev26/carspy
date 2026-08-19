@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BarChart3, Euro, Clock, TrendingDown, TrendingUp } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
@@ -10,8 +10,31 @@ import { useDealerAnalytics } from '@/hooks/useDealerAnalytics';
 const formatPrice = (p: number) =>
   new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(p);
 
+type SortKey = 'views' | 'leads' | 'conversion' | 'age';
+
+const SORTABLE: { key: SortKey; label: string }[] = [
+  { key: 'views', label: 'Weergaven' },
+  { key: 'leads', label: 'Leads' },
+  { key: 'conversion', label: 'Conversie' },
+  { key: 'age', label: 'Leeftijd' },
+];
+
 export default function Analytics() {
   const { listings, loading } = useDealerAnalytics();
+  const [sort, setSort] = useState<SortKey>('views');
+
+  const sortedListings = useMemo(() => {
+    const leads = (l: (typeof listings)[number]) => l.favorites + l.conversations;
+    const conv = (l: (typeof listings)[number]) => (l.views > 0 ? leads(l) / l.views : 0);
+    const age = (l: (typeof listings)[number]) => Date.now() - new Date(l.createdAt).getTime();
+    return [...listings].sort((a, b) => {
+      if (sort === 'views') return b.views - a.views;
+      if (sort === 'leads') return leads(b) - leads(a);
+      if (sort === 'conversion') return conv(b) - conv(a);
+      return age(b) - age(a);
+    });
+  }, [listings, sort]);
+
 
   const totalValue = useMemo(
     () => listings.filter((l) => l.status === 'active').reduce((s, l) => s + (l.price || 0), 0),
@@ -143,7 +166,7 @@ export default function Analytics() {
             ) : topPerformers.map((l, i) => {
               const rate = ((l.favorites + l.conversations) / l.views * 100).toFixed(1);
               return (
-                <Link key={l.id} to={`/zakelijk/voorraad/${l.id}`} className="flex items-center justify-between p-2 rounded hover:bg-muted/50">
+                <Link key={l.id} to={`/zakelijk/analytics/${l.id}`} className="flex items-center justify-between p-2 rounded hover:bg-muted/50">
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="text-sm font-bold text-muted-foreground w-5">#{i + 1}</span>
                     <img src={l.image || '/placeholder.svg'} alt="" className="h-8 w-12 rounded object-cover" />
@@ -167,7 +190,7 @@ export default function Analytics() {
             ) : slowMovers.map((l) => {
               const days = Math.round((Date.now() - new Date(l.createdAt).getTime()) / 86400000);
               return (
-                <Link key={l.id} to={`/zakelijk/voorraad/${l.id}`} className="flex items-center justify-between p-2 rounded hover:bg-muted/50">
+                <Link key={l.id} to={`/zakelijk/analytics/${l.id}`} className="flex items-center justify-between p-2 rounded hover:bg-muted/50">
                   <div className="flex items-center gap-2 min-w-0">
                     <img src={l.image || '/placeholder.svg'} alt="" className="h-8 w-12 rounded object-cover" />
                     <span className="text-sm truncate">{l.title}</span>
@@ -179,6 +202,56 @@ export default function Analytics() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-border/60">
+        <CardHeader>
+          <CardTitle className="text-base">Alle voertuigen</CardTitle>
+          <CardDescription>Klik een wagen aan voor gedetailleerde statistieken.</CardDescription>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <caption className="sr-only">Prestaties per voertuig, sorteerbaar</caption>
+            <thead>
+              <tr className="text-left text-xs text-muted-foreground border-b border-border/60">
+                <th scope="col" className="py-2 pr-2 font-medium">Voertuig</th>
+                {SORTABLE.map((c) => (
+                  <th key={c.key} scope="col" className="py-2 px-2 font-medium text-right whitespace-nowrap">
+                    <button
+                      type="button"
+                      onClick={() => setSort(c.key)}
+                      className="focus-ring rounded px-1 hover:text-foreground"
+                      aria-label={`Sorteer op ${c.label}`}
+                    >
+                      {c.label}{sort === c.key ? ' ↓' : ''}
+                    </button>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {sortedListings.map((l) => (
+                <tr key={l.id} className="border-b border-border/40 last:border-0 hover:bg-muted/40">
+                  <td className="py-2 pr-2">
+                    <Link to={`/zakelijk/analytics/${l.id}`} className="flex items-center gap-2 min-w-0 focus-ring rounded">
+                      <img src={l.image || '/placeholder.svg'} alt="" loading="lazy" className="h-8 w-12 rounded object-cover bg-muted" />
+                      <span className="truncate max-w-[16rem]">{l.title}</span>
+                    </Link>
+                  </td>
+                  <td className="py-2 px-2 text-right tabular-nums">{l.views}</td>
+                  <td className="py-2 px-2 text-right tabular-nums">{l.favorites + l.conversations}</td>
+                  <td className="py-2 px-2 text-right tabular-nums">
+                    {l.views > 0 ? `${(((l.favorites + l.conversations) / l.views) * 100).toFixed(1)}%` : '—'}
+                  </td>
+                  <td className="py-2 px-2 text-right tabular-nums">
+                    {Math.round((Date.now() - new Date(l.createdAt).getTime()) / 86400000)}d
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </CardContent>
+      </Card>
     </div>
+
   );
 }
