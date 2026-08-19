@@ -180,7 +180,7 @@ const Index = () => {
         <div className="container relative z-10">
           <div className="mx-auto max-w-3xl text-center">
             <div className="animate-fade-in">
-              <h1 className="text-3xl font-bold text-white md:text-5xl lg:text-6xl leading-tight">
+              <h1 className="text-3xl font-bold text-overlay-foreground md:text-5xl lg:text-6xl leading-tight">
                 Vind je volgende auto in één zin.
               </h1>
             </div>
@@ -195,7 +195,7 @@ const Index = () => {
             <Button
               asChild
               size="lg"
-              className="w-full bg-primary text-white hover:bg-primary/90 shadow-lg text-base px-4"
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg text-base px-4"
             >
               <Link to="/zoeken">Zoek auto's</Link>
             </Button>
@@ -203,14 +203,14 @@ const Index = () => {
               asChild
               size="lg"
               variant="outline"
-              className="w-full border-white/40 bg-white/10 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm text-base px-4"
+              className="w-full border-overlay-foreground/40 bg-overlay-foreground/10 text-overlay-foreground hover:bg-overlay-foreground/20 hover:text-overlay-foreground backdrop-blur-sm text-base px-4"
             >
               <Link to="/verkopen">Plaats advertentie</Link>
             </Button>
           </div>
 
           {/* Trust indicators */}
-          <div className="mt-6 hidden md:flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-white/90 lg:mt-8">
+          <div className="mt-6 hidden md:flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-primary-foreground/90 lg:mt-8">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-green-400" />
               <span>Alleen geverifieerde verkopers</span>
@@ -226,7 +226,7 @@ const Index = () => {
           </div>
 
           {/* Social proof */}
-          <div className="mt-4 flex items-center justify-center gap-2 text-sm text-white/70">
+          <div className="mt-4 flex items-center justify-center gap-2 text-sm text-overlay-foreground/70">
             <div className="flex items-center gap-0.5">
               {[...Array(5)].map((_, i) => (
                 <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
@@ -320,7 +320,7 @@ const Index = () => {
           <div className="mt-8 text-center">
             <Link
               to="/zoeken"
-              className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-primary/90 active:scale-95 transition-all min-h-[48px]"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 active:scale-95 transition-all min-h-[48px]"
             >
               Bekijk alle advertenties <ArrowRight className="h-5 w-5" />
             </Link>
@@ -332,7 +332,7 @@ const Index = () => {
       {/* Sell CTA */}
       <section className="py-12 md:py-20">
         <div className="container">
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-primary/80 px-6 py-12 md:px-12 md:py-16 text-center text-white shadow-lg">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-primary/80 px-6 py-12 md:px-12 md:py-16 text-center text-primary-foreground shadow-lg">
             <svg
               className="pointer-events-none absolute inset-0 h-full w-full opacity-10"
               xmlns="http://www.w3.org/2000/svg"
@@ -347,13 +347,13 @@ const Index = () => {
             </svg>
             <div className="relative">
               <h2 className="text-2xl font-semibold md:text-3xl">Auto verkopen in 2 minuten</h2>
-              <p className="mx-auto mt-3 max-w-xl text-sm md:text-base text-white/90">
+              <p className="mx-auto mt-3 max-w-xl text-sm md:text-base text-primary-foreground/90">
                 AI schrijft je advertentie, bepaalt een eerlijke prijs en publiceert direct. Jij hoeft alleen je kenteken in te geven.
               </p>
               <div className="mt-6">
                 <Link
                   to="/verkopen"
-                  className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 text-base font-semibold text-primary-strong shadow-sm hover:bg-white/95 active:scale-95 transition-all min-h-[48px]"
+                  className="inline-flex items-center gap-2 rounded-xl bg-card px-6 py-3 text-base font-semibold text-primary-strong shadow-sm hover:bg-card/95 active:scale-95 transition-all min-h-[48px]"
                 >
                   Plaats mijn advertentie <ArrowRight className="h-5 w-5" />
                 </Link>

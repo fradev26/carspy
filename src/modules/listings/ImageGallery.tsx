@@ -174,7 +174,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
     <>
       <div className="space-y-3">
         {/* Main Image */}
-        <div className="relative aspect-[4/3] md:aspect-[16/9] overflow-hidden rounded-xl bg-black/90 shadow-card">
+        <div className="relative aspect-[4/3] md:aspect-[16/9] overflow-hidden rounded-xl bg-overlay/90 shadow-card">
           {!loadedImages.has(currentIndex) && (
             <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent bg-[length:200%_100%]" />
           )}
@@ -260,7 +260,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
 
       {/* Lightbox */}
       <Dialog open={isLightboxOpen} onOpenChange={setIsLightboxOpen}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-black/95 border-none [&>button]:hidden">
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-overlay/95 border-none [&>button]:hidden">
           <div
             ref={containerRef}
             className={cn(
@@ -290,7 +290,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
 
             {/* Zoom hint */}
             {showHint && (
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-sm px-3 py-1.5 text-xs text-white pointer-events-none">
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 inline-flex items-center gap-2 rounded-full bg-overlay-foreground/10 backdrop-blur-sm px-3 py-1.5 text-xs text-overlay-foreground pointer-events-none">
                 <ZoomIn className="h-3.5 w-3.5" />
                 Dubbeltik of scroll om te zoomen
               </div>
@@ -301,7 +301,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
               <button
                 type="button"
                 onClick={resetZoom}
-                className="absolute top-4 left-4 rounded-md bg-white/10 backdrop-blur-sm px-2.5 py-1 text-xs text-white hover:bg-white/20"
+                className="absolute top-4 left-4 rounded-md bg-overlay-foreground/10 backdrop-blur-sm px-2.5 py-1 text-xs text-overlay-foreground hover:bg-overlay-foreground/20"
               >
                 {Math.round(scale * 100)}% · reset
               </button>
@@ -312,7 +312,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 h-14 w-14 rounded-md bg-white/10 text-white hover:bg-white/20"
+                  className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 h-14 w-14 rounded-md bg-overlay-foreground/10 text-overlay-foreground hover:bg-overlay-foreground/20"
                   onClick={goToPrevious}
                   aria-label="Vorige foto"
                 >
@@ -321,7 +321,7 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 h-14 w-14 rounded-md bg-white/10 text-white hover:bg-white/20"
+                  className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 h-14 w-14 rounded-md bg-overlay-foreground/10 text-overlay-foreground hover:bg-overlay-foreground/20"
                   onClick={goToNext}
                   aria-label="Volgende foto"
                 >
@@ -331,12 +331,12 @@ export function ImageGallery({ images, alt }: ImageGalleryProps) {
             )}
 
             {validImages.length > 1 && (
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-md bg-white/10 px-5 py-2.5 text-base font-medium text-white backdrop-blur-sm">
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-md bg-overlay-foreground/10 px-5 py-2.5 text-base font-medium text-overlay-foreground backdrop-blur-sm">
                 {currentIndex + 1} / {validImages.length}
               </div>
             )}
 
-            <DialogClose className="absolute right-4 top-4 h-12 w-12 rounded-md bg-white/10 text-white hover:bg-white/20 flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-white/40" aria-label="Sluiten">
+            <DialogClose className="absolute right-4 top-4 h-12 w-12 rounded-md bg-overlay-foreground/10 text-overlay-foreground hover:bg-overlay-foreground/20 flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-overlay-foreground/40" aria-label="Sluiten">
               <X className="h-6 w-6" />
             </DialogClose>
           </div>

@@ -52,6 +52,10 @@
     /* Premium */
     --premium: 45 93% 47%;
     --premium-foreground: 30 60% 10%;
+
+    /* Overlay / scrim over media (lightbox, hero photo) */
+    --overlay: 0 0% 0%;
+    --overlay-foreground: 0 0% 100%;
     
     /* Status Colors */
     --status-pending: 45 93% 47%;
@@ -111,6 +115,9 @@
     
     --premium: 45 93% 50%;
     --premium-foreground: 0 0% 0%;
+
+    --overlay: 0 0% 0%;
+    --overlay-foreground: 0 0% 100%;
     
     --status-pending: 45 93% 50%;
     --status-diagnosing: 199 89% 55%;
