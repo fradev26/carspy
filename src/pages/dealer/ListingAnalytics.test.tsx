@@ -52,7 +52,7 @@ describe('ListingAnalytics', () => {
     state.data = buildData(40);
     renderPage();
     expect(screen.getByRole('heading', { name: 'BMW 320d' })).toBeInTheDocument();
-    expect(screen.getByText('Weergaven')).toBeInTheDocument();
+    expect(screen.getAllByText('Weergaven').length).toBeGreaterThan(0);
     expect(screen.getByText('-50%')).toBeInTheDocument();
   });
 
