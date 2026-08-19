@@ -13,7 +13,9 @@ import {
   LifeBuoy,
   Mail,
   Info,
+  Clock,
   LucideIcon,
+
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
@@ -23,6 +25,8 @@ import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import AutoScoutPanel from '@/modules/dealer/AutoScoutPanel';
 import ComingSoonConnectionPanel from '@/components/dealer/ComingSoonConnectionPanel';
+import OpeningHoursEditor from '@/components/dealer/OpeningHoursEditor';
+
 import { cn } from '@/lib/utils';
 
 type RowProps = {
@@ -93,6 +97,8 @@ export default function DealerSettings() {
   const { toast } = useToast();
   const [autoScoutOpen, setAutoScoutOpen] = useState(false);
   const [stubOpen, setStubOpen] = useState<null | 'marktplaats' | 'mobile' | 'facebook'>(null);
+  const [hoursOpen, setHoursOpen] = useState(false);
+
 
   const STUBS = {
     marktplaats: { name: 'Marktplaats', description: 'Synchroniseer je voorraad met Marktplaats.nl.' },
