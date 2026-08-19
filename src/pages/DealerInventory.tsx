@@ -10,7 +10,11 @@ import { FilterPanel, FilterChips } from '@/modules/search';
 import { ListingGrid } from '@/modules/listings';
 import { SearchFilters, SORT_OPTIONS, Listing } from '@/types/listing';
 import { findDealerBySlugAsync, getDealerListingsAsync, type DealerSummary } from '@/lib/dealers';
+import { DealerOpeningHours } from '@/components/dealer/DealerOpeningHours';
+import { DealerDirections } from '@/components/dealer/DealerDirections';
+import { DealerReviews } from '@/components/dealer/DealerReviews';
 import { cn } from '@/lib/utils';
+
 
 const PER_PAGE = 24;
 
