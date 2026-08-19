@@ -135,15 +135,26 @@ export default function AccountSettings({ defaultTab = 'profiel' }: Props) {
   }
 
   async function saveNotif(next: NotifPrefs) {
-    setNotif(next);
     if (!user) return;
-    await supabase.from('notification_preferences').upsert({ user_id: user.id, ...next });
+    const prev = notif;
+    setNotif(next);
+    const { error } = await supabase.from('notification_preferences').upsert({ user_id: user.id, ...next });
+    if (error) {
+      setNotif(prev);
+      toast({ title: 'Opslaan mislukt', description: error.message, variant: 'destructive' });
+    }
   }
   async function savePriv(next: PrivacyPrefs) {
-    setPriv(next);
     if (!user) return;
-    await supabase.from('privacy_preferences').upsert({ user_id: user.id, ...next });
+    const prev = priv;
+    setPriv(next);
+    const { error } = await supabase.from('privacy_preferences').upsert({ user_id: user.id, ...next });
+    if (error) {
+      setPriv(prev);
+      toast({ title: 'Opslaan mislukt', description: error.message, variant: 'destructive' });
+    }
   }
+
 
   async function resetPassword() {
     if (!profile.email) return;
