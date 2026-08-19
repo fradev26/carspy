@@ -212,15 +212,15 @@ const Index = () => {
           {/* Trust indicators */}
           <div className="mt-6 hidden md:flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-overlay-foreground/90 lg:mt-8">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-success-foreground" />
+              <CheckCircle2 className="h-5 w-5 text-overlay-foreground" />
               <span>Alleen geverifieerde verkopers</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-success-foreground" />
+              <CheckCircle2 className="h-5 w-5 text-overlay-foreground" />
               <span>25.000+ actuele occasions</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-success-foreground" />
+              <CheckCircle2 className="h-5 w-5 text-overlay-foreground" />
               <span>Dagelijks vers aanbod</span>
             </div>
           </div>
