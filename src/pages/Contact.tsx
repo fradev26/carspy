@@ -71,7 +71,7 @@ export default function Contact() {
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_320px]">
           <Card>
-            <CardHeader><CardTitle>Stuur ons een bericht</CardTitle></CardHeader>
+            <CardHeader><CardTitle as="h2">Stuur ons een bericht</CardTitle></CardHeader>
             <CardContent>
               <form onSubmit={submit} className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">

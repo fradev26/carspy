@@ -527,7 +527,6 @@ export default function Sell() {
       toast({ title: 'Advertentie geplaatst!' });
       navigate('/dashboard');
     } catch (e: any) {
-      console.error('Sell submit failed:', e);
       const msg = e?.message || e?.error_description || 'Er ging iets mis';
       toast({ title: 'Plaatsen mislukt', description: msg, variant: 'destructive' });
     } finally {

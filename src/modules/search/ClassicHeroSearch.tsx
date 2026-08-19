@@ -65,7 +65,7 @@ export function ClassicHeroSearch() {
         </div>
         <div className="flex-1 min-w-0">
           <Select value={model} onValueChange={setModel} disabled={!brand}>
-            <SelectTrigger className="h-14 w-full border-0 rounded-none bg-transparent px-5 text-sm font-medium focus:ring-0 focus:ring-offset-0 shadow-none disabled:opacity-50">
+            <SelectTrigger aria-label="Alle modellen" className="h-14 w-full border-0 rounded-none bg-transparent px-5 text-sm font-medium focus:ring-0 focus:ring-offset-0 shadow-none disabled:opacity-50">
               <SelectValue placeholder={brand ? 'Alle modellen' : 'Kies eerst merk'} />
             </SelectTrigger>
             <SelectContent className="bg-card max-h-72">
@@ -147,7 +147,7 @@ export function ClassicHeroSearch() {
                 </SelectContent>
               </Select>
               <Select value={model} onValueChange={setModel} disabled={!brand}>
-                <SelectTrigger className="h-11 bg-background text-sm disabled:opacity-50">
+                <SelectTrigger aria-label="Alle modellen" className="h-11 bg-background text-sm disabled:opacity-50">
                   <SelectValue placeholder={brand ? 'Alle modellen' : 'Kies eerst merk'} />
                 </SelectTrigger>
                 <SelectContent className="bg-card max-h-72">

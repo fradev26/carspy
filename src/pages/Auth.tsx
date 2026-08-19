@@ -279,7 +279,7 @@ export default function Auth() {
     else navigate('/');
   };
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-muted/30 px-4 py-12">
+    <main className="relative min-h-screen flex items-center justify-center bg-muted/30 px-4 py-12">
       <SEOHead title="Inloggen - VATUUR." description="Log in of maak een account aan bij VATUUR." noindex />
       <Button
         type="button"
@@ -296,7 +296,7 @@ export default function Auth() {
           <div className="mx-auto mb-4 flex justify-center">
             <Logo size="lg" asLink />
           </div>
-          <CardTitle>Welkom</CardTitle>
+          <CardTitle as="h1">Welkom</CardTitle>
           <CardDescription>Log in of maak een account aan</CardDescription>
         </CardHeader>
         <CardContent>
@@ -314,6 +314,6 @@ export default function Auth() {
           </Tabs>
         </CardContent>
       </Card>
-    </div>
+    </main>
   );
 }

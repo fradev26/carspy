@@ -72,7 +72,7 @@ export default function Help() {
         <CardContent className="flex flex-col items-center gap-3 py-8 text-center sm:flex-row sm:text-left">
           <Mail className="h-8 w-8 text-primary-strong" />
           <div className="flex-1">
-            <h3 className="font-semibold">Geen antwoord gevonden?</h3>
+            <h2 className="font-semibold">Geen antwoord gevonden?</h2>
             <p className="text-sm text-muted-foreground">Ons supportteam helpt je graag verder binnen één werkdag.</p>
           </div>
           <Button asChild><Link to="/contact">Contacteer support</Link></Button>
