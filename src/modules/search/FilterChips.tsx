@@ -193,12 +193,21 @@ export function FilterChips({ filters, onRemoveFilter, onClearAll, className }: 
   }
 
   if (filters.noDamageHistory) {
-    chips.push({ key: 'noDamageHistory', label: 'Geen schadehistorie', category: 'history' });
+    chips.push({ key: 'noDamageHistory', label: 'Ongevalsvrij', category: 'history' });
+  }
+
+  if (filters.carPass) {
+    chips.push({ key: 'carPass', label: 'Car-Pass aanwezig', category: 'history' });
+  }
+
+  if (filters.factoryWarranty) {
+    chips.push({ key: 'factoryWarranty', label: 'Met garantie', category: 'history' });
   }
 
   if (filters.vatDeductible) {
     chips.push({ key: 'vatDeductible', label: 'BTW aftrekbaar', category: 'history' });
   }
+
 
   if (filters.hasMaintenanceHistory) {
     chips.push({ key: 'hasMaintenanceHistory', label: 'Met onderhoudshistorie', category: 'history' });
