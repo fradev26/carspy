@@ -38,10 +38,22 @@ export function parseFiltersFromURL(searchParams: URLSearchParams): SearchFilter
   const bool = (key: string): true | undefined =>
     searchParams.get(key) === 'true' ? true : undefined;
 
-  const brand = str('brand');
-  if (brand) filters.brand = brand;
-  const model = str('model');
-  if (model) filters.model = model;
+  // Multi-select merken/modellen. Legacy single-value brand/model wordt
+  // gevouwen in de array-vorm zodat oude bookmarks blijven werken.
+  const brands = arr('brands');
+  const models = arr('models');
+  const legacyBrand = str('brand');
+  const legacyModel = str('model');
+  if (brands) filters.brands = brands;
+  else if (legacyBrand) filters.brands = [legacyBrand];
+  if (models) filters.models = models;
+  else if (legacyBrand && legacyModel) filters.models = [`${legacyBrand}:${legacyModel}`];
+
+  const trim = str('trim');
+  if (trim) filters.trim = trim;
+  const conditionTypes = arr('conditionTypes');
+  if (conditionTypes) filters.conditionTypes = conditionTypes;
+
 
   const minPrice = num('minPrice');
   if (minPrice !== undefined) filters.minPrice = minPrice;
@@ -80,6 +92,14 @@ export function parseFiltersFromURL(searchParams: URLSearchParams): SearchFilter
   if (minPower !== undefined) filters.minPower = minPower;
   const maxPower = num('maxPower');
   if (maxPower !== undefined) filters.maxPower = maxPower;
+  const powerUnit = str('powerUnit');
+  if (powerUnit === 'kW' || powerUnit === 'pk') filters.powerUnit = powerUnit;
+
+  const emissionClasses = arr('emissionClasses');
+  if (emissionClasses) filters.emissionClasses = emissionClasses;
+  const maxCo2 = num('maxCo2');
+  if (maxCo2 !== undefined) filters.maxCo2 = maxCo2;
+
 
   const paintTypes = arr('paintTypes');
   if (paintTypes) filters.paintTypes = paintTypes as PaintType[];
@@ -122,8 +142,11 @@ export function parseFiltersFromURL(searchParams: URLSearchParams): SearchFilter
 
   if (bool('noDamageHistory')) filters.noDamageHistory = true;
   if (bool('vatDeductible')) filters.vatDeductible = true;
+  if (bool('factoryWarranty')) filters.factoryWarranty = true;
+  if (bool('carPass')) filters.carPass = true;
   if (bool('hasMaintenanceHistory')) filters.hasMaintenanceHistory = true;
   if (bool('isNonSmoker')) filters.isNonSmoker = true;
+
 
   const features = arr('features');
   if (features) filters.features = features;
@@ -152,6 +175,10 @@ export function serializeFiltersToParams(filters: SearchFilters): Record<string,
 
   setStr('brand', filters.brand);
   setStr('model', filters.model);
+  setArr('brands', filters.brands);
+  setArr('models', filters.models);
+  setStr('trim', filters.trim);
+  setArr('conditionTypes', filters.conditionTypes);
   setNum('minPrice', filters.minPrice);
   setNum('maxPrice', filters.maxPrice);
   setNum('minYear', filters.minYear);
@@ -164,6 +191,10 @@ export function serializeFiltersToParams(filters: SearchFilters): Record<string,
   setArr('driveTypes', filters.driveTypes);
   setNum('minPower', filters.minPower);
   setNum('maxPower', filters.maxPower);
+  setStr('powerUnit', filters.powerUnit);
+  setArr('emissionClasses', filters.emissionClasses);
+  setNum('maxCo2', filters.maxCo2);
+
   setArr('paintTypes', filters.paintTypes);
   setArr('colors', filters.colors);
   setArr('interiorColors', filters.interiorColors);
@@ -180,6 +211,9 @@ export function serializeFiltersToParams(filters: SearchFilters): Record<string,
   setStr('minWarranty', filters.minWarranty);
   setBool('noDamageHistory', filters.noDamageHistory);
   setBool('vatDeductible', filters.vatDeductible);
+  setBool('factoryWarranty', filters.factoryWarranty);
+  setBool('carPass', filters.carPass);
+
   setBool('hasMaintenanceHistory', filters.hasMaintenanceHistory);
   setBool('isNonSmoker', filters.isNonSmoker);
   setArr('features', filters.features);

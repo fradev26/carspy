@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { ChevronDown, ChevronUp, Filter, RotateCcw } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { ChevronDown, ChevronUp, Filter, RotateCcw, Search as SearchIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -23,18 +23,26 @@ import {
   FEATURE_OPTIONS,
   COUNTRY_OPTIONS,
   RADIUS_OPTIONS,
+  CONDITION_TYPES,
+  CONDITION_TYPE_LABELS,
+  CO2_OPTIONS,
   OnlineSince,
+  PowerUnit,
 } from '@/types/listing';
 import { cn } from '@/lib/utils';
 import { FilterPresets } from './FilterPresets';
 import { Input } from '@/components/ui/input';
 import { NumberInput } from '@/components/ui/number-input';
+import { useSearchFacets, type FacetCounts } from '@/hooks/useSearchFacets';
+import { fromKw, toKw } from '@/lib/searchQuery';
 
 interface FilterPanelProps {
   filters: SearchFilters;
   onFiltersChange: (filters: SearchFilters) => void;
   className?: string;
   showPresets?: boolean;
+  /** Vrije zoekterm, zodat de facettellingen ook daarmee rekening houden. */
+  query?: string;
 }
 
 type FilterSection =
@@ -53,6 +61,16 @@ const OWNERS_OPTIONS = [
   { value: 3, label: '3' },
   { value: 4, label: '4+' },
 ];
+
+const FEATURE_CATEGORY_LABELS: Record<string, string> = {
+  comfort: 'Comfort',
+  multimedia: 'Multimedia',
+  safety: 'Veiligheid',
+  exterior: 'Exterieur',
+  overig: 'Overige',
+};
+
+const MIN_YEAR = 1990;
 
 function ColorSwatch({ color, selected }: { color: ColorOption; selected: boolean }) {
   const style: React.CSSProperties = {};
@@ -76,7 +94,13 @@ function ColorSwatch({ color, selected }: { color: ColorOption; selected: boolea
   );
 }
 
-export function FilterPanel({ filters, onFiltersChange, className, showPresets = true }: FilterPanelProps) {
+export function FilterPanel({
+  filters,
+  onFiltersChange,
+  className,
+  showPresets = true,
+  query,
+}: FilterPanelProps) {
   const [openSections, setOpenSections] = useState<Record<FilterSection, boolean>>({
     quick: true,
     performance: false,
@@ -88,6 +112,10 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
   });
 
   const [showMoreFeatures, setShowMoreFeatures] = useState(false);
+  const [featureQuery, setFeatureQuery] = useState('');
+  const [brandQuery, setBrandQuery] = useState('');
+
+  const { facets } = useSearchFacets(filters, query);
 
   const toggleSection = (section: FilterSection) => {
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
@@ -119,11 +147,55 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
     onFiltersChange(newFilters);
   };
 
+  const selectedBrands = filters.brands ?? [];
+  const selectedModels = filters.models ?? [];
+
+  const toggleBrand = (brand: string) => {
+    const active = selectedBrands.includes(brand);
+    const nextBrands = active
+      ? selectedBrands.filter((b) => b !== brand)
+      : [...selectedBrands, brand];
+    const nextModels = active
+      ? selectedModels.filter((m) => !m.startsWith(`${brand}:`))
+      : selectedModels;
+    onFiltersChange({
+      ...filters,
+      brands: nextBrands.length ? nextBrands : undefined,
+      models: nextModels.length ? nextModels : undefined,
+      brand: undefined,
+      model: undefined,
+    });
+  };
+
+  const toggleModel = (brand: string, model: string) => {
+    const key = `${brand}:${model}`;
+    const nextModels = selectedModels.includes(key)
+      ? selectedModels.filter((m) => m !== key)
+      : [...selectedModels, key];
+    const nextBrands = selectedBrands.includes(brand)
+      ? selectedBrands
+      : [...selectedBrands, brand];
+    onFiltersChange({
+      ...filters,
+      brands: nextBrands.length ? nextBrands : undefined,
+      models: nextModels.length ? nextModels : undefined,
+      brand: undefined,
+      model: undefined,
+    });
+  };
+
+  const clearModelsForBrand = (brand: string) => {
+    const nextModels = selectedModels.filter((m) => !m.startsWith(`${brand}:`));
+    onFiltersChange({ ...filters, models: nextModels.length ? nextModels : undefined });
+  };
+
   const sectionCounts = useMemo(() => {
     return {
       quick: [
-        filters.brand,
-        filters.model,
+        selectedBrands.length,
+        selectedModels.length,
+        filters.trim,
+        filters.conditionTypes?.length,
         filters.minPrice || filters.maxPrice,
         filters.minYear || filters.maxYear,
         filters.minMileage || filters.maxMileage,
@@ -134,6 +206,8 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
         filters.transmissions?.length,
         filters.driveTypes?.length,
         filters.minPower || filters.maxPower,
+        filters.emissionClasses?.length,
+        filters.maxCo2 != null ? 1 : 0,
       ].filter(Boolean).length,
       appearance: [
         filters.colors?.length,
@@ -154,24 +228,110 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
         filters.sellerType,
         filters.maxPreviousOwners != null ? 1 : 0,
         filters.vatDeductible,
+        filters.factoryWarranty,
+        filters.carPass,
+        filters.noDamageHistory,
       ].filter(Boolean).length,
       options: [filters.features?.length].filter(Boolean).length,
     };
-  }, [filters]);
+  }, [filters, selectedBrands, selectedModels]);
 
   const totalActiveFilters = Object.values(sectionCounts).reduce((a, b) => a + b, 0);
   const currentYear = new Date().getFullYear();
-  const availableModels = filters.brand ? CAR_MODELS[filters.brand] || [] : [];
+
+  const yearOptions = useMemo(() => {
+    const years: number[] = [];
+    for (let y = currentYear + 1; y >= MIN_YEAR; y--) years.push(y);
+    return years;
+  }, [currentYear]);
+
+  /** Merken: catalogus + merken die effectief in de data voorkomen. */
+  const brandOptions = useMemo(() => {
+    const fromFacets = Object.keys(facets?.brands ?? {});
+    const all = Array.from(new Set([...CAR_BRANDS, ...fromFacets, ...selectedBrands]));
+    return all.sort((a, b) => a.localeCompare(b, 'nl'));
+  }, [facets, selectedBrands]);
+
+  const visibleBrands = useMemo(() => {
+    const q = brandQuery.trim().toLowerCase();
+    const list = q ? brandOptions.filter((b) => b.toLowerCase().includes(q)) : brandOptions;
+    // Aangevinkte merken altijd bovenaan tonen.
+    return [
+      ...list.filter((b) => selectedBrands.includes(b)),
+      ...list.filter((b) => !selectedBrands.includes(b)),
+    ];
+  }, [brandOptions, brandQuery, selectedBrands]);
+
+  /** Opties: gebruik de werkelijke uitrusting uit de data wanneer beschikbaar. */
+  const featureOptions = useMemo(() => {
+    const facetKeys = Object.keys(facets?.features ?? {});
+    if (facetKeys.length === 0) {
+      return FEATURE_OPTIONS.map((f) => ({ value: f.value, label: f.label, category: f.category }));
+    }
+    const knownByLabel = new Map(FEATURE_OPTIONS.map((f) => [f.label.toLowerCase(), f]));
+    const opts = facetKeys.map((k) => ({
+      value: k,
+      label: k,
+      category: knownByLabel.get(k.toLowerCase())?.category ?? 'overig',
+    }));
+    (filters.features ?? []).forEach((v) => {
+      if (!opts.some((o) => o.value === v)) opts.push({ value: v, label: v, category: 'overig' });
+    });
+    return opts.sort((a, b) => a.label.localeCompare(b.label, 'nl'));
+  }, [facets, filters.features]);
+
+  const matchingFeatures = useMemo(() => {
+    const q = featureQuery.trim().toLowerCase();
+    if (!q) return featureOptions;
+    return featureOptions.filter((f) => f.label.toLowerCase().includes(q));
+  }, [featureOptions, featureQuery]);
 
   const groupedFeatures = useMemo(() => {
-    return FEATURE_OPTIONS.reduce((acc, feature) => {
-      if (!acc[feature.category]) acc[feature.category] = [];
-      acc[feature.category].push(feature);
+    return matchingFeatures.reduce((acc, feature) => {
+      const cat = feature.category || 'overig';
+      if (!acc[cat]) acc[cat] = [];
+      acc[cat].push(feature);
       return acc;
-    }, {} as Record<string, typeof FEATURE_OPTIONS>);
-  }, []);
+    }, {} as Record<string, typeof matchingFeatures>);
+  }, [matchingFeatures]);
 
-  const popularFeatures = FEATURE_OPTIONS.slice(0, 8);
+  const featureSearchActive = featureQuery.trim().length > 0;
+  const popularFeatures = matchingFeatures.slice(0, 8);
+  const showAllFeatures = showMoreFeatures || featureSearchActive;
+
+  const emissionOptions = useMemo(
+    () =>
+      Array.from(
+        new Set([...Object.keys(facets?.emissionClasses ?? {}), ...(filters.emissionClasses ?? [])]),
+      ).sort((a, b) => a.localeCompare(b, 'nl')),
+    [facets, filters.emissionClasses],
+  );
+
+  const conditionOptions = useMemo(() => {
+    const values = Array.from(
+      new Set([
+        ...CONDITION_TYPES.map((c) => c.value),
+        ...Object.keys(facets?.conditionTypes ?? {}),
+        ...(filters.conditionTypes ?? []),
+      ]),
+    );
+    return values.map((v) => ({ value: v, label: CONDITION_TYPE_LABELS[v] ?? v }));
+  }, [facets, filters.conditionTypes]);
+
+  const powerUnit: PowerUnit = filters.powerUnit ?? 'pk';
+  const switchPowerUnit = (unit: PowerUnit) => {
+    if (unit === powerUnit) return;
+    const convert = (v?: number) =>
+      v == null ? undefined : unit === 'kW' ? toKw(v, 'pk') : fromKw(v, 'pk');
+    onFiltersChange({
+      ...filters,
+      powerUnit: unit,
+      minPower: convert(filters.minPower),
+      maxPower: convert(filters.maxPower),
+    });
+  };
+
+  const count = (map: FacetCounts | undefined, key: string) => map?.[key];
 
   return (
     <div className={cn('space-y-1', className)}>
@@ -208,50 +368,87 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
       {/* 1. Basis */}
       <FilterSection title="Basis" section="quick" count={sectionCounts.quick} isOpen={openSections.quick} onToggle={() => toggleSection('quick')}>
         <div className="space-y-5">
-          {/* Brand */}
+          {/* Merk & model (multi-select) */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-foreground">Merk</Label>
-            <Select
-              value={filters.brand || ''}
-              onValueChange={(v) => {
-                const nextBrand = v === 'all' ? undefined : v;
-                const resetModel = nextBrand !== filters.brand;
-                onFiltersChange({
-                  ...filters,
-                  brand: nextBrand,
-                  model: resetModel ? undefined : filters.model,
-                });
-              }}
-            >
-              <SelectTrigger aria-label="Alle merken" className="h-12 border-border/60 text-base">
-<SelectValue placeholder="Alle merken" />
-              </SelectTrigger>
-              <SelectContent className="bg-card max-h-72">
-                <SelectItem value="all">Alle merken</SelectItem>
-                {CAR_BRANDS.map((brand) => (
-                  <SelectItem key={brand} value={brand}>{brand}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label className="text-sm font-medium text-foreground">Merk &amp; model</Label>
+            <OptionSearchInput
+              value={brandQuery}
+              onChange={setBrandQuery}
+              placeholder="Zoek merk..."
+              label="Zoek merk"
+            />
+            <div className="max-h-72 space-y-0.5 overflow-y-auto pr-1">
+              {visibleBrands.map((brand) => {
+                const checked = selectedBrands.includes(brand);
+                const models = CAR_MODELS[brand] ?? [];
+                const brandModels = selectedModels
+                  .filter((m) => m.startsWith(`${brand}:`))
+                  .map((m) => m.slice(brand.length + 1));
+                return (
+                  <div key={brand}>
+                    <CheckboxRow
+                      id={`brand-${brand}`}
+                      label={brand}
+                      count={count(facets?.brands, brand)}
+                      checked={checked}
+                      onChange={() => toggleBrand(brand)}
+                    />
+                    {checked && models.length > 0 && (
+                      <div className="ml-8 mb-2 space-y-0.5 animate-fade-in">
+                        <CheckboxRow
+                          id={`brand-${brand}-all`}
+                          label={`Alle modellen van ${brand}`}
+                          checked={brandModels.length === 0}
+                          onChange={() => clearModelsForBrand(brand)}
+                        />
+                        {models.map((model) => (
+                          <CheckboxRow
+                            key={model}
+                            id={`model-${brand}-${model}`}
+                            label={model}
+                            checked={brandModels.includes(model)}
+                            onChange={() => toggleModel(brand, model)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              {visibleBrands.length === 0 && (
+                <p className="px-2 py-3 text-sm text-muted-foreground">Geen merk gevonden.</p>
+              )}
+            </div>
           </div>
 
-          {/* Model */}
-          {filters.brand && availableModels.length > 0 && (
-            <div className="space-y-2 animate-fade-in">
-              <Label className="text-sm font-medium text-foreground">Model</Label>
-              <Select value={filters.model || ''} onValueChange={(v) => updateFilter('model', v === 'all' ? undefined : v)}>
-                <SelectTrigger aria-label="Alle modellen" className="h-12 border-border/60 text-base">
-<SelectValue placeholder="Alle modellen" />
-                </SelectTrigger>
-                <SelectContent className="bg-card max-h-72">
-                  <SelectItem value="all">Alle modellen</SelectItem>
-                  {availableModels.map((model) => (
-                    <SelectItem key={model} value={model}>{model}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          {/* Uitvoering */}
+          <div className="space-y-2">
+            <Label htmlFor="trim" className="text-sm font-medium text-foreground">Uitvoering</Label>
+            <Input
+              id="trim"
+              placeholder="Bijv. GT Line, M Sport"
+              value={filters.trim || ''}
+              onChange={(e) => updateFilter('trim', e.target.value || undefined)}
+              className="h-12 border-border/60 text-base"
+            />
+          </div>
+
+          {/* Staat */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-foreground">Staat</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {conditionOptions.map((opt) => (
+                <CheckboxRow
+                  key={opt.value}
+                  id={`condition-${opt.value}`}
+                  label={opt.label}
+                  count={count(facets?.conditionTypes, opt.value)}
+                  checked={filters.conditionTypes?.includes(opt.value) || false}
+                  onChange={() => toggleArrayFilter('conditionTypes', opt.value)}
+                />
+              ))}
             </div>
-          )}
+          </div>
 
           {/* Price */}
           <div className="space-y-2">
@@ -280,24 +477,46 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
           <div className="space-y-2">
             <Label className="text-sm font-medium text-foreground">Bouwjaar</Label>
             <div className="grid grid-cols-2 gap-3">
-              <NumberInput
-                aria-label="Bouwjaar van"
-                placeholder="Van"
-                groupThousands={false}
-                min={1950}
-                max={currentYear + 1}
-                value={filters.minYear}
-                onValueChange={(n) => updateFilter('minYear', n)}
-              />
-              <NumberInput
-                aria-label="Bouwjaar tot"
-                placeholder="Tot"
-                groupThousands={false}
-                min={1950}
-                max={currentYear + 1}
-                value={filters.maxYear}
-                onValueChange={(n) => updateFilter('maxYear', n)}
-              />
+              <Select
+                value={filters.minYear?.toString() ?? 'all'}
+                onValueChange={(v) => {
+                  const next = v === 'all' ? undefined : parseInt(v, 10);
+                  onFiltersChange({
+                    ...filters,
+                    minYear: next,
+                    maxYear:
+                      next != null && filters.maxYear != null && filters.maxYear < next
+                        ? next
+                        : filters.maxYear,
+                  });
+                }}
+              >
+                <SelectTrigger aria-label="Bouwjaar van" className="h-12 border-border/60 text-base">
+                  <SelectValue placeholder="Van" />
+                </SelectTrigger>
+                <SelectContent className="bg-card max-h-72">
+                  <SelectItem value="all">Van</SelectItem>
+                  {yearOptions.map((y) => (
+                    <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                value={filters.maxYear?.toString() ?? 'all'}
+                onValueChange={(v) => updateFilter('maxYear', v === 'all' ? undefined : parseInt(v, 10))}
+              >
+                <SelectTrigger aria-label="Bouwjaar tot" className="h-12 border-border/60 text-base">
+                  <SelectValue placeholder="Tot" />
+                </SelectTrigger>
+                <SelectContent className="bg-card max-h-72">
+                  <SelectItem value="all">Tot</SelectItem>
+                  {yearOptions
+                    .filter((y) => filters.minYear == null || y >= filters.minYear)
+                    .map((y) => (
+                      <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -334,6 +553,7 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
                   key={fuel.value}
                   id={`fuel-${fuel.value}`}
                   label={fuel.label}
+                  count={count(facets?.fuelTypes, fuel.value)}
                   checked={filters.fuelTypes?.includes(fuel.value) || false}
                   onChange={() => toggleArrayFilter('fuelTypes', fuel.value)}
                 />
@@ -350,6 +570,7 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
                   key={body.value}
                   id={`body-${body.value}`}
                   label={body.label}
+                  count={count(facets?.bodyTypes, body.value)}
                   checked={filters.bodyTypes?.includes(body.value) || false}
                   onChange={() => toggleArrayFilter('bodyTypes', body.value)}
                 />
@@ -370,6 +591,7 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
                   key={trans.value}
                   id={`trans-${trans.value}`}
                   label={trans.label}
+                  count={count(facets?.transmissions, trans.value)}
                   checked={filters.transmissions?.includes(trans.value) || false}
                   onChange={() => toggleArrayFilter('transmissions', trans.value)}
                 />
@@ -385,6 +607,7 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
                   key={drive.value}
                   id={`drive-${drive.value}`}
                   label={drive.label}
+                  count={count(facets?.driveTypes, drive.value)}
                   checked={filters.driveTypes?.includes(drive.value) || false}
                   onChange={() => toggleArrayFilter('driveTypes', drive.value)}
                 />
@@ -393,25 +616,79 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-foreground">Vermogen</Label>
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium text-foreground">Vermogen</Label>
+              <div role="radiogroup" aria-label="Eenheid vermogen" className="inline-flex rounded-md border border-border/60 p-0.5">
+                {(['pk', 'kW'] as PowerUnit[]).map((unit) => (
+                  <button
+                    key={unit}
+                    type="button"
+                    role="radio"
+                    aria-checked={powerUnit === unit}
+                    onClick={() => switchPowerUnit(unit)}
+                    className={cn(
+                      'rounded-sm px-3 py-1 text-xs font-medium transition-colors focus-ring',
+                      powerUnit === unit
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:text-foreground',
+                    )}
+                  >
+                    {unit}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <NumberInput
-                aria-label="Minimaal vermogen in pk"
-                suffix="pk"
+                aria-label={`Minimaal vermogen in ${powerUnit}`}
+                suffix={powerUnit}
                 placeholder="Min"
                 min={0}
                 value={filters.minPower}
                 onValueChange={(n) => updateFilter('minPower', n)}
               />
               <NumberInput
-                aria-label="Maximaal vermogen in pk"
-                suffix="pk"
+                aria-label={`Maximaal vermogen in ${powerUnit}`}
+                suffix={powerUnit}
                 placeholder="Max"
                 min={0}
                 value={filters.maxPower}
                 onValueChange={(n) => updateFilter('maxPower', n)}
               />
             </div>
+          </div>
+
+          {/* Milieu & emissie */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-foreground">Milieu &amp; emissie</Label>
+            {emissionOptions.length > 0 && (
+              <div className="grid grid-cols-2 gap-2">
+                {emissionOptions.map((value) => (
+                  <CheckboxRow
+                    key={value}
+                    id={`emission-${value}`}
+                    label={value}
+                    count={count(facets?.emissionClasses, value)}
+                    checked={filters.emissionClasses?.includes(value) || false}
+                    onChange={() => toggleArrayFilter('emissionClasses', value)}
+                  />
+                ))}
+              </div>
+            )}
+            <Select
+              value={filters.maxCo2?.toString() ?? 'all'}
+              onValueChange={(v) => updateFilter('maxCo2', v === 'all' ? undefined : parseInt(v, 10))}
+            >
+              <SelectTrigger aria-label="Maximale CO2-uitstoot" className="h-12 border-border/60 text-base">
+                <SelectValue placeholder="CO2-uitstoot" />
+              </SelectTrigger>
+              <SelectContent className="bg-card">
+                <SelectItem value="all">Alle CO2-waarden</SelectItem>
+                {CO2_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value.toString()}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </FilterSection>
@@ -424,6 +701,7 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
             <ColorGrid
               options={COLOR_OPTIONS}
               selected={filters.colors || []}
+              counts={facets?.colors}
               onToggle={(v) => toggleArrayFilter('colors', v)}
             />
           </div>
@@ -461,7 +739,8 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
             <Label className="text-sm font-medium text-foreground">Min. aantal deuren</Label>
             <Select value={filters.minDoors?.toString() || ''} onValueChange={(v) => updateFilter('minDoors', v && v !== 'none' ? parseInt(v) : undefined)}>
               <SelectTrigger aria-label="Alle" className="h-12 border-border/60 text-base">
-<SelectValue placeholder="Alle" /></SelectTrigger>
+                <SelectValue placeholder="Alle" />
+              </SelectTrigger>
               <SelectContent className="bg-card">
                 <SelectItem value="none">Alle</SelectItem>
                 <SelectItem value="2">2+ deuren</SelectItem>
@@ -475,7 +754,8 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
             <Label className="text-sm font-medium text-foreground">Min. aantal zitplaatsen</Label>
             <Select value={filters.minSeats?.toString() || ''} onValueChange={(v) => updateFilter('minSeats', v && v !== 'none' ? parseInt(v) : undefined)}>
               <SelectTrigger aria-label="Alle" className="h-12 border-border/60 text-base">
-<SelectValue placeholder="Alle" /></SelectTrigger>
+                <SelectValue placeholder="Alle" />
+              </SelectTrigger>
               <SelectContent className="bg-card">
                 <SelectItem value="none">Alle</SelectItem>
                 <SelectItem value="2">2+ zitplaatsen</SelectItem>
@@ -495,7 +775,8 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
             <Label className="text-sm font-medium text-foreground">Land</Label>
             <Select value={filters.country || ''} onValueChange={(v) => updateFilter('country', v === 'all' ? undefined : v)}>
               <SelectTrigger aria-label="Alle landen" className="h-12 border-border/60 text-base">
-<SelectValue placeholder="Alle landen" /></SelectTrigger>
+                <SelectValue placeholder="Alle landen" />
+              </SelectTrigger>
               <SelectContent className="bg-card">
                 <SelectItem value="all">Alle landen</SelectItem>
                 {COUNTRY_OPTIONS.map((c) => (
@@ -517,7 +798,8 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
             <Label className="text-sm font-medium text-foreground">Provincie</Label>
             <Select value={filters.province || ''} onValueChange={(v) => updateFilter('province', v === 'all' ? undefined : v)}>
               <SelectTrigger aria-label="Alle provincies" className="h-12 border-border/60 text-base">
-<SelectValue placeholder="Alle provincies" /></SelectTrigger>
+                <SelectValue placeholder="Alle provincies" />
+              </SelectTrigger>
               <SelectContent className="bg-card">
                 <SelectItem value="all">Alle provincies</SelectItem>
                 {PROVINCES.map((p) => (
@@ -530,7 +812,8 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
             <Label className="text-sm font-medium text-foreground">Zoekstraal</Label>
             <Select value={filters.radius?.toString() || ''} onValueChange={(v) => updateFilter('radius', v && v !== 'none' ? parseInt(v) : undefined)}>
               <SelectTrigger aria-label="Heel land" className="h-12 border-border/60 text-base">
-<SelectValue placeholder="Heel land" /></SelectTrigger>
+                <SelectValue placeholder="Heel land" />
+              </SelectTrigger>
               <SelectContent className="bg-card">
                 <SelectItem value="none">Heel land</SelectItem>
                 {RADIUS_OPTIONS.map((r) => (
@@ -574,7 +857,8 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
             <Label className="text-sm font-medium text-foreground">Verkoper</Label>
             <Select value={filters.sellerType || ''} onValueChange={(v) => updateFilter('sellerType', v === 'all' ? undefined : v as 'private' | 'dealer')}>
               <SelectTrigger aria-label="Iedereen" className="h-12 border-border/60 text-base">
-<SelectValue placeholder="Iedereen" /></SelectTrigger>
+                <SelectValue placeholder="Iedereen" />
+              </SelectTrigger>
               <SelectContent className="bg-card">
                 <SelectItem value="all">Iedereen</SelectItem>
                 <SelectItem value="dealer">Alleen dealers</SelectItem>
@@ -610,6 +894,31 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
             <p className="text-xs text-muted-foreground">0 = jij wordt de eerste eigenaar na de fabrikant.</p>
           </div>
 
+          {/* Garantie en historiek */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-foreground">Garantie &amp; historiek</Label>
+            <div className="space-y-1">
+              <CheckboxRow
+                id="carpass"
+                label="Car-Pass / onderhoudshistoriek aanwezig"
+                checked={filters.carPass || false}
+                onChange={() => updateFilter('carPass', filters.carPass ? undefined : true)}
+              />
+              <CheckboxRow
+                id="factory-warranty"
+                label="Fabrieks- of dealergarantie"
+                checked={filters.factoryWarranty || false}
+                onChange={() => updateFilter('factoryWarranty', filters.factoryWarranty ? undefined : true)}
+              />
+              <CheckboxRow
+                id="no-damage"
+                label="Ongevalsvrij"
+                checked={filters.noDamageHistory || false}
+                onChange={() => updateFilter('noDamageHistory', filters.noDamageHistory ? undefined : true)}
+              />
+            </div>
+          </div>
+
           <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-4 py-3">
             <Label htmlFor="vat" className="text-sm font-medium cursor-pointer">BTW aftrekbaar</Label>
             <Switch
@@ -624,43 +933,45 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
       {/* 7. Options & Features */}
       <FilterSection title="Opties & Extra's" section="options" count={sectionCounts.options} isOpen={openSections.options} onToggle={() => toggleSection('options')}>
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-foreground">Populaire opties</Label>
-            <div className="grid grid-cols-1 gap-1">
-              {popularFeatures.map((feature) => (
-                <CheckboxRow
-                  key={feature.value}
-                  id={`feature-${feature.value}`}
-                  label={feature.label}
-                  checked={filters.features?.includes(feature.value) || false}
-                  onChange={() => toggleArrayFilter('features', feature.value)}
-                />
-              ))}
-            </div>
-          </div>
+          <OptionSearchInput
+            value={featureQuery}
+            onChange={setFeatureQuery}
+            placeholder="Zoek een optie..."
+            label="Zoek een optie"
+          />
 
-          <Collapsible open={showMoreFeatures} onOpenChange={setShowMoreFeatures}>
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm" className="w-full justify-between min-h-11 px-2">
-                <span className="text-sm">Meer opties tonen</span>
-                {showMoreFeatures ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="pt-4 space-y-4">
-              {Object.entries(groupedFeatures).map(([category, features]) => (
+          {!showAllFeatures && (
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-foreground">Populaire opties</Label>
+              <div className="grid grid-cols-1 gap-1">
+                {popularFeatures.map((feature) => (
+                  <CheckboxRow
+                    key={feature.value}
+                    id={`feature-${feature.value}`}
+                    label={feature.label}
+                    count={count(facets?.features, feature.value)}
+                    checked={filters.features?.includes(feature.value) || false}
+                    onChange={() => toggleArrayFilter('features', feature.value)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {showAllFeatures && (
+            <div className="space-y-4">
+              {Object.entries(groupedFeatures).map(([category, items]) => (
                 <div key={category} className="space-y-2">
-                  <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    {category === 'comfort' ? 'Comfort' :
-                     category === 'multimedia' ? 'Multimedia' :
-                     category === 'safety' ? 'Veiligheid' :
-                     category === 'exterior' ? 'Exterieur' : category}
+                  <Label className="text-sm font-medium text-foreground">
+                    {FEATURE_CATEGORY_LABELS[category] ?? category}
                   </Label>
                   <div className="grid grid-cols-1 gap-1">
-                    {features.filter(f => !popularFeatures.includes(f)).map((feature) => (
+                    {items.map((feature) => (
                       <CheckboxRow
                         key={feature.value}
                         id={`feature-${feature.value}`}
                         label={feature.label}
+                        count={count(facets?.features, feature.value)}
                         checked={filters.features?.includes(feature.value) || false}
                         onChange={() => toggleArrayFilter('features', feature.value)}
                       />
@@ -668,22 +979,70 @@ export function FilterPanel({ filters, onFiltersChange, className, showPresets =
                   </div>
                 </div>
               ))}
-            </CollapsibleContent>
-          </Collapsible>
+              {matchingFeatures.length === 0 && (
+                <p className="px-2 py-3 text-sm text-muted-foreground">Geen optie gevonden.</p>
+              )}
+            </div>
+          )}
+
+          {!featureSearchActive && featureOptions.length > popularFeatures.length && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowMoreFeatures((v) => !v)}
+              className="w-full justify-center gap-1 text-sm"
+            >
+              {showMoreFeatures ? 'Minder opties tonen' : 'Meer opties tonen'}
+              {showMoreFeatures ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
+          )}
         </div>
       </FilterSection>
     </div>
   );
 }
 
-interface CheckboxRowProps {
+function OptionSearchInput({
+  value,
+  onChange,
+  placeholder,
+  label,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  label: string;
+}) {
+  return (
+    <div className="relative">
+      <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <Input
+        type="search"
+        aria-label={label}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-11 pl-9 border-border/60"
+      />
+    </div>
+  );
+}
+
+function CheckboxRow({
+  id,
+  label,
+  checked,
+  onChange,
+  count,
+}: {
   id: string;
   label: string;
   checked: boolean;
   onChange: () => void;
-}
-
-function CheckboxRow({ id, label, checked, onChange }: CheckboxRowProps) {
+  /** Aantal advertenties dat aan deze optie voldoet, gegeven de andere filters. */
+  count?: number;
+}) {
+  const unavailable = count === 0 && !checked;
   return (
     <label
       htmlFor={id}
@@ -691,15 +1050,20 @@ function CheckboxRow({ id, label, checked, onChange }: CheckboxRowProps) {
         'flex items-center gap-3 rounded-md px-2 py-2 min-h-11 cursor-pointer transition-colors',
         'hover:bg-muted/60',
         checked && 'bg-primary/5',
+        unavailable && 'cursor-not-allowed opacity-45 hover:bg-transparent',
       )}
     >
       <Checkbox
         id={id}
         checked={checked}
+        disabled={unavailable}
         onCheckedChange={onChange}
         className="h-5 w-5 border-border"
       />
       <span className="text-sm text-foreground/90 select-none flex-1">{label}</span>
+      {count !== undefined && (
+        <span className="text-xs tabular-nums text-muted-foreground">{count}</span>
+      )}
     </label>
   );
 }
@@ -708,31 +1072,38 @@ function ColorGrid({
   options,
   selected,
   onToggle,
+  counts,
 }: {
   options: ColorOption[];
   selected: string[];
   onToggle: (value: string) => void;
+  counts?: Record<string, number>;
 }) {
   return (
     <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
       {options.map((color) => {
         const isSelected = selected.includes(color.value);
+        const c = counts?.[color.value];
+        const unavailable = counts !== undefined && !isSelected && !c;
         return (
           <button
             key={color.value}
             type="button"
             aria-pressed={isSelected}
+            disabled={unavailable}
             onClick={() => onToggle(color.value)}
             className={cn(
               'group flex flex-col items-center gap-1.5 rounded-lg border px-2 py-3 min-h-[72px] transition-all focus-ring',
               isSelected
                 ? 'border-primary bg-primary/5'
                 : 'border-border/60 bg-background hover:border-primary/40 hover:bg-muted/40',
+              unavailable && 'opacity-45 cursor-not-allowed hover:border-border/60 hover:bg-background',
             )}
           >
             <ColorSwatch color={color} selected={isSelected} />
             <span className={cn('text-xs leading-tight', isSelected ? 'font-semibold text-foreground' : 'text-foreground/80')}>
               {color.label}
+              {c !== undefined && <span className="text-muted-foreground"> ({c})</span>}
             </span>
           </button>
         );

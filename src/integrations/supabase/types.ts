@@ -2027,6 +2027,11 @@ export type Database = {
         Args: { _invitation_id: string }
         Returns: undefined
       }
+      search_facets: { Args: { _filters?: Json }; Returns: Json }
+      search_filter_sql: {
+        Args: { _exclude?: string; _filters: Json }
+        Returns: string
+      }
       set_listing_premium: {
         Args: { _enabled: boolean; _listing_id: string }
         Returns: boolean
