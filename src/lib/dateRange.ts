@@ -10,9 +10,17 @@ export interface AnalyticsRange {
   to: string;
 }
 
-export const toDayKey = (d: Date): string => d.toISOString().slice(0, 10);
+/** Dagsleutel op basis van de lokale kalenderdag (niet UTC). */
+export const toDayKey = (d: Date): string => {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
 
-export const fromDayKey = (key: string): Date => new Date(`${key}T00:00:00.000Z`);
+/** Lokale middernacht voor een dagsleutel, zodat toDayKey(fromDayKey(k)) === k. */
+export const fromDayKey = (key: string): Date => {
+  const [y, m, d] = key.split('-').map(Number);
+  return new Date(y, (m ?? 1) - 1, d ?? 1);
+};
 
 /** Aantal dagen in het bereik (inclusief begin- en einddag). */
 export function rangeDays(range: { from: string; to: string }): number {
@@ -24,7 +32,7 @@ export function rangeDays(range: { from: string; to: string }): number {
 export function presetRange(days: 7 | 30 | 90): AnalyticsRange {
   const to = new Date();
   const from = new Date(to);
-  from.setUTCDate(from.getUTCDate() - (days - 1));
+  from.setDate(from.getDate() - (days - 1));
   return { preset: days, from: toDayKey(from), to: toDayKey(to) };
 }
 
