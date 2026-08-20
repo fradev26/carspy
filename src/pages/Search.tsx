@@ -92,7 +92,7 @@ export default function Search() {
 
 
   const handleRemoveFilter = (key: keyof SearchFilters, value?: string) => {
-    const arrayKeys = ['fuelTypes', 'transmissions', 'bodyTypes', 'driveTypes', 'paintTypes', 'colors', 'interiorColors', 'interiorMaterials', 'features'];
+    const arrayKeys = ['fuelTypes', 'transmissions', 'bodyTypes', 'driveTypes', 'paintTypes', 'colors', 'interiorColors', 'interiorMaterials', 'features', 'brands', 'models', 'conditionTypes', 'emissionClasses'];
 
     if (value && arrayKeys.includes(key)) {
       const currentValues = filters[key] as string[] | undefined;
@@ -108,6 +108,11 @@ export default function Search() {
       if (key === 'minYear') delete newFilters.maxYear;
       if (key === 'minMileage') delete newFilters.maxMileage;
       if (key === 'minPower') delete newFilters.maxPower;
+      // Een merk verwijderen haalt ook de modelselectie van dat merk weg.
+      if (key === 'brands' && value) {
+        const rest = (filters.models ?? []).filter((m) => !m.startsWith(`${value}:`));
+        newFilters.models = rest.length ? rest : undefined;
+      }
       writeFiltersToURL(newFilters);
     }
   };
@@ -175,7 +180,7 @@ export default function Search() {
           <aside className="hidden w-72 flex-shrink-0 lg:block">
             <div className="sticky top-20">
               <div className="rounded-xl border border-border/60 bg-card p-5 shadow-card max-h-[calc(100vh-6rem)] overflow-y-auto">
-                <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} />
+                <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} query={queryParam} />
               </div>
             </div>
           </aside>
@@ -190,7 +195,7 @@ export default function Search() {
                 </p>
               </div>
               <div className="rounded-xl border border-border/60 bg-card p-4 shadow-sm">
-                <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} showPresets={false} />
+                <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} showPresets={false} query={queryParam} />
               </div>
               <div className="sticky bottom-20 mt-4 pb-2 bg-gradient-to-t from-background via-background to-transparent pt-4 flex flex-col gap-2">
                 <Button
@@ -338,7 +343,7 @@ export default function Search() {
                         </div>
                       )}
                       <div className="overflow-y-auto px-4 py-4">
-                        <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} showPresets={false} />
+                        <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} showPresets={false} query={queryParam} />
                       </div>
                       <DrawerFooter className="border-t border-border/60 flex-row gap-2">
                         <Button
