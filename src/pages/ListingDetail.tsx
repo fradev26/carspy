@@ -798,6 +798,50 @@ export default function ListingDetail() {
               </Card>
             )}
 
+            {/* 12b. Condition: damage / technical issues */}
+            {(() => {
+              const cond = listing.condition as
+                | {
+                    damage?: { present?: boolean; description?: string | null };
+                    technical?: { present?: boolean; description?: string | null };
+                  }
+                | null
+                | undefined;
+              const damage = cond?.damage?.present ? cond?.damage?.description : null;
+              const technical = cond?.technical?.present ? cond?.technical?.description : null;
+              if (!damage && !technical) return null;
+              return (
+                <Card className="border-border/60 shadow-card">
+                  <CardContent className="p-6">
+                    <h2 className="flex items-center gap-2 text-lg font-semibold">
+                      <AlertTriangle className="h-5 w-5 text-amber-500" aria-hidden="true" />
+                      Schade &amp; technische opmerkingen
+                    </h2>
+                    <div className="mt-4 space-y-4">
+                      {damage && (
+                        <div>
+                          <p className="text-sm font-medium">Schade</p>
+                          <p className="mt-1 max-w-prose text-muted-foreground whitespace-pre-line leading-relaxed break-anywhere">
+                            {damage}
+                          </p>
+                        </div>
+                      )}
+                      {technical && (
+                        <div>
+                          <p className="text-sm font-medium">Technisch probleem</p>
+                          <p className="mt-1 max-w-prose text-muted-foreground whitespace-pre-line leading-relaxed break-anywhere">
+                            {technical}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })()}
+
+
+
             {/* 13. Dealer info (mobile only — desktop sidebar already shows it) */}
             <Card className="lg:hidden border-border/60 shadow-card">
               <CardContent className="p-6">
