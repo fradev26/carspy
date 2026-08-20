@@ -32,7 +32,7 @@ export function rangeDays(range: { from: string; to: string }): number {
 export function presetRange(days: 7 | 30 | 90): AnalyticsRange {
   const to = new Date();
   const from = new Date(to);
-  from.setUTCDate(from.getUTCDate() - (days - 1));
+  from.setDate(from.getDate() - (days - 1));
   return { preset: days, from: toDayKey(from), to: toDayKey(to) };
 }
 
