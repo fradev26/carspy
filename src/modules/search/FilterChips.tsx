@@ -13,6 +13,8 @@ import {
   WARRANTY_OPTIONS,
   FEATURE_OPTIONS,
   COUNTRY_OPTIONS,
+  CONDITION_TYPE_LABELS,
+
 } from '@/types/listing';
 import { cn } from '@/lib/utils';
 
@@ -41,6 +43,34 @@ export function FilterChips({ filters, onRemoveFilter, onClearAll, className }: 
   if (filters.model) {
     chips.push({ key: 'model', label: filters.model, category: 'basic' });
   }
+
+  // Merken zonder modelselectie tonen we als merk-chip, met modelselectie per model.
+  filters.brands?.forEach((brand) => {
+    const brandModels = (filters.models ?? []).filter((m) => m.startsWith(`${brand}:`));
+    if (brandModels.length === 0) {
+      chips.push({ key: 'brands', label: brand, value: brand, category: 'basic' });
+    }
+  });
+
+  filters.models?.forEach((entry) => {
+    const [brand, ...rest] = entry.split(':');
+    chips.push({ key: 'models', label: `${brand} ${rest.join(':')}`, value: entry, category: 'basic' });
+  });
+
+  if (filters.trim) {
+    chips.push({ key: 'trim', label: `Uitvoering: ${filters.trim}`, category: 'basic' });
+  }
+
+  filters.conditionTypes?.forEach((c) => {
+    chips.push({
+      key: 'conditionTypes',
+      label: CONDITION_TYPE_LABELS[c] ?? c,
+      value: c,
+      category: 'basic',
+    });
+  });
+
+
 
   if (filters.minPrice || filters.maxPrice) {
     const minLabel = filters.minPrice ? `€${filters.minPrice.toLocaleString()}` : '€0';
@@ -82,10 +112,20 @@ export function FilterChips({ filters, onRemoveFilter, onClearAll, className }: 
   });
 
   if (filters.minPower || filters.maxPower) {
+    const unit = filters.powerUnit ?? 'pk';
     const minLabel = filters.minPower ? `${filters.minPower}` : '0';
-    const maxLabel = filters.maxPower ? `${filters.maxPower} pk` : '∞ pk';
+    const maxLabel = filters.maxPower ? `${filters.maxPower} ${unit}` : `∞ ${unit}`;
     chips.push({ key: 'minPower', label: `${minLabel} - ${maxLabel}`, category: 'performance' });
   }
+
+  filters.emissionClasses?.forEach((e) => {
+    chips.push({ key: 'emissionClasses', label: e, value: e, category: 'performance' });
+  });
+
+  if (filters.maxCo2 != null) {
+    chips.push({ key: 'maxCo2', label: `Max. ${filters.maxCo2} g/km CO2`, category: 'performance' });
+  }
+
 
   // Appearance filters
   filters.paintTypes?.forEach((paint) => {
@@ -153,12 +193,21 @@ export function FilterChips({ filters, onRemoveFilter, onClearAll, className }: 
   }
 
   if (filters.noDamageHistory) {
-    chips.push({ key: 'noDamageHistory', label: 'Geen schadehistorie', category: 'history' });
+    chips.push({ key: 'noDamageHistory', label: 'Ongevalsvrij', category: 'history' });
+  }
+
+  if (filters.carPass) {
+    chips.push({ key: 'carPass', label: 'Car-Pass aanwezig', category: 'history' });
+  }
+
+  if (filters.factoryWarranty) {
+    chips.push({ key: 'factoryWarranty', label: 'Met garantie', category: 'history' });
   }
 
   if (filters.vatDeductible) {
     chips.push({ key: 'vatDeductible', label: 'BTW aftrekbaar', category: 'history' });
   }
+
 
   if (filters.hasMaintenanceHistory) {
     chips.push({ key: 'hasMaintenanceHistory', label: 'Met onderhoudshistorie', category: 'history' });

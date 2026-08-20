@@ -16,11 +16,12 @@ const MAX_RECENT_SEARCHES = 5;
 function generateLabel(filters: SearchFilters): string {
   const parts: string[] = [];
 
-  if (filters.brand) {
-    parts.push(filters.brand);
-    if (filters.model) {
-      parts.push(filters.model);
-    }
+  const brands = filters.brands ?? (filters.brand ? [filters.brand] : []);
+  if (brands.length) {
+    parts.push(brands.slice(0, 2).join(' / '));
+    const models = (filters.models ?? []).map((m) => m.slice(m.indexOf(':') + 1));
+    if (models.length) parts.push(models.slice(0, 2).join(' / '));
+    else if (filters.model) parts.push(filters.model);
   }
 
   if (filters.bodyTypes?.length) {

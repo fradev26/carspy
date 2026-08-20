@@ -2,6 +2,8 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Listing, SearchFilters } from '@/types/listing';
 import { mapRow as mapListingRow } from '@/hooks/useListings';
+import { buildBrandModelFilter, toKw } from '@/lib/searchQuery';
+
 import {
   DEFAULT_PAGE_SIZE,
   buildKeysetFilter,
@@ -141,14 +143,26 @@ export async function fetchSearchListingsPage({
   // Basic
   if (filters.brand && filters.brand !== 'all') q = q.eq('brand', filters.brand);
   if (filters.model) q = q.eq('model', filters.model);
+
+  // Multi-select merken/modellen: per merk optioneel een modelselectie.
+  const brandModelExpr = buildBrandModelFilter(filters.brands, filters.models);
+  if (brandModelExpr) q = q.or(brandModelExpr);
+
+  if (filters.trim) q = q.ilike('model_version', `%${filters.trim.replace(/[,%()]/g, ' ')}%`);
+  if (filters.conditionTypes?.length) q = q.in('condition_type', filters.conditionTypes);
+
   if (filters.minPrice != null) q = q.gte('price', filters.minPrice);
   if (filters.maxPrice != null) q = q.lte('price', filters.maxPrice);
   if (filters.minYear != null) q = q.gte('year', filters.minYear);
   if (filters.maxYear != null) q = q.lte('year', filters.maxYear);
   if (filters.minMileage != null && filters.minMileage > 0) q = q.gte('mileage', filters.minMileage);
   if (filters.maxMileage != null && filters.maxMileage > 0) q = q.lte('mileage', filters.maxMileage);
-  if (filters.minPower != null) q = q.gte('power', filters.minPower);
-  if (filters.maxPower != null) q = q.lte('power', filters.maxPower);
+  // `power` staat in kW in de database; het filter kan in pk zijn ingevuld.
+  if (filters.minPower != null) q = q.gte('power', toKw(filters.minPower, filters.powerUnit));
+  if (filters.maxPower != null) q = q.lte('power', toKw(filters.maxPower, filters.powerUnit));
+  if (filters.emissionClasses?.length) q = q.in('emission_class', filters.emissionClasses);
+  if (filters.maxCo2 != null) q = q.lte('co2_emissions', filters.maxCo2);
+
 
   // Arrays → IN
   if (filters.fuelTypes?.length) q = q.in('fuel_type', filters.fuelTypes);
@@ -167,6 +181,10 @@ export async function fetchSearchListingsPage({
   // History
   if (filters.maxPreviousOwners != null) q = q.lte('previous_owner_count', filters.maxPreviousOwners);
   if (filters.vatDeductible) q = q.eq('vat_deductible', true);
+  if (filters.factoryWarranty) q = q.gt('warranty_months', 0);
+  if (filters.carPass) q = q.not('service_history', 'is', null);
+  if (filters.noDamageHistory) q = q.or('condition->damage->>present.is.null,condition->damage->>present.eq.false');
+
 
   // Online since
   if (filters.onlineSince) {

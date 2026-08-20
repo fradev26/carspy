@@ -134,10 +134,22 @@ export type EuroNorm = 'euro4' | 'euro5' | 'euro6' | 'euro6d' | 'euro6d-temp';
 export type OnlineSince = 'today' | '3d' | '7d' | '14d' | '30d' | '30d+';
 export type WarrantyOption = '6m' | '12m' | '24m' | '36m';
 
+export type PowerUnit = 'pk' | 'kW';
+
 export interface SearchFilters {
   // 1. Quick Selection (Snelle selectie)
+  /** @deprecated single-brand form, kept for legacy consumers (SearchBar, dealer inventory). */
   brand?: string;
+  /** @deprecated single-model form, kept for legacy consumers. */
   model?: string;
+  /** Multi-select merken. */
+  brands?: string[];
+  /** Multi-select modellen, gecodeerd als "Merk:Model". */
+  models?: string[];
+  /** Vrije zoekterm op uitvoering / model_version. */
+  trim?: string;
+  /** Staat van het voertuig (condition_type). */
+  conditionTypes?: string[];
   minPrice?: number;
   maxPrice?: number;
   minYear?: number;
@@ -146,13 +158,20 @@ export interface SearchFilters {
   maxMileage?: number;
   fuelTypes?: FuelType[];
   bodyTypes?: BodyType[];
+
   
   // 2. Drive & Performance (Aandrijving & prestaties)
   transmissions?: TransmissionType[];
   driveTypes?: DriveType[];
   minPower?: number;
   maxPower?: number;
-  
+  /** Eenheid waarin minPower/maxPower zijn ingevuld (default 'pk'). */
+  powerUnit?: PowerUnit;
+  /** Emissieklasse (emission_class), bv. "Euro 6d". */
+  emissionClasses?: string[];
+  /** Maximale CO2-uitstoot in g/km. */
+  maxCo2?: number;
+
   // 3. Exterior & Interior (Carrosserie & uiterlijk)
   paintTypes?: PaintType[];
   colors?: string[];
@@ -177,12 +196,45 @@ export interface SearchFilters {
   minWarranty?: WarrantyOption;
   noDamageHistory?: boolean;
   vatDeductible?: boolean;
+  /** Nog lopende fabrieks-/dealergarantie. */
+  factoryWarranty?: boolean;
+  /** Car-Pass / onderhoudshistoriek aanwezig. */
+  carPass?: boolean;
   hasMaintenanceHistory?: boolean;
   isNonSmoker?: boolean;
   
   // 7. Options & Features (Opties & extra's)
   features?: string[];
 }
+
+/** Staat van het voertuig — labels voor de waarden die in condition_type voorkomen. */
+export const CONDITION_TYPE_LABELS: Record<string, string> = {
+  new: 'Nieuw',
+  nieuw: 'Nieuw',
+  used: 'Tweedehands',
+  tweedehands: 'Tweedehands',
+  damaged: 'Beschadigd',
+  beschadigd: 'Beschadigd',
+  excellent: 'Uitstekend',
+  good: 'Goed',
+  fair: 'Redelijk',
+  poor: 'Matig',
+};
+
+export const CONDITION_TYPES: { value: string; label: string }[] = [
+  { value: 'new', label: 'Nieuw' },
+  { value: 'used', label: 'Tweedehands' },
+  { value: 'damaged', label: 'Beschadigd' },
+];
+
+export const CO2_OPTIONS: { value: number; label: string }[] = [
+  { value: 0, label: '0 g/km (emissievrij)' },
+  { value: 95, label: 'Max. 95 g/km' },
+  { value: 120, label: 'Max. 120 g/km' },
+  { value: 150, label: 'Max. 150 g/km' },
+  { value: 200, label: 'Max. 200 g/km' },
+];
+
 
 export interface SortOption {
   value: string;

@@ -1,0 +1,1 @@
+grant execute on function public.search_filter_sql(jsonb, text) to anon, authenticated;
