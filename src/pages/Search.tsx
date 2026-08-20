@@ -97,10 +97,16 @@ export default function Search() {
     if (value && arrayKeys.includes(key)) {
       const currentValues = filters[key] as string[] | undefined;
       const nextValues = currentValues?.filter((v) => v !== value);
-      writeFiltersToURL({
+      const next: SearchFilters = {
         ...filters,
         [key]: nextValues && nextValues.length ? nextValues : undefined,
-      });
+      };
+      // Een merk verwijderen haalt ook de modelselectie van dat merk weg.
+      if (key === 'brands') {
+        const rest = (filters.models ?? []).filter((m) => !m.startsWith(`${value}:`));
+        next.models = rest.length ? rest : undefined;
+      }
+      writeFiltersToURL(next);
     } else {
       const newFilters = { ...filters };
       delete newFilters[key];
@@ -108,13 +114,9 @@ export default function Search() {
       if (key === 'minYear') delete newFilters.maxYear;
       if (key === 'minMileage') delete newFilters.maxMileage;
       if (key === 'minPower') delete newFilters.maxPower;
-      // Een merk verwijderen haalt ook de modelselectie van dat merk weg.
-      if (key === 'brands' && value) {
-        const rest = (filters.models ?? []).filter((m) => !m.startsWith(`${value}:`));
-        newFilters.models = rest.length ? rest : undefined;
-      }
       writeFiltersToURL(newFilters);
     }
+
   };
 
   // Count total active filters
