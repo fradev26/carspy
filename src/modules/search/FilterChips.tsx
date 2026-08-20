@@ -13,6 +13,8 @@ import {
   WARRANTY_OPTIONS,
   FEATURE_OPTIONS,
   COUNTRY_OPTIONS,
+  CONDITION_TYPE_LABELS,
+
 } from '@/types/listing';
 import { cn } from '@/lib/utils';
 
