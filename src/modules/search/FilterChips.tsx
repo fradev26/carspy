@@ -42,6 +42,34 @@ export function FilterChips({ filters, onRemoveFilter, onClearAll, className }: 
     chips.push({ key: 'model', label: filters.model, category: 'basic' });
   }
 
+  // Merken zonder modelselectie tonen we als merk-chip, met modelselectie per model.
+  filters.brands?.forEach((brand) => {
+    const brandModels = (filters.models ?? []).filter((m) => m.startsWith(`${brand}:`));
+    if (brandModels.length === 0) {
+      chips.push({ key: 'brands', label: brand, value: brand, category: 'basic' });
+    }
+  });
+
+  filters.models?.forEach((entry) => {
+    const [brand, ...rest] = entry.split(':');
+    chips.push({ key: 'models', label: `${brand} ${rest.join(':')}`, value: entry, category: 'basic' });
+  });
+
+  if (filters.trim) {
+    chips.push({ key: 'trim', label: `Uitvoering: ${filters.trim}`, category: 'basic' });
+  }
+
+  filters.conditionTypes?.forEach((c) => {
+    chips.push({
+      key: 'conditionTypes',
+      label: CONDITION_TYPE_LABELS[c] ?? c,
+      value: c,
+      category: 'basic',
+    });
+  });
+
+
+
   if (filters.minPrice || filters.maxPrice) {
     const minLabel = filters.minPrice ? `€${filters.minPrice.toLocaleString()}` : '€0';
     const maxLabel = filters.maxPrice ? `€${filters.maxPrice.toLocaleString()}` : '∞';
