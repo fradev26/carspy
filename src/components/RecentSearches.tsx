@@ -18,6 +18,8 @@ function filtersToURLParams(filters: SearchFilters): string {
   
   if (filters.brand) params.set('brand', filters.brand);
   if (filters.model) params.set('model', filters.model);
+  if (filters.brands?.length) params.set('brands', filters.brands.join(','));
+  if (filters.models?.length) params.set('models', filters.models.join(','));
   if (filters.minPrice) params.set('minPrice', filters.minPrice.toString());
   if (filters.maxPrice) params.set('maxPrice', filters.maxPrice.toString());
   if (filters.minYear) params.set('minYear', filters.minYear.toString());
