@@ -112,10 +112,20 @@ export function FilterChips({ filters, onRemoveFilter, onClearAll, className }: 
   });
 
   if (filters.minPower || filters.maxPower) {
+    const unit = filters.powerUnit ?? 'pk';
     const minLabel = filters.minPower ? `${filters.minPower}` : '0';
-    const maxLabel = filters.maxPower ? `${filters.maxPower} pk` : '∞ pk';
+    const maxLabel = filters.maxPower ? `${filters.maxPower} ${unit}` : `∞ ${unit}`;
     chips.push({ key: 'minPower', label: `${minLabel} - ${maxLabel}`, category: 'performance' });
   }
+
+  filters.emissionClasses?.forEach((e) => {
+    chips.push({ key: 'emissionClasses', label: e, value: e, category: 'performance' });
+  });
+
+  if (filters.maxCo2 != null) {
+    chips.push({ key: 'maxCo2', label: `Max. ${filters.maxCo2} g/km CO2`, category: 'performance' });
+  }
+
 
   // Appearance filters
   filters.paintTypes?.forEach((paint) => {
