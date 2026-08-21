@@ -23,6 +23,7 @@ import { DEFAULT_PAGE_SIZE } from '@/lib/keyset';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
 import { BoostDialog } from '@/components/boost/BoostDialog';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useAutoScoutLink } from '@/hooks/useAutoScoutLink';
 import {
   AlertDialog,
   AlertDialogAction,
