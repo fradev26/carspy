@@ -647,9 +647,12 @@ export type Database = {
       dealer_leads: {
         Row: {
           company: string | null
+          company_id: string | null
           created_at: string
+          dealer_user_id: string | null
           email: string
           id: string
+          listing_id: string | null
           message: string | null
           name: string
           phone: string | null
@@ -661,9 +664,12 @@ export type Database = {
         }
         Insert: {
           company?: string | null
+          company_id?: string | null
           created_at?: string
+          dealer_user_id?: string | null
           email: string
           id?: string
+          listing_id?: string | null
           message?: string | null
           name: string
           phone?: string | null
@@ -675,9 +681,12 @@ export type Database = {
         }
         Update: {
           company?: string | null
+          company_id?: string | null
           created_at?: string
+          dealer_user_id?: string | null
           email?: string
           id?: string
+          listing_id?: string | null
           message?: string | null
           name?: string
           phone?: string | null
@@ -687,7 +696,22 @@ export type Database = {
           user_id?: string | null
           vat_number?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "dealer_leads_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dealer_leads_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       dealer_opening_hours: {
         Row: {
