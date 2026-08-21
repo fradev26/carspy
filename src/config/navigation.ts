@@ -1,4 +1,4 @@
-import { Home, Search, Heart, Sparkles, Plus, Car, Upload, Users, BarChart3 } from 'lucide-react';
+import { Home, Search, Heart, Sparkles, Plus, Car, Users, BarChart3 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { Permissions } from '@/hooks/usePermissions';
 
