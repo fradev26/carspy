@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   Eye, Heart, MessageCircle, Car, Crown, Rocket, Pencil, CheckCircle2,
   Search as SearchIcon, ExternalLink, Trash2, Plus, BarChart3,
-  Clock, PlayCircle, RotateCcw, Settings as SettingsIcon,
+  Clock, PlayCircle, RotateCcw, Settings as SettingsIcon, RefreshCw, Upload,
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,7 @@ import { DEFAULT_PAGE_SIZE } from '@/lib/keyset';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
 import { BoostDialog } from '@/components/boost/BoostDialog';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useAutoScoutLink } from '@/hooks/useAutoScoutLink';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,6 +53,7 @@ const isBoostable = (l: ListingAnalytics) =>
 
 export default function Inventory() {
   const perms = usePermissions();
+  const { isLinked: autoScoutLinked } = useAutoScoutLink();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState('');
@@ -237,11 +239,28 @@ export default function Inventory() {
           <h1 className="text-xl md:text-2xl font-bold tracking-tight">Voorraad</h1>
           <p className="text-xs text-muted-foreground">{total} advertenties</p>
         </div>
-        <Button asChild variant="outline" size="sm" className="gap-1.5">
-          <Link to="/zakelijk/voorraad-instellingen">
-            <SettingsIcon className="h-3.5 w-3.5" /> Voorkeuren
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          {perms.canEditListings && (
+            <Button asChild variant="outline" size="sm" className="gap-1.5">
+              <Link to={autoScoutLinked ? '/zakelijk/import#autoscout' : '/zakelijk/import'}>
+                {autoScoutLinked ? (
+                  <>
+                    <RefreshCw className="h-3.5 w-3.5" /> Sync
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-3.5 w-3.5" /> Importeren
+                  </>
+                )}
+              </Link>
+            </Button>
+          )}
+          <Button asChild variant="outline" size="sm" className="gap-1.5">
+            <Link to="/zakelijk/voorraad-instellingen">
+              <SettingsIcon className="h-3.5 w-3.5" /> Voorkeuren
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
