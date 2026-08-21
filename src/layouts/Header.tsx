@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Heart, User, Plus, LogOut, MessageCircle, BarChart3, Shield, FileText, Settings, HelpCircle, Mail, Search } from 'lucide-react';
+import { Heart, User, Users, Plus, LogOut, MessageCircle, BarChart3, Shield, FileText, Settings, HelpCircle, Mail, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -12,6 +12,8 @@ import { useProfile } from '@/hooks/useProfile';
 import { getAccountType, getSettingsRoute } from '@/lib/settingsRoute';
 
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
+import { usePermissions } from '@/hooks/usePermissions';
+import { useNewLeadsCount } from '@/hooks/useNewLeadsCount';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/Logo';
 import { DesktopNav } from '@/components/DesktopNav';
@@ -83,6 +85,10 @@ export function Header() {
   const settingsRoute = getSettingsRoute(accountType);
   
   const { count: unreadCount } = useUnreadMessages();
+  const { canViewLeads } = usePermissions();
+  const showLeadsInbox = Boolean(user && isDealer && canViewLeads);
+  const { count: newLeadsCount } = useNewLeadsCount(showLeadsInbox);
+  const inboxCount = unreadCount + newLeadsCount;
 
   const isHomepage = location.pathname === '/';
 
