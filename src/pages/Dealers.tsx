@@ -253,8 +253,8 @@ export default function Dealers() {
 
             <ul className="mx-auto mt-8 grid max-w-2xl grid-cols-2 gap-x-4 gap-y-2 text-sm text-muted-foreground sm:grid-cols-4">
               {['Dealerprofiel', 'Voorraadimport', 'Meer zichtbaarheid', 'Geverifieerde dealerstatus'].map((b) => (
-                <li key={b} className="flex items-center justify-center gap-1.5 text-center">
-                  <CheckCircle2 className="h-4 w-4 shrink-0 text-primary-strong" />
+                <li key={b} className="flex items-start justify-center gap-1.5 text-center">
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary-strong" />
                   <span>{b}</span>
                 </li>
               ))}
@@ -264,7 +264,7 @@ export default function Dealers() {
       </section>
 
       {/* Stats */}
-      <section aria-labelledby="dealer-stats" className="container -mt-6 pb-12 sm:pb-16">
+      <section aria-labelledby="dealer-stats" className="container pt-10 pb-12 sm:pt-12 sm:pb-16">
         <h2 id="dealer-stats" className="sr-only">VATUUR. in cijfers</h2>
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {stats.map((s) => (
