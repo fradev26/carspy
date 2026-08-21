@@ -52,6 +52,7 @@ const isBoostable = (l: ListingAnalytics) =>
 
 export default function Inventory() {
   const perms = usePermissions();
+  const { isLinked: autoScoutLinked } = useAutoScoutLink();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [lastSelectedId, setLastSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState('');
