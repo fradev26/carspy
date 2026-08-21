@@ -86,7 +86,7 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
               <ListingImageCarousel
                 images={listing.images}
                 alt={listing.title}
-                aspectClass="aspect-[16/10] sm:aspect-[4/3]"
+                aspectClass="aspect-[3/2]"
               >
                 {/* Price Badge */}
                 <div className="absolute left-3 top-3 z-10 rounded-lg bg-card/95 px-3 py-1.5 shadow-elevated backdrop-blur-sm">
@@ -167,16 +167,16 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
   }
 
   return (
-    <Link to={`/auto/${listing.id}`} className="block" aria-label={`${listing.title} - ${formatPrice(listing.price)}`}>
+    <Link to={`/auto/${listing.id}`} className="block h-full" aria-label={`${listing.title} - ${formatPrice(listing.price)}`}>
       <Card className={cn(
-        "group overflow-hidden transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1 border-border/60",
+        "group flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1 border-border/60",
         isPremium && "border-premium/50 shadow-glow-premium ring-1 ring-premium/20"
       )}>
         {/* Image Container */}
         <ListingImageCarousel
           images={listing.images}
           alt={listing.title}
-          aspectClass="aspect-[16/10]"
+          aspectClass="aspect-[3/2]"
         >
           {/* Gradient overlay */}
           <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -238,7 +238,7 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
         </ListingImageCarousel>
 
         {/* Content */}
-        <CardContent className="p-4">
+        <CardContent className="flex flex-1 flex-col p-4">
           <h3 className={cn(
             'font-semibold text-foreground line-clamp-1 group-hover:text-primary-strong transition-colors',
             variant === 'compact' ? 'text-sm' : 'text-base'
@@ -291,7 +291,7 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
             <button
               type="button"
               onClick={handleMarketCompare}
-              className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-md border border-border/60 bg-muted/40 px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary-strong hover:border-primary/30"
+              className="mt-auto pt-2 flex w-full items-center justify-center gap-1.5 rounded-md border border-border/60 bg-muted/40 px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary-strong hover:border-primary/30"
             >
               <BarChart3 className="h-3.5 w-3.5" />
               Vergelijk markt

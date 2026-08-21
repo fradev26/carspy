@@ -292,12 +292,12 @@ const Index = () => {
       <section className="bg-muted/30 py-12 md:py-16">
 
         <div className="container">
-          <div className="flex items-center justify-between mb-8">
+          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-2xl font-semibold">Uitgelichte advertenties</h2>
               <p className="mt-1 text-sm text-muted-foreground">Recent toegevoegd</p>
             </div>
-            <Button variant="outline" asChild className="gap-2 shadow-sm">
+            <Button variant="outline" asChild className="w-full gap-2 shadow-sm sm:w-auto">
               <Link to="/zoeken">
                 Bekijk alle wagens <ArrowRight className="h-4 w-4" />
               </Link>

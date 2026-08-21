@@ -253,9 +253,9 @@ export default function Dealers() {
 
             <ul className="mx-auto mt-8 grid max-w-2xl grid-cols-2 gap-x-4 gap-y-2 text-sm text-muted-foreground sm:grid-cols-4">
               {['Dealerprofiel', 'Voorraadimport', 'Meer zichtbaarheid', 'Geverifieerde dealerstatus'].map((b) => (
-                <li key={b} className="flex items-center justify-center gap-1.5">
+                <li key={b} className="flex items-center justify-center gap-1.5 text-center">
                   <CheckCircle2 className="h-4 w-4 shrink-0 text-primary-strong" />
-                  <span className="truncate">{b}</span>
+                  <span>{b}</span>
                 </li>
               ))}
             </ul>
