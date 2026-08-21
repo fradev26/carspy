@@ -4,7 +4,7 @@ import { Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { cn } from '@/lib/utils';
-import { consumerNavItems, dealerNavItems, type NavItem } from '@/config/navigation';
+import { consumerNavItems, dealerMobileNavItems, type NavItem } from '@/config/navigation';
 import { isNavItemActive } from '@/lib/navActive';
 import { useAIChat } from '@/context/AIChatContext';
 
