@@ -31,11 +31,12 @@ export const dealerNavItems: NavItem[] = [
   { icon: BarChart3, label: 'Analytics', path: '/zakelijk/analytics' },
 ];
 
-/** Mobiele bottom nav voor dealers: max 5 items, ongewijzigd gedrag. */
+/** Mobiele bottom nav voor dealers: max 5 items, zakelijke werkruimte. */
 export const dealerMobileNavItems: NavItem[] = [
-  { icon: Home,     label: 'Home',       path: '/' },
-  { icon: Search,   label: 'Zoeken',     path: '/zoeken' },
-  { icon: Sparkles, label: 'AI',         path: '/zakelijk', isAI: true, exact: true },
-  { icon: Car,      label: 'Voorraad',   path: '/zakelijk/voorraad' },
-  { icon: Heart,    label: 'Favorieten', path: '/favorieten' },
+  { icon: Search,    label: 'Zoeken',     path: '/zoeken' },
+  { icon: Car,       label: 'Voorraad',   path: '/zakelijk/voorraad' },
+  { icon: Sparkles,  label: 'Sales AI',   path: '/zakelijk', isAI: true, exact: true },
+  { icon: Heart,     label: 'Favorieten', path: '/favorieten' },
+  { icon: BarChart3, label: 'Analytics',  path: '/zakelijk/analytics' },
 ];
+
