@@ -237,11 +237,28 @@ export default function Inventory() {
           <h1 className="text-xl md:text-2xl font-bold tracking-tight">Voorraad</h1>
           <p className="text-xs text-muted-foreground">{total} advertenties</p>
         </div>
-        <Button asChild variant="outline" size="sm" className="gap-1.5">
-          <Link to="/zakelijk/voorraad-instellingen">
-            <SettingsIcon className="h-3.5 w-3.5" /> Voorkeuren
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          {perms.canEditListings && (
+            <Button asChild variant="outline" size="sm" className="gap-1.5">
+              <Link to={autoScoutLinked ? '/zakelijk/import#autoscout' : '/zakelijk/import'}>
+                {autoScoutLinked ? (
+                  <>
+                    <RefreshCw className="h-3.5 w-3.5" /> Sync
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-3.5 w-3.5" /> Importeren
+                  </>
+                )}
+              </Link>
+            </Button>
+          )}
+          <Button asChild variant="outline" size="sm" className="gap-1.5">
+            <Link to="/zakelijk/voorraad-instellingen">
+              <SettingsIcon className="h-3.5 w-3.5" /> Voorkeuren
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
