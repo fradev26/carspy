@@ -26,7 +26,7 @@ export const consumerNavItems: NavItem[] = [
 export const dealerNavItems: NavItem[] = [
   { icon: Sparkles,  label: 'Sales AI',  path: '/zakelijk', isAI: true, exact: true },
   { icon: Car,       label: 'Voorraad',  path: '/zakelijk/voorraad' },
-  { icon: Upload,    label: 'Import',    path: '/zakelijk/import', requires: 'canEditListings' },
+  
   { icon: Users,     label: 'Leads',     path: '/zakelijk/leads', requires: 'canViewLeads' },
   { icon: BarChart3, label: 'Analytics', path: '/zakelijk/analytics' },
 ];
