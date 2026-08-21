@@ -84,7 +84,7 @@ export const ChatWidget = forwardRef<HTMLDivElement>(function ChatWidget(_props,
         className={cn(
           'fixed z-50 flex h-14 w-14 items-center justify-center rounded-md shadow-lg transition-all',
           'bg-primary text-primary-foreground hover:scale-105',
-          mobileBottomOffset, 'right-4 md:bottom-6 md:right-6'
+          mobileBottomOffset, 'right-4 lg:bottom-6 lg:right-6'
         )}
         aria-label={isDealersPage ? 'Open dealer chat' : 'Open chat'}
       >
@@ -96,8 +96,8 @@ export const ChatWidget = forwardRef<HTMLDivElement>(function ChatWidget(_props,
         <div
           className={cn(
             'fixed z-50 flex flex-col overflow-hidden rounded-2xl border bg-background shadow-2xl',
-            mobilePanelBottomOffset, 'left-4 right-4 max-w-sm md:left-auto',
-            'md:bottom-24 md:right-6 md:w-96',
+            mobilePanelBottomOffset, 'left-4 right-4 max-w-sm lg:left-auto',
+            'lg:bottom-24 lg:right-6 lg:w-96',
             'h-[min(540px,75vh)]'
           )}
         >

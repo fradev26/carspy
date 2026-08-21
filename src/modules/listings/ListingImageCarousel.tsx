@@ -18,7 +18,7 @@ const COMMIT_VELOCITY = 0.4; // px/ms
 export function ListingImageCarousel({
   images,
   alt,
-  aspectClass = 'aspect-[16/10]',
+  aspectClass = 'aspect-[3/2]',
   priority = false,
   className,
   children,
@@ -208,14 +208,14 @@ export function ListingImageCarousel({
                       return n;
                     })
                   }
-                  className="pointer-events-none h-full w-full object-cover"
+                  className="pointer-events-none h-full w-full object-cover object-center"
                 />
               ) : errorSet.has(i) ? (
                 <img
                   src="/placeholder.svg"
                   alt={alt}
                   draggable={false}
-                  className="pointer-events-none h-full w-full object-cover opacity-70"
+                  className="pointer-events-none h-full w-full object-contain p-6 opacity-70"
                 />
               ) : (
                 <div className="h-full w-full bg-muted" aria-hidden="true" />

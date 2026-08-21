@@ -199,7 +199,7 @@ export default function Search() {
               <div className="rounded-xl border border-border/60 bg-card p-4 shadow-sm">
                 <FilterPanel filters={filters} onFiltersChange={handleFiltersChange} showPresets={false} query={queryParam} />
               </div>
-              <div className="sticky bottom-20 mt-4 pb-2 bg-gradient-to-t from-background via-background to-transparent pt-4 flex flex-col gap-2">
+              <div className="sticky bottom-20 mt-4 flex flex-col gap-2 bg-gradient-to-t from-background via-background to-transparent pb-4 pr-16 pt-6 sm:pr-20">
                 <Button
                   onClick={() => setMobileResultsRevealed(true)}
                   className="w-full min-h-12 text-base font-semibold"

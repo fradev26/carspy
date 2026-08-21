@@ -97,7 +97,7 @@ export function FilterPresets({ onApplyPreset, activeFilters, className }: Filte
       <div className="flex items-center gap-2">
         <h3 className="text-sm font-medium text-muted-foreground">Snelle selectie</h3>
       </div>
-      <div className="grid grid-cols-5 gap-2">
+      <div className="flex flex-wrap gap-2">
         {FILTER_PRESETS.map((preset) => {
           const Icon = preset.icon;
           const isActive = isPresetActive(preset);
@@ -108,7 +108,7 @@ export function FilterPresets({ onApplyPreset, activeFilters, className }: Filte
               variant={isActive ? 'default' : 'outline'}
               size="sm"
               className={cn(
-                'w-full gap-1.5 h-9 px-2 transition-all',
+                'h-9 flex-1 basis-[calc(50%-0.25rem)] justify-start gap-1.5 px-2.5 transition-all',
                 isActive 
                   ? 'bg-primary text-primary-foreground shadow-md' 
                   : 'border-border/60 hover:bg-accent hover:border-accent'
