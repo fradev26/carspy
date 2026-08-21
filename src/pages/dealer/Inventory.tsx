@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   Eye, Heart, MessageCircle, Car, Crown, Rocket, Pencil, CheckCircle2,
   Search as SearchIcon, ExternalLink, Trash2, Plus, BarChart3,
-  Clock, PlayCircle, RotateCcw, Settings as SettingsIcon,
+  Clock, PlayCircle, RotateCcw, Settings as SettingsIcon, RefreshCw, Upload,
 } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
