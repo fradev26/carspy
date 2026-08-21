@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { usePermissions } from '@/hooks/usePermissions';
 import { cn } from '@/lib/utils';
 import { consumerNavItems, dealerNavItems, type NavItem } from '@/config/navigation';
 import { isNavItemActive } from '@/lib/navActive';
@@ -15,8 +16,10 @@ export function DesktopNav({ isTransparent }: Props) {
   const { user } = useAuth();
   const { isDealer } = useProfile();
   const { openChat } = useAIChat();
+  const perms = usePermissions();
 
-  const items: NavItem[] = user && isDealer ? dealerNavItems : consumerNavItems;
+  const baseItems: NavItem[] = user && isDealer ? dealerNavItems : consumerNavItems;
+  const items = baseItems.filter((item) => !item.requires || perms[item.requires]);
 
   return (
     <nav aria-label="Hoofdnavigatie" className="flex items-center gap-1">
@@ -24,7 +27,8 @@ export function DesktopNav({ isTransparent }: Props) {
         const Icon = item.icon;
         const resolvedPath =
           item.authPath && !user ? item.authPath : item.path ?? undefined;
-        const active = isNavItemActive(location.pathname, resolvedPath ?? null);
+        const active = isNavItemActive(location.pathname, resolvedPath ?? null, item.exact);
+
 
         if (item.isAI) {
           const aiClasses =

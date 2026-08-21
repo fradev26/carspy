@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Heart, User, Plus, LogOut, MessageCircle, BarChart3, Shield, FileText, Settings, HelpCircle, Mail } from 'lucide-react';
+import { Heart, User, Plus, LogOut, MessageCircle, BarChart3, Shield, FileText, Settings, HelpCircle, Mail, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -276,13 +276,22 @@ export function Header() {
                   <DropdownMenuItem asChild><Link to="/account/advertenties" className="cursor-pointer">Mijn advertenties</Link></DropdownMenuItem>
                   <DropdownMenuItem asChild><Link to="/favorieten" className="cursor-pointer">Mijn activiteiten</Link></DropdownMenuItem>
                   {isDealer && (
-                    <DropdownMenuItem asChild>
-                      <Link to="/zakelijk" className="cursor-pointer flex items-center gap-2">
-                        <BarChart3 className="h-4 w-4" />
-                        Zakelijk Dashboard
-                      </Link>
-                    </DropdownMenuItem>
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link to="/zakelijk" className="cursor-pointer flex items-center gap-2">
+                          <BarChart3 className="h-4 w-4" />
+                          Zakelijk Dashboard
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/zoeken" className="cursor-pointer flex items-center gap-2">
+                          <Search className="h-4 w-4" />
+                          Naar de marktplaats
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
                   )}
+
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive focus:text-destructive">
                     <LogOut className="mr-2 h-4 w-4" />

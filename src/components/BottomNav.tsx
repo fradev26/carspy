@@ -4,7 +4,7 @@ import { Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { cn } from '@/lib/utils';
-import { consumerNavItems, dealerNavItems, type NavItem } from '@/config/navigation';
+import { consumerNavItems, dealerMobileNavItems, type NavItem } from '@/config/navigation';
 import { isNavItemActive } from '@/lib/navActive';
 import { useAIChat } from '@/context/AIChatContext';
 
@@ -14,7 +14,7 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
   const { isDealer } = useProfile();
   const { openChat } = useAIChat();
 
-  const items: NavItem[] = user && isDealer ? dealerNavItems : consumerNavItems;
+  const items: NavItem[] = user && isDealer ? dealerMobileNavItems : consumerNavItems;
 
   return (
     <>
@@ -31,7 +31,7 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
         <div className="flex items-center justify-around h-16">
           {items.map((item) => {
             if (item.isAI) {
-              const isActive = isNavItemActive(location.pathname, item.path);
+              const isActive = isNavItemActive(location.pathname, item.path, item.exact);
               const aiContent = (
                 <div className="flex flex-col items-center justify-center w-full h-full relative">
                   <div className={cn(
