@@ -202,24 +202,61 @@ export function Header() {
 
         <div className="absolute right-6 top-1/2 -translate-y-1/2">
           {user ? (
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={unreadCount ? `Berichten (${unreadCount} ongelezen)` : 'Berichten'}
-              onClick={() => navigate('/berichten')}
-              className="relative h-9 w-9 rounded-md bg-card/90 text-accent backdrop-blur-sm shadow-md transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95"
-            >
-              <MessageCircle className="h-4 w-4" strokeWidth={1.75} />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ring-2 ring-background">
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              )}
-            </Button>
+            showLeadsInbox ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Inbox${unreadCount ? ` (${unreadCount} ongelezen berichten)` : ''}${newLeadsCount ? ` (${newLeadsCount} nieuwe leads)` : ''}`}
+                    className="relative h-9 w-9 rounded-md bg-card/90 text-accent backdrop-blur-sm shadow-md transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95"
+                  >
+                    <MessageCircle className="h-4 w-4" strokeWidth={1.75} />
+                    {inboxCount > 0 && (
+                      <span className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ring-2 ring-background">
+                        {inboxCount > 9 ? '9+' : inboxCount}
+                      </span>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem asChild>
+                    <Link to="/berichten" className="cursor-pointer flex items-center gap-2">
+                      <MessageCircle className="h-4 w-4" />
+                      <span className="flex-1">Berichten</span>
+                      <UnreadBadge count={unreadCount} />
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/zakelijk/leads" className="cursor-pointer flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      <span className="flex-1">Leads</span>
+                      <UnreadBadge count={newLeadsCount} />
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={unreadCount ? `Berichten (${unreadCount} ongelezen)` : 'Berichten'}
+                onClick={() => navigate('/berichten')}
+                className="relative h-9 w-9 rounded-md bg-card/90 text-accent backdrop-blur-sm shadow-md transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95"
+              >
+                <MessageCircle className="h-4 w-4" strokeWidth={1.75} />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ring-2 ring-background">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </Button>
+            )
           ) : (
             <div className="h-9 w-9 rounded-md" aria-hidden="true" />
           )}
         </div>
+
       </div>
 
 
