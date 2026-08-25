@@ -35,8 +35,8 @@ vi.mock('@/hooks/usePermissions', () => ({
     loading: false,
   }),
 }));
-vi.mock('@/hooks/useUnreadMessages', () => ({ useUnreadMessages: () => state.unread }));
-vi.mock('@/hooks/useNewLeadsCount', () => ({ useNewLeadsCount: () => state.newLeads }));
+vi.mock('@/hooks/useUnreadMessages', () => ({ useUnreadMessages: () => ({ count: state.unread }) }));
+vi.mock('@/hooks/useNewLeadsCount', () => ({ useNewLeadsCount: () => ({ count: state.newLeads }) }));
 vi.mock('@/context/AIChatContext', () => ({
   useAIChat: () => ({ open: false, openChat, closeChat: vi.fn() }),
   AIChatProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
