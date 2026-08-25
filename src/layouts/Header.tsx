@@ -208,7 +208,7 @@ export function Header() {
               <Link to={showLeadsInbox ? '/zakelijk/leads' : '/berichten'}>
                 <MessageCircle className="h-4 w-4" strokeWidth={1.75} />
                 {inboxCount > 0 && (
-                  <span className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ring-2 ring-background">
+                  <span data-testid="inbox-badge" className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ring-2 ring-background">
                     {inboxCount > 9 ? '9+' : inboxCount}
                   </span>
                 )}
@@ -252,7 +252,7 @@ export function Header() {
                 <Link to={showLeadsInbox ? '/zakelijk/leads' : '/berichten'}>
                   <MessageCircle className="h-4 w-4" />
                   {inboxCount > 0 && (
-                    <span className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ring-2 ring-background">
+                    <span data-testid="inbox-badge" className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ring-2 ring-background">
                       {inboxCount > 9 ? '9+' : inboxCount}
                     </span>
                   )}
