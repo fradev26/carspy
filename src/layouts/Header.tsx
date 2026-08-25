@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Heart, User, Users, Plus, LogOut, MessageCircle, BarChart3, Shield, FileText, Settings, HelpCircle, Mail, Search } from 'lucide-react';
+import { User, LogOut, MessageCircle, BarChart3, Shield, FileText, Settings, HelpCircle, Mail, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
