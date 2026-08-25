@@ -20,7 +20,7 @@ export function Logo({ size = 'md', asLink = false, className }: LogoProps) {
   const span = (
     <span
       className={cn(
-        'font-bold select-none text-primary-strong leading-none',
+        'font-bold select-none text-primary leading-none',
         sizeMap[size],
         className
       )}
