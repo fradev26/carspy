@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { createNavState, dealerInbox, privateInbox, totalInbox } from '@/test/fixtures';
+import { within } from '@testing-library/react';
+import { createNavState, dealerInbox, emptyInbox, privateInbox, totalInbox } from '@/test/fixtures';
 
 /* ---------- hook mocks: één plek voor rol/sessie ---------- */
 
@@ -38,7 +39,10 @@ vi.mock('@/hooks/usePermissions', () => ({
   }),
 }));
 vi.mock('@/hooks/useUnreadMessages', () => ({ useUnreadMessages: () => ({ count: state.unread }) }));
-vi.mock('@/hooks/useNewLeadsCount', () => ({ useNewLeadsCount: () => ({ count: state.newLeads }) }));
+vi.mock('@/hooks/useNewLeadsCount', () => ({
+  // Respecteert de `enabled`-vlag net als de echte hook (0 zonder leadrechten).
+  useNewLeadsCount: (enabled?: boolean) => ({ count: enabled ? state.newLeads : 0 }),
+}));
 vi.mock('@/context/AIChatContext', () => ({
   useAIChat: () => ({ open: false, openChat, closeChat: vi.fn() }),
   AIChatProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -183,5 +187,77 @@ describe('E2E — inbox-icoon (leads/berichten)', () => {
     });
     await userEvent.click(links[0]);
     await waitFor(() => expect(screenPath()).toBe('/zakelijk/leads'));
+  });
+});
+
+/* ---------- badge-telling per accounttype ---------- */
+
+/** Alle inbox-links (mobiel + desktop) van de header. */
+const inboxLinks = () =>
+  screen.getAllByRole('link', { name: /^(Berichten|Leads en berichten)/ });
+
+const badgeTexts = () =>
+  inboxLinks().map((link) => within(link).queryByTestId('inbox-badge')?.textContent ?? null);
+
+describe('E2E — inbox-badge telling per accounttype', () => {
+  it('toont geen badge wanneer er niets ongelezen is (particulier)', () => {
+    setRole('private');
+    nav.setInbox(emptyInbox);
+    renderHeader('/');
+    inboxLinks().forEach((link) => {
+      expect(link).toHaveAccessibleName('Berichten');
+      expect(within(link).queryByTestId('inbox-badge')).toBeNull();
+    });
+  });
+
+  it('telt voor een particulier enkel ongelezen berichten', () => {
+    setRole('private');
+    nav.setInbox({ unread: 2, newLeads: 5 });
+    renderHeader('/');
+    inboxLinks().forEach((link) => {
+      expect(link).toHaveAccessibleName('Berichten (2 ongelezen)');
+      expect(within(link).getByTestId('inbox-badge')).toHaveTextContent('2');
+      expect(link).toHaveAttribute('href', '/berichten');
+    });
+  });
+
+  it('telt voor een dealer berichten + nieuwe leads samen', () => {
+    setRole('dealer');
+    nav.setInbox(dealerInbox);
+    renderHeader('/');
+    const total = totalInbox(dealerInbox);
+    inboxLinks().forEach((link) => {
+      expect(link).toHaveAccessibleName(`Leads en berichten (${total} ongelezen)`);
+      expect(within(link).getByTestId('inbox-badge')).toHaveTextContent(String(total));
+      expect(link).toHaveAttribute('href', '/zakelijk/leads');
+    });
+  });
+
+  it('kapt de badge af op 9+ bij meer dan negen items', () => {
+    setRole('dealer');
+    nav.setInbox({ unread: 6, newLeads: 7 });
+    renderHeader('/');
+    expect(badgeTexts().every((t) => t === '9+')).toBe(true);
+    inboxLinks().forEach((link) => expect(link).toHaveAccessibleName('Leads en berichten (13 ongelezen)'));
+  });
+
+  it('negeert leads voor een dealer zonder leadrechten en routeert naar /berichten', async () => {
+    setRole('dealer');
+    nav.setCanViewLeads(false);
+    nav.setInbox({ unread: 1, newLeads: 4 });
+    renderHeader('/');
+    const links = inboxLinks();
+    links.forEach((link) => {
+      expect(link).toHaveAccessibleName('Berichten (1 ongelezen)');
+      expect(within(link).getByTestId('inbox-badge')).toHaveTextContent('1');
+    });
+    await userEvent.click(links[0]);
+    await waitFor(() => expect(screenPath()).toBe('/berichten'));
+  });
+
+  it('toont geen inbox-icoon voor een uitgelogde bezoeker', () => {
+    setRole('guest');
+    renderHeader('/');
+    expect(screen.queryByRole('link', { name: /^(Berichten|Leads en berichten)/ })).toBeNull();
   });
 });
