@@ -12,9 +12,9 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="flex min-h-[60vh] items-center justify-center">
+    <main className="flex min-h-[60vh] items-center justify-center">
       <SEOHead
-        title="Pagina niet gevonden - AutoSpy"
+        title="Pagina niet gevonden — VATUUR."
         description="De pagina die je zoekt bestaat niet of is verplaatst."
         noindex
       />
@@ -31,7 +31,7 @@ const NotFound = () => {
           <Link to="/">Terug naar home</Link>
         </Button>
       </div>
-    </div>
+    </main>
   );
 };
 

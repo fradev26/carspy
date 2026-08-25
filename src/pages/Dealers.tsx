@@ -340,10 +340,10 @@ export default function Dealers() {
       </section>
 
       {/* Packages */}
-      <section aria-labelledby="pakketten" id="pakketten" className="bg-muted/30 py-14 sm:py-20">
+      <section aria-labelledby="pakketten-titel" id="pakketten" className="bg-muted/30 py-14 sm:py-20">
         <div className="container">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 id="pakketten" className="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
+            <h2 id="pakketten-titel" className="text-2xl font-bold tracking-tight sm:text-3xl lg:text-4xl">
               Pakketten en prijzen
             </h2>
             <p className="mt-3 text-muted-foreground">

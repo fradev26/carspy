@@ -40,7 +40,7 @@ export default function Help() {
         <p className="mt-2 text-muted-foreground">Vind snel antwoorden op je vragen over VATUUR.</p>
         <div className="relative mt-6">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Zoek een vraag..." className="pl-10 h-12" />
+          <Input aria-label="Zoek in veelgestelde vragen" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Zoek een vraag..." className="pl-10 h-12" />
         </div>
       </div>
 
