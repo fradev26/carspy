@@ -18,20 +18,6 @@ import { cn } from '@/lib/utils';
 import { Logo } from '@/components/Logo';
 import { DesktopNav } from '@/components/DesktopNav';
 
-function UnreadBadge({ count, className }: { count: number; className?: string }) {
-  if (!count) return null;
-  return (
-    <span
-      aria-label={`${count} ongelezen ${count === 1 ? 'bericht' : 'berichten'}`}
-      className={cn(
-        'inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold leading-none text-primary-foreground',
-        className,
-      )}
-    >
-      {count > 9 ? '9+' : count}
-    </span>
-  );
-}
 
 
 function SectionHeader({ children }: { children: React.ReactNode }) {
