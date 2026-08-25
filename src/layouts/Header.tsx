@@ -237,7 +237,11 @@ export function Header() {
                 variant="ghost"
                 size="icon"
                 asChild
-                aria-label={unreadCount ? `Berichten (${unreadCount} ongelezen)` : 'Berichten'}
+                aria-label={
+                  showLeadsInbox
+                    ? `Leads en berichten${inboxCount ? ` (${inboxCount} ongelezen)` : ''}`
+                    : `Berichten${unreadCount ? ` (${unreadCount} ongelezen)` : ''}`
+                }
                 className={cn(
                   'relative h-9 w-9',
                   isTransparent
@@ -245,11 +249,11 @@ export function Header() {
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                 )}
               >
-                <Link to="/berichten">
+                <Link to={showLeadsInbox ? '/zakelijk/leads' : '/berichten'}>
                   <MessageCircle className="h-4 w-4" />
-                  {unreadCount > 0 && (
+                  {inboxCount > 0 && (
                     <span className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ring-2 ring-background">
-                      {unreadCount > 9 ? '9+' : unreadCount}
+                      {inboxCount > 9 ? '9+' : inboxCount}
                     </span>
                   )}
                 </Link>
