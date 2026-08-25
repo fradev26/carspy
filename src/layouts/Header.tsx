@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Heart, User, Users, Plus, LogOut, MessageCircle, BarChart3, Shield, FileText, Settings, HelpCircle, Mail, Search } from 'lucide-react';
+import { User, LogOut, MessageCircle, BarChart3, Shield, FileText, Settings, HelpCircle, Mail, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -18,20 +18,6 @@ import { cn } from '@/lib/utils';
 import { Logo } from '@/components/Logo';
 import { DesktopNav } from '@/components/DesktopNav';
 
-function UnreadBadge({ count, className }: { count: number; className?: string }) {
-  if (!count) return null;
-  return (
-    <span
-      aria-label={`${count} ongelezen ${count === 1 ? 'bericht' : 'berichten'}`}
-      className={cn(
-        'inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold leading-none text-primary-foreground',
-        className,
-      )}
-    >
-      {count > 9 ? '9+' : count}
-    </span>
-  );
-}
 
 
 function SectionHeader({ children }: { children: React.ReactNode }) {
@@ -208,56 +194,26 @@ export function Header() {
 
         <div className="absolute right-6 top-1/2 -translate-y-1/2">
           {user ? (
-            showLeadsInbox ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={`Inbox${unreadCount ? ` (${unreadCount} ongelezen berichten)` : ''}${newLeadsCount ? ` (${newLeadsCount} nieuwe leads)` : ''}`}
-                    className="relative h-9 w-9 rounded-md bg-card/90 text-accent backdrop-blur-sm shadow-md transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95"
-                  >
-                    <MessageCircle className="h-4 w-4" strokeWidth={1.75} />
-                    {inboxCount > 0 && (
-                      <span className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ring-2 ring-background">
-                        {inboxCount > 9 ? '9+' : inboxCount}
-                      </span>
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem asChild>
-                    <Link to="/berichten" className="cursor-pointer flex items-center gap-2">
-                      <MessageCircle className="h-4 w-4" />
-                      <span className="flex-1">Berichten</span>
-                      <UnreadBadge count={unreadCount} />
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/zakelijk/leads" className="cursor-pointer flex items-center gap-2">
-                      <Users className="h-4 w-4" />
-                      <span className="flex-1">Leads</span>
-                      <UnreadBadge count={newLeadsCount} />
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={unreadCount ? `Berichten (${unreadCount} ongelezen)` : 'Berichten'}
-                onClick={() => navigate('/berichten')}
-                className="relative h-9 w-9 rounded-md bg-card/90 text-accent backdrop-blur-sm shadow-md transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95"
-              >
+            <Button
+              variant="ghost"
+              size="icon"
+              asChild
+              aria-label={
+                showLeadsInbox
+                  ? `Leads en berichten${inboxCount ? ` (${inboxCount} ongelezen)` : ''}`
+                  : `Berichten${unreadCount ? ` (${unreadCount} ongelezen)` : ''}`
+              }
+              className="relative h-9 w-9 rounded-md bg-card/90 text-accent backdrop-blur-sm shadow-md transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95"
+            >
+              <Link to={showLeadsInbox ? '/zakelijk/leads' : '/berichten'}>
                 <MessageCircle className="h-4 w-4" strokeWidth={1.75} />
-                {unreadCount > 0 && (
+                {inboxCount > 0 && (
                   <span className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ring-2 ring-background">
-                    {unreadCount > 9 ? '9+' : unreadCount}
+                    {inboxCount > 9 ? '9+' : inboxCount}
                   </span>
                 )}
-              </Button>
-            )
+              </Link>
+            </Button>
           ) : (
             <div className="h-9 w-9 rounded-md" aria-hidden="true" />
           )}
@@ -281,7 +237,11 @@ export function Header() {
                 variant="ghost"
                 size="icon"
                 asChild
-                aria-label={unreadCount ? `Berichten (${unreadCount} ongelezen)` : 'Berichten'}
+                aria-label={
+                  showLeadsInbox
+                    ? `Leads en berichten${inboxCount ? ` (${inboxCount} ongelezen)` : ''}`
+                    : `Berichten${unreadCount ? ` (${unreadCount} ongelezen)` : ''}`
+                }
                 className={cn(
                   'relative h-9 w-9',
                   isTransparent
@@ -289,11 +249,11 @@ export function Header() {
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                 )}
               >
-                <Link to="/berichten">
+                <Link to={showLeadsInbox ? '/zakelijk/leads' : '/berichten'}>
                   <MessageCircle className="h-4 w-4" />
-                  {unreadCount > 0 && (
+                  {inboxCount > 0 && (
                     <span className="absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground ring-2 ring-background">
-                      {unreadCount > 9 ? '9+' : unreadCount}
+                      {inboxCount > 9 ? '9+' : inboxCount}
                     </span>
                   )}
                 </Link>
