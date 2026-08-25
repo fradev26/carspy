@@ -83,7 +83,7 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
                   className={cn(
                     'flex flex-col items-center justify-center gap-1 px-3 py-1.5 rounded-xl transition-all duration-200 ease-out',
                     isActive
-                      ? 'bg-white/55 dark:bg-white/10 backdrop-blur-md border border-white/60 dark:border-white/15 shadow-sm shadow-primary/15 text-primary-strong'
+                      ? 'bg-transparent text-primary shadow-sm shadow-primary/15'
                       : 'text-muted-foreground active:scale-[0.97]'
                   )}
                 >
