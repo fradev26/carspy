@@ -39,7 +39,7 @@ export const BottomNav = forwardRef<HTMLElement>(function BottomNav(_props, ref)
                   )}>
                     <Sparkles className="h-6 w-6" />
                   </div>
-                  <span className="text-[10px] font-semibold text-primary-strong -mt-0.5">{item.label}</span>
+                  <span className="text-[10px] font-semibold text-primary -mt-0.5">{item.label}</span>
                 </div>
               );
 
