@@ -260,6 +260,13 @@ export default function Inventory() {
               <SettingsIcon className="h-3.5 w-3.5" /> Voorkeuren
             </Link>
           </Button>
+          {perms.canEditListings && (
+            <Button asChild size="sm" className="gap-1.5">
+              <Link to="/verkopen?dealer=1">
+                <Plus className="h-3.5 w-3.5" /> Voertuig toevoegen
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -270,7 +277,7 @@ export default function Inventory() {
           <div className="relative sm:w-72">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Zoek op titel, merk, model…"
+              aria-label="Zoek in je voorraad" placeholder="Zoek op titel, merk, model…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="pl-9 h-9"

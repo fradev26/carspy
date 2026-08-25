@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { createContext, useContext, useId, useMemo, useState } from 'react';
 import { ChevronDown, ChevronUp, Filter, RotateCcw, Search as SearchIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -94,6 +94,17 @@ function ColorSwatch({ color, selected }: { color: ColorOption; selected: boolea
   );
 }
 
+/**
+ * FilterPanel wordt meerdere keren tegelijk gerenderd (desktop-sidebar, mobiele sheet).
+ * Elke instantie krijgt een eigen id-prefix zodat label[for] altijd de juiste checkbox raakt.
+ */
+const IdScopeContext = createContext('');
+
+function useScopedId(id: string) {
+  const scope = useContext(IdScopeContext);
+  return scope ? `${scope}-${id}` : id;
+}
+
 export function FilterPanel({
   filters,
   onFiltersChange,
@@ -101,6 +112,8 @@ export function FilterPanel({
   showPresets = true,
   query,
 }: FilterPanelProps) {
+  const idScope = useId().replace(/:/g, '');
+  const scoped = (id: string) => `${idScope}-${id}`;
   const [openSections, setOpenSections] = useState<Record<FilterSection, boolean>>({
     quick: true,
     performance: false,
@@ -334,6 +347,7 @@ export function FilterPanel({
   const count = (map: FacetCounts | undefined, key: string) => map?.[key];
 
   return (
+    <IdScopeContext.Provider value={idScope}>
     <div className={cn('space-y-1', className)}>
       {/* Header */}
       <div className="flex items-center justify-between pb-4 border-b border-border/60">
@@ -423,9 +437,9 @@ export function FilterPanel({
 
           {/* Uitvoering */}
           <div className="space-y-2">
-            <Label htmlFor="trim" className="text-sm font-medium text-foreground">Uitvoering</Label>
+            <Label htmlFor={scoped("trim")} className="text-sm font-medium text-foreground">Uitvoering</Label>
             <Input
-              id="trim"
+              id={scoped("trim")}
               placeholder="Bijv. GT Line, M Sport"
               value={filters.trim || ''}
               onChange={(e) => updateFilter('trim', e.target.value || undefined)}
@@ -920,9 +934,9 @@ export function FilterPanel({
           </div>
 
           <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-4 py-3">
-            <Label htmlFor="vat" className="text-sm font-medium cursor-pointer">BTW aftrekbaar</Label>
+            <Label htmlFor={scoped("vat")} className="text-sm font-medium cursor-pointer">BTW aftrekbaar</Label>
             <Switch
-              id="vat"
+              id={scoped("vat")}
               checked={filters.vatDeductible || false}
               onCheckedChange={(v) => updateFilter('vatDeductible', v || undefined)}
             />
@@ -999,6 +1013,7 @@ export function FilterPanel({
         </div>
       </FilterSection>
     </div>
+    </IdScopeContext.Provider>
   );
 }
 
@@ -1042,10 +1057,11 @@ function CheckboxRow({
   /** Aantal advertenties dat aan deze optie voldoet, gegeven de andere filters. */
   count?: number;
 }) {
+  const scopedId = useScopedId(id);
   const unavailable = count === 0 && !checked;
   return (
     <label
-      htmlFor={id}
+      htmlFor={scopedId}
       className={cn(
         'flex items-center gap-3 rounded-md px-2 py-2 min-h-11 cursor-pointer transition-colors',
         'hover:bg-muted/60',
@@ -1054,7 +1070,8 @@ function CheckboxRow({
       )}
     >
       <Checkbox
-        id={id}
+        id={scopedId}
+        aria-label={label}
         checked={checked}
         disabled={unavailable}
         onCheckedChange={onChange}

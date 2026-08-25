@@ -191,7 +191,7 @@ export default function Search() {
           {!showMobileResults && (
             <div className="lg:hidden w-full">
               <div className="mb-4">
-                <h1 className="text-2xl font-bold">Auto's zoeken</h1>
+                <h2 className="text-2xl font-bold">Auto's zoeken</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Stel je filters in om het aanbod te ontdekken.
                 </p>

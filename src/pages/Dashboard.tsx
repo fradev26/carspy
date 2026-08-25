@@ -45,6 +45,11 @@ export default function Dashboard() {
   const { count: unreadCount } = useUnreadMessages();
   const [deleteTarget, setDeleteTarget] = useState<Listing | null>(null);
 
+  // Dealers werken in de zakelijke werkruimte; één waarheid voor de voorraad.
+  useEffect(() => {
+    if (isDealer) navigate('/zakelijk', { replace: true });
+  }, [isDealer, navigate]);
+
   useEffect(() => {
     if (user) {
       fetchMyListings();

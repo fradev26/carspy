@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public._dealer_leads_before_insert() FROM PUBLIC, anon, authenticated;

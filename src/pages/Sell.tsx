@@ -147,14 +147,8 @@ export default function Sell() {
 
   const [searchParams] = useSearchParams();
   const draftId = searchParams.get('draftId');
-  const dealerOverride = searchParams.get('dealer') === '1';
   const initialStep = Math.min(parseInt(searchParams.get('step') || '0') || 0, REVIEW_STEP);
-
-  useEffect(() => {
-    if (!profileLoading && user && isDealer && !dealerOverride) {
-      navigate('/zakelijk', { replace: true });
-    }
-  }, [user, isDealer, profileLoading, navigate, dealerOverride]);
+  // Dealers gebruiken dezelfde wizard; geen redirect meer (voorkwam doodlopende CTA's).
 
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [isSubmitting, setIsSubmitting] = useState(false);
