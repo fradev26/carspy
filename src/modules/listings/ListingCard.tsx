@@ -210,7 +210,7 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
             aria-label={isComparing ? 'Wordt vergeleken' : 'Vergelijk deze auto'}
             className={cn(
               'absolute right-3 top-14 z-10 h-9 w-9 rounded-md backdrop-blur-sm shadow-md transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground',
-              isComparing ? 'bg-primary text-primary-foreground' : 'bg-card/90 text-primary-strong'
+              isComparing ? 'bg-primary text-primary-foreground' : 'bg-card/90 text-primary'
             )}
             onClick={handleCompareClick}
             disabled={isComparing}
@@ -291,7 +291,7 @@ export function ListingCard({ listing, variant = 'default' }: ListingCardProps) 
             <button
               type="button"
               onClick={handleMarketCompare}
-              className="mt-auto pt-2 flex w-full items-center justify-center gap-1.5 rounded-md border border-border/60 bg-muted/40 px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary-strong hover:border-primary/30"
+              className="mt-auto pt-2 flex w-full items-center justify-center gap-1.5 rounded-md border border-border/60 bg-muted/40 px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary hover:border-primary/30"
             >
               <BarChart3 className="h-3.5 w-3.5" />
               Vergelijk markt
