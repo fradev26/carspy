@@ -1,15 +1,17 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { createNavState, dealerInbox, privateInbox, totalInbox } from '@/test/fixtures';
 
 /* ---------- hook mocks: één plek voor rol/sessie ---------- */
 
+const nav = createNavState('private');
 const state = {
-  user: { id: 'u1' } as { id: string } | null,
-  isDealer: false,
-  canViewLeads: false,
-  unread: 0,
-  newLeads: 0,
+  get user() { return nav.current.user; },
+  get isDealer() { return nav.current.isDealer; },
+  get canViewLeads() { return nav.current.canViewLeads; },
+  get unread() { return nav.current.inbox.unread; },
+  get newLeads() { return nav.current.inbox.newLeads; },
 };
 
 const openChat = vi.fn();
@@ -18,7 +20,7 @@ vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({ user: state.user, session: state.user ? {} : null, loading: false, signOut: vi.fn() }),
 }));
 vi.mock('@/hooks/useProfile', () => ({
-  useProfile: () => ({ profile: state.user ? { id: 'u1', is_dealer: state.isDealer } : null, loading: false, isDealer: state.isDealer }),
+  useProfile: () => ({ profile: state.user ? { id: state.user.id, is_dealer: state.isDealer } : null, loading: false, isDealer: state.isDealer }),
 }));
 vi.mock('@/hooks/usePermissions', () => ({
   usePermissions: () => ({
@@ -45,17 +47,14 @@ vi.mock('@/context/AIChatContext', () => ({
 import { renderBottomNav, renderDesktopNav, renderHeader } from '@/test/navigationHarness';
 
 function setRole(role: 'guest' | 'private' | 'dealer') {
-  state.user = role === 'guest' ? null : { id: 'u1' };
-  state.isDealer = role === 'dealer';
-  state.canViewLeads = role === 'dealer';
+  nav.setRole(role);
+  nav.setInbox({ unread: 0, newLeads: 0 });
 }
 
 const screenPath = () => screen.getByTestId('screen').textContent;
 
 beforeEach(() => {
   openChat.mockClear();
-  state.unread = 0;
-  state.newLeads = 0;
   setRole('private');
 });
 
@@ -154,7 +153,7 @@ describe('E2E — desktopnavigatie (dealer)', () => {
 
   it('verbergt Leads voor een dealer zonder leadrechten', () => {
     setRole('dealer');
-    state.canViewLeads = false;
+    nav.setCanViewLeads(false);
     renderDesktopNav('/');
     expect(screen.queryByRole('link', { name: 'Leads' })).toBeNull();
     expect(screen.getByRole('link', { name: 'Voorraad' })).toBeInTheDocument();
@@ -166,19 +165,22 @@ describe('E2E — desktopnavigatie (dealer)', () => {
 describe('E2E — inbox-icoon (leads/berichten)', () => {
   it('stuurt een particulier naar /berichten', async () => {
     setRole('private');
-    state.unread = 2;
+    nav.setInbox(privateInbox);
     renderHeader('/');
-    const links = screen.getAllByRole('link', { name: /Berichten \(2 ongelezen\)/ });
+    const links = screen.getAllByRole('link', {
+      name: new RegExp(`Berichten \\(${totalInbox(privateInbox)} ongelezen\\)`),
+    });
     await userEvent.click(links[0]);
     await waitFor(() => expect(screenPath()).toBe('/berichten'));
   });
 
   it('stuurt een dealer met leadrechten naar /zakelijk/leads', async () => {
     setRole('dealer');
-    state.unread = 1;
-    state.newLeads = 3;
+    nav.setInbox(dealerInbox);
     renderHeader('/');
-    const links = screen.getAllByRole('link', { name: /Leads en berichten \(4 ongelezen\)/ });
+    const links = screen.getAllByRole('link', {
+      name: new RegExp(`Leads en berichten \\(${totalInbox(dealerInbox)} ongelezen\\)`),
+    });
     await userEvent.click(links[0]);
     await waitFor(() => expect(screenPath()).toBe('/zakelijk/leads'));
   });
