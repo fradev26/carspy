@@ -24,9 +24,8 @@ export default function Leads() {
     () => ({
       all: all.length,
       new: all.filter((l) => l.status === 'new').length,
-      contacted: all.filter((l) => l.status === 'contacted').length,
-      won: all.filter((l) => l.status === 'won').length,
-      lost: all.filter((l) => l.status === 'lost').length,
+      in_progress: all.filter((l) => l.status === 'in_progress').length,
+      done: all.filter((l) => l.status === 'done').length,
     }),
     [all],
   );
@@ -41,16 +40,18 @@ export default function Leads() {
   }, [all, tab, query]);
 
   const handleStatus = async (leadId: string, status: LeadStatus) => {
-    // Conversatieleads worden beheerd via /berichten, niet via statusveld.
-    if (leadId.startsWith('conv-')) {
-      toast({ title: 'Gesprek beheer je in Berichten', description: 'Open het gesprek om het te beantwoorden of af te ronden.' });
-      return;
-    }
     setBusyId(leadId);
-    const { error } = await supabase
-      .from('dealer_leads')
-      .update({ status })
-      .eq('id', leadId);
+    // Gespreksleads slaan hun status op in conversations via een beveiligde RPC;
+    // contactaanvragen direct in dealer_leads.
+    const { error } = leadId.startsWith('conv-')
+      ? await supabase.rpc('set_conversation_status', {
+          _conversation_id: leadId.slice('conv-'.length),
+          _status: status,
+        })
+      : await supabase
+          .from('dealer_leads')
+          .update({ status })
+          .eq('id', leadId);
     setBusyId(null);
     if (error) {
       toast({ title: 'Status niet opgeslagen', description: error.message, variant: 'destructive' });
