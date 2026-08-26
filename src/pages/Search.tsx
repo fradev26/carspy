@@ -496,7 +496,7 @@ export default function Search() {
                   ))}
                 </div>
               ) : listingsError && pageListings.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 py-12 text-center">
+                <div role="alert" className="flex flex-col items-center justify-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 py-12 text-center">
                   <h2 className="text-lg font-semibold">Zoekresultaten konden niet geladen worden</h2>
                   <p className="max-w-sm text-sm text-muted-foreground">
                     Er ging iets mis bij het ophalen van de advertenties. Probeer het opnieuw.
