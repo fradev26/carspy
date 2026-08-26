@@ -128,3 +128,41 @@ describe('leadListingTitles', () => {
     expect(leadListingTitles([mk('VW Golf'), mk('Audi A3'), mk('VW Golf'), mk(null)])).toEqual(['Audi A3', 'VW Golf']);
   });
 });
+
+describe('paginateLeads', () => {
+  const mk = (i: number): import('./useDealerLeads').DealerLead => ({
+    id: `l${i}`, type: 'contactaanvraag', name: `Lead ${i}`, email: null, phone: null, company: null,
+    listingTitle: null, listingId: null, snippet: '', status: 'new', createdAt: '2026-08-20T10:00:00Z',
+  });
+  const many = Array.from({ length: LEADS_PAGE_SIZE * 2 + 5 }, (_, i) => mk(i));
+
+  it('toont de eerste pagina en meldt dat er meer is', () => {
+    const page = paginateLeads(many, 1);
+    expect(page.visible).toHaveLength(LEADS_PAGE_SIZE);
+    expect(page.visible[0].id).toBe('l0');
+    expect(page.hasMore).toBe(true);
+    expect(page.remaining).toBe(LEADS_PAGE_SIZE + 5);
+    expect(page.total).toBe(many.length);
+  });
+
+  it('breidt uit zonder eerdere items te vervangen (infinite scroll)', () => {
+    const page = paginateLeads(many, 2);
+    expect(page.visible).toHaveLength(LEADS_PAGE_SIZE * 2);
+    expect(page.visible[0].id).toBe('l0');
+    expect(page.visible[LEADS_PAGE_SIZE].id).toBe(`l${LEADS_PAGE_SIZE}`);
+    expect(page.hasMore).toBe(true);
+    expect(page.remaining).toBe(5);
+  });
+
+  it('geeft hasMore=false zodra alles zichtbaar is', () => {
+    const page = paginateLeads(many, 3);
+    expect(page.visible).toHaveLength(many.length);
+    expect(page.hasMore).toBe(false);
+    expect(page.remaining).toBe(0);
+  });
+
+  it('clampt pageCount naar minstens één pagina', () => {
+    expect(paginateLeads(many, 0).visible).toHaveLength(LEADS_PAGE_SIZE);
+    expect(paginateLeads([], 1)).toMatchObject({ visible: [], hasMore: false, remaining: 0, total: 0 });
+  });
+});
