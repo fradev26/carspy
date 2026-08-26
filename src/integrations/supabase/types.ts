@@ -1995,6 +1995,7 @@ export type Database = {
       }
       is_company_owner: { Args: { _user_id: string }; Returns: boolean }
       is_listing_owner: { Args: { listing_id: string }; Returns: boolean }
+      is_valid_vat: { Args: { _vat: string }; Returns: boolean }
       list_company_members: {
         Args: never
         Returns: {
@@ -2036,6 +2037,7 @@ export type Database = {
         }
         Returns: number
       }
+      normalize_vat: { Args: { _vat: string }; Returns: string }
       peek_invitation: { Args: { _token: string }; Returns: Json }
       reactivate_member: { Args: { _user_id: string }; Returns: undefined }
       read_email_batch: {
