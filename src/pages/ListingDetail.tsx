@@ -327,7 +327,7 @@ export default function ListingDetail() {
 
   if (listingError) {
     return (
-      <div className="container py-20 text-center">
+      <div className="container py-20 text-center" role="alert">
         <h1 className="text-2xl font-bold">Advertentie kon niet geladen worden</h1>
         <p className="mt-2 text-muted-foreground">
           Er ging iets mis bij het ophalen van deze advertentie. Probeer het opnieuw.

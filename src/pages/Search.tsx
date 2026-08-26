@@ -25,6 +25,8 @@ import {
 } from '@/types/listing';
 import { parseFiltersFromURL, serializeFiltersToParams } from '@/lib/searchFilters';
 import { SkeletonCard } from '@/components/ui/skeleton-card';
+import { LiveStatus } from '@/components/ui/live-status';
+
 
 // Params we preserve through filter updates (not part of SearchFilters)
 const PRESERVED_PARAMS = ['q', 'aiIntent', 'aiQuery', 'compareWith', 'sort'] as const;
@@ -298,6 +300,18 @@ export default function Search() {
               </div>
 
 
+              {/* Statusregio voor schermlezers: kondigt laden en resultaataantal aan.
+                  Fouten worden aangekondigd via role="alert" op het zichtbare foutblok. */}
+              <LiveStatus
+                message={
+                  resultsPending
+                    ? 'Zoekresultaten worden geladen…'
+                    : listingsError
+                      ? ''
+                      : `${total ?? pageListings.length} resultaten gevonden`
+                }
+              />
+
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <h1 className="text-2xl font-bold md:text-3xl">Auto's zoeken</h1>
@@ -482,7 +496,7 @@ export default function Search() {
                   ))}
                 </div>
               ) : listingsError && pageListings.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 py-12 text-center">
+                <div role="alert" className="flex flex-col items-center justify-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 py-12 text-center">
                   <h2 className="text-lg font-semibold">Zoekresultaten konden niet geladen worden</h2>
                   <p className="max-w-sm text-sm text-muted-foreground">
                     Er ging iets mis bij het ophalen van de advertenties. Probeer het opnieuw.
