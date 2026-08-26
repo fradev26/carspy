@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { supabase } from '@/integrations/supabase/client';
 import type { SearchFilters } from '@/types/listing';
 import { toKw } from '@/lib/searchQuery';
@@ -77,30 +77,19 @@ export function buildFacetPayload(filters: SearchFilters, query?: string): Recor
   return p;
 }
 
-function useDebounced<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value);
-  const serialized = JSON.stringify(value);
-  useEffect(() => {
-    const t = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [serialized, delay]);
-  return debounced;
-}
-
 /**
  * Live aantallen per filteroptie, rekening houdend met de overige actieve
  * filters. De berekening wordt gedebounced zodat snel klikken niet hapert.
  */
 export function useSearchFacets(filters: SearchFilters, query?: string) {
-  const payload = useDebounced(buildFacetPayload(filters, query), 250);
+  const { value: payload } = useDebouncedValue(buildFacetPayload(filters, query), 250);
 
   const { data, isFetching } = useQuery<SearchFacets>({
     queryKey: ['search-facets', payload],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('search_facets' as never, {
-        _filters: payload,
-      } as never);
+    queryFn: async ({ signal }) => {
+      const { data, error } = await supabase
+        .rpc('search_facets' as never, { _filters: payload } as never)
+        .abortSignal(signal);
       if (error) throw new Error(error.message);
       return { ...EMPTY_FACETS, ...(data as unknown as SearchFacets) };
     },

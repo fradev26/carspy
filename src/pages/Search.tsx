@@ -42,6 +42,7 @@ export default function Search() {
     listings: pageListings,
     total,
     isLoading: listingsLoading,
+    isStale: listingsStale,
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
@@ -53,6 +54,8 @@ export default function Search() {
     sort: sortBy,
     limit: DEFAULT_PAGE_SIZE,
   });
+  // Zolang een nieuwere filteraanvraag onderweg is tonen we geen definitieve tellingen.
+  const resultsPending = listingsLoading || listingsStale;
   const [mobileResultsRevealed, setMobileResultsRevealed] = useState(false);
   const compareWithId = searchParams.get('compareWith');
   const referenceListing = compareWithId ? pageListings.find((l) => l.id === compareWithId) : undefined;
@@ -204,7 +207,7 @@ export default function Search() {
                   onClick={() => setMobileResultsRevealed(true)}
                   className="w-full min-h-12 text-base font-semibold"
                 >
-                  {listingsLoading
+                  {resultsPending
                     ? 'Resultaten laden…'
                     : `Toon ${activeFilterCount > 0 ? `${total ?? 0} resultaten` : 'alle resultaten'}`}
                 </Button>
@@ -298,7 +301,7 @@ export default function Search() {
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <h1 className="text-2xl font-bold md:text-3xl">Auto's zoeken</h1>
-                  {listingsLoading ? (
+                  {resultsPending ? (
                     <div className="mt-1 flex h-6 items-center" aria-hidden="true">
                       <div className="h-4 w-40 rounded bg-muted animate-pulse-soft" />
                     </div>
@@ -378,7 +381,7 @@ export default function Search() {
                         )}
                         <DrawerClose asChild>
                           <Button className="flex-1 min-h-12">
-                            {listingsLoading ? 'Resultaten laden…' : `Toon ${total ?? 0} resultaten`}
+                            {resultsPending ? 'Resultaten laden…' : `Toon ${total ?? 0} resultaten`}
                           </Button>
                         </DrawerClose>
                       </DrawerFooter>
