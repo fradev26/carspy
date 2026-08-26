@@ -19,6 +19,7 @@ import { LeadKpiRow } from '@/components/dealer/leads/LeadKpiRow';
 import { LeadFilters, type LeadTab } from '@/components/dealer/leads/LeadFilters';
 import { LeadCard } from '@/components/dealer/leads/LeadCard';
 import { LeadEmptyState } from '@/components/dealer/leads/LeadEmptyState';
+import { VirtualGrid } from '@/components/VirtualGrid';
 import { Can } from '@/components/auth/Can';
 
 export default function Leads() {
@@ -167,10 +168,16 @@ export default function Leads() {
 
         ) : (
           <>
-            <div ref={listRef} className="space-y-3 [overflow-anchor:none] [&_*]:[overflow-anchor:none]">
-              {visible.map((lead: DealerLead) => (
-                <LeadCard key={lead.id} lead={lead} onStatusChange={handleStatus} busy={busyId === lead.id} />
-              ))}
+            <div ref={listRef} className="[overflow-anchor:none] [&_*]:[overflow-anchor:none]">
+              <VirtualGrid
+                items={visible}
+                columns={[1, 1, 1]}
+                estimateRowHeight={168}
+                renderItem={(lead: DealerLead) => (
+                  <LeadCard lead={lead} onStatusChange={handleStatus} busy={busyId === lead.id} />
+                )}
+                getKey={(lead) => lead.id}
+              />
             </div>
             {paged.hasMore && (
               <div ref={sentinelRef} className="flex justify-center pt-1">
