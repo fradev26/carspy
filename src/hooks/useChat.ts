@@ -15,13 +15,16 @@ type UseChatOptions = {
 
 async function submitLead(payload: Record<string, unknown>) {
   try {
+    const { data } = await supabase.auth.getSession();
+    const accessToken = data.session?.access_token;
     const resp = await fetch(LEAD_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       },
-      body: JSON.stringify({ ...payload, source: 'dealers_page_ai' }),
+      body: JSON.stringify(payload),
     });
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({}));

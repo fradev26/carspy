@@ -108,6 +108,9 @@ export function useDealerLeads() {
         supabase.from('conversations').select('id, listing_id, buyer_id, seller_id, created_at, updated_at').eq('seller_id', uid).order('updated_at', { ascending: false }),
       ]);
 
+      if (contactRes.error) throw contactRes.error;
+      if (convRes.error) throw convRes.error;
+
       const dealerLeads: DealerLead[] = (contactRes.data ?? []).map(normalizeDealerLead);
 
       const convs = (convRes.data ?? []) as ConversationRow[];
@@ -121,6 +124,10 @@ export function useDealerLeads() {
           buyerIds.length ? supabase.from('public_profiles').select('id, full_name, dealer_name').in('id', buyerIds) : Promise.resolve({ data: [], error: null }),
           supabase.from('messages').select('conversation_id, content, created_at').in('conversation_id', convs.map((c) => c.id)).order('created_at', { ascending: false }),
         ]);
+
+        if (listingsRes.error) throw listingsRes.error;
+        if (profilesRes.error) throw profilesRes.error;
+        if (msgsRes.error) throw msgsRes.error;
 
         const listingMap = new Map((listingsRes.data ?? []).map((l: { id: string; title: string }) => [l.id, l.title]));
         const profileMap = new Map(
