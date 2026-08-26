@@ -44,6 +44,25 @@ export default function Leads() {
   const filtered = useMemo(() => filterLeads(leads, state), [leads, state]);
   const page = useMemo(() => paginateLeads(filtered, state.page), [filtered, state.page]);
 
+  // Infinite scroll: zodra de sentinel in beeld komt, groeit de zichtbare lijst.
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const currentPage = state.page;
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || !page.hasMore) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          observer.disconnect();
+          setState({ page: currentPage + 1 });
+        }
+      },
+      { rootMargin: '400px' },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [page.hasMore, currentPage, setState]);
+
   const invalidate = useCallback(
     () => queryClient.invalidateQueries({ queryKey: ['dealer-leads'] }),
     [queryClient],
