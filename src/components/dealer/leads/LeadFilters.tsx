@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
-export type LeadTab = 'all' | 'new' | 'contacted' | 'won' | 'lost';
+export type LeadTab = 'all' | 'new' | 'in_progress' | 'done';
 
 export interface LeadFiltersValue {
   tab: LeadTab;
@@ -13,9 +13,8 @@ export interface LeadFiltersValue {
 const TABS: { key: LeadTab; label: string }[] = [
   { key: 'all', label: 'Alles' },
   { key: 'new', label: 'Nieuw' },
-  { key: 'contacted', label: 'Opgevolgd' },
-  { key: 'won', label: 'Gewonnen' },
-  { key: 'lost', label: 'Verloren' },
+  { key: 'in_progress', label: 'In behandeling' },
+  { key: 'done', label: 'Afgehandeld' },
 ];
 
 export function LeadFilters({

@@ -9,17 +9,14 @@ import { Button } from '@/components/ui/button';
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
-import type { DealerLead, LeadStatus } from '@/hooks/useDealerLeads';
+import { LEAD_STATUSES, type DealerLead, type LeadStatus } from '@/hooks/useDealerLeads';
 import { cn } from '@/lib/utils';
 
 const STATUS_META: Record<LeadStatus, { label: string; className: string }> = {
   new: { label: 'Nieuw', className: 'bg-primary text-primary-foreground' },
-  contacted: { label: 'Opgevolgd', className: 'bg-accent text-accent-foreground' },
-  won: { label: 'Gewonnen', className: 'bg-success text-success-foreground' },
-  lost: { label: 'Verloren', className: 'bg-muted text-muted-foreground' },
+  in_progress: { label: 'In behandeling', className: 'bg-accent text-accent-foreground' },
+  done: { label: 'Afgehandeld', className: 'bg-success text-success-foreground' },
 };
-
-const STATUS_ORDER: LeadStatus[] = ['new', 'contacted', 'won', 'lost'];
 
 export function LeadCard({
   lead,
@@ -67,7 +64,7 @@ export function LeadCard({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {STATUS_ORDER.map((s) => (
+              {LEAD_STATUSES.map((s) => (
                 <DropdownMenuItem key={s} onClick={() => onStatusChange(lead.id, s)}>
                   <span className={cn('mr-2 h-2 w-2 rounded-full', STATUS_META[s].className)} />
                   {STATUS_META[s].label}

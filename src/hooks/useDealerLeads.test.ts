@@ -30,9 +30,10 @@ describe('normalizeDealerLead', () => {
 });
 
 describe('normalizeConversationLead', () => {
-  it('bouwt een berichtlead op met gesprekslink', () => {
+  it('bouwt een berichtlead op met gesprekslink en status uit het gesprek', () => {
     const conv = {
       id: 'c1', listing_id: 'lis-1', buyer_id: 'buyer-1', seller_id: 'seller-1',
+      status: 'in_progress',
       created_at: '2026-08-19T08:00:00Z', updated_at: '2026-08-20T09:00:00Z',
     };
     const lead = normalizeConversationLead(conv, 'Volkswagen Golf 1.4', 'Sofie', 'Is de prijs onderhandelbaar?', '2026-08-20T09:00:00Z');
@@ -40,8 +41,26 @@ describe('normalizeConversationLead', () => {
     expect(lead.name).toBe('Sofie');
     expect(lead.listingTitle).toBe('Volkswagen Golf 1.4');
     expect(lead.snippet).toBe('Is de prijs onderhandelbaar?');
-    expect(lead.status).toBe('contacted');
+    expect(lead.status).toBe('in_progress');
     expect(lead.conversationId).toBe('c1');
+  });
+
+  it('valt terug op in_progress bij onbekende gespreksstatus', () => {
+    const conv = {
+      id: 'c2', listing_id: null, buyer_id: 'b', seller_id: 's',
+      status: 'archived',
+      created_at: '2026-08-19T08:00:00Z', updated_at: '2026-08-20T09:00:00Z',
+    };
+    expect(normalizeConversationLead(conv, null, null, null, '2026-08-20T09:00:00Z').status).toBe('in_progress');
+  });
+
+  it('neemt done over als afgehandelde gespreksstatus', () => {
+    const conv = {
+      id: 'c3', listing_id: null, buyer_id: 'b', seller_id: 's',
+      status: 'done',
+      created_at: '2026-08-19T08:00:00Z', updated_at: '2026-08-20T09:00:00Z',
+    };
+    expect(normalizeConversationLead(conv, null, null, null, '2026-08-20T09:00:00Z').status).toBe('done');
   });
 });
 

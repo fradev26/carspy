@@ -19,7 +19,7 @@ export interface DemoLead {
   id: string;
   name: string;
   email: string;
-  status: 'new' | 'contacted' | 'won' | 'lost';
+  status: 'new' | 'in_progress' | 'done';
   source: string;
   listing_id: string | null;
   created_at: string;

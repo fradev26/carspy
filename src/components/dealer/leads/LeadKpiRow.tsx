@@ -1,4 +1,4 @@
-import { MessageSquare, Inbox, CheckCircle2, XCircle } from 'lucide-react';
+import { Inbox, Loader, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import type { DealerLead } from '@/hooks/useDealerLeads';
@@ -9,10 +9,10 @@ function countBy(leads: DealerLead[], status: DealerLead['status']) {
 
 export function LeadKpiRow({ leads }: { leads: DealerLead[] }) {
   const stats = [
+    { label: 'Totaal', value: leads.length, icon: Inbox, tone: 'text-muted-foreground' },
     { label: 'Nieuw', value: countBy(leads, 'new'), icon: Inbox, tone: 'text-primary-strong' },
-    { label: 'Opgevolgd', value: countBy(leads, 'contacted'), icon: MessageSquare, tone: 'text-accent' },
-    { label: 'Gewonnen', value: countBy(leads, 'won'), icon: CheckCircle2, tone: 'text-success' },
-    { label: 'Verloren', value: countBy(leads, 'lost'), icon: XCircle, tone: 'text-destructive' },
+    { label: 'In behandeling', value: countBy(leads, 'in_progress'), icon: Loader, tone: 'text-accent' },
+    { label: 'Afgehandeld', value: countBy(leads, 'done'), icon: CheckCircle2, tone: 'text-success' },
   ];
 
   return (
