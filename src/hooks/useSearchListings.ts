@@ -1,4 +1,5 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { supabase } from '@/integrations/supabase/client';
 import type { Listing, SearchFilters } from '@/types/listing';
 import { mapRow as mapListingRow } from '@/hooks/useListings';
@@ -102,6 +103,11 @@ export interface SearchListingsRequest {
   cursor?: string | null;
   /** Batch size — default 20 for a fast first paint on mobile. */
   limit?: number;
+  /**
+   * AbortSignal van React Query. Zodra de filters wijzigen wordt het lopende
+   * verzoek geannuleerd, zodat een verouderde respons nooit de lijst overschrijft.
+   */
+  signal?: AbortSignal;
 }
 
 export interface ListingsPage {
@@ -121,6 +127,7 @@ export async function fetchSearchListingsPage({
   sort = 'newest',
   cursor = null,
   limit = DEFAULT_PAGE_SIZE,
+  signal,
 }: SearchListingsRequest): Promise<ListingsPage> {
   const keys = searchSortKeys(sort);
   const isFirstBatch = !cursor;
@@ -216,6 +223,7 @@ export async function fetchSearchListingsPage({
   }
 
   q = q.limit(limit);
+  if (signal) q = q.abortSignal(signal);
 
   const { data, error, count } = await q;
   if (error) throw new Error(error.message);
@@ -224,10 +232,12 @@ export async function fetchSearchListingsPage({
   const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
   let profilesById = new Map<string, ProfileRow>();
   if (userIds.length > 0) {
-    const { data: profs } = await supabase
+    let pq = supabase
       .from('public_profiles' as any)
       .select('id, full_name, dealer_name, is_dealer, avatar_url, created_at')
       .in('id', userIds);
+    if (signal) pq = pq.abortSignal(signal);
+    const { data: profs } = await pq;
     profilesById = new Map(((profs ?? []) as unknown as ProfileRow[]).map((p) => [p.id, p]));
   }
 
@@ -256,19 +266,39 @@ export function useSearchListingsInfinite({
   sort = 'newest',
   limit = DEFAULT_PAGE_SIZE,
 }: UseSearchListingsParams) {
+  // Snelle opeenvolgende filterwijzigingen worden samengevoegd tot één verzoek.
+  const { value: settled, pending } = useDebouncedValue({ filters, query, sort, limit }, 250);
+
   const result = useInfiniteQuery<ListingsPage>({
-    queryKey: ['search-listings', { filters, query, sort, limit }],
+    queryKey: ['search-listings', settled],
     initialPageParam: null as string | null,
-    queryFn: ({ pageParam }) =>
-      fetchSearchListingsPage({ filters, query, sort, cursor: pageParam as string | null, limit }),
+    // `signal` komt van React Query: bij een nieuwe query-key wordt het
+    // lopende verzoek geannuleerd, dus verouderde responses landen nooit meer.
+    queryFn: ({ pageParam, signal }) =>
+      fetchSearchListingsPage({
+        ...settled,
+        cursor: pageParam as string | null,
+        signal,
+      }),
     getNextPageParam: (last) => last.nextCursor,
     staleTime: 60_000,
     gcTime: 10 * 60_000,
     refetchOnWindowFocus: false,
+    // Toon de vorige resultaten tot de nieuwste respons binnen is i.p.v. leeg te springen.
+    placeholderData: (prev) => prev,
   });
 
   const listings = result.data?.pages.flatMap((p) => p.items) ?? [];
   const total = result.data?.pages[0]?.total ?? null;
 
-  return { ...result, listings, total };
+  // Zolang er nog een nieuwere aanvraag onderweg is, is de weergave niet definitief.
+  const isStale = pending || result.isPlaceholderData;
+
+  return {
+    ...result,
+    listings,
+    total,
+    isStale,
+    isLoading: result.isLoading || (isStale && listings.length === 0),
+  };
 }
