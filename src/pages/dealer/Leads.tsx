@@ -10,6 +10,7 @@ import {
   type LeadPeriod,
   type LeadSort,
 } from '@/hooks/useDealerLeads';
+import { useDealerLeadsRealtime } from '@/hooks/useDealerLeadsRealtime';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { LeadKpiRow } from '@/components/dealer/leads/LeadKpiRow';
