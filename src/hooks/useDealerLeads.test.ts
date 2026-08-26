@@ -256,7 +256,7 @@ describe('tellers en facetten', () => {
   it('leadPriorityCounts telt nieuwe, wachtende en opvolgingen', () => {
     const counts = leadPriorityCounts(leads, NOW);
     expect(counts.new).toBe(1);
-    expect(counts.waiting).toBe(1); // wachtend wacht > 24u
+    expect(counts.waiting).toBe(2); // nieuw + wachtend wachten beide > 24u
     expect(counts.followups).toBe(0);
   });
 
