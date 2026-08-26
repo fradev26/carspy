@@ -6,6 +6,7 @@ import {
   normalizeConversationLead,
   normalizeDealerLead,
   type DealerLead,
+  type LeadStatus,
 } from '@/hooks/useDealerLeads';
 
 /** Voertuigblok op de leaddetailpagina. */
