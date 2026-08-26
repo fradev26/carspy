@@ -81,6 +81,23 @@ export default function Leads() {
     return () => observer.disconnect();
   }, [paged.hasMore]);
 
+  // Scroll-anker: realtime leads worden via refetch in de juiste sorteervolgorde
+  // ingevoegd. Wanneer er kaarten vóór de huidige eerste kaart bijkomen terwijl
+  // die boven het viewport staat, compenseer dan zodat de zichtbare content
+  // niet verspringt. Browser-anchoring is op de lijst uitgeschakeld (className)
+  // om dubbele compensatie te vermijden.
+  useLayoutEffect(() => {
+    const el = listRef.current;
+    if (!el) return;
+    const prev = anchorRef.current;
+    const prevIndex = prev.firstId ? visible.findIndex((l) => l.id === prev.firstId) : -1;
+    if (prev.firstId && prevIndex > 0 && el.getBoundingClientRect().top < 0) {
+      const delta = el.offsetHeight - prev.height;
+      if (delta > 0) window.scrollBy({ top: delta });
+    }
+    anchorRef.current = { firstId: visible[0]?.id ?? null, height: el.offsetHeight };
+  }, [visible]);
+
   const hasFilters = query.trim().length > 0 || listing !== '' || period !== 'all' || tab !== 'all';
 
 
@@ -150,7 +167,7 @@ export default function Leads() {
 
         ) : (
           <>
-            <div className="space-y-3">
+            <div ref={listRef} className="space-y-3 [overflow-anchor:none] [&_*]:[overflow-anchor:none]">
               {visible.map((lead: DealerLead) => (
                 <LeadCard key={lead.id} lead={lead} onStatusChange={handleStatus} busy={busyId === lead.id} />
               ))}
