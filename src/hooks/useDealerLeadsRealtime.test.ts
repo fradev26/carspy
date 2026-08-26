@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { QueryClient } from '@tanstack/react-query';
-import { createLeadRefreshScheduler, invalidateLeadQueries } from './useDealerLeadsRealtime';
+import { createLeadRefreshScheduler, invalidateLeadQueries, newLeadFromInsert } from './useDealerLeadsRealtime';
 
 describe('createLeadRefreshScheduler', () => {
   beforeEach(() => vi.useFakeTimers());
@@ -44,5 +44,33 @@ describe('invalidateLeadQueries', () => {
     invalidateLeadQueries(qc);
     expect(spy).toHaveBeenCalledWith({ queryKey: ['dealer-leads'] });
     expect(spy).toHaveBeenCalledWith({ queryKey: ['new-leads-count'] });
+  });
+});
+
+describe('newLeadFromInsert', () => {
+  it('mapt een contactaanvraag met naam en id', () => {
+    expect(newLeadFromInsert('dealer_leads', { id: 'abc', name: 'Nadia Bakker' })).toEqual({
+      id: 'abc',
+      name: 'Nadia Bakker',
+      type: 'contactaanvraag',
+    });
+  });
+
+  it('valt terug op een generieke naam bij een lege naam', () => {
+    expect(newLeadFromInsert('dealer_leads', { id: 'abc', name: '  ' })?.name).toBe('Onbekende bezoeker');
+    expect(newLeadFromInsert('dealer_leads', { id: 'abc' })?.name).toBe('Onbekende bezoeker');
+  });
+
+  it('geeft gesprekken het conv- prefix voor de detailroute', () => {
+    expect(newLeadFromInsert('conversations', { id: 'xyz' })).toEqual({
+      id: 'conv-xyz',
+      name: 'Koper',
+      type: 'bericht',
+    });
+  });
+
+  it('geeft null terug zonder geldig id', () => {
+    expect(newLeadFromInsert('dealer_leads', { name: 'Nadia' })).toBeNull();
+    expect(newLeadFromInsert('conversations', {})).toBeNull();
   });
 });

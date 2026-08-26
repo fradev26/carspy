@@ -1,8 +1,28 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { useDealerLeadsRealtime } from '@/hooks/useDealerLeadsRealtime';
 
 export default function DealerLayout() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const hideStickyCta = pathname.startsWith('/zakelijk/abonnement');
+
+  // Toast bij elke realtime binnenkomende lead, met directe doorklik naar de lead.
+  useDealerLeadsRealtime(true, (lead) => {
+    toast.success(
+      lead.type === 'bericht' ? 'Nieuwe lead via berichten' : `Nieuwe contactaanvraag van ${lead.name}`,
+      {
+        description:
+          lead.type === 'bericht'
+            ? 'Een koper heeft een gesprek gestart.'
+            : 'Bekijk en volg deze lead meteen op.',
+        action: {
+          label: 'Bekijk lead',
+          onClick: () => navigate(`/zakelijk/leads/${lead.id}`),
+        },
+      },
+    );
+  });
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
