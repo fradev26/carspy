@@ -156,6 +156,16 @@ export default function Leads() {
             Alle koper- en contactverzoeken op één plek.
           </p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2"
+          onClick={copyShareUrl}
+          aria-label="Deel huidige filters"
+        >
+          {copied ? <Check className="h-4 w-4 text-green-600" /> : <Link2 className="h-4 w-4" />}
+          {copied ? 'Gekopieerd' : 'Link kopiëren'}
+        </Button>
       </div>
 
       <Can do="canViewLeads" fallback={
