@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Loader2, Inbox, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -34,6 +34,8 @@ export default function Leads() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [pageCount, setPageCount] = useState(1);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const anchorRef = useRef<{ firstId: string | null; height: number }>({ firstId: null, height: 0 });
 
   const all = leads ?? [];
 
@@ -78,6 +80,23 @@ export default function Leads() {
     observer.observe(el);
     return () => observer.disconnect();
   }, [paged.hasMore]);
+
+  // Scroll-anker: realtime leads worden via refetch in de juiste sorteervolgorde
+  // ingevoegd. Wanneer er kaarten vóór de huidige eerste kaart bijkomen terwijl
+  // die boven het viewport staat, compenseer dan zodat de zichtbare content
+  // niet verspringt. Browser-anchoring is op de lijst uitgeschakeld (className)
+  // om dubbele compensatie te vermijden.
+  useLayoutEffect(() => {
+    const el = listRef.current;
+    if (!el) return;
+    const prev = anchorRef.current;
+    const prevIndex = prev.firstId ? visible.findIndex((l) => l.id === prev.firstId) : -1;
+    if (prev.firstId && prevIndex > 0 && el.getBoundingClientRect().top < 0) {
+      const delta = el.offsetHeight - prev.height;
+      if (delta > 0) window.scrollBy({ top: delta });
+    }
+    anchorRef.current = { firstId: visible[0]?.id ?? null, height: el.offsetHeight };
+  }, [visible]);
 
   const hasFilters = query.trim().length > 0 || listing !== '' || period !== 'all' || tab !== 'all';
 
@@ -148,7 +167,7 @@ export default function Leads() {
 
         ) : (
           <>
-            <div className="space-y-3">
+            <div ref={listRef} className="space-y-3 [overflow-anchor:none] [&_*]:[overflow-anchor:none]">
               {visible.map((lead: DealerLead) => (
                 <LeadCard key={lead.id} lead={lead} onStatusChange={handleStatus} busy={busyId === lead.id} />
               ))}
