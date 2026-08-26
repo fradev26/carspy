@@ -218,3 +218,33 @@ export function useDealerLeads() {
     },
   });
 }
+
+/** Aantal leads per zichtbare pagina op de Leads-lijst. */
+export const LEADS_PAGE_SIZE = 20;
+
+export interface LeadsPage {
+  visible: DealerLead[];
+  hasMore: boolean;
+  remaining: number;
+  total: number;
+}
+
+/**
+ * Incrementeel renderen van de gefilterde lijst: pagina's 1..N worden
+ * samengevoegd getoond (infinite scroll). Realtime-refetches laten
+ * `pageCount` ongemoeid, waardoor enkel de zichtbare kaarten patchen
+ * en de scrollpositie behouden blijft.
+ */
+export function paginateLeads(
+  leads: DealerLead[],
+  pageCount: number,
+  pageSize: number = LEADS_PAGE_SIZE,
+): LeadsPage {
+  const limit = Math.max(1, pageCount) * pageSize;
+  return {
+    visible: leads.slice(0, limit),
+    hasMore: leads.length > limit,
+    remaining: Math.max(0, leads.length - limit),
+    total: leads.length,
+  };
+}

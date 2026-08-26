@@ -1,10 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Loader2, Inbox, Info } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { usePermissions } from '@/hooks/usePermissions';
 import {
   useDealerLeads,
   filterLeads,
   leadListingTitles,
+  paginateLeads,
   type DealerLead,
   type LeadStatus,
   type LeadPeriod,
@@ -30,6 +32,8 @@ export default function Leads() {
   const [period, setPeriod] = useState<LeadPeriod>('all');
   const [sort, setSort] = useState<LeadSort>('newest');
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [pageCount, setPageCount] = useState(1);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   const all = leads ?? [];
 
@@ -45,10 +49,35 @@ export default function Leads() {
 
   const listingOptions = useMemo(() => leadListingTitles(all), [all]);
 
-  const visible = useMemo(
+  const filtered = useMemo(
     () => filterLeads(all, { status: tab, query, listing, period, sort }),
     [all, tab, query, listing, period, sort],
   );
+
+  // Filterwijzigingen resetten naar pagina 1; realtime-refetches laten
+  // pageCount intact zodat enkel de zichtbare kaarten patchen.
+  const criteriaKey = `${tab}|${query}|${listing}|${period}|${sort}`;
+  useEffect(() => {
+    setPageCount(1);
+  }, [criteriaKey]);
+
+  const paged = useMemo(() => paginateLeads(filtered, pageCount), [filtered, pageCount]);
+  const visible = paged.visible;
+
+  // Infinite scroll: zodra de sentinel in beeld komt, een pagina bijladen.
+  useEffect(() => {
+    if (!paged.hasMore || typeof IntersectionObserver === 'undefined') return;
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) setPageCount((c) => c + 1);
+      },
+      { rootMargin: '240px' },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [paged.hasMore]);
 
   const hasFilters = query.trim().length > 0 || listing !== '' || period !== 'all' || tab !== 'all';
 
@@ -118,11 +147,20 @@ export default function Leads() {
           <LeadEmptyState hasQuery={hasFilters} />
 
         ) : (
-          <div className="space-y-3">
-            {visible.map((lead: DealerLead) => (
-              <LeadCard key={lead.id} lead={lead} onStatusChange={handleStatus} busy={busyId === lead.id} />
-            ))}
-          </div>
+          <>
+            <div className="space-y-3">
+              {visible.map((lead: DealerLead) => (
+                <LeadCard key={lead.id} lead={lead} onStatusChange={handleStatus} busy={busyId === lead.id} />
+              ))}
+            </div>
+            {paged.hasMore && (
+              <div ref={sentinelRef} className="flex justify-center pt-1">
+                <Button variant="outline" onClick={() => setPageCount((c) => c + 1)}>
+                  Toon meer leads ({paged.remaining} resterend)
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </Can>
     </div>
