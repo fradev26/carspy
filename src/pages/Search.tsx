@@ -300,6 +300,19 @@ export default function Search() {
               </div>
 
 
+              {/* Statusregio voor schermlezers: kondigt laden, resultaataantal en fouten aan */}
+              {listingsError && pageListings.length === 0 ? (
+                <LiveAlert message="Zoekresultaten konden niet geladen worden. Probeer het opnieuw." />
+              ) : (
+                <LiveStatus
+                  message={
+                    resultsPending
+                      ? 'Zoekresultaten worden geladen…'
+                      : `${total ?? pageListings.length} resultaten gevonden`
+                  }
+                />
+              )}
+
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <h1 className="text-2xl font-bold md:text-3xl">Auto's zoeken</h1>
