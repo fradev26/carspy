@@ -14,6 +14,7 @@ import { ImageGallery, ListingGrid, PriceIndicator, EmissionsPanel } from '@/mod
 import { ListingCard } from '@/modules/listings/ListingCard';
 import { useCompare } from '@/hooks/useCompare';
 import { useListing, useRelatedListings } from '@/hooks/useListings';
+import { SkeletonListingDetail } from '@/components/ui/skeleton-detail';
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { pushRecentListing } from '@/hooks/useRecentlyViewedListings';
 import { useTrackListingView } from '@/hooks/useTrackListingView';
@@ -158,7 +159,7 @@ function buildTimeline(listing: Listing): TimelineItem[] {
 
 export default function ListingDetail() {
   const { id } = useParams<{ id: string }>();
-  const { listing, loading } = useListing(id);
+  const { listing, loading, error: listingError, refetch: refetchListing } = useListing(id);
   const { isFavorite: isFavCheck, toggle: toggleFav } = useFavorites();
   const isFavorite = listing ? isFavCheck(listing.id) : false;
   const handleFavoriteToggle = () => { if (listing) toggleFav(listing.id); };
@@ -321,10 +322,22 @@ export default function ListingDetail() {
   };
 
   if (loading) {
+    return <SkeletonListingDetail />;
+  }
+
+  if (listingError) {
     return (
       <div className="container py-20 text-center">
-        <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary-strong" />
-        <p className="mt-4 text-muted-foreground">Advertentie laden...</p>
+        <h1 className="text-2xl font-bold">Advertentie kon niet geladen worden</h1>
+        <p className="mt-2 text-muted-foreground">
+          Er ging iets mis bij het ophalen van deze advertentie. Probeer het opnieuw.
+        </p>
+        <div className="mt-6 flex justify-center gap-3">
+          <Button onClick={() => refetchListing()}>Opnieuw proberen</Button>
+          <Button asChild variant="outline">
+            <Link to="/zoeken">Terug naar zoeken</Link>
+          </Button>
+        </div>
       </div>
     );
   }
