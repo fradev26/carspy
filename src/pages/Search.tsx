@@ -300,18 +300,17 @@ export default function Search() {
               </div>
 
 
-              {/* Statusregio voor schermlezers: kondigt laden, resultaataantal en fouten aan */}
-              {listingsError && pageListings.length === 0 ? (
-                <LiveAlert message="Zoekresultaten konden niet geladen worden. Probeer het opnieuw." />
-              ) : (
-                <LiveStatus
-                  message={
-                    resultsPending
-                      ? 'Zoekresultaten worden geladen…'
+              {/* Statusregio voor schermlezers: kondigt laden en resultaataantal aan.
+                  Fouten worden aangekondigd via role="alert" op het zichtbare foutblok. */}
+              <LiveStatus
+                message={
+                  resultsPending
+                    ? 'Zoekresultaten worden geladen…'
+                    : listingsError
+                      ? ''
                       : `${total ?? pageListings.length} resultaten gevonden`
-                  }
-                />
-              )}
+                }
+              />
 
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
