@@ -1,232 +1,261 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useCallback, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Loader2, Inbox, Info, Link2, Check } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { Inbox, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { usePermissions } from '@/hooks/usePermissions';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { LeadCard } from '@/components/dealer/leads/LeadCard';
+import { LeadFilters } from '@/components/dealer/leads/LeadFilters';
+import { LeadPriorityBar } from '@/components/dealer/leads/LeadPriorityBar';
+import { VirtualGrid } from '@/components/VirtualGrid';
+import { supabase } from '@/integrations/supabase/client';
 import {
-  useDealerLeads,
-  filterLeads,
-  leadListingTitles,
-  paginateLeads,
-  type DealerLead,
-  type LeadStatus,
+  useDealerLeads, useLeadAssignees, filterLeads, paginateLeads,
+  leadTabCounts, leadPriorityCounts, leadListingTitles, leadSources, leadCountries,
+  type DealerLead, type LeadStatus,
 } from '@/hooks/useDealerLeads';
-import { parseLeadsUrl, leadsUrlParams, type LeadsUrlState } from '@/lib/leadsUrl';
 import { useDealerLeadsRealtime } from '@/hooks/useDealerLeadsRealtime';
 import { useScrollRestoration } from '@/hooks/useScrollRestoration';
-
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { LeadKpiRow } from '@/components/dealer/leads/LeadKpiRow';
-import { LeadFilters, type LeadTab } from '@/components/dealer/leads/LeadFilters';
-import { LeadCard } from '@/components/dealer/leads/LeadCard';
-import { LeadEmptyState } from '@/components/dealer/leads/LeadEmptyState';
-import { VirtualGrid } from '@/components/VirtualGrid';
-import { Can } from '@/components/auth/Can';
+import { parseLeadsUrl, leadsUrlParams, type LeadsUrlState } from '@/lib/leadsUrl';
 
 export default function Leads() {
-  const { toast } = useToast();
-  const perms = usePermissions();
-  const { data: leads, isLoading, refetch } = useDealerLeads();
-  useDealerLeadsRealtime();
-  // Filters, sortering en infinite-scroll positie leven in de URL, zodat een
-  // reload of gedeelde link de exacte context herstelt.
+  const { data: leads = [], isLoading } = useDealerLeads();
+  const { data: assignees = [] } = useLeadAssignees();
   const [searchParams, setSearchParams] = useSearchParams();
-  const urlState = useMemo(() => parseLeadsUrl(searchParams), [searchParams]);
-  const { tab, query, listing, period, sort, page: pageCount } = urlState;
-  const [busyId, setBusyId] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
-  const listRef = useRef<HTMLDivElement | null>(null);
-  const anchorRef = useRef<{ firstId: string | null; height: number }>({ firstId: null, height: 0 });
+  const queryClient = useQueryClient();
+  useDealerLeadsRealtime();
+  useScrollRestoration('leads', !isLoading);
 
-  const all = leads ?? [];
+  // URL is de bron van waarheid: tab, filters, sortering en scrollpositie
+  // (paginanummer) zijn deelbaar en overleven een reload.
+  const state = useMemo(() => parseLeadsUrl(searchParams), [searchParams]);
+  const setState = useCallback((patch: Partial<LeadsUrlState>) => {
+    setSearchParams(leadsUrlParams({ ...state, ...patch }), { replace: true });
+  }, [state, setSearchParams]);
 
-  const counts: Record<LeadTab, number> = useMemo(
-    () => ({
-      all: all.length,
-      new: all.filter((l) => l.status === 'new').length,
-      in_progress: all.filter((l) => l.status === 'in_progress').length,
-      done: all.filter((l) => l.status === 'done').length,
-    }),
-    [all],
-  );
+  const counts = useMemo(() => leadTabCounts(leads), [leads]);
+  const priority = useMemo(() => leadPriorityCounts(leads), [leads]);
+  const listings = useMemo(() => leadListingTitles(leads), [leads]);
+  const sources = useMemo(() => leadSources(leads), [leads]);
+  const countries = useMemo(() => leadCountries(leads), [leads]);
 
-  const listingOptions = useMemo(() => leadListingTitles(all), [all]);
+  const filtered = useMemo(() => filterLeads(leads, state), [leads, state]);
+  const page = useMemo(() => paginateLeads(filtered, state.page), [filtered, state.page]);
 
-  const filtered = useMemo(
-    () => filterLeads(all, { status: tab, query, listing, period, sort }),
-    [all, tab, query, listing, period, sort],
-  );
-
-  // Filterwijzigingen resetten naar pagina 1; paginanavigatie (infinite
-  // scroll) behoudt alle filters. Realtime-refetches raken de URL niet,
-  // waardoor pagina en scrollpositie behouden blijven.
-  // Filterwijzigingen resetten naar pagina 1 en krijgen een eigen history-entry,
-  // zodat browser back/forward tussen filtersets navigeert. Paginanavigatie
-  // (infinite scroll) vervangt de entry, zodat één keer 'terug' niet elke
-  // bijgeladen pagina moet afpellen. Realtime-refetches raken de URL niet.
-  const updateUrl = (patch: Partial<LeadsUrlState>, resetPage = true) => {
-    const next = { ...urlState, ...patch };
-    if (resetPage) next.page = 1;
-    setSearchParams(leadsUrlParams(next), { replace: !resetPage });
-  };
-  const setPageCount = (updater: (c: number) => number) =>
-    updateUrl({ page: updater(pageCount) }, false);
-
-
-  const copyShareUrl = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopied(true);
-      toast({ title: 'Link gekopieerd', description: 'De huidige filters en pagina staan op het klembord.' });
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast({ title: 'Kopiëren mislukt', description: 'Je browser blokkeert het klembord.', variant: 'destructive' });
-    }
-  };
-
-  const paged = useMemo(() => paginateLeads(filtered, pageCount), [filtered, pageCount]);
-  const visible = paged.visible;
-
-  // Back/forward: de lijst is pas op de juiste hoogte zodra de data geladen is
-  // en de pagina's uit de URL gerenderd zijn. Pas dan mag de scrollpositie uit
-  // de history-entry hersteld worden.
-  const restoreReady = !isLoading && (visible.length > 0 || filtered.length === 0);
-  const restored = useScrollRestoration('leadsScrollY', restoreReady);
-
-
-
-  // Infinite scroll: zodra de sentinel in beeld komt, een pagina bijladen.
+  // Infinite scroll: zodra de sentinel in beeld komt, groeit de zichtbare lijst.
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const currentPage = state.page;
   useEffect(() => {
-    if (!paged.hasMore || typeof IntersectionObserver === 'undefined') return;
     const el = sentinelRef.current;
-    if (!el) return;
+    if (!el || !page.hasMore) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries.some((e) => e.isIntersecting)) setPageCount((c) => c + 1);
+        if (entries[0]?.isIntersecting) {
+          observer.disconnect();
+          setState({ page: currentPage + 1 });
+        }
       },
-      { rootMargin: '240px' },
+      { rootMargin: '400px' },
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [paged.hasMore]);
+  }, [page.hasMore, currentPage, setState]);
 
-  // Scroll-anker: realtime leads worden via refetch in de juiste sorteervolgorde
-  // ingevoegd. Wanneer er kaarten vóór de huidige eerste kaart bijkomen terwijl
-  // die boven het viewport staat, compenseer dan zodat de zichtbare content
-  // niet verspringt. Browser-anchoring is op de lijst uitgeschakeld (className)
-  // om dubbele compensatie te vermijden.
-  useLayoutEffect(() => {
-    const el = listRef.current;
-    if (!el) return;
-    const prev = anchorRef.current;
-    const prevIndex = prev.firstId ? visible.findIndex((l) => l.id === prev.firstId) : -1;
-    // Niet compenseren zolang de back/forward-restauratie nog moet gebeuren.
-    if (restored.current && prev.firstId && prevIndex > 0 && el.getBoundingClientRect().top < 0) {
-      const delta = el.offsetHeight - prev.height;
-      if (delta > 0) window.scrollBy({ top: delta });
+  const invalidate = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: ['dealer-leads'] }),
+    [queryClient],
+  );
+
+  const runRpc = useCallback(
+    async (fn: string, args: Record<string, unknown>, okMessage: string) => {
+      // Nieuwe lead-RPC's staan nog niet in de gegenereerde types; runtime-validatie via de DB.
+      const rpc = supabase.rpc as unknown as (name: string, params: Record<string, unknown>) => Promise<{ error: { message: string } | null }>;
+      const { error } = await rpc(fn, args);
+      if (error) {
+        toast.error('Actie mislukt: ' + error.message);
+        return false;
+      }
+      toast.success(okMessage);
+      invalidate();
+      return true;
+    },
+    [invalidate],
+  );
+
+  const handleStatusChange = useCallback(
+    (lead: DealerLead, status: LeadStatus) => {
+      if (lead.conversationId) {
+        void runRpc('set_conversation_status', { _conversation_id: lead.conversationId, _status: status }, 'Status bijgewerkt');
+      } else {
+        void runRpc('set_dealer_lead_status', { _lead_id: lead.id, _status: status }, 'Status bijgewerkt');
+      }
+    },
+    [runRpc],
+  );
+
+  const handleFollowUp = useCallback(
+    (lead: DealerLead, iso: string | null) => {
+      void runRpc(
+        'set_lead_follow_up',
+        { _lead_ref: lead.id, _follow_up_at: iso },
+        iso ? 'Opvolging gepland' : 'Opvolging gewist',
+      );
+    },
+    [runRpc],
+  );
+
+  const handleSnooze = useCallback(
+    (lead: DealerLead, days: number | null) => {
+      void runRpc(
+        'snooze_lead',
+        { _lead_ref: lead.id, _days: days },
+        days ? `Lead gesnoozet voor ${days} ${days === 1 ? 'dag' : 'dagen'}` : 'Snooze opgeheven',
+      );
+    },
+    [runRpc],
+  );
+
+  const handleAnswered = useCallback(
+    (lead: DealerLead) => {
+      if (!lead.isUnanswered) return;
+      void runRpc('mark_lead_answered', { _lead_ref: lead.id }, 'Gemarkeerd als beantwoord');
+    },
+    [runRpc],
+  );
+
+  const handleAssign = useCallback(
+    (lead: DealerLead, memberId: string | null) => {
+      void runRpc(
+        'assign_lead',
+        { _lead_ref: lead.id, _member_id: memberId },
+        memberId ? 'Lead toegewezen' : 'Toewijzing verwijderd',
+      );
+    },
+    [runRpc],
+  );
+
+  const cardActions = useMemo(
+    () => ({
+      onStatusChange: handleStatusChange,
+      onFollowUp: handleFollowUp,
+      onSnooze: handleSnooze,
+      onAnswered: handleAnswered,
+      onAssign: handleAssign,
+    }),
+    [handleStatusChange, handleFollowUp, handleSnooze, handleAnswered, handleAssign],
+  );
+
+  const copyLink = useCallback(async () => {
+    const params = leadsUrlParams(state);
+    const url = `${window.location.origin}${window.location.pathname}${params.size ? `?${params}` : ''}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success('Link gekopieerd');
+    } catch {
+      toast.error('Kopiëren mislukt');
     }
-    anchorRef.current = { firstId: visible[0]?.id ?? null, height: el.offsetHeight };
-  }, [visible, restored]);
+  }, [state]);
 
-
-  const hasFilters = query.trim().length > 0 || listing !== '' || period !== 'all' || tab !== 'all';
-
-
-  const handleStatus = async (leadId: string, status: LeadStatus) => {
-    setBusyId(leadId);
-    // Gespreksleads slaan hun status op in conversations via een beveiligde RPC;
-    // contactaanvragen direct in dealer_leads.
-    const { error } = leadId.startsWith('conv-')
-      ? await supabase.rpc('set_conversation_status', {
-          _conversation_id: leadId.slice('conv-'.length),
-          _status: status,
-        })
-      : await supabase
-          .from('dealer_leads')
-          .update({ status })
-          .eq('id', leadId);
-    setBusyId(null);
-    if (error) {
-      toast({ title: 'Status niet opgeslagen', description: error.message, variant: 'destructive' });
-      return;
-    }
-    await refetch();
-    toast({ title: 'Status bijgewerkt' });
+  const EMPTY_LABELS: Record<string, string> = {
+    action: 'Geen leads die actie nodig hebben.',
+    in_progress: 'Geen leads in behandeling.',
+    waiting_customer: 'Geen leads die op de klant wachten.',
+    scheduled: 'Geen geplande opvolgingen.',
+    done: 'Nog geen afgehandelde leads.',
+    all: 'Nog geen leads ontvangen.',
   };
 
-  if (isLoading) {
-    return (
-      <div className="container py-12 flex justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
   return (
-    <div className="container py-6 space-y-6">
+    <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Leads</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Alle koper- en contactverzoeken op één plek.
-          </p>
+          <h1 className="text-2xl font-bold">Leads</h1>
+          <p className="text-sm text-muted-foreground">Je dagelijkse opvolgwerkplek voor kopers.</p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-2"
-          onClick={copyShareUrl}
-          aria-label="Deel huidige filters"
-        >
-          {copied ? <Check className="h-4 w-4 text-green-600" /> : <Link2 className="h-4 w-4" />}
-          {copied ? 'Gekopieerd' : 'Link kopiëren'}
+        <Button variant="outline" size="sm" className="gap-1.5" onClick={copyLink}>
+          <Link2 className="h-4 w-4" /> Link kopiëren
         </Button>
       </div>
 
-      <Can do="canViewLeads" fallback={
-        <div className="flex items-center gap-2 rounded-lg border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-          <Info className="h-4 w-4 shrink-0" /> Enkel de eigenaar, beheerder of verkoper van het bedrijf kan leads bekijken.
+      <LeadPriorityBar
+        counts={priority}
+        active={state.focus}
+        onSelect={(focus) => setState({ focus, page: 1 })}
+      />
+
+      <LeadFilters
+        value={state}
+        onChange={(v) => setState({ ...v, page: 1 })}
+        counts={counts}
+        listings={listings}
+        assignees={assignees}
+        sources={sources}
+        countries={countries}
+      />
+
+      {/* Schermlezerstatus: aantal resultaten en laadtoestand */}
+      <p className="sr-only" role="status" aria-live="polite">
+        {isLoading
+          ? 'Leads worden geladen…'
+          : `${page.total} ${page.total === 1 ? 'lead' : 'leads'} gevonden.`}
+      </p>
+
+      {isLoading ? (
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2" aria-busy="true" aria-label="Leads laden">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-1/3" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </div>
+                  <Skeleton className="h-7 w-24" />
+                </div>
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-9 w-40" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
-      }>
-        <LeadKpiRow leads={all} />
-
-        <LeadFilters
-          value={{ tab, query, listing, period, sort }}
-          onChange={(v) =>
-            updateUrl({ tab: v.tab, query: v.query, listing: v.listing, period: v.period, sort: v.sort })
-          }
-          counts={counts}
-          listings={listingOptions}
-        />
-
-        {visible.length === 0 ? (
-          <LeadEmptyState hasQuery={hasFilters} />
-
-        ) : (
-          <>
-            <div ref={listRef} className="[overflow-anchor:none] [&_*]:[overflow-anchor:none]">
-              <VirtualGrid
-                items={visible}
-                columns={[1, 1, 1]}
-                estimateRowHeight={168}
-                renderItem={(lead: DealerLead) => (
-                  <LeadCard lead={lead} onStatusChange={handleStatus} busy={busyId === lead.id} />
-                )}
-                getKey={(lead) => lead.id}
-              />
+      ) : page.total === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+              <Inbox className="h-7 w-7 text-muted-foreground" />
             </div>
-            {paged.hasMore && (
-              <div ref={sentinelRef} className="flex justify-center pt-1">
-                <Button variant="outline" onClick={() => setPageCount((c) => c + 1)}>
-                  Toon meer leads ({paged.remaining} resterend)
-                </Button>
-              </div>
+            <div>
+              <p className="font-medium">{EMPTY_LABELS[state.tab] ?? 'Geen leads gevonden.'}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Nieuwe aanvragen en berichten verschijnen hier automatisch.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          <VirtualGrid
+            items={page.visible}
+            estimateRowHeight={230}
+            columns={[1, 1, 2]}
+            gapClassName="gap-4"
+            getKey={(lead) => lead.id}
+            renderItem={(lead) => (
+              <LeadCard lead={lead} busy={false} assignees={assignees} actions={cardActions} />
             )}
-          </>
-        )}
-      </Can>
+          />
+          {/* Sentinel: laadt de volgende pagina zodra hij in beeld komt */}
+          {page.hasMore && <div ref={sentinelRef} aria-hidden="true" className="h-px" />}
+          <p className="py-4 text-center text-sm text-muted-foreground">
+            {page.hasMore
+              ? `${page.visible.length} van ${page.total} leads — scroll voor meer`
+              : `Alle ${page.total} leads geladen`}
+          </p>
+        </>
+      )}
     </div>
   );
 }

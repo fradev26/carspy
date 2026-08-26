@@ -6,6 +6,7 @@ import {
   normalizeConversationLead,
   normalizeDealerLead,
   type DealerLead,
+  type LeadStatus,
 } from '@/hooks/useDealerLeads';
 
 /** Voertuigblok op de leaddetailpagina. */
@@ -140,7 +141,7 @@ async function fetchAuditRows(table: 'dealer_leads' | 'conversations', targetId:
 async function fetchContactLeadDetail(id: string): Promise<LeadDetailData | null> {
   const { data: row, error } = await supabase
     .from('dealer_leads')
-    .select('id, name, email, phone, company, message, status, listing_id, created_at')
+    .select('id, name, email, phone, company, message, status, source, listing_id, created_at, follow_up_at, snoozed_until, answered_at, assigned_to')
     .eq('id', id)
     .maybeSingle();
   if (error) throw error;
@@ -162,7 +163,7 @@ async function fetchContactLeadDetail(id: string): Promise<LeadDetailData | null
 async function fetchConversationLeadDetail(convId: string, sellerId: string): Promise<LeadDetailData | null> {
   const { data: conv, error } = await supabase
     .from('conversations')
-    .select('id, listing_id, buyer_id, seller_id, status, created_at, updated_at')
+    .select('id, listing_id, buyer_id, seller_id, status, created_at, updated_at, follow_up_at, snoozed_until, answered_at, assigned_to')
     .eq('id', convId)
     .eq('seller_id', sellerId)
     .maybeSingle();
@@ -190,6 +191,7 @@ async function fetchConversationLeadDetail(convId: string, sellerId: string): Pr
     buyerName,
     last?.content ?? null,
     last?.created_at ?? conv.created_at,
+    { lastSenderIsBuyer: last ? last.sender_id === conv.buyer_id : false, hasMessages: messages.length > 0 },
   );
 
   return {
@@ -222,24 +224,29 @@ export function useLeadDetail(id: string | undefined) {
 
 /** Zet een lead om naar een andere status (zelfde logica als de lijstpagina). */
 export async function updateLeadStatus(leadId: string, status: string) {
-  return isConversationLeadId(leadId)
-    ? supabase.rpc('set_conversation_status', {
-        _conversation_id: leadId.slice('conv-'.length),
-        _status: status,
-      })
-    : supabase.from('dealer_leads').update({ status }).eq('id', leadId);
+  if (isConversationLeadId(leadId)) {
+    return supabase.rpc('set_conversation_status', {
+      _conversation_id: leadId.slice('conv-'.length),
+      _status: status,
+    });
+  }
+  // Nieuwe RPC staat nog niet in de gegenereerde types; runtime-validatie via de DB.
+  const rpc = supabase.rpc as unknown as (name: string, params: Record<string, unknown>) => Promise<{ error: { message: string } | null }>;
+  return rpc('set_dealer_lead_status', { _lead_id: leadId, _status: status });
 }
 
 /** Labels voor statussen in de timeline (incl. verouderde waarden). */
 export const TIMELINE_STATUS_LABELS: Record<string, string> = {
   new: 'Nieuw',
   in_progress: 'In behandeling',
+  waiting_customer: 'Wachten op klant',
+  scheduled: 'Gepland',
   done: 'Afgehandeld',
   contacted: 'Opgevolgd',
   won: 'Gewonnen',
   lost: 'Verloren',
 };
 
-export function isValidLeadStatus(s: string): s is 'new' | 'in_progress' | 'done' {
+export function isValidLeadStatus(s: string): s is LeadStatus {
   return (LEAD_STATUSES as string[]).includes(s);
 }

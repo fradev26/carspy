@@ -542,33 +542,52 @@ export type Database = {
       }
       conversations: {
         Row: {
+          answered_at: string | null
+          assigned_to: string | null
           buyer_id: string
           created_at: string
+          follow_up_at: string | null
           id: string
           listing_id: string
           seller_id: string
+          snoozed_until: string | null
           status: string
           updated_at: string
         }
         Insert: {
+          answered_at?: string | null
+          assigned_to?: string | null
           buyer_id: string
           created_at?: string
+          follow_up_at?: string | null
           id?: string
           listing_id: string
           seller_id: string
+          snoozed_until?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
+          answered_at?: string | null
+          assigned_to?: string | null
           buyer_id?: string
           created_at?: string
+          follow_up_at?: string | null
           id?: string
           listing_id?: string
           seller_id?: string
+          snoozed_until?: string | null
           status?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "conversations_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "company_members"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "conversations_listing_id_fkey"
             columns: ["listing_id"]
@@ -649,16 +668,20 @@ export type Database = {
       }
       dealer_leads: {
         Row: {
+          answered_at: string | null
+          assigned_to: string | null
           company: string | null
           company_id: string | null
           created_at: string
           dealer_user_id: string | null
           email: string
+          follow_up_at: string | null
           id: string
           listing_id: string | null
           message: string | null
           name: string
           phone: string | null
+          snoozed_until: string | null
           source: string
           status: string
           updated_at: string
@@ -666,16 +689,20 @@ export type Database = {
           vat_number: string | null
         }
         Insert: {
+          answered_at?: string | null
+          assigned_to?: string | null
           company?: string | null
           company_id?: string | null
           created_at?: string
           dealer_user_id?: string | null
           email: string
+          follow_up_at?: string | null
           id?: string
           listing_id?: string | null
           message?: string | null
           name: string
           phone?: string | null
+          snoozed_until?: string | null
           source?: string
           status?: string
           updated_at?: string
@@ -683,16 +710,20 @@ export type Database = {
           vat_number?: string | null
         }
         Update: {
+          answered_at?: string | null
+          assigned_to?: string | null
           company?: string | null
           company_id?: string | null
           created_at?: string
           dealer_user_id?: string | null
           email?: string
+          follow_up_at?: string | null
           id?: string
           listing_id?: string | null
           message?: string | null
           name?: string
           phone?: string | null
+          snoozed_until?: string | null
           source?: string
           status?: string
           updated_at?: string
@@ -700,6 +731,13 @@ export type Database = {
           vat_number?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "dealer_leads_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "company_members"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "dealer_leads_company_id_fkey"
             columns: ["company_id"]
@@ -1877,10 +1915,18 @@ export type Database = {
       }
     }
     Functions: {
+      _can_manage_lead_actor: {
+        Args: { _dealer_user_id: string }
+        Returns: boolean
+      }
       accept_invitation: { Args: { _token: string }; Returns: Json }
       activate_boost: {
         Args: { _listing_id: string; _package_code: string }
         Returns: Json
+      }
+      assign_lead: {
+        Args: { _id: string; _kind: string; _member_id: string }
+        Returns: undefined
       }
       autoscout_get_password: { Args: { _secret_id: string }; Returns: string }
       autoscout_save_password: {
@@ -2024,6 +2070,10 @@ export type Database = {
         Returns: string
       }
       mark_dealer_eligible_leads: { Args: never; Returns: number }
+      mark_lead_answered: {
+        Args: { _id: string; _kind: string }
+        Returns: undefined
+      }
       member_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["company_role"]
@@ -2065,9 +2115,21 @@ export type Database = {
         Args: { _conversation_id: string; _status: string }
         Returns: undefined
       }
+      set_dealer_lead_status: {
+        Args: { _lead_id: string; _status: string }
+        Returns: undefined
+      }
+      set_lead_follow_up: {
+        Args: { _follow_up_at: string; _id: string; _kind: string }
+        Returns: undefined
+      }
       set_listing_premium: {
         Args: { _enabled: boolean; _listing_id: string }
         Returns: boolean
+      }
+      snooze_lead: {
+        Args: { _id: string; _kind: string; _until: string }
+        Returns: undefined
       }
     }
     Enums: {
