@@ -66,7 +66,6 @@ describe('isValidVat (BE) — ongeldige formaten', () => {
     ['1234.567.8901', '11 cijfers met punten'],
     ['2123456789', 'start met 2'],
     ['9123456789', 'start met 9'],
-    ['212345678', '9 cijfers die na padding met 02 starten'],
     ['ABCDEFGHIJ', 'letters'],
     ['BE', 'alleen landcode'],
     ['NL123456789B01', 'Nederlands nummer als BE ingevuld'],
@@ -76,7 +75,7 @@ describe('isValidVat (BE) — ongeldige formaten', () => {
     expect(isValidVat(input, 'BE')).toBe(false);
   });
 
-  it('weigert 9-cijferige nummers die na padding niet met 0/1 starten niet ten onrechte', () => {
+  it('padt 9-cijferige nummers en accepteert die daarna', () => {
     // 212345678 -> 0212345678, dat is een geldig 10-cijferig BE-formaat
     expect(normalizeVat('212345678', 'BE')).toBe('BE0212345678');
     expect(isValidVat('212345678', 'BE')).toBe(true);
