@@ -84,24 +84,24 @@ export function useDealerLeadsRealtime(
 
     const scheduler = createLeadRefreshScheduler(() => invalidateLeadQueries(queryClient));
     const notify = (table: 'dealer_leads' | 'conversations') => (payload: { new: Record<string, unknown> }) => {
-      scheduler.schedule();
       const lead = newLeadFromInsert(table, payload.new);
       if (lead) onNewLeadRef.current?.(lead);
     };
 
     const channel = supabase
       .channel(`dealer-leads-${user.id}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'dealer_leads' }, notify('dealer_leads'))
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'dealer_leads' }, () =>
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'dealer_leads' }, () =>
         scheduler.schedule(),
       )
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'conversations' }, notify('conversations'))
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'conversations' }, () =>
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, () =>
         scheduler.schedule(),
       )
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () =>
         scheduler.schedule(),
       )
+      // Meldingen enkel bij écht nieuwe leads; de '*'-handlers hierboven verversen de data.
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'dealer_leads' }, notify('dealer_leads'))
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'conversations' }, notify('conversations'))
       .subscribe();
 
     return () => {
