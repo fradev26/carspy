@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Loader2, Inbox, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -34,6 +34,8 @@ export default function Leads() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [pageCount, setPageCount] = useState(1);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const anchorRef = useRef<{ firstId: string | null; height: number }>({ firstId: null, height: 0 });
 
   const all = leads ?? [];
 
