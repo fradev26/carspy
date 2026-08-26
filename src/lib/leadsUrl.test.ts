@@ -7,14 +7,23 @@ describe('parseLeadsUrl', () => {
   });
 
   it('leest alle filters, sortering en pagina uit de URL', () => {
-    const params = new URLSearchParams('tab=new&q=nadia&listing=Tesla+Model+3&period=7d&sort=name&page=3');
+    const params = new URLSearchParams(
+      'tab=scheduled&q=nadia&listing=Tesla+Model+3&period=7d&sort=intent&assignee=m1&source=bericht&country=BE&unanswered=1&focus=waiting&page=3',
+    );
     expect(parseLeadsUrl(params)).toEqual({
-      tab: 'new', query: 'nadia', listing: 'Tesla Model 3', period: '7d', sort: 'name', page: 3,
+      tab: 'scheduled', query: 'nadia', listing: 'Tesla Model 3', period: '7d', sort: 'intent',
+      assignee: 'm1', source: 'bericht', country: 'BE', unansweredOnly: true, focus: 'waiting', page: 3,
     });
   });
 
+  it('mapt de oude tab "new" naar Actie nodig met focus new', () => {
+    const state = parseLeadsUrl(new URLSearchParams('tab=new'));
+    expect(state.tab).toBe('action');
+    expect(state.focus).toBe('new');
+  });
+
   it('valt terug op defaults bij ongeldige waarden', () => {
-    const params = new URLSearchParams('tab=banana&period=year&sort=random&page=-4');
+    const params = new URLSearchParams('tab=banana&period=year&sort=random&focus=x&page=-4');
     expect(parseLeadsUrl(params)).toEqual(LEADS_URL_DEFAULTS);
   });
 
@@ -31,15 +40,20 @@ describe('leadsUrlParams', () => {
   });
 
   it('serialiseert enkel afwijkende waarden', () => {
-    const p = leadsUrlParams({ ...LEADS_URL_DEFAULTS, tab: 'done', page: 2 });
+    const p = leadsUrlParams({ ...LEADS_URL_DEFAULTS, tab: 'done', page: 2, unansweredOnly: true });
     expect(p.get('tab')).toBe('done');
     expect(p.get('page')).toBe('2');
+    expect(p.get('unanswered')).toBe('1');
     expect(p.get('q')).toBeNull();
     expect(p.get('sort')).toBeNull();
   });
 
   it('is een verliesloze round-trip met parseLeadsUrl', () => {
-    const state = { tab: 'in_progress' as const, query: 'peeters', listing: 'VW Golf', period: '30d' as const, sort: 'oldest' as const, page: 4 };
+    const state = {
+      tab: 'waiting_customer' as const, query: 'peeters', listing: 'VW Golf', period: '30d' as const,
+      sort: 'followup' as const, assignee: 'm2', source: 'contact_form', country: 'NL',
+      unansweredOnly: true, focus: 'followups' as const, page: 4,
+    };
     expect(parseLeadsUrl(leadsUrlParams(state))).toEqual(state);
   });
 });
