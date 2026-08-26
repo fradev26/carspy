@@ -120,12 +120,14 @@ export default function Leads() {
     if (!el) return;
     const prev = anchorRef.current;
     const prevIndex = prev.firstId ? visible.findIndex((l) => l.id === prev.firstId) : -1;
-    if (prev.firstId && prevIndex > 0 && el.getBoundingClientRect().top < 0) {
+    // Niet compenseren zolang de back/forward-restauratie nog moet gebeuren.
+    if (restored.current && prev.firstId && prevIndex > 0 && el.getBoundingClientRect().top < 0) {
       const delta = el.offsetHeight - prev.height;
       if (delta > 0) window.scrollBy({ top: delta });
     }
     anchorRef.current = { firstId: visible[0]?.id ?? null, height: el.offsetHeight };
-  }, [visible]);
+  }, [visible, restored]);
+
 
   const hasFilters = query.trim().length > 0 || listing !== '' || period !== 'all' || tab !== 'all';
 
