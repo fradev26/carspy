@@ -33,6 +33,7 @@ export default function Leads() {
   const urlState = useMemo(() => parseLeadsUrl(searchParams), [searchParams]);
   const { tab, query, listing, period, sort, page: pageCount } = urlState;
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const anchorRef = useRef<{ firstId: string | null; height: number }>({ firstId: null, height: 0 });
