@@ -301,7 +301,7 @@ export default function Search() {
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <h1 className="text-2xl font-bold md:text-3xl">Auto's zoeken</h1>
-                  {listingsLoading ? (
+                  {resultsPending ? (
                     <div className="mt-1 flex h-6 items-center" aria-hidden="true">
                       <div className="h-4 w-40 rounded bg-muted animate-pulse-soft" />
                     </div>
