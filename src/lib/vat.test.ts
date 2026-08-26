@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeVat, isValidVat, VAT_PATTERNS } from './vat';
+import { normalizeVat, isValidVat, describeVatError, VAT_PATTERNS } from './vat';
 
 describe('normalizeVat (BE)', () => {
   const cases: [string, string][] = [
