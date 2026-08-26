@@ -68,6 +68,17 @@ export default function Leads() {
   const setPageCount = (updater: (c: number) => number) =>
     updateUrl({ page: updater(pageCount) }, false);
 
+  const copyShareUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      toast({ title: 'Link gekopieerd', description: 'De huidige filters en pagina staan op het klembord.' });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast({ title: 'Kopiëren mislukt', description: 'Je browser blokkeert het klembord.', variant: 'destructive' });
+    }
+  };
+
   const paged = useMemo(() => paginateLeads(filtered, pageCount), [filtered, pageCount]);
   const visible = paged.visible;
 
