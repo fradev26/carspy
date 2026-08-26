@@ -102,3 +102,39 @@ describe('VAT_PATTERNS metadata', () => {
     expect(VAT_PATTERNS.NL.placeholder).toBe('NL123456789B01');
   });
 });
+
+describe('describeVatError', () => {
+  it('geeft null bij geldige nummers', () => {
+    expect(describeVatError('0123.456.789', 'BE')).toBeNull();
+    expect(describeVatError('123456789', 'BE')).toBeNull();
+    expect(describeVatError('NL123456789B01', 'NL')).toBeNull();
+  });
+
+  it('meldt een leeg veld', () => {
+    expect(describeVatError('  ', 'BE')).toMatch(/Vul je ondernemingsnummer in/);
+  });
+
+  it('meldt ongeldige tekens', () => {
+    expect(describeVatError('01234567AB', 'BE')).toMatch(/ongeldige tekens/);
+  });
+
+  it('meldt te weinig cijfers', () => {
+    expect(describeVatError('0123456', 'BE')).toMatch(/7 cijfers in, er zijn er 10 nodig/);
+  });
+
+  it('meldt te veel cijfers', () => {
+    expect(describeVatError('012345678901', 'BE')).toMatch(/2 te veel/);
+  });
+
+  it('meldt een verkeerd startcijfer', () => {
+    expect(describeVatError('9123456789', 'BE')).toMatch(/start met 0 of 1, niet met 9/);
+  });
+
+  it('meldt ontbrekende B voor NL', () => {
+    expect(describeVatError('NL12345678901', 'NL')).toMatch(/ontbreekt een "B"/);
+  });
+
+  it('meldt verkeerd aantal cijfers voor NL', () => {
+    expect(describeVatError('NL12345678B01', 'NL')).toMatch(/er zijn er 11 nodig/);
+  });
+});
