@@ -96,6 +96,64 @@ export function sortLeads(leads: DealerLead[]): DealerLead[] {
   );
 }
 
+/** Periodepresets voor het datumfilter. */
+export type LeadPeriod = 'all' | 'today' | '7d' | '30d';
+/** Sorteeropties in de leadslijst. */
+export type LeadSort = 'newest' | 'oldest' | 'name';
+
+const PERIOD_DAYS: Record<Exclude<LeadPeriod, 'all'>, number> = { today: 0, '7d': 6, '30d': 29 };
+
+/** Ondergrens (start van de dag, lokale tijd) voor een periodepreset. */
+export function periodStart(period: LeadPeriod, now: Date = new Date()): Date | null {
+  if (period === 'all') return null;
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  start.setDate(start.getDate() - PERIOD_DAYS[period]);
+  return start;
+}
+
+export interface LeadFilterCriteria {
+  /** Statusfilter; 'all' toont alles. */
+  status: LeadStatus | 'all';
+  /** Vrije zoekterm op naam, e-mail, bedrijf of wagen. */
+  query: string;
+  /** Advertentietitel; lege string toont alles. */
+  listing: string;
+  period: LeadPeriod;
+  sort: LeadSort;
+}
+
+/** Filtert en sorteert leads volgens de actieve criteria. */
+export function filterLeads(
+  leads: DealerLead[],
+  criteria: LeadFilterCriteria,
+  now: Date = new Date(),
+): DealerLead[] {
+  const q = criteria.query.trim().toLowerCase();
+  const from = periodStart(criteria.period, now);
+
+  const filtered = leads.filter((l) => {
+    if (criteria.status !== 'all' && l.status !== criteria.status) return false;
+    if (criteria.listing && l.listingTitle !== criteria.listing) return false;
+    if (from && new Date(l.createdAt).getTime() < from.getTime()) return false;
+    if (!q) return true;
+    return [l.name, l.email, l.company, l.listingTitle].some((f) => (f ?? '').toLowerCase().includes(q));
+  });
+
+  if (criteria.sort === 'name') {
+    return [...filtered].sort((a, b) => a.name.localeCompare(b.name, 'nl'));
+  }
+  const sorted = sortLeads(filtered);
+  return criteria.sort === 'oldest' ? sorted.reverse() : sorted;
+}
+
+/** Unieke advertentietitels waarop leads binnenkwamen, alfabetisch. */
+export function leadListingTitles(leads: DealerLead[]): string[] {
+  return Array.from(
+    new Set(leads.map((l) => l.listingTitle).filter((t): t is string => !!t)),
+  ).sort((a, b) => a.localeCompare(b, 'nl'));
+}
+
+
 export function useDealerLeads() {
   const { user } = useAuth();
 

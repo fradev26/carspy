@@ -1,13 +1,19 @@
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import type { LeadPeriod, LeadSort } from '@/hooks/useDealerLeads';
 
 export type LeadTab = 'all' | 'new' | 'in_progress' | 'done';
 
 export interface LeadFiltersValue {
   tab: LeadTab;
   query: string;
+  /** Advertentietitel; lege string = alle advertenties. */
+  listing: string;
+  period: LeadPeriod;
+  sort: LeadSort;
 }
 
 const TABS: { key: LeadTab; label: string }[] = [
@@ -17,14 +23,29 @@ const TABS: { key: LeadTab; label: string }[] = [
   { key: 'done', label: 'Afgehandeld' },
 ];
 
+const PERIODS: { key: LeadPeriod; label: string }[] = [
+  { key: 'all', label: 'Alle periodes' },
+  { key: 'today', label: 'Vandaag' },
+  { key: '7d', label: 'Laatste 7 dagen' },
+  { key: '30d', label: 'Laatste 30 dagen' },
+];
+
+const SORTS: { key: LeadSort; label: string }[] = [
+  { key: 'newest', label: 'Nieuwste eerst' },
+  { key: 'oldest', label: 'Oudste eerst' },
+  { key: 'name', label: 'Naam A→Z' },
+];
+
 export function LeadFilters({
   value,
   onChange,
   counts,
+  listings,
 }: {
   value: LeadFiltersValue;
   onChange: (v: LeadFiltersValue) => void;
   counts: Record<LeadTab, number>;
+  listings: string[];
 }) {
   return (
     <div className="flex flex-col gap-3">
@@ -38,6 +59,7 @@ export function LeadFilters({
           className="border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
         />
       </div>
+
       <div className="flex flex-wrap gap-1.5">
         {TABS.map((t) => (
           <Badge
@@ -53,6 +75,45 @@ export function LeadFilters({
             <span className="ml-1.5 opacity-70">{counts[t.key]}</span>
           </Badge>
         ))}
+      </div>
+
+      <div className="grid gap-2 sm:grid-cols-3">
+        <Select
+          value={value.listing === '' ? 'all' : value.listing}
+          onValueChange={(v) => onChange({ ...value, listing: v === 'all' ? '' : v })}
+        >
+          <SelectTrigger aria-label="Filter op advertentie" className="w-full">
+            <SelectValue placeholder="Alle advertenties" />
+          </SelectTrigger>
+          <SelectContent className="max-h-72">
+            <SelectItem value="all">Alle advertenties</SelectItem>
+            {listings.map((title) => (
+              <SelectItem key={title} value={title}>{title}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={value.period} onValueChange={(v) => onChange({ ...value, period: v as LeadPeriod })}>
+          <SelectTrigger aria-label="Filter op periode" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {PERIODS.map((p) => (
+              <SelectItem key={p.key} value={p.key}>{p.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={value.sort} onValueChange={(v) => onChange({ ...value, sort: v as LeadSort })}>
+          <SelectTrigger aria-label="Sorteer leads" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SORTS.map((s) => (
+              <SelectItem key={s.key} value={s.key}>{s.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );

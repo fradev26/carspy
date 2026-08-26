@@ -1,7 +1,15 @@
 import { useMemo, useState } from 'react';
 import { Loader2, Inbox, Info } from 'lucide-react';
 import { usePermissions } from '@/hooks/usePermissions';
-import { useDealerLeads, type DealerLead, type LeadStatus } from '@/hooks/useDealerLeads';
+import {
+  useDealerLeads,
+  filterLeads,
+  leadListingTitles,
+  type DealerLead,
+  type LeadStatus,
+  type LeadPeriod,
+  type LeadSort,
+} from '@/hooks/useDealerLeads';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { LeadKpiRow } from '@/components/dealer/leads/LeadKpiRow';
@@ -16,6 +24,9 @@ export default function Leads() {
   const { data: leads, isLoading, refetch } = useDealerLeads();
   const [tab, setTab] = useState<LeadTab>('all');
   const [query, setQuery] = useState('');
+  const [listing, setListing] = useState('');
+  const [period, setPeriod] = useState<LeadPeriod>('all');
+  const [sort, setSort] = useState<LeadSort>('newest');
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const all = leads ?? [];
@@ -30,14 +41,15 @@ export default function Leads() {
     [all],
   );
 
-  const visible = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return all.filter((l) => {
-      if (tab !== 'all' && l.status !== tab) return false;
-      if (!q) return true;
-      return [l.name, l.email, l.company, l.listingTitle].some((f) => (f ?? '').toLowerCase().includes(q));
-    });
-  }, [all, tab, query]);
+  const listingOptions = useMemo(() => leadListingTitles(all), [all]);
+
+  const visible = useMemo(
+    () => filterLeads(all, { status: tab, query, listing, period, sort }),
+    [all, tab, query, listing, period, sort],
+  );
+
+  const hasFilters = query.trim().length > 0 || listing !== '' || period !== 'all' || tab !== 'all';
+
 
   const handleStatus = async (leadId: string, status: LeadStatus) => {
     setBusyId(leadId);
@@ -87,10 +99,22 @@ export default function Leads() {
       }>
         <LeadKpiRow leads={all} />
 
-        <LeadFilters value={{ tab, query }} onChange={(v) => { setTab(v.tab); setQuery(v.query); }} counts={counts} />
+        <LeadFilters
+          value={{ tab, query, listing, period, sort }}
+          onChange={(v) => {
+            setTab(v.tab);
+            setQuery(v.query);
+            setListing(v.listing);
+            setPeriod(v.period);
+            setSort(v.sort);
+          }}
+          counts={counts}
+          listings={listingOptions}
+        />
 
         {visible.length === 0 ? (
-          <LeadEmptyState hasQuery={query.trim().length > 0} />
+          <LeadEmptyState hasQuery={hasFilters} />
+
         ) : (
           <div className="space-y-3">
             {visible.map((lead: DealerLead) => (
