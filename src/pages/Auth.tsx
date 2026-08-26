@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { VAT_PATTERNS, normalizeVat, type VatCountry } from '@/lib/vat';
+import { VAT_PATTERNS, normalizeVat, describeVatError, type VatCountry } from '@/lib/vat';
 
 function LoginForm() {
   const navigate = useNavigate();
@@ -145,6 +145,7 @@ function SignupForm() {
   const [dealerName, setDealerName] = useState('');
   const [vatNumber, setVatNumber] = useState('');
   const [vatCountry, setVatCountry] = useState<VatCountry>('BE');
+  const [vatError, setVatError] = useState<string | null>(null);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,12 +162,13 @@ function SignupForm() {
         toast({ title: 'Bedrijfsnaam is verplicht', variant: 'destructive' });
         return;
       }
-      const pattern = VAT_PATTERNS[vatCountry];
-      const normalized = normalizeVat(vatNumber, vatCountry);
-      if (!pattern.regex.test(normalized)) {
-        toast({ title: 'Ongeldig ondernemingsnummer', description: pattern.hint, variant: 'destructive' });
+      const problem = describeVatError(vatNumber, vatCountry);
+      if (problem) {
+        setVatError(problem);
+        toast({ title: 'Ongeldig ondernemingsnummer', description: problem, variant: 'destructive' });
         return;
       }
+      setVatError(null);
     }
 
     setIsLoading(true);
@@ -234,7 +236,10 @@ function SignupForm() {
                   variant={vatCountry === c ? 'default' : 'outline'}
                   role="radio"
                   aria-checked={vatCountry === c}
-                  onClick={() => setVatCountry(c)}
+                  onClick={() => {
+                    setVatCountry(c);
+                    setVatError(null);
+                  }}
                 >
                   {c === 'BE' ? 'België' : 'Nederland'}
                 </Button>
@@ -247,9 +252,22 @@ function SignupForm() {
               id="vat-number"
               placeholder={VAT_PATTERNS[vatCountry].placeholder}
               value={vatNumber}
-              onChange={(e) => setVatNumber(e.target.value)}
+              onChange={(e) => {
+                setVatNumber(e.target.value);
+                if (vatError) setVatError(null);
+              }}
+              aria-invalid={!!vatError}
+              aria-describedby={vatError ? 'vat-number-error' : 'vat-number-hint'}
             />
-            <p className="text-xs text-muted-foreground">{VAT_PATTERNS[vatCountry].hint}</p>
+            {vatError ? (
+              <p id="vat-number-error" role="alert" className="text-xs text-destructive">
+                {vatError}
+              </p>
+            ) : (
+              <p id="vat-number-hint" className="text-xs text-muted-foreground">
+                {VAT_PATTERNS[vatCountry].hint}
+              </p>
+            )}
           </div>
         </div>
       )}
