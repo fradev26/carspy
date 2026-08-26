@@ -52,7 +52,8 @@ export default function Leads() {
   const runRpc = useCallback(
     async (fn: string, args: Record<string, unknown>, okMessage: string) => {
       // Nieuwe lead-RPC's staan nog niet in de gegenereerde types; runtime-validatie via de DB.
-      const { error } = await (supabase.rpc as (name: string, params: Record<string, unknown>) => Promise<{ error: { message: string } | null }>)(fn, args);
+      const rpc = supabase.rpc as unknown as (name: string, params: Record<string, unknown>) => Promise<{ error: { message: string } | null }>;
+      const { error } = await rpc(fn, args);
       if (error) {
         toast.error('Actie mislukt: ' + error.message);
         return false;
@@ -216,29 +217,44 @@ export default function Leads() {
           </CardContent>
         </Card>
       ) : (
-        <VirtualGrid
-          items={page.visible}
-          estimateRowHeight={230}
-          minCardWidth={420}
-          gap={16}
-          getKey={(lead) => lead.id}
-          hasMore={page.hasMore}
-          onLoadMore={() => setState({ page: state.page + 1 })}
-          footer={
-            page.hasMore ? (
-              <p className="py-4 text-center text-sm text-muted-foreground">
-                {page.visible.length} van {page.total} leads — scroll voor meer
-              </p>
-            ) : page.total > 0 ? (
-              <p className="py-4 text-center text-sm text-muted-foreground">
-                Alle {page.total} leads geladen
-              </p>
-            ) : null
-          }
-          renderItem={(lead) => (
-            <LeadCard lead={lead} busy={false} assignees={assignees} actions={cardActions} />
+        <>
+          <VirtualGrid
+            items={page.visible}
+            estimateRowHeight={230}
+            columns={[1, 1, 2]}
+            gapClassName="gap-4"
+            getKey={(lead) => lead.id}
+            renderItem={(lead) => (
+              <LeadCard lead={lead} busy={false} assignees={assignees} actions={cardActions} />
+            )}
+          />
+          {/* Sentinel: laadt de volgende pagina zodra hij in beeld komt */}
+          {page.hasMore && (
+            <div
+              ref={(el) => {
+                if (!el) return;
+                const observer = new IntersectionObserver(
+                  (entries) => {
+                    if (entries[0]?.isIntersecting) {
+                      observer.disconnect();
+                      setState({ page: state.page + 1 });
+                    }
+                  },
+                  { rootMargin: '400px' },
+                );
+                observer.observe(el);
+                return () => observer.disconnect();
+              }}
+              aria-hidden="true"
+              className="h-px"
+            />
           )}
-        />
+          <p className="py-4 text-center text-sm text-muted-foreground">
+            {page.hasMore
+              ? `${page.visible.length} van ${page.total} leads — scroll voor meer`
+              : `Alle ${page.total} leads geladen`}
+          </p>
+        </>
       )}
     </div>
   );
