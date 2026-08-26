@@ -87,6 +87,14 @@ export default function Leads() {
   const paged = useMemo(() => paginateLeads(filtered, pageCount), [filtered, pageCount]);
   const visible = paged.visible;
 
+  // Back/forward: de lijst is pas op de juiste hoogte zodra de data geladen is
+  // en de pagina's uit de URL gerenderd zijn. Pas dan mag de scrollpositie uit
+  // de history-entry hersteld worden.
+  const restoreReady = !isLoading && (visible.length > 0 || filtered.length === 0);
+  const restored = useScrollRestoration('leadsScrollY', restoreReady);
+
+
+
   // Infinite scroll: zodra de sentinel in beeld komt, een pagina bijladen.
   useEffect(() => {
     if (!paged.hasMore || typeof IntersectionObserver === 'undefined') return;
