@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   ArrowLeft, Loader2, Phone, Mail, MessageSquare, Building2, Car, ChevronDown, ArrowRight,
@@ -10,7 +10,6 @@ import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
-import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { LEAD_STATUSES, type LeadStatus } from '@/hooks/useDealerLeads';
 import { useLeadDetail, updateLeadStatus } from '@/hooks/useLeadDetail';
 import { STATUS_META } from '@/components/dealer/leads/LeadCard';
@@ -24,7 +23,6 @@ export default function LeadDetail() {
   const { toast } = useToast();
   const { data, isLoading, refetch } = useLeadDetail(id);
   const [busy, setBusy] = useState(false);
-  useDocumentTitle(data ? `Lead: ${data.lead.name}` : 'Lead');
 
   const handleStatus = async (status: LeadStatus) => {
     if (!id) return;
