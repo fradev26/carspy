@@ -547,6 +547,7 @@ export type Database = {
           id: string
           listing_id: string
           seller_id: string
+          status: string
           updated_at: string
         }
         Insert: {
@@ -555,6 +556,7 @@ export type Database = {
           id?: string
           listing_id: string
           seller_id: string
+          status?: string
           updated_at?: string
         }
         Update: {
@@ -563,6 +565,7 @@ export type Database = {
           id?: string
           listing_id?: string
           seller_id?: string
+          status?: string
           updated_at?: string
         }
         Relationships: [
@@ -2055,6 +2058,10 @@ export type Database = {
       search_filter_sql: {
         Args: { _exclude?: string; _filters: Json }
         Returns: string
+      }
+      set_conversation_status: {
+        Args: { _conversation_id: string; _status: string }
+        Returns: undefined
       }
       set_listing_premium: {
         Args: { _enabled: boolean; _listing_id: string }
