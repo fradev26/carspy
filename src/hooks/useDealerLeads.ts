@@ -2,8 +2,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 
-/** Opvolgstatussen voor een lead, van nieuw naar afgerond. */
-export type LeadStatus = 'new' | 'contacted' | 'won' | 'lost';
+/** Opvolgstatussen voor een lead: Nieuw → In behandeling → Afgehandeld. */
+export type LeadStatus = 'new' | 'in_progress' | 'done';
+
+export const LEAD_STATUSES: LeadStatus[] = ['new', 'in_progress', 'done'];
 
 /** Waar de lead vandaan komt. */
 export type LeadType = 'bericht' | 'contactaanvraag';
