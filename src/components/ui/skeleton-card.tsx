@@ -39,7 +39,7 @@ export function SkeletonCard({ variant = "default", className, style }: Skeleton
   return (
     <div className={cn("overflow-hidden rounded-lg border bg-card", className)} style={style}>
       {/* Image skeleton */}
-      <div className="relative aspect-[16/10] bg-muted">
+      <div className="relative aspect-[3/2] bg-muted">
         <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/20 to-transparent bg-[length:200%_100%]" />
       </div>
       
