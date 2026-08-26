@@ -11,6 +11,7 @@ describe('normalizeDealerLead', () => {
       company: 'Peeters BV',
       message: '  Zit deze nog te koop?  ',
       status: 'new',
+      listing_id: null,
       created_at: '2026-08-20T10:00:00Z',
     });
     expect(lead.type).toBe('contactaanvraag');
@@ -23,7 +24,7 @@ describe('normalizeDealerLead', () => {
   it('valt terug op new bij onbekende status', () => {
     const lead = normalizeDealerLead({
       id: 'l2', name: 'X', email: null, phone: null, company: null,
-      message: null, status: 'archived', created_at: '2026-08-20T10:00:00Z',
+      message: null, status: 'archived', listing_id: null, created_at: '2026-08-20T10:00:00Z',
     });
     expect(lead.status).toBe('new');
   });
@@ -67,9 +68,9 @@ describe('normalizeConversationLead', () => {
 describe('sortLeads', () => {
   it('sorteert van nieuw naar oud', () => {
     const leads = [
-      normalizeDealerLead({ id: 'a', name: 'A', email: null, phone: null, company: null, message: null, status: 'new', created_at: '2026-08-18T00:00:00Z' }),
-      normalizeDealerLead({ id: 'b', name: 'B', email: null, phone: null, company: null, message: null, status: 'new', created_at: '2026-08-20T00:00:00Z' }),
-      normalizeDealerLead({ id: 'c', name: 'C', email: null, phone: null, company: null, message: null, status: 'new', created_at: '2026-08-19T00:00:00Z' }),
+      normalizeDealerLead({ id: 'a', name: 'A', email: null, phone: null, company: null, message: null, status: 'new', listing_id: null, created_at: '2026-08-18T00:00:00Z' }),
+      normalizeDealerLead({ id: 'b', name: 'B', email: null, phone: null, company: null, message: null, status: 'new', listing_id: null, created_at: '2026-08-20T00:00:00Z' }),
+      normalizeDealerLead({ id: 'c', name: 'C', email: null, phone: null, company: null, message: null, status: 'new', listing_id: null, created_at: '2026-08-19T00:00:00Z' }),
     ];
     expect(sortLeads(leads).map((l) => l.id)).toEqual(['b', 'c', 'a']);
   });
