@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeDealerLead, normalizeConversationLead, sortLeads, filterLeads, leadListingTitles } from './useDealerLeads';
+import { normalizeDealerLead, normalizeConversationLead, sortLeads, filterLeads, leadListingTitles, paginateLeads, LEADS_PAGE_SIZE } from './useDealerLeads';
 
 describe('normalizeDealerLead', () => {
   it('mapt een contactaanvraag naar een lead', () => {
