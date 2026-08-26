@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -229,26 +229,7 @@ export default function Leads() {
             )}
           />
           {/* Sentinel: laadt de volgende pagina zodra hij in beeld komt */}
-          {page.hasMore && (
-            <div
-              ref={(el) => {
-                if (!el) return;
-                const observer = new IntersectionObserver(
-                  (entries) => {
-                    if (entries[0]?.isIntersecting) {
-                      observer.disconnect();
-                      setState({ page: state.page + 1 });
-                    }
-                  },
-                  { rootMargin: '400px' },
-                );
-                observer.observe(el);
-                return () => observer.disconnect();
-              }}
-              aria-hidden="true"
-              className="h-px"
-            />
-          )}
+          {page.hasMore && <div ref={sentinelRef} aria-hidden="true" className="h-px" />}
           <p className="py-4 text-center text-sm text-muted-foreground">
             {page.hasMore
               ? `${page.visible.length} van ${page.total} leads — scroll voor meer`
