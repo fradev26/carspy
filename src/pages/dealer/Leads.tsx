@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Loader2, Inbox, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -9,9 +10,8 @@ import {
   paginateLeads,
   type DealerLead,
   type LeadStatus,
-  type LeadPeriod,
-  type LeadSort,
 } from '@/hooks/useDealerLeads';
+import { parseLeadsUrl, leadsUrlParams, type LeadsUrlState } from '@/lib/leadsUrl';
 import { useDealerLeadsRealtime } from '@/hooks/useDealerLeadsRealtime';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -27,13 +27,12 @@ export default function Leads() {
   const perms = usePermissions();
   const { data: leads, isLoading, refetch } = useDealerLeads();
   useDealerLeadsRealtime();
-  const [tab, setTab] = useState<LeadTab>('all');
-  const [query, setQuery] = useState('');
-  const [listing, setListing] = useState('');
-  const [period, setPeriod] = useState<LeadPeriod>('all');
-  const [sort, setSort] = useState<LeadSort>('newest');
+  // Filters, sortering en infinite-scroll positie leven in de URL, zodat een
+  // reload of gedeelde link de exacte context herstelt.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlState = useMemo(() => parseLeadsUrl(searchParams), [searchParams]);
+  const { tab, query, listing, period, sort, page: pageCount } = urlState;
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [pageCount, setPageCount] = useState(1);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const anchorRef = useRef<{ firstId: string | null; height: number }>({ firstId: null, height: 0 });
