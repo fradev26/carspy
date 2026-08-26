@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Loader2, Inbox, Info } from 'lucide-react';
+import { Loader2, Inbox, Info, Link2, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePermissions } from '@/hooks/usePermissions';
 import {
@@ -33,6 +33,7 @@ export default function Leads() {
   const urlState = useMemo(() => parseLeadsUrl(searchParams), [searchParams]);
   const { tab, query, listing, period, sort, page: pageCount } = urlState;
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const anchorRef = useRef<{ firstId: string | null; height: number }>({ firstId: null, height: 0 });
@@ -66,6 +67,17 @@ export default function Leads() {
   };
   const setPageCount = (updater: (c: number) => number) =>
     updateUrl({ page: updater(pageCount) }, false);
+
+  const copyShareUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      toast({ title: 'Link gekopieerd', description: 'De huidige filters en pagina staan op het klembord.' });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast({ title: 'Kopiëren mislukt', description: 'Je browser blokkeert het klembord.', variant: 'destructive' });
+    }
+  };
 
   const paged = useMemo(() => paginateLeads(filtered, pageCount), [filtered, pageCount]);
   const visible = paged.visible;
@@ -144,6 +156,16 @@ export default function Leads() {
             Alle koper- en contactverzoeken op één plek.
           </p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2"
+          onClick={copyShareUrl}
+          aria-label="Deel huidige filters"
+        >
+          {copied ? <Check className="h-4 w-4 text-green-600" /> : <Link2 className="h-4 w-4" />}
+          {copied ? 'Gekopieerd' : 'Link kopiëren'}
+        </Button>
       </div>
 
       <Can do="canViewLeads" fallback={
