@@ -56,12 +56,16 @@ export default function Leads() {
     [all, tab, query, listing, period, sort],
   );
 
-  // Filterwijzigingen resetten naar pagina 1; realtime-refetches laten
-  // pageCount intact zodat enkel de zichtbare kaarten patchen.
-  const criteriaKey = `${tab}|${query}|${listing}|${period}|${sort}`;
-  useEffect(() => {
-    setPageCount(1);
-  }, [criteriaKey]);
+  // Filterwijzigingen resetten naar pagina 1; paginanavigatie (infinite
+  // scroll) behoudt alle filters. Realtime-refetches raken de URL niet,
+  // waardoor pagina en scrollpositie behouden blijven.
+  const updateUrl = (patch: Partial<LeadsUrlState>, resetPage = true) => {
+    const next = { ...urlState, ...patch };
+    if (resetPage) next.page = 1;
+    setSearchParams(leadsUrlParams(next), { replace: true });
+  };
+  const setPageCount = (updater: (c: number) => number) =>
+    updateUrl({ page: updater(pageCount) }, false);
 
   const paged = useMemo(() => paginateLeads(filtered, pageCount), [filtered, pageCount]);
   const visible = paged.visible;
@@ -151,13 +155,9 @@ export default function Leads() {
 
         <LeadFilters
           value={{ tab, query, listing, period, sort }}
-          onChange={(v) => {
-            setTab(v.tab);
-            setQuery(v.query);
-            setListing(v.listing);
-            setPeriod(v.period);
-            setSort(v.sort);
-          }}
+          onChange={(v) =>
+            updateUrl({ tab: v.tab, query: v.query, listing: v.listing, period: v.period, sort: v.sort })
+          }
           counts={counts}
           listings={listingOptions}
         />
