@@ -12,7 +12,7 @@ import {
 import { LEAD_STATUSES, type DealerLead, type LeadStatus } from '@/hooks/useDealerLeads';
 import { cn } from '@/lib/utils';
 
-const STATUS_META: Record<LeadStatus, { label: string; className: string }> = {
+export const STATUS_META: Record<LeadStatus, { label: string; className: string }> = {
   new: { label: 'Nieuw', className: 'bg-primary text-primary-foreground' },
   in_progress: { label: 'In behandeling', className: 'bg-accent text-accent-foreground' },
   done: { label: 'Afgehandeld', className: 'bg-success text-success-foreground' },
@@ -37,7 +37,12 @@ export function LeadCard({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <p className="font-semibold truncate">{lead.name}</p>
+              <Link
+                to={`/zakelijk/leads/${lead.id}`}
+                className="font-semibold truncate hover:text-primary focus-ring rounded-sm"
+              >
+                {lead.name}
+              </Link>
               {lead.company && (
                 <span className="hidden sm:inline-flex items-center gap-1 text-xs text-muted-foreground truncate">
                   <Building2 className="h-3 w-3" /> {lead.company}
