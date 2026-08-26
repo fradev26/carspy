@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { QueryClient } from '@tanstack/react-query';
-import { createLeadRefreshScheduler, invalidateLeadQueries } from './useDealerLeadsRealtime';
+import { createLeadRefreshScheduler, invalidateLeadQueries, newLeadFromInsert } from './useDealerLeadsRealtime';
 
 describe('createLeadRefreshScheduler', () => {
   beforeEach(() => vi.useFakeTimers());
