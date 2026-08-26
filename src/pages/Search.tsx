@@ -42,6 +42,7 @@ export default function Search() {
     listings: pageListings,
     total,
     isLoading: listingsLoading,
+    isStale: listingsStale,
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
@@ -53,6 +54,8 @@ export default function Search() {
     sort: sortBy,
     limit: DEFAULT_PAGE_SIZE,
   });
+  // Zolang een nieuwere filteraanvraag onderweg is tonen we geen definitieve tellingen.
+  const resultsPending = listingsLoading || listingsStale;
   const [mobileResultsRevealed, setMobileResultsRevealed] = useState(false);
   const compareWithId = searchParams.get('compareWith');
   const referenceListing = compareWithId ? pageListings.find((l) => l.id === compareWithId) : undefined;
@@ -204,7 +207,7 @@ export default function Search() {
                   onClick={() => setMobileResultsRevealed(true)}
                   className="w-full min-h-12 text-base font-semibold"
                 >
-                  {listingsLoading
+                  {resultsPending
                     ? 'Resultaten laden…'
                     : `Toon ${activeFilterCount > 0 ? `${total ?? 0} resultaten` : 'alle resultaten'}`}
                 </Button>
@@ -378,7 +381,7 @@ export default function Search() {
                         )}
                         <DrawerClose asChild>
                           <Button className="flex-1 min-h-12">
-                            {listingsLoading ? 'Resultaten laden…' : `Toon ${total ?? 0} resultaten`}
+                            {resultsPending ? 'Resultaten laden…' : `Toon ${total ?? 0} resultaten`}
                           </Button>
                         </DrawerClose>
                       </DrawerFooter>
