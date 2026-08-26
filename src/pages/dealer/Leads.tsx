@@ -10,6 +10,7 @@ import {
   type LeadPeriod,
   type LeadSort,
 } from '@/hooks/useDealerLeads';
+import { useDealerLeadsRealtime } from '@/hooks/useDealerLeadsRealtime';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { LeadKpiRow } from '@/components/dealer/leads/LeadKpiRow';
@@ -22,6 +23,7 @@ export default function Leads() {
   const { toast } = useToast();
   const perms = usePermissions();
   const { data: leads, isLoading, refetch } = useDealerLeads();
+  useDealerLeadsRealtime();
   const [tab, setTab] = useState<LeadTab>('all');
   const [query, setQuery] = useState('');
   const [listing, setListing] = useState('');
