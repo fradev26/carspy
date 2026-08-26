@@ -10,7 +10,7 @@ function Bar({ className }: { className?: string }) {
  */
 export function SkeletonListingDetail() {
   return (
-    <div className="container py-6" aria-busy="true" aria-live="polite">
+    <div className="container py-6" aria-busy="true" role="status" aria-live="polite">
       <span className="sr-only">Advertentie wordt geladen</span>
 
       {/* Breadcrumb */}
