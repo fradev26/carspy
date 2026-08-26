@@ -99,10 +99,22 @@ export default function Leads() {
       }>
         <LeadKpiRow leads={all} />
 
-        <LeadFilters value={{ tab, query }} onChange={(v) => { setTab(v.tab); setQuery(v.query); }} counts={counts} />
+        <LeadFilters
+          value={{ tab, query, listing, period, sort }}
+          onChange={(v) => {
+            setTab(v.tab);
+            setQuery(v.query);
+            setListing(v.listing);
+            setPeriod(v.period);
+            setSort(v.sort);
+          }}
+          counts={counts}
+          listings={listingOptions}
+        />
 
         {visible.length === 0 ? (
-          <LeadEmptyState hasQuery={query.trim().length > 0} />
+          <LeadEmptyState hasQuery={hasFilters} />
+
         ) : (
           <div className="space-y-3">
             {visible.map((lead: DealerLead) => (
