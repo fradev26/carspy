@@ -60,13 +60,18 @@ export default function Leads() {
   // Filterwijzigingen resetten naar pagina 1; paginanavigatie (infinite
   // scroll) behoudt alle filters. Realtime-refetches raken de URL niet,
   // waardoor pagina en scrollpositie behouden blijven.
+  // Filterwijzigingen resetten naar pagina 1 en krijgen een eigen history-entry,
+  // zodat browser back/forward tussen filtersets navigeert. Paginanavigatie
+  // (infinite scroll) vervangt de entry, zodat één keer 'terug' niet elke
+  // bijgeladen pagina moet afpellen. Realtime-refetches raken de URL niet.
   const updateUrl = (patch: Partial<LeadsUrlState>, resetPage = true) => {
     const next = { ...urlState, ...patch };
     if (resetPage) next.page = 1;
-    setSearchParams(leadsUrlParams(next), { replace: true });
+    setSearchParams(leadsUrlParams(next), { replace: !resetPage });
   };
   const setPageCount = (updater: (c: number) => number) =>
     updateUrl({ page: updater(pageCount) }, false);
+
 
   const copyShareUrl = async () => {
     try {
