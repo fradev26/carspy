@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type {
   Listing,
@@ -300,6 +300,8 @@ export function useListing(id: string | undefined) {
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+  const refetch = useCallback(() => setReloadKey((k) => k + 1), []);
 
   useEffect(() => {
     if (!id) {
@@ -335,9 +337,9 @@ export function useListing(id: string | undefined) {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, reloadKey]);
 
-  return { listing, loading, error };
+  return { listing, loading, error, refetch };
 }
 
 export function useRelatedListings(listing: Listing | null, count: number = 3) {
