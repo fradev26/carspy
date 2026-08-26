@@ -13,16 +13,30 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
 const VAT_PATTERNS = {
-  BE: { regex: /^BE0\d{9}$/, placeholder: 'BE0123456789', hint: 'Formaat: BE + 10 cijfers (start met 0)' },
-  NL: { regex: /^NL\d{9}B\d{2}$/, placeholder: 'NL123456789B01', hint: 'Formaat: NL + 9 cijfers + B + 2 cijfers' },
+  BE: {
+    regex: /^BE[01]\d{9}$/,
+    placeholder: '0123.456.789',
+    hint: 'Formaat: 10 cijfers, start met 0 of 1 (bv. BE 0123.456.789)',
+  },
+  NL: {
+    regex: /^NL\d{9}B\d{2}$/,
+    placeholder: 'NL123456789B01',
+    hint: 'Formaat: NL + 9 cijfers + B + 2 cijfers',
+  },
 } as const;
 type VatCountry = keyof typeof VAT_PATTERNS;
 
 function normalizeVat(input: string, country: VatCountry): string {
-  let v = input.replace(/[\s.\-]/g, '').toUpperCase();
-  if (!v.startsWith(country)) v = country + v.replace(/^(BE|NL)/, '');
-  return v;
+  // Strip spaces, dots, dashes, slashes and any leading country prefix
+  let v = input.replace(/[\s.\-/_]/g, '').toUpperCase().replace(/^(BE|NL)/, '');
+  if (country === 'BE') {
+    // Belgian company numbers are 10 digits; legacy 9-digit numbers get a leading 0
+    v = v.replace(/\D/g, '');
+    if (v.length === 9) v = '0' + v;
+  }
+  return country + v;
 }
+
 
 function LoginForm() {
   const navigate = useNavigate();
