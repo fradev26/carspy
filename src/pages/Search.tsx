@@ -204,7 +204,9 @@ export default function Search() {
                   onClick={() => setMobileResultsRevealed(true)}
                   className="w-full min-h-12 text-base font-semibold"
                 >
-                  Toon {activeFilterCount > 0 ? `${total ?? 0} resultaten` : 'alle resultaten'}
+                  {listingsLoading
+                    ? 'Resultaten laden…'
+                    : `Toon ${activeFilterCount > 0 ? `${total ?? 0} resultaten` : 'alle resultaten'}`}
                 </Button>
                 {activeFilterCount > 0 && (
                   <Button
@@ -296,9 +298,17 @@ export default function Search() {
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <h1 className="text-2xl font-bold md:text-3xl">Auto's zoeken</h1>
-                  <p className="mt-1 text-muted-foreground">
-                    <span className="font-semibold text-foreground">{total ?? pageListings.length}</span> resultaten gevonden
-                  </p>
+                  {listingsLoading ? (
+                    <div className="mt-1 flex h-6 items-center" aria-hidden="true">
+                      <div className="h-4 w-40 rounded bg-muted animate-pulse-soft" />
+                    </div>
+                  ) : listingsError ? (
+                    <p className="mt-1 text-muted-foreground">Resultaten konden niet geladen worden</p>
+                  ) : (
+                    <p className="mt-1 text-muted-foreground">
+                      <span className="font-semibold text-foreground">{total ?? pageListings.length}</span> resultaten gevonden
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -368,7 +378,7 @@ export default function Search() {
                         )}
                         <DrawerClose asChild>
                           <Button className="flex-1 min-h-12">
-                            Toon {total ?? 0} resultaten
+                            {listingsLoading ? 'Resultaten laden…' : `Toon ${total ?? 0} resultaten`}
                           </Button>
                         </DrawerClose>
                       </DrawerFooter>
@@ -493,7 +503,7 @@ export default function Search() {
                   />
                 </>
 
-              ) : (
+              ) : !listingsLoading && !listingsError && pageListings.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
                   <div className="flex h-16 w-16 items-center justify-center rounded-md bg-muted mb-4">
                     <Car className="h-8 w-8 text-muted-foreground" />
@@ -510,7 +520,7 @@ export default function Search() {
                     Wis alle filters
                   </Button>
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
