@@ -29,6 +29,7 @@ const DealerUsers = lazy(() => import("./pages/dealer/Users"));
 const AcceptInvite = lazy(() => import("./pages/AcceptInvite"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const DealerLeads = lazy(() => import("./pages/dealer/Leads"));
+const DealerLeadDetail = lazy(() => import("./pages/dealer/LeadDetail"));
 const Sell = lazy(() => import("./pages/Sell"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const BusinessDashboard = lazy(() => import("./pages/BusinessDashboard"));
@@ -77,6 +78,7 @@ const App = () => (
                   <Route path="voorraad/:id" element={<DealerListingOperating />} />
                   <Route path="import" element={<DealerImport />} />
                   <Route path="leads" element={<DealerLeads />} />
+                  <Route path="leads/:id" element={<DealerLeadDetail />} />
                   <Route path="analytics" element={<DealerAnalytics />} />
                   <Route path="analytics/:id" element={<DealerListingAnalytics />} />
                   <Route path="instellingen" element={<SettingsRouteGuard requires="dealer"><DealerSettings /></SettingsRouteGuard>} />

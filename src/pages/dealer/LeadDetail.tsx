@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   ArrowLeft, Loader2, Phone, Mail, MessageSquare, Building2, Car, ChevronDown, ArrowRight,
