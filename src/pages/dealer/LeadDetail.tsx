@@ -84,14 +84,17 @@ export default function LeadDetail() {
               className="gap-1.5"
               aria-label={`Status wijzigen voor lead van ${lead.name}`}
             >
-              <span className={cn('px-1.5 py-0.5 rounded-full text-xs font-medium', meta.className)}>{meta.label}</span>
+              <span className="flex items-center gap-1.5 px-1.5 py-0.5 rounded-full text-xs font-medium">
+                <span className={cn('h-2 w-2 rounded-full', meta.dot)} />
+                {meta.label}
+              </span>
               <ChevronDown className="h-3.5 w-3.5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {LEAD_STATUSES.map((s) => (
               <DropdownMenuItem key={s} onClick={() => handleStatus(s)}>
-                <span className={cn('mr-2 h-2 w-2 rounded-full', STATUS_META[s].className)} />
+                <span className={cn('mr-2 h-2 w-2 rounded-full', STATUS_META[s].dot)} />
                 {STATUS_META[s].label}
               </DropdownMenuItem>
             ))}

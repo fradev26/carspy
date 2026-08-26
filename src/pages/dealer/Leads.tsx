@@ -26,7 +26,7 @@ export default function Leads() {
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
   useDealerLeadsRealtime();
-  useScrollRestoration();
+  useScrollRestoration('leads', !isLoading);
 
   // URL is de bron van waarheid: tab, filters, sortering en scrollpositie
   // (paginanummer) zijn deelbaar en overleven een reload.
@@ -51,7 +51,8 @@ export default function Leads() {
 
   const runRpc = useCallback(
     async (fn: string, args: Record<string, unknown>, okMessage: string) => {
-      const { error } = await supabase.rpc(fn, args);
+      // Nieuwe lead-RPC's staan nog niet in de gegenereerde types; runtime-validatie via de DB.
+      const { error } = await (supabase.rpc as (name: string, params: Record<string, unknown>) => Promise<{ error: { message: string } | null }>)(fn, args);
       if (error) {
         toast.error('Actie mislukt: ' + error.message);
         return false;
@@ -217,7 +218,7 @@ export default function Leads() {
       ) : (
         <VirtualGrid
           items={page.visible}
-          estimateHeight={230}
+          estimateRowHeight={230}
           minCardWidth={420}
           gap={16}
           getKey={(lead) => lead.id}
