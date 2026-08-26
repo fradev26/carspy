@@ -36,6 +36,7 @@ interface DealerLeadRow {
   company: string | null;
   message: string | null;
   status: string;
+  listing_id: string | null;
   created_at: string;
 }
 
@@ -49,7 +50,7 @@ interface ConversationRow {
   updated_at: string;
 }
 
-export function normalizeDealerLead(row: DealerLeadRow): DealerLead {
+export function normalizeDealerLead(row: DealerLeadRow, listingTitle: string | null = null): DealerLead {
   return {
     id: row.id,
     type: 'contactaanvraag',
@@ -57,8 +58,8 @@ export function normalizeDealerLead(row: DealerLeadRow): DealerLead {
     email: row.email,
     phone: row.phone,
     company: row.company ?? null,
-    listingTitle: null,
-    listingId: null,
+    listingTitle,
+    listingId: row.listing_id,
     snippet: row.message?.trim() ?? '',
     status: (LEAD_STATUSES.includes(row.status as LeadStatus) ? row.status : 'new') as LeadStatus,
     createdAt: row.created_at,
