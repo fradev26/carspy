@@ -1,4 +1,5 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { DEFAULT_PAGE_SIZE } from '@/lib/keyset';
@@ -17,6 +18,8 @@ export interface DealerInventoryRequest {
   limit?: number;
   query?: string;
   statuses?: string[];
+  /** Annuleert het verzoek zodra een nieuwere filterstand wordt aangevraagd. */
+  signal?: AbortSignal;
 }
 
 /**
@@ -34,6 +37,7 @@ export async function fetchDealerInventoryPage(
       query: req.query ?? '',
       statuses: req.statuses ?? [],
     },
+    signal: req.signal,
   });
   if (error) throw new Error(error.message ?? 'Kon voorraad niet laden');
   return data as DealerInventoryPage;
@@ -48,16 +52,20 @@ export function useDealerInventoryInfinite(params: {
   const { user } = useAuth();
   const { query = '', statuses = [], limit = DEFAULT_PAGE_SIZE } = params;
 
+  // Snel typen/filteren resulteert in één verzoek; oudere worden geannuleerd.
+  const { value: settled, pending } = useDebouncedValue({ query, statuses, limit }, 250);
+
   const result = useInfiniteQuery<DealerInventoryPage>({
-    queryKey: ['dealer-inventory', { userId: user?.id, query, statuses, limit }],
+    queryKey: ['dealer-inventory', { userId: user?.id, ...settled }],
     enabled: !!user,
     initialPageParam: null as string | null,
-    queryFn: ({ pageParam }) =>
-      fetchDealerInventoryPage({ cursor: pageParam as string | null, limit, query, statuses }),
+    queryFn: ({ pageParam, signal }) =>
+      fetchDealerInventoryPage({ cursor: pageParam as string | null, ...settled, signal }),
     getNextPageParam: (last) => last.nextCursor,
     staleTime: 30_000,
     gcTime: 10 * 60_000,
     refetchOnWindowFocus: false,
+    placeholderData: (prev) => prev,
   });
 
   const listings = result.data?.pages.flatMap((p) => p.listings) ?? [];
@@ -69,5 +77,6 @@ export function useDealerInventoryInfinite(params: {
     overview: first?.overview ?? null,
     statusCounts: first?.statusCounts ?? {},
     total: first?.total ?? 0,
+    isStale: pending || result.isPlaceholderData,
   };
 }
