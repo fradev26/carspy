@@ -108,51 +108,53 @@ export function useDealerLeads() {
       const uid = user.id;
 
       const [contactRes, convRes] = await Promise.all([
-        supabase.from('dealer_leads').select('id, name, email, phone, company, message, status, created_at').order('created_at', { ascending: false }),
+        supabase.from('dealer_leads').select('id, name, email, phone, company, message, status, listing_id, created_at').order('created_at', { ascending: false }),
         supabase.from('conversations').select('id, listing_id, buyer_id, seller_id, status, created_at, updated_at').eq('seller_id', uid).order('updated_at', { ascending: false }),
       ]);
 
       if (contactRes.error) throw contactRes.error;
       if (convRes.error) throw convRes.error;
 
-      const dealerLeads: DealerLead[] = (contactRes.data ?? []).map(normalizeDealerLead);
-
+      const contactRows = (contactRes.data ?? []) as DealerLeadRow[];
       const convs = (convRes.data ?? []) as ConversationRow[];
-      let convLeads: DealerLead[] = [];
-      if (convs.length > 0) {
-        const listingIds = Array.from(new Set(convs.map((c) => c.listing_id).filter((x): x is string => !!x)));
-        const buyerIds = Array.from(new Set(convs.map((c) => c.buyer_id)));
 
-        const [listingsRes, profilesRes, msgsRes] = await Promise.all([
-          listingIds.length ? supabase.from('listings').select('id, title').in('id', listingIds) : Promise.resolve({ data: [], error: null }),
-          buyerIds.length ? supabase.from('public_profiles').select('id, full_name, dealer_name').in('id', buyerIds) : Promise.resolve({ data: [], error: null }),
-          supabase.from('messages').select('conversation_id, content, created_at').in('conversation_id', convs.map((c) => c.id)).order('created_at', { ascending: false }),
-        ]);
+      // Wagens van beide leadtypes in één query ophalen.
+      const listingIds = Array.from(new Set([
+        ...contactRows.map((r) => r.listing_id),
+        ...convs.map((c) => c.listing_id),
+      ].filter((x): x is string => !!x)));
+      const buyerIds = Array.from(new Set(convs.map((c) => c.buyer_id)));
 
-        if (listingsRes.error) throw listingsRes.error;
-        if (profilesRes.error) throw profilesRes.error;
-        if (msgsRes.error) throw msgsRes.error;
+      const [listingsRes, profilesRes, msgsRes] = await Promise.all([
+        listingIds.length ? supabase.from('listings').select('id, title').in('id', listingIds) : Promise.resolve({ data: [], error: null }),
+        buyerIds.length ? supabase.from('public_profiles').select('id, full_name, dealer_name').in('id', buyerIds) : Promise.resolve({ data: [], error: null }),
+        convs.length ? supabase.from('messages').select('conversation_id, content, created_at').in('conversation_id', convs.map((c) => c.id)).order('created_at', { ascending: false }) : Promise.resolve({ data: [], error: null }),
+      ]);
 
-        const listingMap = new Map((listingsRes.data ?? []).map((l: { id: string; title: string }) => [l.id, l.title]));
-        const profileMap = new Map(
-          (profilesRes.data ?? []).map((p: { id: string; full_name: string | null; dealer_name: string | null }) => [p.id, p.dealer_name ?? p.full_name]),
+      if (listingsRes.error) throw listingsRes.error;
+      if (profilesRes.error) throw profilesRes.error;
+      if (msgsRes.error) throw msgsRes.error;
+
+      const listingMap = new Map((listingsRes.data ?? []).map((l: { id: string; title: string }) => [l.id, l.title]));
+      const profileMap = new Map(
+        (profilesRes.data ?? []).map((p: { id: string; full_name: string | null; dealer_name: string | null }) => [p.id, p.dealer_name ?? p.full_name]),
+      );
+      const lastMsgByConv = new Map<string, { content: string; created_at: string }>();
+      (msgsRes.data ?? []).forEach((m: { conversation_id: string; content: string; created_at: string }) => {
+        if (!lastMsgByConv.has(m.conversation_id)) lastMsgByConv.set(m.conversation_id, m);
+      });
+
+      const dealerLeads = contactRows.map((r) => normalizeDealerLead(r, r.listing_id ? listingMap.get(r.listing_id) ?? null : null));
+      const convLeads = convs.map((c) => {
+        const last = lastMsgByConv.get(c.id);
+        return normalizeConversationLead(
+          c,
+          c.listing_id ? listingMap.get(c.listing_id) ?? null : null,
+          profileMap.get(c.buyer_id) ?? null,
+          last?.content ?? null,
+          last?.created_at ?? c.created_at,
         );
-        const lastMsgByConv = new Map<string, { content: string; created_at: string }>();
-        (msgsRes.data ?? []).forEach((m: { conversation_id: string; content: string; created_at: string }) => {
-          if (!lastMsgByConv.has(m.conversation_id)) lastMsgByConv.set(m.conversation_id, m);
-        });
-
-        convLeads = convs.map((c) => {
-          const last = lastMsgByConv.get(c.id);
-          return normalizeConversationLead(
-            c,
-            listingMap.get(c.listing_id ?? '') ?? null,
-            profileMap.get(c.buyer_id) ?? null,
-            last?.content ?? null,
-            last?.created_at ?? c.created_at,
-          );
-        });
-      }
+      });
 
       return sortLeads([...dealerLeads, ...convLeads]);
     },
