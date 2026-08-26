@@ -13,6 +13,8 @@ import {
 } from '@/hooks/useDealerLeads';
 import { parseLeadsUrl, leadsUrlParams, type LeadsUrlState } from '@/lib/leadsUrl';
 import { useDealerLeadsRealtime } from '@/hooks/useDealerLeadsRealtime';
+import { useScrollRestoration } from '@/hooks/useScrollRestoration';
+
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { LeadKpiRow } from '@/components/dealer/leads/LeadKpiRow';
@@ -60,13 +62,18 @@ export default function Leads() {
   // Filterwijzigingen resetten naar pagina 1; paginanavigatie (infinite
   // scroll) behoudt alle filters. Realtime-refetches raken de URL niet,
   // waardoor pagina en scrollpositie behouden blijven.
+  // Filterwijzigingen resetten naar pagina 1 en krijgen een eigen history-entry,
+  // zodat browser back/forward tussen filtersets navigeert. Paginanavigatie
+  // (infinite scroll) vervangt de entry, zodat één keer 'terug' niet elke
+  // bijgeladen pagina moet afpellen. Realtime-refetches raken de URL niet.
   const updateUrl = (patch: Partial<LeadsUrlState>, resetPage = true) => {
     const next = { ...urlState, ...patch };
     if (resetPage) next.page = 1;
-    setSearchParams(leadsUrlParams(next), { replace: true });
+    setSearchParams(leadsUrlParams(next), { replace: !resetPage });
   };
   const setPageCount = (updater: (c: number) => number) =>
     updateUrl({ page: updater(pageCount) }, false);
+
 
   const copyShareUrl = async () => {
     try {
@@ -81,6 +88,14 @@ export default function Leads() {
 
   const paged = useMemo(() => paginateLeads(filtered, pageCount), [filtered, pageCount]);
   const visible = paged.visible;
+
+  // Back/forward: de lijst is pas op de juiste hoogte zodra de data geladen is
+  // en de pagina's uit de URL gerenderd zijn. Pas dan mag de scrollpositie uit
+  // de history-entry hersteld worden.
+  const restoreReady = !isLoading && (visible.length > 0 || filtered.length === 0);
+  const restored = useScrollRestoration('leadsScrollY', restoreReady);
+
+
 
   // Infinite scroll: zodra de sentinel in beeld komt, een pagina bijladen.
   useEffect(() => {
@@ -107,12 +122,14 @@ export default function Leads() {
     if (!el) return;
     const prev = anchorRef.current;
     const prevIndex = prev.firstId ? visible.findIndex((l) => l.id === prev.firstId) : -1;
-    if (prev.firstId && prevIndex > 0 && el.getBoundingClientRect().top < 0) {
+    // Niet compenseren zolang de back/forward-restauratie nog moet gebeuren.
+    if (restored.current && prev.firstId && prevIndex > 0 && el.getBoundingClientRect().top < 0) {
       const delta = el.offsetHeight - prev.height;
       if (delta > 0) window.scrollBy({ top: delta });
     }
     anchorRef.current = { firstId: visible[0]?.id ?? null, height: el.offsetHeight };
-  }, [visible]);
+  }, [visible, restored]);
+
 
   const hasFilters = query.trim().length > 0 || listing !== '' || period !== 'all' || tab !== 'all';
 

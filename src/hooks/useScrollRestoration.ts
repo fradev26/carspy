@@ -1,48 +1,60 @@
 import { useEffect, useRef } from 'react';
-
-const STORE_PREFIX = 'vatuur:scroll:';
+import { useNavigationType } from 'react-router-dom';
 
 /**
- * Persists and restores the window scroll position for a feed, so returning
- * from a detail page (/auto/:id) keeps both the loaded batches (TanStack Query
- * cache) and the scroll position instead of resetting to the top.
+ * Bewaart de scrollpositie in de history-entry en herstelt die bij een
+ * browser back/forward (POP). De browser-eigen restauratie wordt uitgezet,
+ * omdat die te vroeg gebeurt: de lijst (infinite scroll + virtualisatie) is
+ * dan nog niet opgebouwd, waardoor de pagina naar boven springt.
+ *
+ * @param key    unieke sleutel binnen history.state
+ * @param ready  true zodra de lijst met de juiste hoogte gerenderd is
  */
 export function useScrollRestoration(key: string, ready: boolean) {
+  const navigationType = useNavigationType();
   const restored = useRef(false);
 
-  // Save continuously (cheap, rAF-throttled).
   useEffect(() => {
+    if (typeof window === 'undefined' || !('scrollRestoration' in window.history)) return;
+    const previous = window.history.scrollRestoration;
+    window.history.scrollRestoration = 'manual';
+    return () => {
+      window.history.scrollRestoration = previous;
+    };
+  }, []);
+
+  // Scrollpositie continu (per frame, gethrottled) in de history-entry schrijven.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
     let frame = 0;
     const onScroll = () => {
       if (frame) return;
-      frame = requestAnimationFrame(() => {
+      frame = window.requestAnimationFrame(() => {
         frame = 0;
+        const state = (window.history.state ?? {}) as Record<string, unknown>;
         try {
-          sessionStorage.setItem(STORE_PREFIX + key, String(window.scrollY));
+          window.history.replaceState({ ...state, [key]: window.scrollY }, '');
         } catch {
-          /* storage unavailable — non-critical */
+          /* replaceState kan in sommige embeds falen; scrollherstel is dan best-effort */
         }
       });
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => {
       window.removeEventListener('scroll', onScroll);
-      if (frame) cancelAnimationFrame(frame);
+      if (frame) window.cancelAnimationFrame(frame);
     };
   }, [key]);
 
-  // Restore once data is on screen.
+  // Eenmalig herstellen zodra de lijst klaar is.
   useEffect(() => {
-    if (!ready || restored.current) return;
+    if (restored.current || !ready || typeof window === 'undefined') return;
     restored.current = true;
-    let stored: string | null = null;
-    try {
-      stored = sessionStorage.getItem(STORE_PREFIX + key);
-    } catch {
-      stored = null;
-    }
-    const y = stored ? Number(stored) : 0;
-    if (!y) return;
-    requestAnimationFrame(() => window.scrollTo({ top: y, behavior: 'auto' }));
-  }, [key, ready]);
+    if (navigationType !== 'POP') return;
+    const saved = (window.history.state as Record<string, unknown> | null)?.[key];
+    if (typeof saved !== 'number' || saved <= 0) return;
+    window.requestAnimationFrame(() => window.scrollTo({ top: saved, behavior: 'auto' }));
+  }, [ready, navigationType, key]);
+
+  return restored;
 }
