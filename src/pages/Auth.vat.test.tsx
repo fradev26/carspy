@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import Auth from './Auth';
 
@@ -35,19 +36,20 @@ async function fillBusinessSignup(vat: string) {
     </MemoryRouter>,
   );
 
-  fireEvent.click(screen.getByRole('tab', { name: 'Registreren' }));
+  const user = userEvent.setup();
+  await user.click(screen.getByRole('tab', { name: 'Registreren' }));
 
   fireEvent.change(await screen.findByLabelText('Naam'), { target: { value: 'Jan Peeters' } });
   fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'jan@snabba.be' } });
   fireEvent.change(screen.getByLabelText('Wachtwoord'), { target: { value: 'geheim123' } });
 
   // Bedrijfsmodus aanzetten
-  fireEvent.click(screen.getByRole('switch'));
+  await user.click(screen.getByRole('switch'));
 
   fireEvent.change(await screen.findByLabelText('Bedrijfsnaam'), { target: { value: 'Snabba Cars' } });
   fireEvent.change(screen.getByLabelText('Ondernemingsnummer / BTW-nummer'), { target: { value: vat } });
 
-  fireEvent.click(screen.getByRole('button', { name: 'Account aanmaken' }));
+  await user.click(screen.getByRole('button', { name: 'Account aanmaken' }));
 }
 
 describe('Registratie bedrijf — Belgisch ondernemingsnummer', () => {
