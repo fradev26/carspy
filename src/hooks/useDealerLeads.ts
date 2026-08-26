@@ -44,6 +44,7 @@ interface ConversationRow {
   listing_id: string | null;
   buyer_id: string;
   seller_id: string;
+  status: string;
   created_at: string;
   updated_at: string;
 }
@@ -59,7 +60,7 @@ export function normalizeDealerLead(row: DealerLeadRow): DealerLead {
     listingTitle: null,
     listingId: null,
     snippet: row.message?.trim() ?? '',
-    status: (['new', 'contacted', 'won', 'lost'].includes(row.status) ? row.status : 'new') as LeadStatus,
+    status: (LEAD_STATUSES.includes(row.status as LeadStatus) ? row.status : 'new') as LeadStatus,
     createdAt: row.created_at,
   };
 }
@@ -81,7 +82,7 @@ export function normalizeConversationLead(
     listingTitle,
     listingId: conv.listing_id,
     snippet: lastMessage?.trim() ?? 'Nieuw gesprek gestart',
-    status: 'contacted',
+    status: (LEAD_STATUSES.includes(conv.status as LeadStatus) ? conv.status : 'in_progress') as LeadStatus,
     createdAt,
     conversationId: conv.id,
   };
@@ -107,7 +108,7 @@ export function useDealerLeads() {
 
       const [contactRes, convRes] = await Promise.all([
         supabase.from('dealer_leads').select('id, name, email, phone, company, message, status, created_at').order('created_at', { ascending: false }),
-        supabase.from('conversations').select('id, listing_id, buyer_id, seller_id, created_at, updated_at').eq('seller_id', uid).order('updated_at', { ascending: false }),
+        supabase.from('conversations').select('id, listing_id, buyer_id, seller_id, status, created_at, updated_at').eq('seller_id', uid).order('updated_at', { ascending: false }),
       ]);
 
       if (contactRes.error) throw contactRes.error;
