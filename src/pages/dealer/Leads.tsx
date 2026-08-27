@@ -71,8 +71,8 @@ export default function Leads() {
   const runRpc = useCallback(
     async (fn: string, args: Record<string, unknown>, okMessage: string) => {
       // Nieuwe lead-RPC's staan nog niet in de gegenereerde types; runtime-validatie via de DB.
-      const rpc = supabase.rpc as unknown as (name: string, params: Record<string, unknown>) => Promise<{ error: { message: string } | null }>;
-      const { error } = await rpc(fn, args);
+      // Let op: als methode op supabase aanroepen i.v.m. interne this-binding.
+      const { error } = await (supabase.rpc as unknown as (name: string, params: Record<string, unknown>) => Promise<{ error: { message: string } | null }>).call(supabase, fn, args);
       if (error) {
         toast.error('Actie mislukt: ' + error.message);
         return false;
@@ -95,45 +95,51 @@ export default function Leads() {
     [runRpc],
   );
 
+  // RPC's verwachten _kind ('conversation' | 'lead') + ruwe uuid.
+  const refOf = useCallback(
+    (lead: DealerLead) => ({ _kind: lead.conversationId ? 'conversation' : 'lead', _id: lead.conversationId ?? lead.id }),
+    [],
+  );
+
   const handleFollowUp = useCallback(
     (lead: DealerLead, iso: string | null) => {
       void runRpc(
         'set_lead_follow_up',
-        { _lead_ref: lead.id, _follow_up_at: iso },
+        { ...refOf(lead), _follow_up_at: iso },
         iso ? 'Opvolging gepland' : 'Opvolging gewist',
       );
     },
-    [runRpc],
+    [runRpc, refOf],
   );
 
   const handleSnooze = useCallback(
     (lead: DealerLead, days: number | null) => {
       void runRpc(
         'snooze_lead',
-        { _lead_ref: lead.id, _days: days },
+        { ...refOf(lead), _until: days ? new Date(Date.now() + days * 86_400_000).toISOString() : null },
         days ? `Lead gesnoozet voor ${days} ${days === 1 ? 'dag' : 'dagen'}` : 'Snooze opgeheven',
       );
     },
-    [runRpc],
+    [runRpc, refOf],
   );
 
   const handleAnswered = useCallback(
     (lead: DealerLead) => {
       if (!lead.isUnanswered) return;
-      void runRpc('mark_lead_answered', { _lead_ref: lead.id }, 'Gemarkeerd als beantwoord');
+      void runRpc('mark_lead_answered', refOf(lead), 'Gemarkeerd als beantwoord');
     },
-    [runRpc],
+    [runRpc, refOf],
   );
 
   const handleAssign = useCallback(
     (lead: DealerLead, memberId: string | null) => {
       void runRpc(
         'assign_lead',
-        { _lead_ref: lead.id, _member_id: memberId },
+        { ...refOf(lead), _member_id: memberId },
         memberId ? 'Lead toegewezen' : 'Toewijzing verwijderd',
       );
     },
-    [runRpc],
+    [runRpc, refOf],
   );
 
   const cardActions = useMemo(
@@ -168,7 +174,7 @@ export default function Leads() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="container py-6 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Leads</h1>

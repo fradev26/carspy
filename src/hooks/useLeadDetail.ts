@@ -231,8 +231,12 @@ export async function updateLeadStatus(leadId: string, status: string) {
     });
   }
   // Nieuwe RPC staat nog niet in de gegenereerde types; runtime-validatie via de DB.
-  const rpc = supabase.rpc as unknown as (name: string, params: Record<string, unknown>) => Promise<{ error: { message: string } | null }>;
-  return rpc('set_dealer_lead_status', { _lead_id: leadId, _status: status });
+  // Als methode op supabase aanroepen i.v.m. interne this-binding.
+  return (supabase.rpc as unknown as (name: string, params: Record<string, unknown>) => Promise<{ error: { message: string } | null }>).call(
+    supabase,
+    'set_dealer_lead_status',
+    { _lead_id: leadId, _status: status },
+  );
 }
 
 /** Labels voor statussen in de timeline (incl. verouderde waarden). */
