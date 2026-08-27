@@ -168,7 +168,7 @@ export default function Leads() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="container py-6 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Leads</h1>
