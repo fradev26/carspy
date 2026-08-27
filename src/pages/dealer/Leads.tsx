@@ -71,8 +71,8 @@ export default function Leads() {
   const runRpc = useCallback(
     async (fn: string, args: Record<string, unknown>, okMessage: string) => {
       // Nieuwe lead-RPC's staan nog niet in de gegenereerde types; runtime-validatie via de DB.
-      const rpc = supabase.rpc as unknown as (name: string, params: Record<string, unknown>) => Promise<{ error: { message: string } | null }>;
-      const { error } = await rpc(fn, args);
+      // Let op: als methode op supabase aanroepen i.v.m. interne this-binding.
+      const { error } = await (supabase.rpc as unknown as (name: string, params: Record<string, unknown>) => Promise<{ error: { message: string } | null }>).call(supabase, fn, args);
       if (error) {
         toast.error('Actie mislukt: ' + error.message);
         return false;
